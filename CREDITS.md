@@ -49,6 +49,7 @@ Helioviewer.org."). Each week's exact request URLs are in `public/data/media/<we
 | Code, tests, build and data scripts (parts) | Claude Code (Anthropic) | Reviewed by the team; log in `docs/AI-USE.md` |
 | English and Russian narration | Device text-to-speech (`speechSynthesis`) | Synthetic voice, acknowledged here and on the Data page |
 | SI images and video (if used) | listed per file in the tables above | Visible "AI" mark; no NASA logos, flags, mission identifiers; no likeness of minors |
+| Lunar lander v2 and its renders, `blender/lander_v2/` (not shipped in the game; for the video and pitch) | Claude Code (Anthropic): Blender Python scripts | AI-made model (procedural geometry by AI-written code); renders shown in the video or pitch carry the "AI" mark |
 
 ## Development and server tools (not shipped)
 

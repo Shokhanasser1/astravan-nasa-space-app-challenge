@@ -2,6 +2,7 @@
 
   B=/Applications/Blender.app/Contents/MacOS/Blender
   $B -b ../_work/astronaut_rig.blend -P bake_all.py -- --out DIR [--only Walk,Carry] [--sheet] [--export]
+      [--clips-dir DIR]   (default anim/clips; the lander clips live in anim/clips_lander and never ship in the game)
 
 Clip modules: anim/clips/*.py, each defines CLIPS = [dict(name, fn, frames, loop, speed, sheet=[frames], meta={})]
 fn(t) -> params (t in [0, 1]); use lunar_rig.place_foot() inside fn to plant the boots.
@@ -11,7 +12,9 @@ DIR/astronaut_raw.glb (+ DIR/astronaut_draco.glb) with --export.
 import bpy, sys, os, json, importlib.util, glob, time
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
-sys.path.insert(0, os.path.join(HERE, 'clips'))   # clip modules may import helpers from clips/_*.py
+A0 = sys.argv[sys.argv.index('--') + 1:] if '--' in sys.argv else []
+CLIPS_DIR = os.path.abspath(A0[A0.index('--clips-dir') + 1]) if '--clips-dir' in A0 else os.path.join(HERE, 'clips')
+sys.path.insert(0, CLIPS_DIR)   # clip modules may import helpers from <clips dir>/_*.py
 import lunar_rig as L
 
 A = sys.argv[sys.argv.index('--') + 1:] if '--' in sys.argv else []
@@ -24,7 +27,7 @@ os.makedirs(OUT, exist_ok=True)
 
 ORDER = ['Idle', 'Walk', 'Run', 'Jump', 'Carry', 'Pour', 'JumpStart', 'JumpAir', 'JumpLand']
 specs = []
-files = sorted(glob.glob(os.path.join(HERE, 'clips', '*.py')))
+files = sorted(glob.glob(os.path.join(CLIPS_DIR, '*.py')))
 if MODS:
     files = [f for f in files if os.path.basename(f) in MODS.split(',')]
 for f in files:
