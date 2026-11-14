@@ -1,1 +1,19 @@
-{}
+{
+  "engine.warn.chooseCard": "",
+  "engine.warn.noLaunch": "",
+  "engine.warn.reserveEmpty": "",
+  "engine.warn.gardenFalls": "",
+  "engine.log.emergency": "",
+  "engine.log.blocked": "",
+  "engine.log.gardenFell": "",
+  "engine.log.gardenGrew": "",
+  "engine.log.wallBuilt": "",
+  "engine.log.reserveFell": "",
+  "engine.log.reserveRose": "",
+  "engine.log.found": "",
+  "engine.title.balanceMaster": "",
+  "engine.title.boldExplorer": "",
+  "engine.title.carefulCommander": "",
+  "engine.title.cadetInTraining": "",
+  "engine.title.lateRideHome": ""
+}
