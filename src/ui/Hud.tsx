@@ -165,6 +165,12 @@ export function Hud({ model, view, dispatch, lang, setLang, sound, setSound, onS
           <PhysicsHolo tr={tr} />
         </div>
       )}
+      {/* (Its own corner: in the centre column it pushed Confirm off a laptop screen on the flare day.) */}
+      {playing && !overlay && (phase === 'morning' || phase === 'plan') && (
+        <div className="pointer-events-none absolute left-4 top-36 flex flex-col">
+          <SunToday weekId={view.weekId} date={view.mediaDate} tr={tr} />
+        </div>
+      )}
 
       {freeWalk && sides && <WalkStick />}
       {freeWalk && sides && features.character && <JumpButton />}
@@ -172,7 +178,6 @@ export function Hud({ model, view, dispatch, lang, setLang, sound, setSound, onS
 
       {playing && !overlay && (
         <div className="hud-center flex flex-col gap-2" data-phase={phase}>
-          {(phase === 'morning' || phase === 'plan') && <SunToday weekId={view.weekId} date={view.mediaDate} tr={tr} />}
           {(phase === 'morning' || phase === 'plan') && <CapcomHolo textKey={radioKey(model, board)} tr={tr} lang={lang} sound={sound} />}
           {showTablet && (
             <PlanTablet

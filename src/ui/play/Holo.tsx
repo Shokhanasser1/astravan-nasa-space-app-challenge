@@ -179,9 +179,9 @@ export function SunToday({ weekId, date, tr }: { weekId?: string; date?: string;
   const media = useWeekMedia(weekId);
   if (!media?.flare || !date || media.flare.peak.slice(0, 10) !== date || !media.files.some((f) => f.file === 'sdo-peak.webp')) return null;
   return (
-    <HoloPanel className="pointer-events-none mx-auto flex max-w-md items-center gap-3" data-testid="sun-today">
-      <img src={mediaUrl(media.week, 'sdo-peak.webp')} alt="" className="h-20 w-20 rounded-full object-cover" />
-      <div className="text-sm">
+    <HoloPanel className="pointer-events-none flex w-56 items-center gap-2" data-testid="sun-today">
+      <img src={mediaUrl(media.week, 'sdo-peak.webp')} alt="" className="h-14 w-14 shrink-0 rounded-full object-cover" />
+      <div className="text-xs">
         <div>
           {tr('ui.sun.today', { time: utc(media.flare.peak) })}
           <Mark label="measured" tr={tr} />
