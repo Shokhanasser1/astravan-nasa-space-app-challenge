@@ -3,7 +3,7 @@
  * from the same layout the scene draws from (src/scene/layout.ts), a little bigger than what you see. Never the
  * render meshes. Scene-only numbers.
  */
-import { LAYOUT, RADIUS, type XZ as Pair } from '../scene/layout';
+import { LAYOUT, PARKED_ROVER, RADIUS, type XZ as Pair } from '../scene/layout';
 import type { Area, Solid } from './collide';
 
 /** Every hitbox is its visual footprint plus this much (metres). */
@@ -29,7 +29,8 @@ export const ROOM = 1.25;
 /** Outside: the buildings, the lander, the rover, the hub, the wing and the dish; the edge of the playable ground. */
 export const OUTSIDE: Area = {
   solids: [
-    disc('habitat', LAYOUT.habitat, RADIUS.habitat),
+    // (+0.45 m: the regolith sandbag wall around it, src/scene/parts/Sandbags.tsx)
+    disc('habitat', LAYOUT.habitat, RADIUS.habitat + 0.45),
     disc('garden', LAYOUT.garden, RADIUS.garden),
     disc('workshop', LAYOUT.workshop, RADIUS.workshop),
     disc('lander', LAYOUT.lander, RADIUS.lander),
@@ -38,6 +39,7 @@ export const OUTSIDE: Area = {
     // (Its mast is thin, but the dish hangs at head height. 1.1: the NASA dish model's reflector reaches 1.17 m.)
     disc('dish', LAYOUT.dish, 1.1),
     wing,
+    { name: 'rover', x: PARKED_ROVER.x, z: PARKED_ROVER.z, r: PARKED_ROVER.r },
   ],
   bounds: { name: 'edge', x: 0, z: 0, r: EDGE },
 };

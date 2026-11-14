@@ -15,6 +15,9 @@ export const LAYOUT = {
   dish: [10.5, -2.5],
 } as const satisfies Record<string, XZ>;
 
+/** The crew rover (NASA SEV, decor, src/scene/Decor.tsx) parked on the flat pad, nose to the base; r = its hitbox. */
+export const PARKED_ROVER = { x: 10.5, z: 8.2, yaw: -2.3, r: 2.4 } as const;
+
 /** Footprint radius of each tappable building (cable ends, target rings). */
 export const RADIUS = { habitat: 1.7, garden: 1.3, workshop: 1.55, scout: 0.9, lander: 1.6, hub: 0.6 } as const;
 

@@ -7,6 +7,7 @@ import { camState } from '../anim';
 import { GLOW, MAT } from './materials';
 import type { TapHandler } from './tap';
 import { Shell } from '../models/Shell';
+import { Sandbags } from './Sandbags';
 
 const R = 1.7; // shell radius; 3.6 m tall with the dome (docs/layout.md)
 const GAP = THREE.MathUtils.degToRad(70); // open side of the interior: the window towards the hub
@@ -46,9 +47,7 @@ export function Habitat({ on, wall, tap }: { on: boolean; wall: number; tap: Tap
         </Instances>
       </group>
       <Interior />
-      {Array.from({ length: Math.min(3, wall) }, (_, i) => (
-        <WallRing key={i} level={i} />
-      ))}
+      <Sandbags wall={wall} radius={R} />
     </group>
   );
 }
@@ -94,23 +93,3 @@ function Interior() {
   );
 }
 
-/** One regolith ring; a new level rises from the ground in 0.6 s. */
-function WallRing({ level }: { level: number }) {
-  const ref = useRef<THREE.Mesh>(null);
-  const start = useRef(-1);
-  const invalidate = useThree((s) => s.invalidate);
-  const y = 0.18 + level * 0.36;
-  useFrame((state) => {
-    const m = ref.current;
-    if (!m) return;
-    if (start.current < 0) start.current = state.clock.elapsedTime;
-    const t = Math.min(1, (state.clock.elapsedTime - start.current) / 0.6);
-    m.position.y = y - 0.5 * (1 - t) * (1 - t);
-    if (t < 1) invalidate();
-  });
-  return (
-    <mesh ref={ref} position={[0, y - 0.5, 0]} rotation-x={-Math.PI / 2} material={MAT.regolith}>
-      <torusGeometry args={[2.2, 0.22, 8, 40]} />
-    </mesh>
-  );
-}

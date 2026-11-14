@@ -1,0 +1,12 @@
+HOME BY SEVEN - decor around the base (not machines of the week), 2026-11-15
+
+From NASA 3D Resources (https://science.nasa.gov/3d-resources/ ; GitHub mirror
+https://github.com/nasa/NASA-3D-Resources/tree/master/3D%20Models), prepared in Blender by Samandar (team) for the
+team's catalog (blender/game3d/assets: logos, flags and lettering painted out, real size in metres), then
+converted for the web (meshopt, WebP textures <= 1024, simplified) with `npm run glb`-style gltf-transform:
+- sev.glb            <- "Space Exploration Vehicle" (the crew rover, parked by the base)
+- rassor.glb         <- "RASSOR" (Regolith Advanced Surface Systems Operations Robot, NASA Kennedy Swamp Works),
+                        digging at the rim of the ice crater
+- crew-lock-bag.glb  <- "Crew Lock Bag" (cargo bags by the habitat door)
+
+3D models: NASA 3D Resources / NASA Science. Not endorsed by NASA.
