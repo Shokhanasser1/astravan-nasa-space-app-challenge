@@ -3,7 +3,8 @@
 //    are flagged as warnings; keys in uz/ru exist in en.
 // 2. Forbidden phrases in any language (concept 3.0, section 07 + NASA media guidelines).
 // 3. Data files src/engine/weeks.json and sky.json have the expected shape when present.
-// 4. Asset folders: lowercase names (GitHub Pages and Linux are case-sensitive), a licence file and a CREDITS row.
+// 4. Asset folders: lowercase names (GitHub Pages and Linux are case-sensitive), one folder per pack with a licence
+//    or credit file and a CREDITS row, models ≤ 1 MB each (< 5 MB together is a warning).
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -22,6 +23,19 @@ for (const lang of Object.keys(dicts)) {
   for (const lane of LANES) {
     const path = `src/i18n/${lang}/${lane}.json`;
     if (!existsSync(join(root, path))) continue;
+    // JSON.parse keeps only the last of two equal keys, so scan the raw text. Lane files are flat objects of
+    // strings, so the string tokens alternate key, value: every even token is a key (escapes decoded).
+    const parsed = json(path);
+    if (Object.values(parsed).some((v) => typeof v !== 'string')) errors.push(`${path}: values must be strings`);
+    else {
+      const tokens = [...readFileSync(join(root, path), 'utf8').matchAll(/"(?:[^"\\]|\\.)*"/g)].map((m) => JSON.parse(m[0]));
+      const seen = new Set();
+      tokens.forEach((key, i) => {
+        if (i % 2) return;
+        if (seen.has(key)) errors.push(`${path} "${key}": key repeated in this file`);
+        seen.add(key);
+      });
+    }
     for (const [key, value] of Object.entries(json(path))) {
       if (!key.startsWith(`${lane}.`)) errors.push(`${path} "${key}": keys in this file must start with "${lane}."`);
       if (key in dicts[lang]) errors.push(`${path} "${key}": key already defined in another lane file`);
@@ -38,6 +52,11 @@ for (const lang of ['uz', 'ru']) {
   for (const key of Object.keys(dicts[lang])) {
     if (!(key in dicts.en)) warnings.push(`${lang}.json "${key}" has no English entry`);
   }
+}
+// Words are written by people (lane F); until then the game shows keys. One summary line, not one per key.
+for (const lang of ['en', 'uz']) {
+  const empty = Object.values(dicts[lang]).filter((v) => !v).length;
+  if (empty) warnings.push(`${lang}: ${empty} key(s) still without human-written text`);
 }
 
 // 2. Forbidden phrases (pitch rules, concept 3.0 section 07; NASA media guidelines 2026-10-27)
@@ -83,7 +102,7 @@ if (existsSync(join(root, 'src/engine/weeks.json'))) {
     }
   }
 } else {
-  warnings.push('src/engine/weeks.json not added yet (lane A)');
+  warnings.push('src/engine/weeks.json not added yet (lane Data)');
 }
 if (existsSync(join(root, 'src/engine/sky.json'))) {
   const sky = json('src/engine/sky.json');
@@ -99,7 +118,7 @@ function walk(dir) {
     return statSync(p).isDirectory() ? [p, ...walk(p)] : [p];
   });
 }
-for (const base of ['public/models', 'public/audio', 'public/data', 'public/textures']) {
+for (const base of ['public/models', 'public/audio', 'public/data', 'public/textures', 'public/art']) {
   for (const p of walk(join(root, base))) {
     const rel = relative(root, p).replaceAll('\\', '/');
     const name = rel.split('/').pop();
@@ -108,18 +127,31 @@ for (const base of ['public/models', 'public/audio', 'public/data', 'public/text
   }
 }
 const credits = existsSync(join(root, 'CREDITS.md')) ? readFileSync(join(root, 'CREDITS.md'), 'utf8') : '';
-for (const base of ['public/models', 'public/audio', 'public/textures']) {
+for (const base of ['public/models', 'public/audio', 'public/textures', 'public/art']) {
   const dir = join(root, base);
   if (!existsSync(dir)) continue;
   for (const pack of readdirSync(dir)) {
     const p = join(dir, pack);
-    if (!statSync(p).isDirectory()) continue;
+    if (!statSync(p).isDirectory()) {
+      if (!/^\.(gitkeep|keep)$/.test(pack)) errors.push(`${base}/${pack}: put it in a pack folder (${base}/<pack>/) with its licence`);
+      continue;
+    }
     if (!readdirSync(p).some((f) => /^(license|licence|copying|credit)/i.test(f))) {
       errors.push(`${base}/${pack}: add the licence or credit file of this pack`);
     }
     if (!credits.includes(`${base}/${pack}`)) errors.push(`${base}/${pack}: add a row to CREDITS.md naming this folder`);
   }
 }
+
+const MB = 1024 * 1024;
+let modelBytes = 0;
+for (const p of walk(join(root, 'public/models'))) {
+  if (!p.endsWith('.glb')) continue;
+  const size = statSync(p).size;
+  modelBytes += size;
+  if (size > MB) errors.push(`${relative(root, p).replaceAll('\\', '/')}: ${(size / MB).toFixed(2)} MB, a model must be ≤ 1 MB (npm run glb)`);
+}
+if (modelBytes > 5 * MB) warnings.push(`public/models: ${(modelBytes / MB).toFixed(1)} MB in total, the phone budget is < 5 MB`);
 
 for (const w of warnings) console.warn(`warn  ${w}`);
 for (const e of errors) console.error(`error ${e}`);
