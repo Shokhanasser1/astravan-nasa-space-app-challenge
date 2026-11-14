@@ -6,7 +6,7 @@ import { BATTERY_BANK, LAYOUT } from './layout';
 import { GLOW } from './parts/materials';
 import { ICE_CRATER, groundHeight } from './ground';
 import { sunAzimuth, sunDirection } from './Light';
-import { astraModule } from './AstraBase';
+import { ASTRA_SCALE, astraModule } from './AstraBase';
 import { bake } from './astra/bake';
 import { finalize } from '../vendor/astra/scene/kit';
 import type { ModuleView } from '../vendor/astra/scene/models/common';
@@ -64,7 +64,7 @@ export function BatteryBank({ view }: { view: View }) {
   const b = view.batteries;
   const share = b && b.total > 0 ? b.left / b.total : 1;
   v.bars?.forEach((m, i) => (m.emissiveIntensity = share > i / 5 + 0.02 ? 1.8 : 0.08));
-  return <primitive object={v.group} position={[BATTERY_BANK[0], 0, BATTERY_BANK[1]]} rotation-y={0.8} scale={0.8} />;
+  return <primitive object={v.group} position={[BATTERY_BANK[0], 0, BATTERY_BANK[1]]} rotation-y={0.8} scale={ASTRA_SCALE.battery} />;
 }
 
 /** Ice drill on the rim of the ice crater (the Ice card's place), its auger turning. */

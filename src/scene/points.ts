@@ -3,7 +3,7 @@
  * 1 airlock · 2 power hub (main place) · 3 garden window · 4 workshop · 5 hill · 6 lander ladder · inside the habitat.
  * `orbit` is the truth-screen pull-back, not a marker.
  */
-import { LAYOUT, fromDoor } from './layout';
+import { LAYOUT, RADIUS, fromDoor, towardBase } from './layout';
 import { HILL, ICE_CRATER, groundHeight } from './ground';
 
 export type PointId = 'airlock' | 'hub' | 'garden' | 'workshop' | 'hill' | 'ladder' | 'inside' | 'orbit';
@@ -14,16 +14,22 @@ const HAB_FLOOR = 0.2;
 
 const at = (x: number, z: number): Vec3 => [x, groundHeight(x, z) + EYE, z];
 
-const airlock = fromDoor(3.2);
-const hubSpot = fromDoor(9.2); // behind the hub, looking back at hub → habitat → lander
+// (all from the layout: the base was spread on 15 Nov when its buildings grew to real size)
+const airlock = fromDoor(RADIUS.habitat + 1.4);
+const HUB_D = Math.hypot(LAYOUT.hub[0] - LAYOUT.habitat[0], LAYOUT.hub[1] - LAYOUT.habitat[1]);
+const hubSpot = fromDoor(HUB_D + 3.8); // behind the hub, looking back at hub → habitat → lander
+const hubLook = fromDoor(HUB_D * 0.42);
+const gardenSpot = towardBase(LAYOUT.garden, RADIUS.garden + 1.8); // the long glass side, all the troughs in view
+const workshopSpot = towardBase(LAYOUT.workshop, RADIUS.workshop + 1.6);
+const ladderSpot = towardBase(LAYOUT.lander, 2.7); // the ladder leg faces the base
 
 export const POINTS: Record<PointId, { pos: Vec3; look: Vec3 }> = {
-  airlock: { pos: at(airlock[0], airlock[1]), look: [-6, 1, -4] },
-  hub: { pos: at(hubSpot[0], hubSpot[1]), look: [-1.4, 1.2, 2.4] },
-  garden: { pos: at(LAYOUT.garden[0], LAYOUT.garden[1] + 3.0), look: [LAYOUT.garden[0], 0.7, LAYOUT.garden[1]] },
-  workshop: { pos: at(3.2, 6.8), look: [LAYOUT.workshop[0], 1.0, LAYOUT.workshop[1]] },
+  airlock: { pos: at(airlock[0], airlock[1]), look: [LAYOUT.garden[0] + 1, 1, LAYOUT.garden[1] - 1] },
+  hub: { pos: at(hubSpot[0], hubSpot[1]), look: [hubLook[0], 1.6, hubLook[1]] },
+  garden: { pos: at(gardenSpot[0], gardenSpot[1]), look: [LAYOUT.garden[0], 0.9, LAYOUT.garden[1]] },
+  workshop: { pos: at(workshopSpot[0], workshopSpot[1]), look: [LAYOUT.workshop[0], 1.4, LAYOUT.workshop[1]] },
   hill: { pos: at(HILL.x, HILL.z), look: [0, 0.5, 0] },
-  ladder: { pos: at(LAYOUT.lander[0], LAYOUT.lander[1] + 2.6), look: [LAYOUT.lander[0], 2.2, LAYOUT.lander[1]] },
+  ladder: { pos: at(ladderSpot[0], ladderSpot[1]), look: [LAYOUT.lander[0], 2.8, LAYOUT.lander[1]] },
   inside: { pos: [LAYOUT.habitat[0], HAB_FLOOR + 1.5, LAYOUT.habitat[1]], look: [LAYOUT.hub[0], 1.2, LAYOUT.hub[1]] },
   orbit: { pos: [40, 130, 170], look: [0, 0, 0] },
 };

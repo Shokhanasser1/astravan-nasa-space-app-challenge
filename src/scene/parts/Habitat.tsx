@@ -2,7 +2,7 @@ import { useRef } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import { Instance, Instances } from '@react-three/drei';
 import * as THREE from 'three';
-import { DOOR_AZ, LAYOUT } from '../layout';
+import { DOOR_AZ, LAYOUT, RADIUS } from '../layout';
 import { camState } from '../anim';
 import { GLOW, MAT } from './materials';
 import type { TapHandler } from './tap';
@@ -10,7 +10,8 @@ import { Shell } from '../models/Shell';
 import { Sandbags } from './Sandbags';
 import { AstraHabitat, astraLook } from '../AstraBase';
 
-const R = 1.7; // shell radius; 3.6 m tall with the dome (docs/layout.md)
+const R = 1.7; // interior room radius (and the ?lite shell's own size, drawn grown to RADIUS.habitat)
+const LITE = RADIUS.habitat / R; // ?lite: the old shapes grow with the base (15 Nov: buildings at real size)
 const GAP = THREE.MathUtils.degToRad(70); // open side of the interior: the window towards the hub
 const WINDOW_AZ = [DOOR_AZ - Math.PI / 2, DOOR_AZ + Math.PI / 2];
 
@@ -23,7 +24,7 @@ export function Habitat({ on, wall, tap }: { on: boolean; wall: number; tap: Tap
         {astraLook ? (
           <AstraHabitat on={on} wall={wall} turn={DOOR_AZ} />
         ) : (
-          <>
+          <group scale={LITE}>
         <Shell
           name="hab"
           turn={DOOR_AZ}
@@ -50,12 +51,12 @@ export function Habitat({ on, wall, tap }: { on: boolean; wall: number; tap: Tap
             <Instance key={a} position={[Math.sin(a) * (R + 0.01), 1.9, Math.cos(a) * (R + 0.01)]} rotation={[0, a, 0]} />
           ))}
         </Instances>
-          </>
+          </group>
         )}
       </group>
       <Interior />
       {/* ASTRA's habitat brings its own regolith shield (AstraHabitat); our sandbag rings stay for ?lite */}
-      {!astraLook && <Sandbags wall={wall} radius={R} />}
+      {!astraLook && <Sandbags wall={wall} radius={RADIUS.habitat} />}
     </group>
   );
 }

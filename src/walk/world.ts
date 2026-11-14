@@ -3,7 +3,7 @@
  * from the same layout the scene draws from (src/scene/layout.ts), a little bigger than what you see. Never the
  * render meshes. Scene-only numbers.
  */
-import { BATTERY_BANK, LAYOUT, PARKED_ROVER, RADIUS, type XZ as Pair } from '../scene/layout';
+import { BATTERY_BANK, BATTERY_R, LAYOUT, PARKED_ROVER, RADIUS, type XZ as Pair } from '../scene/layout';
 import type { Area, Solid } from './collide';
 import { rich } from '../scene/rich';
 
@@ -11,7 +11,8 @@ import { rich } from '../scene/rich';
 const MARGIN = 0.1;
 const disc = (name: string, at: Pair, r: number): Solid => ({ name, x: at[0], z: at[1], r: r + MARGIN });
 
-/** The solar wing is long and thin: a bar along its two panels (SolarWing.tsx turns it 0.5 rad), 0.5 m thick. */
+/** The solar wing: a bar along its two panels (SolarWing.tsx turns it 0.5 rad); on the ASTRA look the bar joins the
+ * two sun-tracking arrays (AstraProps.tsx), whose masts and feet it covers (0.9 m round the bar). */
 const WING_TURN = 0.5;
 const wing: Solid = {
   name: 'wing',
@@ -19,19 +20,20 @@ const wing: Solid = {
   z: LAYOUT.wing[1] - Math.cos(WING_TURN) * 2.65,
   bx: LAYOUT.wing[0] + Math.sin(WING_TURN) * 2.65,
   bz: LAYOUT.wing[1] + Math.cos(WING_TURN) * 2.65,
-  r: 0.25,
+  r: 0.9,
 };
 
 /** How far from the middle of the base you can walk: past the hill (27 m out), short of the far craters. */
 export const EDGE = 60;
-/** Inside the habitat: the floor you can stand on (the shell is 1.7 m in radius; lockers line its wall). */
+/** Inside the habitat: the floor you can stand on (the interior room is 1.7 m in radius, inside the bigger shell;
+ * lockers line its wall; the rig calls it "inside" within 1.6 m of the middle). */
 export const ROOM = 1.25;
 
 /** Outside: the buildings, the lander, the rover, the hub, the wing and the dish; the edge of the playable ground. */
 export const OUTSIDE: Area = {
   solids: [
-    // (+0.45 m: the regolith sandbag wall around it, src/scene/parts/Sandbags.tsx)
-    disc('habitat', LAYOUT.habitat, RADIUS.habitat + 0.45),
+    // (+0.3 m: the regolith shield round it, ASTRA's or our sandbags, src/scene/parts/Sandbags.tsx)
+    disc('habitat', LAYOUT.habitat, RADIUS.habitat + 0.3),
     disc('garden', LAYOUT.garden, RADIUS.garden),
     disc('workshop', LAYOUT.workshop, RADIUS.workshop),
     disc('lander', LAYOUT.lander, RADIUS.lander),
@@ -41,8 +43,8 @@ export const OUTSIDE: Area = {
     disc('dish', LAYOUT.dish, 1.1),
     wing,
     { name: 'rover', x: PARKED_ROVER.x, z: PARKED_ROVER.z, r: PARKED_ROVER.r },
-    // (the battery bank is drawn on computers only: src/scene/rich.ts)
-    ...(rich ? [{ name: 'battery', x: BATTERY_BANK[0], z: BATTERY_BANK[1], r: 0.9 }] : []),
+    // (the battery bank is drawn with the ASTRA look only: src/scene/rich.ts)
+    ...(rich ? [{ name: 'battery', x: BATTERY_BANK[0], z: BATTERY_BANK[1], r: BATTERY_R }] : []),
   ],
   bounds: { name: 'edge', x: 0, z: 0, r: EDGE },
 };

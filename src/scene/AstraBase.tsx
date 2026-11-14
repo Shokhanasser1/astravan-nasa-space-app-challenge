@@ -10,6 +10,7 @@ import { buildGreenhouse } from '../vendor/astra/scene/models/life';
 import { buildLander, buildPad } from '../vendor/astra/scene/models/site';
 import { buildLab } from '../vendor/astra/scene/models/works';
 import { bake, mergeWorld } from './astra/bake';
+import { LAYOUT, PAD } from './layout';
 
 /**
  * The base in ASTRA's look (15 Nov, Shoxjahon aka: the best of ASTRA + the best of ours). ASTRA's procedural models
@@ -18,8 +19,12 @@ import { bake, mergeWorld } from './astra/bake';
  * small meshes become a few, so phones keep their budget. Power changes only materials (ASTRA's own rule).
  */
 
-/** Scales that keep each model inside our building's footprint (src/scene/layout.ts RADIUS, walk/world.ts). */
-export const ASTRA_SCALE = { habitat: 0.34, greenhouse: 0.45, lab: 0.6, lander: 0.45 } as const;
+/**
+ * Real-ish size next to the 1.85 m astronaut (15 Nov ~05:00, Shoxjahon aka: "the base models are small"; it was
+ * 0.34 / 0.45 / 0.6 / 0.45 to fit the old small plan): habitat 5.8 m tall, 6.3 m across; greenhouse 4.4 m long,
+ * 1.6 m high; lab 3.4 m tall; lander 4.3 m tall. The plan grew with them (src/scene/layout.ts LAYOUT, RADIUS, PAD).
+ */
+export const ASTRA_SCALE = { habitat: 0.6, greenhouse: 0.9, lab: 0.85, lander: 0.7, scout: 0.9, battery: 1.0 } as const;
 
 // Phones build every curved part with half the segments (src/vendor/astra/scene/kit.ts sg): the base stays inside
 // the phone budget (< 100k triangles). Computers keep ASTRA's own detail.
@@ -119,11 +124,12 @@ export function AstraPads({ pads }: { pads: { x: number; z: number; size: number
   const all = useMemo(() => {
     const root = new THREE.Group();
     for (const d of pads) {
+      const size = padSize(d.x, d.z) ?? d.size;
       const p = buildPad('moon', 'base');
       finalize(p);
       p.position.set(d.x, 0.005, d.z);
       p.rotation.y = d.turn ?? 0;
-      p.scale.setScalar(d.size / 5.7);
+      p.scale.setScalar(size / 5.7);
       root.add(p);
     }
     bake(root, { keep: [], live: [] });
@@ -131,6 +137,15 @@ export function AstraPads({ pads }: { pads: { x: number; z: number; size: number
     return root;
   }, [pads]);
   return <primitive object={all} />;
+}
+
+/** A pad under a building of the layout takes that building's size (layout.ts PAD: it grew with the buildings). */
+function padSize(x: number, z: number): number | undefined {
+  for (const k of Object.keys(PAD) as (keyof typeof PAD)[]) {
+    const [bx, bz] = LAYOUT[k];
+    if (Math.abs(bx - x) < 0.01 && Math.abs(bz - z) < 0.01) return PAD[k];
+  }
+  return undefined;
 }
 
 /**

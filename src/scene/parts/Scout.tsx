@@ -6,6 +6,7 @@ import { Shell } from '../models/Shell';
 import { ScoutRover } from '../AstraProps';
 import { rich, softwareGl } from '../rich';
 import { initialTier } from '../quality';
+import { ASTRA_SCALE } from '../AstraBase';
 
 const WHEELS: [number, number][] = [
   [-0.58, -0.5],
@@ -56,7 +57,7 @@ export function Scout({ on, tap }: { on: boolean; tap: TapHandler }) {
   return (
     <group position={[x, 0, z]} onClick={tap}>
       {/* the science scout from the ASTRA trainer (src/vendor/astra), front to the base; its mast camera carries the eye */}
-      <ScoutRover on={on} scale={0.72} />
+      <ScoutRover on={on} scale={ASTRA_SCALE.scout} />
     </group>
   );
 }

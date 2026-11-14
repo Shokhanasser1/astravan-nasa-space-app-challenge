@@ -2,7 +2,7 @@ import { Component, Suspense, useEffect, useMemo, type ReactNode } from 'react';
 import { useThree } from '@react-three/fiber';
 import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
-import { DOOR_AZ, LAYOUT, PARKED_ROVER as SEV } from './layout';
+import { DOOR_AZ, DOOR_R, LAYOUT, PARKED_ROVER as SEV } from './layout';
 import { ICE_CRATER, groundHeight } from './ground';
 
 /**
@@ -13,8 +13,9 @@ import { ICE_CRATER, groundHeight } from './ground';
 const base = `${import.meta.env.BASE_URL}models/nasa-decor/`;
 const toCrater = Math.atan2(ICE_CRATER.x, ICE_CRATER.z);
 const RASSOR = { x: ICE_CRATER.x - Math.sin(toCrater) * 27, z: ICE_CRATER.z - Math.cos(toCrater) * 27, yaw: toCrater };
-const doorX = LAYOUT.habitat[0] + Math.sin(DOOR_AZ) * 2.9;
-const doorZ = LAYOUT.habitat[1] + Math.cos(DOOR_AZ) * 2.9;
+// (just outside the habitat's regolith shield, beside the door)
+const doorX = LAYOUT.habitat[0] + Math.sin(DOOR_AZ) * (DOOR_R + 0.7);
+const doorZ = LAYOUT.habitat[1] + Math.cos(DOOR_AZ) * (DOOR_R + 0.7);
 const BAGS: [number, number, number, number][] = [
   [doorX + Math.cos(DOOR_AZ) * 1.0, 0, doorZ - Math.sin(DOOR_AZ) * 1.0, 0.3],
   [doorX + Math.cos(DOOR_AZ) * 1.5, 0, doorZ - Math.sin(DOOR_AZ) * 1.5, -0.2],
