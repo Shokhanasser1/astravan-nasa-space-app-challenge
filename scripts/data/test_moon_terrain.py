@@ -54,7 +54,7 @@ class SceneFrame(unittest.TestCase):
 
 class BuiltFile(unittest.TestCase):
     def test_site_json_shape(self):
-        path = ROOT / "public" / "oy" / "terrain" / "site.json"
+        path = ROOT / "public" / "data" / "terrain" / "site.json"
         if not path.exists():
             self.skipTest("site.json not built")
         d = json.loads(path.read_text(encoding="utf-8"))

@@ -1,4 +1,4 @@
-// Screenshots + draw calls/triangles of the third-person Moon demo (public/oy/demo/), like shot.mjs for the app.
+// Screenshots + draw calls/triangles of the third-person Moon demo (oy/demo/index.html, src/oy/), like shot.mjs for the app.
 //   node scripts/shot-demo.mjs                  default view, phone 390×844 and laptop 1280×760
 //   node scripts/shot-demo.mjs 'q=low' 'look=0' one shot set per extra address query
 //   SHOT_URL=http://localhost:5173 node scripts/shot-demo.mjs   use a running dev server

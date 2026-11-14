@@ -1,4 +1,4 @@
-"""Real terrain around the base for the third-person Moon demo: public/oy/terrain/site.json.
+"""Real terrain around the base (3D demo and game): public/data/terrain/site.json.
 
 Heights come from NASA LRO LOLA digital elevation models on the NASA GSFC Planetary Geodesy Data Archive:
   near  (±160 m, 5 m grid)   Site01 "Connecting ridge" 5 m/px DEM (Barker et al. 2021)
@@ -11,7 +11,7 @@ direction of lunar longitude 0, where Earth hangs in the sky of the south pole) 
 in the demo's sky (oy_sky.earth.azimuth_deg), so the real skyline sits under the Earth of the panorama.
 Heights are metres above the site, minus the drop of the Moon's curved surface (r² / 2R).
 
-    python -I scripts/data/moon_terrain.py            # writes public/oy/terrain/site.json
+    python -I scripts/data/moon_terrain.py            # writes public/data/terrain/site.json
     python -I scripts/data/moon_terrain.py --preview out.png
 """
 
@@ -152,7 +152,7 @@ def build(sky_path, demo_sky_path):
 
     today = datetime.date.today().isoformat()
     return {
-        "about": "Real terrain around the base (Shackleton–de Gerlache ridge) for public/oy/demo. Label: measured "
+        "about": "Real terrain around the base (Shackleton–de Gerlache ridge) for the 3D scenes. Label: measured "
                  "(LRO LOLA heights) + computed (curvature drop r²/2R, the frame turn). Made by "
                  "scripts/data/moon_terrain.py.",
         "source": {
@@ -185,7 +185,7 @@ def preview(data, path):
 
 
 if __name__ == "__main__":
-    out = ROOT / "public" / "oy" / "terrain" / "site.json"
+    out = ROOT / "public" / "data" / "terrain" / "site.json"
     data = build(ROOT / "src" / "engine" / "sky.json", ROOT / "public" / "oy" / "sky" / "sky.json")
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(data, separators=(",", ":")), encoding="utf-8")

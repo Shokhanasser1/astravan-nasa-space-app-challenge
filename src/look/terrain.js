@@ -1,4 +1,4 @@
-// Real ground of the base site: NASA LRO LOLA heights (public/oy/terrain/site.json, built by
+// Real ground of the base site: NASA LRO LOLA heights (public/data/terrain/site.json, built by
 // scripts/data/moon_terrain.py) + small craters and bumps the 5 m grid cannot show + the graded base pad.
 // Near: a disc of ground around the base (walkable, takes shadows). Far: rings out to 60 km, the real skyline.
 import * as THREE from 'three';

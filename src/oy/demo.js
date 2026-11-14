@@ -1,8 +1,7 @@
 // Oy karvonsaroyi — 3D test demo (brauzer qismi): renderer, osmon, level, personaj, kamera, HUD.
 // O'yin mantig'i game.js da, fizika physics.js da, level/animatsiya yordamchilari world.js da.
 //
-// Ishga tushirish:  cd ~/dev/oy-karvonsaroyi-3d/game3d && python3 -m http.server 8000
-//                   -> http://localhost:8000/demo/        (file:// orqali GLB yuklanmaydi)
+// Ishga tushirish:  npm run dev -> http://localhost:5173/oy/demo/  (Vite page oy/demo/index.html; three.js from npm)
 // URL parametrlari:  ?g=earth|mars|moon   ?level=none (oy_level.glb bo'lsa ham placeholder)   ?props=0   ?debug=1
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
@@ -11,9 +10,10 @@ import { BODY, GRAVITY, GRAVITY_NAMES, jumpHeight } from './physics.js';
 import { buildFallbackLevel, setupCharacter, localBox } from './world.js';
 import { Game } from './game.js';
 import { Input } from './input.js';
-import { createLook } from './look/index.js';   // real LOLA ground, rocks, prints, post (?look=0 = off)
+import { createLook } from '../look/index.js';   // real LOLA ground, rocks, prints, post (?look=0 = off)
 
-const BASE = new URL('../', import.meta.url);          // .../game3d/
+// Assets stay in public/oy/ (GLBs, skies, manifest); the page is /oy/demo/, so they are one folder up.
+const BASE = new URL('../', location.href);
 const at = (p) => new URL(p, BASE).href;
 const $ = (id) => document.getElementById(id);
 const params = new URLSearchParams(location.search);
@@ -38,7 +38,8 @@ async function getJSON(p) {
   }
 }
 
-const draco = new DRACOLoader().setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.7/');
+// Draco decoder from our own server (public/draco, copied from three.js by scripts/copy-decoders.mjs), never a CDN.
+const draco = new DRACOLoader().setDecoderPath(new URL('../../draco/', location.href).href);
 const loader = new GLTFLoader().setDRACOLoader(draco);
 async function loadGLB(p) {
   if (!(await exists(p))) return null;
@@ -346,7 +347,8 @@ async function main() {
   let look = null;
   if (params.get('look') !== '0') {
     try {
-      look = await createLook({ renderer, scene, camera, sun, hemi, env, params, touchFirst, at });
+      const terrainUrl = new URL('../../data/terrain/site.json', location.href).href;
+      look = await createLook({ renderer, scene, camera, sun, hemi, env, params, touchFirst, terrainUrl });
     } catch (e) {
       console.warn('look: plain scene', e);
     }

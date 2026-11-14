@@ -1,7 +1,7 @@
-// The demo's look: real LOLA ground and skyline, rocks, boot prints, dust, reflections, the Sun's glare,
+// The 3D demo's look (src/oy/demo.js): real LOLA ground and skyline, rocks, boot prints, dust, reflections, the Sun's glare,
 // a colour grade, and quality that steps down on slow phones. demo.js calls it; ?look=0 turns it all off.
 //
-//   const look = await createLook({ renderer, scene, camera, sun, hemi, env, params, touchFirst, at });
+//   const look = await createLook({ renderer, scene, camera, sun, hemi, env, params, touchFirst, terrainUrl });
 //   look.dressLevel(levelRoot)   before new Game(): ground, rocks, collision boxes (placeholder level only)
 //   look.attach(game)            after new Game(): boot prints and dust follow the player
 //   look.frame(dt)               every frame, after the Sun has been moved to the player
@@ -65,10 +65,10 @@ void main() {
 }`,
 };
 
-export async function createLook({ renderer, scene, camera, sun, hemi, env, params, touchFirst, at }) {
+export async function createLook({ renderer, scene, camera, sun, hemi, env, params, touchFirst, terrainUrl }) {
   const tierName = TIERS[params.get('q')] ? params.get('q') : touchFirst ? 'low' : 'high';
   const tier = { ...TIERS[tierName] };
-  const site = await loadJSON(at('terrain/site.json'));
+  const site = await loadJSON(terrainUrl);
   const H = new Heights(site);
   const sunDir = env.sunDir.clone().normalize();
 

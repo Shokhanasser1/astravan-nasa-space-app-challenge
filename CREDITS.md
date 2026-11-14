@@ -12,7 +12,7 @@ here (use the `add-asset` skill). This project is not an official NASA product a
 | NASA SDO (AIA 131 Å browse) | per storm week | The real Sun photo on the tablet and in the truth sequence | https://sdo.gsfc.nasa.gov/ |
 | NASA EOSDIS GIBS (MODIS/VIIRS true colour) | per day | The Earth of that day on the globe | https://nasa-gibs.github.io/gibs-api-docs/ |
 | JPL Horizons (check) | per week | Sun direction, Earth position and phase (computed) | https://ssd.jpl.nasa.gov/horizons/ |
-| NASA LRO LOLA heights, NASA GSFC Planetary Geodesy Data Archive: Site01 "Connecting ridge" 5 m/px (Barker et al. 2021) and 80–90°S 20 m/px (Barker et al. 2023) | static | The real ground and skyline around the base in the 3D demo (`public/oy/terrain/site.json`, `scripts/data/moon_terrain.py`) | https://pgda.gsfc.nasa.gov/products/78 · https://pgda.gsfc.nasa.gov/products/90 |
+| NASA LRO LOLA heights, NASA GSFC Planetary Geodesy Data Archive: Site01 "Connecting ridge" 5 m/px (Barker et al. 2021) and 80–90°S 20 m/px (Barker et al. 2023) | static | The real ground and skyline around the base in the 3D demo (`public/data/terrain/site.json`, `scripts/data/moon_terrain.py`) | https://pgda.gsfc.nasa.gov/products/78 · https://pgda.gsfc.nasa.gov/products/90 |
 
 Solar images: "Courtesy of NASA/SDO and the AIA, EVE, and HMI science teams."
 
