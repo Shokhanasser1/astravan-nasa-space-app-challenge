@@ -11,6 +11,7 @@ import { BODY, GRAVITY, GRAVITY_NAMES, jumpHeight } from './physics.js';
 import { buildFallbackLevel, setupCharacter, localBox } from './world.js';
 import { Game } from './game.js';
 import { Input } from './input.js';
+import { createLook } from './look/index.js';   // real LOLA ground, rocks, prints, post (?look=0 = off)
 
 const BASE = new URL('../', import.meta.url);          // .../game3d/
 const at = (p) => new URL(p, BASE).href;
@@ -342,6 +343,14 @@ function fatal(msg) {
 async function main() {
   loadText('Yuklanmoqda / Loading…');
   const [manifest] = await Promise.all([getJSON('manifest.json'), setupSky()]);
+  let look = null;
+  if (params.get('look') !== '0') {
+    try {
+      look = await createLook({ renderer, scene, camera, sun, hemi, env, params, touchFirst, at });
+    } catch (e) {
+      console.warn('look: plain scene', e);
+    }
+  }
 
   let levelRoot = null, levelFrom = 'placeholder (oy_level.glb hali yo\'q)';
   if (params.get('level') !== 'none') {
@@ -355,6 +364,11 @@ async function main() {
     levelRoot = buildFallbackLevel();
     if (params.get('props') !== '0') await decorateFallback(levelRoot);   // ?props=0: boxes only (weak tablets)
   }
+  if (look) {
+    loadText('Yuklanmoqda / Loading: Oy relyefi (NASA LRO LOLA)…');
+    await new Promise((r) => setTimeout(r, 0));
+    look.dressLevel(levelRoot);
+  }
   scene.add(levelRoot);
 
   const cg = await loadGLB('characters/astronaut.glb');
@@ -363,6 +377,7 @@ async function main() {
 
   const gKey = ['moon', 'earth', 'mars'].includes(params.get('g')) ? params.get('g') : 'moon';
   const game = new Game({ levelRoot, character, manifest, gravityKey: gKey });
+  if (look) look.attach(game);
 
   const input = new Input(canvas, {
     stick: $('stick'), knob: $('knob'),
@@ -416,9 +431,15 @@ async function main() {
       hudT = 0.1;
       updateHud(game, levelFrom);
     }
-    renderer.render(scene, camera);
+    if (look) {
+      look.frame(dt);
+      look.render();
+    } else {
+      renderer.render(scene, camera);
+    }
   });
   window.__game = game;   // for poking around in the browser console
+  window.__demo = { renderer, scene, camera, game, input };   // scripts/shot-demo.mjs reads renderer.info
 }
 
 main().catch((e) => {
