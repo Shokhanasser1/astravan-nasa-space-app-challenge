@@ -32,3 +32,6 @@ scripts/data/.env
 # Local Draco decoder (scripts/copy-decoders.mjs) and scene screenshots
 public/draco/
 shots/
+
+# Plan workspaces (executing-plans ledger)
+.superpowers/
