@@ -9,7 +9,7 @@
 | Frame rate | Phone ≥ 30 fps (team target), laptop 60; measured on a mid Android, an iPhone and the pitch laptop at every gate | `?perf` overlay (r3f-perf), Chrome 4× CPU throttle |
 | Scene, phone | < 100k triangles, ~50 draw calls, models < 5 MB, DPR 1–1.5, shadow 1024 | `./shot.sh`, `?perf` |
 | Scene, pc | < 500k triangles, ~100 draw calls, models < 20 MB, DPR ≤ 2, shadow 2048 | same |
-| Input | Tap reacts on pointerdown; drag follows the finger | Real phone |
+| Input | Press feedback on pointerdown, the action on pointerup (moved < 10 px); drag follows the finger | Real phone |
 
 Skeleton (13 Nov): 46k triangles, 140 draw calls → bring calls down to ~60 (instancing, one mesh per building,
 only big bodies cast shadows, storm in one draw call). Concept 3.0 measured Design 2.0's scene at 280k triangles, three times the phone limit: optimize models with

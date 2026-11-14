@@ -13,8 +13,8 @@ backup links:  GitHub Pages (every push)  ·  Cloudflare Pages (frozen copy befo
 ```
 
 Everything runs in Docker Compose (`server/docker-compose.yml`): `caddy:2-alpine` and PocketBase 0.40.6 built
-from the official release binary. The game itself needs no server: if the VPS is down, the Pages link works
-and results wait in the device outbox.
+from the official release binary. The game itself needs no server: if the VPS is down, the Pages link works.
+(The device outbox exists only if `sendResults` is ever turned on; for the hackathon it is off.)
 
 ## Database on your laptop (start here)
 
@@ -58,9 +58,10 @@ applies it on the next deploy (automigrate is off there, so the server schema co
   (no restart needed).
 - **Logs**: `docker compose logs -f caddy` / `pocketbase`. Health: `https://<DOMAIN>/api/health`.
 - **Backups**: PocketBase admin → Settings → Backups (create one before judging), or copy `/srv/hb7/pb_data`.
-- **Results**: admin UI → collections `playtests` and `runs`; export as CSV/JSON for the page's "before → after" number.
+- **Results**: none for the hackathon (`sendResults = false`). The "before → after" number from the kids' trial is
+  counted on the device and written down by hand (`submission-check`). The collections below are dormant.
 
-## Data rules
+## Data rules (dormant — apply only if the team turns `sendResults` on)
 
 - Collections are created by migrations in `server/pb_migrations/` only (admin schema controls are hidden).
 - Anyone may create records (the game posts without login); nobody but the superuser can read them.

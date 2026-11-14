@@ -1,4 +1,4 @@
-# Data (owner Sarvar)
+# Data (lane Data — Shoxjahon aka's Claude sessions; he reviews the numbers)
 
 All NASA data is fetched and checked at build time, trimmed, and shipped with the game (`src/engine/` for
 weeks and sky, `public/data/media/` for images). The game never calls
@@ -11,8 +11,9 @@ a NASA server while it runs. Every on-screen number has one of four labels: **me
 |---|---|---|
 | `src/engine/weeks.json` (imported, bundled) | 14 real weeks (2012–2024): per day date, mean/max µGy/h, hours measured, ratio, level 0–4, alert, flares (DONKI FLR notifications), particles (DONKI SEP) | measured (levels: rule) |
 | `src/engine/sky.json` | per week, per day: Sun azimuth, Earth elevation and lit fraction; site near Shackleton–de Gerlache ridge | computed |
-| `public/data/media/<week>/sdo-<hhmm>.jpg` | SDO 131 Å browse image before the flare and at the peak (1024 px) | measured |
-| `public/data/media/<week>/earth-<date>.jpg` | GIBS true-colour Earth for each day, 2048×1024, wrapped on the globe | measured |
+| `public/data/media/<week>/sdo-before.webp`, `sdo-peak.webp` | SDO 131 Å browse image before the flare and at the peak | measured |
+| `public/data/media/<week>/earth-<date>.webp` | GIBS true-colour Earth for each day, wrapped on the globe | measured |
+| `public/data/media/<week>/manifest.json` | the list of files above with request URL, download date and label — **look files up here**, do not build names by hand | — |
 | `public/data/facts.json` | every number in the game with its source link (fact sheet) | — |
 
 Format of a day in `weeks.json` (concept v2, section 07, real values for 28 Oct 2021):
@@ -24,7 +25,8 @@ Format of a day in `weeks.json` (concept v2, section 07, real values for 28 Oct 
   "particles": [{ "first_seen_utc": "16:35", "channel": ">100 MeV", "source": "DONKI SEP" }] }
 ```
 
-Optional `hourly_ratio` (24 numbers) per day drives the dosimeter hour by hour and the truth-screen curve.
+Optional `hourly` (24 ratios, `null` = no reading that hour) per day drives the dosimeter hour by hour and the
+truth-screen curve.
 TypeScript shapes: `src/engine/week.ts`. `npm run check` validates the files.
 
 ## DONKI connection (checked 2026-11-14)

@@ -1,8 +1,10 @@
 # Game rules (for agents)
 
 Plain-text copy of concept v2, sections 05–10 (numbers read from the PDF pages). The **authority is
-`rules_engine.py`** and its port `src/engine/rules.ts`: if this file and the engine disagree, the engine wins and
-this file gets fixed. Labels: levels are measured (DONKI + LRO CRaTER); wall, shelter, strength and scores are game rules.
+`rules_engine.py`**: if this file and the Python engine disagree, the Python wins and this file gets fixed. Until the
+Python file is committed, this file and the golden numbers in `plans.test.ts` are the authority over
+`src/engine/rules.ts` — the TypeScript is fixed to match them, never the reverse. Labels: the dose ratio is measured (LRO CRaTER) and flares are measured (DONKI); the 0–4 level cut points, wall,
+shelter, strength and scores are game rules.
 
 ## Day flow (same order every day)
 
@@ -15,7 +17,7 @@ this file gets fixed. Labels: levels are measured (DONKI + LRO CRaTER); wall, sh
 Day 1: Life Support, Garden, Explore only, no card. Day 2: Workshop opens, first card. Days 3–5: cards; in stormy
 weeks the warning and alert fall here; family call on Day 4. Day 6: garden result. Day 7: launch.
 
-## Gauges
+## State quantities (only Energy, Air and water, Dose are gauges on the visor)
 
 | Gauge | Start | How it moves |
 |---|---|---|

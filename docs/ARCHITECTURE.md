@@ -7,7 +7,7 @@ around it: tests and CI, offline play, quality tiers, checks, hosting. Stack and
 ## 1. The system in one picture
 
 ```
- BUILD TIME (lane F, scripts)                     RUN TIME (phone or laptop browser; offline after the first visit)
+ BUILD TIME (lane Data, scripts)                  RUN TIME (phone or laptop browser; offline after the first visit)
  ─────────────────────────────                    ──────────────────────────────────────────────────────────────────
  DONKI + RadLab (LRO CRaTER) ─► weeks.json ─┐      ┌───────────────────────────── React page ─────────────────────────────┐
  PyEphem / JPL Horizons      ─► sky.json   ─┼────► │ engine/  rules.ts · weeks.json · sky.json   pure functions (lane A)   │
@@ -31,15 +31,15 @@ off (`features.sendResults = false`) in case the team ever changes that answer.
 
 ```
 src/
-  engine/  rules.ts  weeks.json  sky.json  week.ts  plans.test.ts      lane A — Samandar
-  state/   game.ts (View, Model, Action, reducer, toView)              lane B — Samandar
+  engine/  rules.ts  weeks.json  sky.json  week.ts  plans.test.ts      lane A — engine session
+  state/   game.ts (View, Model, Action, reducer, toView)              lane B — engine session
   scene/   Stage.tsx  BaseScene.tsx  Light.tsx  quality.ts             lane C — Shoxjahon aka
            Terrain  Storm  Rig (first person, 6 points)  parts/{Habitat Garden Workshop Lander Scout SolarWing Hub Dish}
   ui/      Visor (day+level, 3 gauges, radio line, target rings, edge state), WristTablet, Start, Truth  lane D — Asilbek
   i18n/    <lang>/{ui,scene,story,engine,data}.json  t.ts   keys per lane; words by Aminjon
   audio/   audio.ts  dosimeter.ts      config/ features.ts   lib/ storage.ts labels.ts   net/ api.ts (off)
-public/models/  hab.glb lander.glb …    public/data/media/<week>/  sdo-*.jpg earth-*.jpg    public/fallback/base.webp
-docs/    scenario.md  rules.md  strings.md  layout.md  (plain text from the PDFs, for agents)
+public/models/<pack>/  hab.glb lander.glb …    public/data/media/<week>/  manifest.json sdo-*.webp earth-*.webp    public/fallback/base.webp
+docs/    rules.md  layout.md  DATA.md  (plain text from the PDFs, for agents)
 CLAUDE.md  shot.sh
 ```
 
@@ -54,8 +54,9 @@ result(state, week)                               -> { crew, science, title, blo
 alloc = { ls, gh, build, sc, launch, shelter }
 ```
 
-`src/engine/rules.ts` is a **stub** with these signatures (fixed values, no rules) so lanes C and D can work
-today. Lane A replaces the file with the port, names and numbers identical to Python. `plans.test.ts`
+`src/engine/rules.ts` started as a stub (`ENGINE_IS_STUB`) so lanes C and D could work; on 14 Nov it became the port
+written from `docs/rules.md` (`ENGINE_IS_STUB = false`, open choices in `docs/specs/2026-11-14-engine.md`). When
+`rules_engine.py` arrives, lane A ports it over this file, names and numbers identical to Python. `plans.test.ts`
 (week 2021-10-25, cards Shadow day 2 and Ice day 3): A → 7/14, 77 % blocked, "Balance Master"; B → 3/19; C → 8/9.
 Pure: no React, three, `Date.now`, unseeded random.
 
@@ -73,7 +74,7 @@ type View = {
 }
 ```
 
-Only Samandar changes `View`. Note: the work plan names the workshop `build` in `alloc`, the developer guide `ws`
+Only the engine owner (Shoxjahon aka's engine session) changes `View`. Note: the work plan names the workshop `build` in `alloc`, the developer guide `ws`
 in `View`; `toView` maps one to the other. Lane B adds: cards, alert, emergency day, express mission (starts at
 day 4, ends in 90 s), before/after questions (counted on the device), saving to localStorage.
 
@@ -95,14 +96,16 @@ day 4, ends in 90 s), before/after questions (counted on the device), saving to 
 
 ## 6. UI (lane D, Asilbek)
 
-Visor UI, no floating modal windows (Dizayn 2.0 §04): day + level top centre, three gauges bottom, one radio line,
+Visor UI, no floating modal windows (Dizayn 2.0 §04): day + radiation level top centre, three gauges bottom, one radio line,
 target rings, visor edge state; price/result and night log on the wrist tablet; batteries are scene objects.
-Levels ★/★★/★★★ change text length and data depth only. DOM above the Canvas. Every button shows its price before it is pressed (`model.preview`). Undo until
+Difficulty ★/★★/★★★ changes text length and data depth, and the engine settings in `docs/rules.md` (★: 7 batteries,
+3 simple cards, two shelter buttons). DOM above the Canvas. Every button shows its price before it is pressed (`model.preview`). Undo until
 "Confirm day". ≤ 8 words per instruction (★ ≤ 5, read aloud). Tap targets ≥ 48 px. Fits 360×640.
-Labels in 3D: DOM elements placed by camera projection (skeleton's `Project`), not drei `<Html>`.
+Labels in 3D: DOM elements placed by camera projection (a small projector component in `src/scene/` writes their
+position from a ref each frame — to be created; not drei `<Html>`).
 Truth curve: one SVG path, log axis, no chart library.
 
-## 7. Data (lane F) — `docs/DATA.md`
+## 7. Data (lane Data — Shoxjahon aka's Claude sessions) — `docs/DATA.md`
 
 `weeks.json` (14 weeks), `sky.json`, SDO and GIBS images per week, `facts.json`. Four labels on screen:
 measured, computed, game rule, story.

@@ -15,7 +15,8 @@ south-east. Flat ground for 11 m around the base, craters beyond, a ridge on the
 | Antenna / Dish | `Dish` / `dish.glb` | 10.5 | −2.5 | — (module) |
 
 Rules (developer guide §03–§06):
-- The camera is not in the child's hands: no free orbit; it floats and turns to the event (`view.focus`).
+- No free orbit and no free walking: the child looks around with one finger from a standing point (final version);
+  the camera moves only by floating ~1 s to another standing point, and turns to the event by itself (`view.focus`).
 - The Sun moves along the horizon like the real one: one lap = 29.5 days, ~12° a day; shadows turn as much.
   Sun elevation 1.5° (concept 3.0). Azimuth per day from `sky.json`.
 - Tap a building = add a battery (`onTap('ls' | 'gh' | 'ws' | 'sc' | 'launch')`): a light on the hub goes out,
