@@ -1,0 +1,106 @@
+{
+  "schema_version": 1,
+  "coordinates": "Three.js: Y yuqori; azimut 0 = +X, 90 = +Z; balandlik 0 = ufq; backgroundRotation = 0",
+  "skies": {
+    "yer_dusk": {
+      "file_4k": "yer_dusk_4k.jpg",
+      "file_2k": "yer_dusk_2k.jpg",
+      "sun": {
+        "azimuth_deg": 60,
+        "elevation_deg": 4,
+        "color": "#ffd2ad",
+        "intensity": 2.2
+      },
+      "hemisphere": {
+        "sky_color": "#a7afc5",
+        "ground_color": "#444d58",
+        "intensity": 0.25
+      }
+    },
+    "xks_orbit": {
+      "file_4k": "xks_orbit_4k.jpg",
+      "file_2k": "xks_orbit_2k.jpg",
+      "sun": {
+        "azimuth_deg": 35,
+        "elevation_deg": 35,
+        "color": "#fff5e8",
+        "intensity": 3.0
+      },
+      "hemisphere": {
+        "sky_color": "#26374f",
+        "ground_color": "#122237",
+        "intensity": 0.25
+      },
+      "geometry": {
+        "earth_radius_km": 6371,
+        "altitude_km": 400,
+        "horizon_dip_deg": 19.792596531144177
+      }
+    },
+    "oy_sky": {
+      "file_4k": "oy_sky_4k.jpg",
+      "file_2k": "oy_sky_2k.jpg",
+      "sun": {
+        "azimuth_deg": 118,
+        "elevation_deg": 10.5,
+        "color": "#fff6e9",
+        "intensity": 3.2
+      },
+      "hemisphere": {
+        "sky_color": "#171b24",
+        "ground_color": "#232323",
+        "intensity": 0.25
+      },
+      "earth": {
+        "azimuth_deg": 212.95797385918723,
+        "elevation_deg": 25,
+        "angular_diameter_deg": 1.9
+      }
+    },
+    "mars_day": {
+      "file_4k": "mars_day_4k.jpg",
+      "file_2k": "mars_day_2k.jpg",
+      "sun": {
+        "azimuth_deg": 45,
+        "elevation_deg": 32,
+        "color": "#fff0dc",
+        "intensity": 2.4
+      },
+      "hemisphere": {
+        "sky_color": "#dab08d",
+        "ground_color": "#805f4d",
+        "intensity": 0.25
+      }
+    },
+    "mars_sunset": {
+      "file_4k": "mars_sunset_4k.jpg",
+      "file_2k": "mars_sunset_2k.jpg",
+      "sun": {
+        "azimuth_deg": 60,
+        "elevation_deg": 2,
+        "color": "#d4e7ff",
+        "intensity": 1.0
+      },
+      "hemisphere": {
+        "sky_color": "#5c5c64",
+        "ground_color": "#383230",
+        "intensity": 0.25
+      }
+    },
+    "koinot_space": {
+      "file_4k": "koinot_space_4k.jpg",
+      "file_2k": "koinot_space_2k.jpg",
+      "sun": {
+        "azimuth_deg": 35,
+        "elevation_deg": 35,
+        "color": "#fff5e8",
+        "intensity": 2.0
+      },
+      "hemisphere": {
+        "sky_color": "#121722",
+        "ground_color": "#050609",
+        "intensity": 0.25
+      }
+    }
+  }
+}

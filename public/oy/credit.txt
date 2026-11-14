@@ -1,0 +1,5 @@
+public/oy — the team's third-person Moon demo (Oy karvonsaroyi engine), static files outside the Vite app.
+3D models: NASA 3D Resources / NASA Science (NASA/JPL-Caltech): HDU, SEV, RASSOR, crew lock bag, Earth globe;
+astronaut from the NASA EMU model, rigged and animated in Blender. Logos, flags and lettering painted out.
+Skies: made in Blender from NASA imagery (Blue Marble, SVS CGI Moon Kit, Viking). Not endorsed by NASA.
+Code: Claude Code agents for Samandar (see docs/AI-USE.md). Three.js loaded from cdn.jsdelivr.net (MIT).

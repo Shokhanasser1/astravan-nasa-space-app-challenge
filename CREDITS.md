@@ -54,3 +54,4 @@ Solar images: "Courtesy of NASA/SDO and the AIA, EVE, and HMI science teams."
 | Claude Code skill `webapp-testing` | Apache-2.0 (Anthropic) | https://github.com/anthropics/skills |
 | Claude Code skills `react-performance`, `vite-patterns`, `e2e-testing`, `ui-demo`, `i18n-sync` | MIT (Affaan Mustafa, ECC) | `.claude/skills/*/LICENSE` |
 | three.js guidelines in `.claude/rules/three.md` (adapted) | MIT (ui-ux-pro-max) | https://github.com/nextlevelbuilder/ui-ux-pro-max-skill |
+| `public/oy/` third-person Moon demo: NASA 3D Resources models (HDU, SEV, RASSOR, crew lock bag, Earth globe), rigged astronaut from the NASA EMU model, Blender skies from NASA imagery; logos painted out | NASA media guidelines; not endorsed by NASA | `public/oy/credit.txt` |
