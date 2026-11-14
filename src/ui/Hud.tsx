@@ -6,6 +6,9 @@ import { Btn, makeTr } from './play/kit';
 import { DayBadge, Gauges, RadioLine, radioKey } from './play/Visor';
 import { NightTablet, PlanTablet } from './play/Tablet';
 import { TruthScreen } from './play/TruthScreen';
+import { WalkStick } from './play/WalkStick';
+import { freeWalk } from '../walk/enabled';
+import { releaseAll, walkInput } from '../walk/input';
 
 /**
  * Lane D (Asilbek). DOM layer above the Canvas. This is the PLAYABLE G2 wiring (14 Nov): every control dispatches
@@ -57,6 +60,12 @@ export function Hud({ model, view, dispatch, lang, setLang, sound, setSound, onS
     return () => clearTimeout(id);
   }, [phase, screen, model.game?.day, dispatch]);
 
+  // Free walk: only while the game itself is on screen (never behind the start or the end screen).
+  useEffect(() => {
+    walkInput.inGame = screen === 'game';
+    if (screen !== 'game') releaseAll();
+  }, [screen]);
+
   const confirmBlocked = phase === 'plan' && board?.preview?.warning === 'engine.warn.chooseCard';
   const primary =
     phase === 'plan'
@@ -87,6 +96,8 @@ export function Hud({ model, view, dispatch, lang, setLang, sound, setSound, onS
       )}
 
       {screen === 'game' && phase === 'truth' && truth && <TruthScreen truth={truth} dispatch={dispatch} tr={tr} />}
+
+      {freeWalk && screen === 'game' && phase !== 'truth' && phase !== 'launch' && <WalkStick />}
 
       {screen === 'game' && phase !== 'truth' && (
         <div className="flex flex-col gap-2" data-phase={phase}>
