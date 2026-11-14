@@ -30,7 +30,9 @@ Solar images: "Courtesy of NASA/SDO and the AIA, EVE, and HMI science teams."
 
 | Folder | What | Author | Licence | Link |
 |---|---|---|---|---|
-| | | | | |
+| public/models/nasa-base | Six base buildings: hab (after the Habitat Demonstration Unit), lander (Apollo Lunar Module), scout (Space Exploration Vehicle), dish (Deep Space Network 34-meter); garden and workshop team-made after the NASA HDU | NASA 3D Resources; modified by Samandar (team) in Blender, recoloured to the team palette, logos removed (`credit.txt`) | NASA media guidelines; not endorsed by NASA | https://github.com/nasa/NASA-3D-Resources/tree/master/3D%20Models |
+| public/models/nasa-lro | Lunar Reconnaissance Orbiter for the truth screen | NASA 3D Resources; modified by Samandar (team) in Blender, logos removed (`credit.txt`) | NASA media guidelines; not endorsed by NASA | https://github.com/nasa/NASA-3D-Resources/tree/master/3D%20Models |
+| public/models/astronaut | Astronaut, rigged, clips Idle/Walk/Run/Jump/Carry/Pour | NASA 3D Resources "Astronaut"; flags and insignia removed, rigged (23 bones) and animated by Samandar (team) in Blender (`credit.txt`) | NASA media guidelines; not endorsed by NASA | https://science.nasa.gov/3d-resources/astronaut/ |
 
 ## SI (AI) use
 

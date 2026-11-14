@@ -9,6 +9,8 @@ import { LOWER, TIERS, hasWebGL, initialTier, type Tier } from './quality';
 import { Light } from './Light';
 import { BaseScene } from './BaseScene';
 import { Rig } from './Rig';
+import { WalkDebug } from './WalkDebug';
+import { freeWalk } from '../walk/enabled';
 
 // Draco decoder from our own server (copied by scripts/copy-decoders.mjs), never from Google's CDN:
 // the venue Wi-Fi may be down (developer guide §06). Meshopt-compressed models need no decoder file.
@@ -85,6 +87,7 @@ export function Stage({ view, onTap }: { view: View; onTap: (k: Machine) => void
         <Suspense fallback={null}>
           <BaseScene view={view} onTap={onTap} />
           {!overview && <Rig view={view} />}
+          {!overview && freeWalk && <WalkDebug />}
           <Preload all />
         </Suspense>
         {(q.bloom || q.vignette) && (

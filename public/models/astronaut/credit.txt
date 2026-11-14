@@ -1,0 +1,11 @@
+astronaut.glb — playable astronaut (skinned, 23 bones, clips Idle/Walk/Run/Jump/Carry/Pour)
+Mesh and suit texture: NASA 3D Resources, model "Astronaut" (id: astronaut) — https://github.com/nasa/NASA-3D-Resources , https://science.nasa.gov/3d-resources/
+Licence: NASA media usage guidelines (free to use with credit; no NASA insignia, no endorsement implied).
+Team-made (2026-11-14, Blender 5.3 scripts): the US flags, NASA insignia and mission patch painted into the texture were
+painted over; skeleton (Mixamo-style names + BagSocket) and the six animation clips were made by the team
+(oy-karvonsaroyi-3d/game3d/characters/build_astronaut.py). Optimized with `npm run glb -- … --flatten false`.
+Credit line: "Astronaut model: NASA 3D Resources, rigged and animated by the team. Not endorsed by NASA."
+Model pages: https://science.nasa.gov/3d-resources/astronaut/ , https://github.com/nasa/NASA-3D-Resources/tree/master/3D%20Models/Astronaut
+Modified by Samandar (team) in Blender, 2026-11-14 (logos painted over, rig, clips).
+Blender Python scripts written with Claude Code (Claude Opus 5.5); the model is NASA-derived, not AI-generated.
+Not endorsed by NASA.

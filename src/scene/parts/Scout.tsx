@@ -2,6 +2,7 @@ import { Instance, Instances } from '@react-three/drei';
 import { LAYOUT } from '../layout';
 import { GLOW, MAT } from './materials';
 import type { TapHandler } from './tap';
+import { Shell } from '../models/Shell';
 
 const WHEELS: [number, number][] = [
   [-0.58, -0.5],
@@ -15,15 +16,25 @@ export function Scout({ on, tap }: { on: boolean; tap: TapHandler }) {
   const [x, z] = LAYOUT.scout;
   return (
     <group position={[x, 0, z]} onClick={tap}>
-      <mesh position={[0, 0.55, 0]} material={MAT.panel} castShadow receiveShadow>
-        <boxGeometry args={[1, 0.45, 1.4]} />
-      </mesh>
-      <Instances limit={4} material={MAT.glass} frustumCulled={false}>
-        <cylinderGeometry args={[0.22, 0.22, 0.15, 14]} />
-        {WHEELS.map(([wx, wz]) => (
-          <Instance key={`${wx}${wz}`} position={[wx, 0.22, wz]} rotation={[0, 0, Math.PI / 2]} />
-        ))}
-      </Instances>
+      {/* the model's front (+Z) turns to face the base (−Z) */}
+      <Shell
+        name="scout"
+        turn={Math.PI}
+        grey={
+          <>
+            <mesh position={[0, 0.55, 0]} material={MAT.panel} castShadow receiveShadow>
+              <boxGeometry args={[1, 0.45, 1.4]} />
+            </mesh>
+            <Instances limit={4} material={MAT.glass} frustumCulled={false}>
+              <cylinderGeometry args={[0.22, 0.22, 0.15, 14]} />
+              {WHEELS.map(([wx, wz]) => (
+                <Instance key={`${wx}${wz}`} position={[wx, 0.22, wz]} rotation={[0, 0, Math.PI / 2]} />
+              ))}
+            </Instances>
+          </>
+        }
+      />
+      {/* the mast stays in code with both looks: it carries the eye */}
       <mesh position={[0, 1.2, -0.45]} material={MAT.panel}>
         <cylinderGeometry args={[0.03, 0.03, 0.9, 6]} />
       </mesh>

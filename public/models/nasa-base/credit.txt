@@ -1,0 +1,22 @@
+HOME BY SEVEN - six base buildings (hab, garden, workshop, lander, scout, dish), 2026-11-14
+
+Based on NASA 3D Resources (https://science.nasa.gov/3d-resources/ ; GitHub mirror
+https://github.com/nasa/NASA-3D-Resources/tree/master/3D%20Models):
+- hab.glb      <- "Habitat Demonstration Unit" (model id hdu-1: the domed habitat module, part 1)
+                  https://science.nasa.gov/3d-resources/habitat-demonstration-unit/
+                  https://github.com/nasa/NASA-3D-Resources/tree/master/3D%20Models/Habitat%20Demonstration%20Unit
+- lander.glb   <- "Apollo Lunar Module" (model id apollo-lm)
+                  https://github.com/nasa/NASA-3D-Resources/tree/master/3D%20Models/Apollo%20Lunar%20Module
+                  https://data.nasa.gov/dataset/nasa-3d-models-apollo-lunar-module
+- scout.glb    <- "Space Exploration Vehicle" (model id sev)
+                  https://github.com/nasa/NASA-3D-Resources/tree/master/3D%20Models/Space%20Exploration%20Vehicle
+- dish.glb     <- "Deep Space Network 34-meter" (model id dsn-34m), shrunk to a small surface antenna
+                  https://github.com/nasa/NASA-3D-Resources/tree/master/3D%20Models/Deep%20Space%20Network%2034-meter
+- garden.glb, workshop.glb: team-made in Blender after the NASA HDU (garden after the NASA-funded Lunar
+  Greenhouse prototype, University of Arizona CEAC). No NASA geometry needed.
+
+Modified by Samandar (team) in Blender; garden and workshop team-made after NASA HDU.
+Recoloured to the team palette (panel, gold, glass, glow): no NASA textures, logos, lettering, flags or patches.
+Blender Python scripts written with Claude Code (Claude Opus 5.5); the models are NASA-derived, not AI-generated.
+Optimized with gltf-transform (meshopt, no Draco): npm run glb.
+Not endorsed by NASA.

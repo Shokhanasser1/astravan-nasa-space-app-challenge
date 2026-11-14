@@ -8,11 +8,20 @@ import { DOOR_AZ, LAYOUT } from './layout';
 import { EYE, FOCUS, MARKERS, POINTS, phasePoint, type PointId, type Vec3 } from './points';
 import { GLOW } from './parts/materials';
 import { TAP_PX, tapOnly } from './parts/tap';
+import { groundHeight } from './ground';
+import { freeWalk } from '../walk/enabled';
+import { listenKeys, walkInput } from '../walk/input';
+import { createWalker, walkDebug } from '../walk/walker';
+import { INSIDE, OUTSIDE } from '../walk/world';
 
 /**
  * First-person rig (final version, Dizayn 2.0). Eye 1.7 m; six standing points + inside; one-finger drag looks
  * around (yaw free, pitch ±35°); tap a glowing marker to float there in ~1 s; never teleports, never rolls, no shake.
  * The point and the angles are scene-local refs/state, never part of the View.
+ *
+ * Free walk (features.freeWalk, or ?walk in the address; src/walk/): once the camera has arrived at a point, W A S D,
+ * the arrows or the touch stick walk on from it, stopped by the base's hitboxes. The points, the markers and the
+ * floats all stay; a float always wins over the keys. Same motion-sickness rules: no bob, no roll, turn ≤ 60°/s.
  */
 const reduced = typeof window !== 'undefined' && Boolean(window.matchMedia?.('(prefers-reduced-motion: reduce)').matches);
 const MAX_PITCH = THREE.MathUtils.degToRad(35);
@@ -40,6 +49,11 @@ export function Rig({ view }: { view: View }) {
   const invalidate = useThree((s) => s.invalidate);
   const aspect = useThree((s) => s.size.width / Math.max(1, s.size.height));
   const [point, setPoint] = useState<PointId>(() => phasePoint(view.phase) ?? 'hub');
+  // Free walk: `hop` asks for a float even to the point you last stood at (you may have walked away from it), and
+  // `roaming` says you have, so that point's marker shows again.
+  const [hop, setHop] = useState(0);
+  const [roaming, setRoaming] = useState(false);
+  const walker = useMemo(() => (freeWalk ? createWalker() : null), []);
   const s = useRef({
     from: new THREE.Vector3(),
     to: new THREE.Vector3(),
@@ -62,8 +76,16 @@ export function Rig({ view }: { view: View }) {
   // Phase → default point (run and unknown phases: stay).
   useEffect(() => {
     const p = phasePoint(view.phase);
-    if (p) setPoint(p);
-  }, [view.phase]);
+    if (p) {
+      setPoint(p);
+      if (walker) setHop((h) => h + 1);
+    }
+    // No walking while the lander lifts off or the truth sequence plays.
+    walkInput.phaseOk = view.phase !== 'launch' && view.phase !== 'truth';
+  }, [view.phase, walker]);
+
+  // Free walk: the keys. (The scene draws on demand, so every key press asks for a frame.)
+  useEffect(() => (walker ? listenKeys(invalidate) : undefined), [walker, invalidate]);
 
   // New point → float there and turn to its default look.
   useEffect(() => {
@@ -83,8 +105,10 @@ export function Rig({ view }: { view: View }) {
       [s.yawT, s.pitchT] = anglesTo(s.to, P.look);
       s.yawT = s.yaw + wrap(s.yawT - s.yaw);
     }
+    walker?.stop();
+    setRoaming(false);
     invalidate();
-  }, [point, camera, invalidate, s]);
+  }, [point, hop, camera, invalidate, s, walker]);
 
   // view.focus → turn towards the event, without moving.
   useEffect(() => {
@@ -154,10 +178,22 @@ export function Rig({ view }: { view: View }) {
       s.yawT = s.yaw + wrap(s.yawT - s.yaw);
     }
 
+    let walking = false;
     if (s.t < 1) {
       s.t = Math.min(1, s.t + dt / s.dur);
       camera.position.lerpVectors(s.from, s.to, ease(s.t));
     } else {
+      // (Never during the launch or the truth sequence: there the camera is not standing on the ground.)
+      if (walker && walkInput.phaseOk) {
+        // Walk on from the point: the standing spot itself moves, and solid things stop it (src/walk/).
+        const inside = point === 'inside';
+        walking = walker.step(s.to, s.yaw, inside ? INSIDE : OUTSIDE, dt);
+        if (!inside) s.to.y = groundHeight(s.to.x, s.to.z) + EYE;
+        s.yawT += walker.turn() * MAX_TURN * dt;
+        walkDebug.inside = inside;
+        // (Once, not every frame: the marker of the point you left comes back.)
+        if (!roaming && !inside && Math.hypot(s.to.x - POINTS[point].pos[0], s.to.z - POINTS[point].pos[2]) > 1.2) setRoaming(true);
+      }
       camera.position.copy(s.to);
     }
 
@@ -170,11 +206,23 @@ export function Rig({ view }: { view: View }) {
 
     const [hx, hz] = LAYOUT.habitat;
     camState.inside = Math.hypot(camera.position.x - hx, camera.position.z - hz) < 1.6 && camera.position.y < 3;
-    if (s.t < 1 || Math.abs(dy) > 1e-3 || Math.abs(dp) > 1e-3 || launching) invalidate();
+    if (s.t < 1 || Math.abs(dy) > 1e-3 || Math.abs(dp) > 1e-3 || launching || walking) invalidate();
   });
 
-  const go = useMemo(() => Object.fromEntries([...MARKERS, 'inside'].map((p) => [p, tapOnly(() => setPoint(p as PointId))])), []);
-  const shown = MARKERS.filter((p) => p !== point);
+  const go = useMemo(
+    () =>
+      Object.fromEntries(
+        [...MARKERS, 'inside'].map((p) => [
+          p,
+          tapOnly(() => {
+            setPoint(p as PointId);
+            setHop((h) => h + 1);
+          }),
+        ]),
+      ),
+    [],
+  );
+  const shown = MARKERS.filter((p) => roaming || p !== point);
   const floor = (p: PointId) => POINTS[p].pos[1] - EYE;
   const door: Vec3 = [LAYOUT.habitat[0] + Math.sin(DOOR_AZ) * 1.73, 1.1, LAYOUT.habitat[1] + Math.cos(DOOR_AZ) * 1.73];
   const hideMarkers = launching || view.phase === 'truth';

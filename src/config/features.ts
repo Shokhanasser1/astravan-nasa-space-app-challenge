@@ -8,6 +8,11 @@ export const features = {
   // Team extension (14 Nov): playable astronaut with movement, collisions and physics. Off until it plays a whole
   // week on a phone; the first-person rig is the fallback.
   character: false,
+  // NASA-based buildings (public/models/nasa-base/) replace the grey shells, all six or none; ?models = one visit.
+  nasaModels: false,
+  // First-person free walking with hitboxes (src/walk/): W A S D, arrows or the touch stick, on top of the six
+  // standing points. No physics engine, no new dependency. Try it on any build with ?walk in the address.
+  freeWalk: false,
   light: true, // 2 · one Sun, long shadows, tone mapping
   sound: true, // 3 · breath, Quindar, inside/outside (cut → breath + radio tone only)
   invisibleStorm: true, // 4 · dosimeter, scout-cam snow, sparks (cut → dosimeter only)

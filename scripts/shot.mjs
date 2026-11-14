@@ -2,6 +2,7 @@
 //   ./shot.sh                                  default view, phone 390×844 and laptop 1280×760
 //   ./shot.sh '{"plant":0}' '{"plant":4,"wall":2}'   one shot per view override (merged into the real view)
 //   SHOT_URL=http://localhost:5173 ./shot.sh   use a running dev server instead of a fresh build
+//   SHOT_PARAMS=models ./shot.sh               extra address parameters (here: the NASA models, features.nasaModels)
 // Prints renderer.info (draw calls, triangles) for each shot. Images go to shots/ (git-ignored).
 import { spawn } from 'node:child_process';
 import { mkdirSync } from 'node:fs';
@@ -37,7 +38,7 @@ try {
   for (const [i, v] of views.entries()) {
     for (const s of sizes) {
       const page = await browser.newPage({ viewport: { width: s.width, height: s.height } });
-      const url = `${base}/?shot&view=${encodeURIComponent(v)}`;
+      const url = `${base}/?shot&view=${encodeURIComponent(v)}${process.env.SHOT_PARAMS ? `&${process.env.SHOT_PARAMS}` : ''}`;
       await page.goto(url);
       await page.waitForSelector('canvas', { timeout: 30000 });
       await page.waitForTimeout(1500);
