@@ -27,5 +27,15 @@ test('loads, starts and plays the first mission to the truth screen', async ({ p
   await expect(truth).toBeVisible();
   await expect(page.getByTestId('truth-dates')).toContainText('2021-10-25');
   await expect(page.getByTestId('truth-title')).toHaveAttribute('data-title', /.+/);
+  // The real Earth (EPIC) and Moon (SVS Dial-A-Moon) of the storm day: public/data/media/2021-10-25/manifest.json.
+  await expect(page.getByTestId('home-truth')).toBeVisible();
+  await page.getByTestId('truth').screenshot({ path: test.info().outputPath('truth.png') });
+  // 360×640: the reveal is taller than the screen, so the panel stays inside it and scrolls (Play again reachable).
+  await page.setViewportSize({ width: 360, height: 640 });
+  const box = await truth.boundingBox();
+  expect(box!.y + box!.height).toBeLessThanOrEqual(640);
+  expect(await truth.evaluate((el) => getComputedStyle(el).overflowY)).toBe('auto');
+  await page.getByTestId('again').scrollIntoViewIfNeeded();
+  await expect(page.getByTestId('again')).toBeInViewport();
   expect(errors).toEqual([]);
 });

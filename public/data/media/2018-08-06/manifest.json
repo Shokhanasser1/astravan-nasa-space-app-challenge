@@ -4,7 +4,9 @@
   "flare": null,
   "credits": {
     "sdo": "Courtesy of NASA/SDO and the AIA, EVE, and HMI science teams.",
-    "gibs": "NASA EOSDIS GIBS / Worldview"
+    "gibs": "NASA EOSDIS GIBS / Worldview",
+    "epic": "NASA EPIC Team (DSCOVR)",
+    "svs": "NASA/Goddard Space Flight Center Scientific Visualization Studio"
   },
   "files": [
     {
@@ -62,6 +64,23 @@
       "original": "VIIRS_SNPP_CorrectedReflectance_TrueColor 2018-08-12",
       "credit": "gibs",
       "label": "measured"
+    },
+    {
+      "file": "epic.webp",
+      "source": "https://epic.gsfc.nasa.gov/archive/natural/2018/08/09/jpg/epic_1b_20180809114031.jpg",
+      "original": "epic_1b_20180809114031.jpg",
+      "credit": "epic",
+      "label": "measured",
+      "time": "2018-08-09T11:35Z"
+    },
+    {
+      "file": "moon.webp",
+      "source": "https://svs.gsfc.nasa.gov/vis/a000000/a004600/a004604/frames/730x730_1x1_30p/moon.5293.jpg",
+      "original": "moon.5293.jpg",
+      "credit": "svs",
+      "label": "computed",
+      "time": "2018-08-09T12:00Z",
+      "phase_pct": 5.52
     }
   ]
 }

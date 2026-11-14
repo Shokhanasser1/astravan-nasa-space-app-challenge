@@ -4,6 +4,8 @@ Which flare a week's Sun pictures show (storm_flare): the strongest flare on the
 reaches its maximum, or the day before; if neither day has one, the strongest earlier in the week; in a week whose
 dose never rises (level 0 all week), the strongest flare of the week. A week without any flare gets one calm Sun
 (fetch_media --quiet). Begin and peak times come from the raw DONKI FLR download (npm run donki -- --weeks).
+Every week also gets the Moon as Earth saw it at that hour (SVS Dial-A-Moon) and, from mid-2015, EPIC's photo of
+the whole Earth (fetch_media.home_jobs).
 
 Usage: python -I scripts/data/media_all.py [--force]   (weeks that already have a manifest are skipped)
 """
@@ -63,13 +65,13 @@ def main(argv: list[str]) -> int:
         pick = storm_flare(w['days'])
         try:
             if pick is None:
-                m = build_week(week, None, None, out, ROOT / 'scripts' / 'data' / 'raw' / 'media' / week)
+                m = build_week(week, None, None, out, ROOT / 'scripts' / 'data' / 'raw' / 'media' / week, home=True)
                 what = 'quiet week: calm Sun, day 4 12:00 UTC'
             else:
                 n, cls, peak = pick
                 date = w['days'][n - 1]['date']
                 begin, peak_t = donki_times(week, date, cls, peak)
-                m = build_week(week, begin, peak_t, out, ROOT / 'scripts' / 'data' / 'raw' / 'media' / week)
+                m = build_week(week, begin, peak_t, out, ROOT / 'scripts' / 'data' / 'raw' / 'media' / week, home=True)
                 what = f'{cls} day {n} {date} peak {peak} UTC'
         except RuntimeError as e:
             print(f'{week}: error: {e}', file=sys.stderr)

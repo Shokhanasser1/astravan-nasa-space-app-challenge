@@ -14,9 +14,11 @@ from PIL import Image  # noqa: E402
 
 from fetch_media import (  # noqa: E402
     build_week,
+    epic_url,
     fill_gaps,
     gibs_fill_layer,
     is_blinded,
+    pick_epic,
     gibs_layer,
     gibs_url,
     looks_like_image,
@@ -284,6 +286,86 @@ class EarthGapsBefore2016(unittest.TestCase):
             self.assertIn('LAYERS=MODIS_Terra', earth['source'])
             self.assertIn('LAYERS=MODIS_Aqua', earth['fill'])
             self.assertEqual(sum('LAYERS=MODIS_Aqua' in u for u in h.urls), 7)
+
+
+class HomeViews(unittest.TestCase):
+    """home=True: EPIC's photo of the whole Earth (the storm day, else the nearest day of the week with one) and
+    the Moon as Earth saw it at the flare's hour (SVS Dial-A-Moon)."""
+
+    EPIC = [{'image': 'epic_1b_20211028000831', 'date': '2021-10-28 00:08:31'},
+            {'image': 'epic_1b_20211028152000', 'date': '2021-10-28 15:20:00'},
+            {'image': 'epic_1b_20211028213000', 'date': '2021-10-28 21:30:00'}]
+    MOON = {'image': {'url': 'http://svs.gsfc.nasa.gov/vis/a000000/a004800/a004874/frames/730x730_1x1_30p/moon.7215.jpg',
+                      'filename': 'moon.7215.jpg'}, 'time': '2021-10-28T16:00', 'phase': 46.5}
+
+    def fake_fetch(self, epic_days=('2021-10-28',)):
+        def fetch(url):
+            self.urls.append(url)
+            if url.endswith('/2021/10/28/'):
+                return b'20211028_141532_1024_0131.jpg 20211028_153522_1024_0131.jpg'
+            if '/api/natural/date/' in url:
+                day = url[-10:]
+                entries = [{'image': e['image'].replace('20211028', day.replace('-', '')), 'date': day + e['date'][10:]}
+                           for e in self.EPIC]
+                return json.dumps(entries if day in epic_days else []).encode()
+            if '/api/dialamoon/' in url:
+                return json.dumps(self.MOON).encode()
+            return jpeg(64, 32) if 'gibs' in url else jpeg(64, 64)
+        return fetch
+
+    def run_week(self, d, fetch, week='2021-10-25', begin='2021-10-28T15:17Z', peak='2021-10-28T15:35Z'):
+        return build_week(week, begin, peak, out_dir=Path(d) / 'out', raw_dir=Path(d) / 'raw', fetch=fetch, home=True)
+
+    def test_pick_epic_nearest_in_time(self):
+        when = datetime(2021, 10, 28, 15, 35, tzinfo=UTC)
+        self.assertEqual(pick_epic(self.EPIC, when)['image'], 'epic_1b_20211028152000')
+        self.assertIsNone(pick_epic([], when))
+
+    def test_epic_url(self):
+        self.assertEqual(epic_url(self.EPIC[1]),
+                         'https://epic.gsfc.nasa.gov/archive/natural/2021/10/28/jpg/epic_1b_20211028152000.jpg')
+
+    def test_earth_and_moon_in_the_manifest(self):
+        self.urls = []
+        with tempfile.TemporaryDirectory() as d:
+            m = self.run_week(d, self.fake_fetch())
+            files = {f['file']: f for f in m['files']}
+            self.assertEqual(files['epic.webp']['time'], '2021-10-28T15:20Z')
+            self.assertEqual(files['epic.webp']['label'], 'measured')
+            self.assertEqual(files['moon.webp']['label'], 'computed')
+            self.assertEqual(files['moon.webp']['time'], '2021-10-28T16:00Z')
+            self.assertEqual(files['moon.webp']['phase_pct'], 46.5)
+            self.assertTrue(files['moon.webp']['source'].startswith('https://svs.gsfc.nasa.gov/'))
+            self.assertIn('NASA EPIC Team', m['credits']['epic'])
+            self.assertIn('Scientific Visualization Studio', m['credits']['svs'])
+            self.assertIn('https://svs.gsfc.nasa.gov/api/dialamoon/2021-10-28T15:35', self.urls)
+            self.assertTrue((Path(d) / 'out' / 'epic.webp').exists() and (Path(d) / 'out' / 'moon.webp').exists())
+
+    def test_no_epic_on_the_storm_day_takes_the_nearest_day(self):
+        self.urls = []
+        with tempfile.TemporaryDirectory() as d:
+            m = self.run_week(d, self.fake_fetch(epic_days=('2021-10-26', '2021-10-30')))
+            # 28th: none; 27th, 29th: none; 26th and 30th are both two days away → the earlier one, same clock time.
+            epic = next(f for f in m['files'] if f['file'] == 'epic.webp')
+            self.assertEqual(epic['time'], '2021-10-26T15:20Z')
+            asked = [u[-10:] for u in self.urls if '/api/natural/date/' in u]
+            self.assertEqual(asked, ['2021-10-28', '2021-10-27', '2021-10-29', '2021-10-26'])
+
+    def test_before_epic_no_earth_photo_and_no_epic_request(self):
+        self.urls = []
+        h = HelioviewerBefore2016()
+        h.urls = self.urls
+        def fetch(url):
+            if '/api/dialamoon/' in url:
+                self.urls.append(url)
+                return json.dumps(self.MOON).encode()
+            return h.fake_fetch(url)
+        with tempfile.TemporaryDirectory() as d:
+            m = self.run_week(d, fetch, week='2012-01-20', begin='2012-01-23T03:38Z', peak='2012-01-23T03:59Z')
+            names = [f['file'] for f in m['files']]
+            self.assertIn('moon.webp', names)
+            self.assertNotIn('epic.webp', names)
+            self.assertFalse(any('/api/natural/' in u for u in self.urls))
 
 
 class QuietWeek(unittest.TestCase):

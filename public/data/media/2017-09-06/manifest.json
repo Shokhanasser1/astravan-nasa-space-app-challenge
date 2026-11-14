@@ -8,7 +8,8 @@
   },
   "credits": {
     "sdo": "Courtesy of NASA/SDO and the AIA, EVE, and HMI science teams.",
-    "gibs": "NASA EOSDIS GIBS / Worldview"
+    "gibs": "NASA EOSDIS GIBS / Worldview",
+    "svs": "NASA/Goddard Space Flight Center Scientific Visualization Studio"
   },
   "files": [
     {
@@ -73,6 +74,15 @@
       "original": "VIIRS_SNPP_CorrectedReflectance_TrueColor 2017-09-12",
       "credit": "gibs",
       "label": "measured"
+    },
+    {
+      "file": "moon.webp",
+      "source": "https://svs.gsfc.nasa.gov/vis/a000000/a004500/a004537/frames/730x730_1x1_30p/moon.6065.jpg",
+      "original": "moon.6065.jpg",
+      "credit": "svs",
+      "label": "computed",
+      "time": "2017-09-10T16:00Z",
+      "phase_pct": 78.16
     }
   ]
 }

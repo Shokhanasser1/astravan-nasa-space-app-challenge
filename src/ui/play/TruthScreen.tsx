@@ -1,7 +1,7 @@
 import type { Dispatch } from 'react';
 import type { Action, Truth } from '../../state/game';
 import { Btn, Panel, type Tr } from './kit';
-import { Mark, SunTruth } from './Holo';
+import { HomeTruth, Mark, SunTruth } from './Holo';
 
 /**
  * Truth screen (lane D placeholder for G2; the 25-second sequence and the hourly curve come after G2).
@@ -15,7 +15,11 @@ export function TruthScreen({ truth, dispatch, tr }: { truth: Truth; dispatch: D
   const first = truth.days[0]?.date;
   const last = truth.days[truth.days.length - 1]?.date;
   return (
-    <Panel className="mx-auto flex w-full max-w-lg flex-col gap-3" data-testid="truth">
+    <Panel
+      // The reveal is taller than a small phone (360×640): the panel scrolls by touch inside the fixed HUD.
+      className="mx-auto flex min-h-0 max-h-full w-full max-w-lg touch-pan-y flex-col gap-3 overflow-y-auto overscroll-contain"
+      data-testid="truth"
+    >
       <h1 className="text-center text-xl font-bold">{tr('ui.truth.real')}</h1>
       <p className="text-center text-lg tabular-nums" data-testid="truth-dates">
         {first} — {last}
@@ -34,6 +38,7 @@ export function TruthScreen({ truth, dispatch, tr }: { truth: Truth; dispatch: D
         <Mark label="measured" tr={tr} />
       </p>
       <SunTruth weekId={truth.weekId} tr={tr} />
+      <HomeTruth weekId={truth.weekId} tr={tr} />
       <div className="grid grid-cols-3 gap-2 text-center">
         <div>
           <div className="text-xs text-white/70">{tr('ui.truth.crew')}</div>

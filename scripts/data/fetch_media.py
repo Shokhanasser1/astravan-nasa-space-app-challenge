@@ -24,6 +24,10 @@ GIBS_WMS = 'https://gibs.earthdata.nasa.gov/wms/epsg4326/best/wms.cgi'
 HELIOVIEWER = 'https://api.helioviewer.org/v2'
 AIA131_SOURCE = 9  # Helioviewer source id of SDO/AIA 131
 SDO_BROWSE_FROM = Date(2016, 1, 1)  # sdo.gsfc.nasa.gov/assets/img/browse/ lists 2016 onward (checked 2026-11-15)
+EPIC_API = 'https://epic.gsfc.nasa.gov/api/natural/date'
+EPIC_ARCHIVE = 'https://epic.gsfc.nasa.gov/archive/natural'
+EPIC_FROM = Date(2015, 6, 13)  # first day in https://epic.gsfc.nasa.gov/api/natural/all (checked 2026-11-15)
+DIALAMOON = 'https://svs.gsfc.nasa.gov/api/dialamoon'
 
 
 def parse_sdo_listing(html: str, day: str, channel: str = '0131', size: int = 1024) -> list[datetime]:
@@ -85,11 +89,20 @@ def looks_like_image(data: bytes) -> bool:
 SDO_CREDIT = 'Courtesy of NASA/SDO and the AIA, EVE, and HMI science teams.'
 GIBS_CREDIT = 'NASA EOSDIS GIBS / Worldview'
 HELIOVIEWER_CREDIT = SDO_CREDIT + ' Image rendered by Helioviewer.org.'
-CREDITS = {'sdo': SDO_CREDIT, 'helioviewer': HELIOVIEWER_CREDIT, 'gibs': GIBS_CREDIT}
+# https://epic.gsfc.nasa.gov/about: "the NASA EPIC Team be given credit"; https://svs.gsfc.nasa.gov/3894 (and the
+# other years' Moon Phase and Libration pages): "Please give credit for this item to: NASA/Goddard Space Flight
+# Center Scientific Visualization Studio".
+EPIC_CREDIT = 'NASA EPIC Team (DSCOVR)'
+SVS_CREDIT = 'NASA/Goddard Space Flight Center Scientific Visualization Studio'
+CREDITS = {'sdo': SDO_CREDIT, 'helioviewer': HELIOVIEWER_CREDIT, 'gibs': GIBS_CREDIT, 'epic': EPIC_CREDIT,
+           'svs': SVS_CREDIT}
+LABELS = {'svs': 'computed'}  # the Moon is a rendering for that hour; every other file is a measurement
 ROOT = Path(__file__).resolve().parents[2]
 # Phone budget (spec acceptance 1): week ≤ 1 MB = 7 Earth × 100 KB + 2 SDO × 150 KB.
 EARTH_MAX_BYTES = 100_000
 SDO_MAX_BYTES = 150_000
+EPIC_MAX_BYTES = 50_000
+MOON_MAX_BYTES = 40_000
 # SDO browse frames print 'SDO/AIA 131 <date> <time> UT' in the bottom strip; the date must not show during play.
 SDO_DATE_STRIP = 0.08
 
@@ -172,6 +185,39 @@ def helioviewer_url(frame: datetime) -> str:
             f'&layers=[SDO,AIA,AIA,131,1,100]&x0=0&y0=0&width=1024&height=1024&display=true&watermark=false')
 
 
+def _epic_time(entry: dict) -> datetime:
+    return datetime.strptime(entry['date'], '%Y-%m-%d %H:%M:%S').replace(tzinfo=UTC)
+
+
+def pick_epic(entries: list[dict], when: datetime) -> dict | None:
+    """The EPIC image nearest the given time; ties go to the earlier one."""
+    return min(entries, key=lambda e: (abs(_epic_time(e) - when), e['date'])) if entries else None
+
+
+def epic_url(entry: dict) -> str:
+    """The 2048 px natural-colour JPEG of one EPIC image."""
+    return f"{EPIC_ARCHIVE}/{_epic_time(entry):%Y/%m/%d}/jpg/{entry['image']}.jpg"
+
+
+def home_jobs(start: Date, target: datetime, fetch) -> tuple[list, dict]:
+    """Earth and Moon of the storm: EPIC's whole Earth on the storm day (else the nearest day of the week that has
+    one, same clock time; none before mid-2015) and the Moon as Earth saw it at that hour (SVS Dial-A-Moon)."""
+    jobs, extra = [], {}
+    days = sorted((start + timedelta(days=i) for i in range(7)), key=lambda d: (abs((d - target.date()).days), d))
+    for d in (d for d in days if d >= EPIC_FROM):
+        entries = json.loads(fetch(f'{EPIC_API}/{d.isoformat()}').decode('utf-8'))
+        if entries:
+            e = pick_epic(entries, datetime.combine(d, target.timetz()))
+            jobs.append(('epic.webp', epic_url(e), f"{e['image']}.jpg", 512, 'epic', EPIC_MAX_BYTES))
+            extra['epic.webp'] = {'time': f'{_epic_time(e):%Y-%m-%dT%H:%MZ}'}
+            break
+    moon = json.loads(fetch(f'{DIALAMOON}/{target:%Y-%m-%dT%H:%M}').decode('utf-8'))
+    url = moon['image']['url'].replace('http://', 'https://', 1)
+    jobs.append(('moon.webp', url, moon['image']['filename'], 512, 'svs', MOON_MAX_BYTES))
+    extra['moon.webp'] = {'time': moon['time'] + 'Z', 'phase_pct': moon['phase']}
+    return jobs, extra
+
+
 def _sdo_frames(fetch, *days: datetime) -> list[datetime]:
     """Frames listed in the SDO browse folders of the given days (each folder read once)."""
     frames = []
@@ -182,7 +228,7 @@ def _sdo_frames(fetch, *days: datetime) -> list[datetime]:
 
 
 def build_week(week: str, flare_begin: str | None, flare_peak: str | None, out_dir: Path, raw_dir: Path,
-               fetch=fetch) -> dict:
+               fetch=fetch, home: bool = False) -> dict:
     """Download, check and convert all media for a week. Nothing is written to out_dir unless every
     source returned a real image and every frame was found (spec acceptance 3).
     A week with a flare gets sdo-before (the last frame an hour before the flare begins) + sdo-peak; a quiet week
@@ -224,6 +270,10 @@ def build_week(week: str, flare_begin: str | None, flare_peak: str | None, out_d
                      'gibs', EARTH_MAX_BYTES))
     fills = {j[0]: gibs_url(j[0][6:16], layer=gibs_fill_layer(j[0][6:16])) for j in jobs
              if j[4] == 'gibs' and gibs_fill_layer(j[0][6:16])}
+    home_extra = {}
+    if home:
+        more, home_extra = home_jobs(start, target, fetch)
+        jobs += more
 
     downloaded = []
     for file, url, original, width, credit, budget in jobs:
@@ -248,7 +298,7 @@ def build_week(week: str, flare_begin: str | None, flare_peak: str | None, out_d
         'credits': {k: v for k, v in CREDITS.items() if any(j[4] == k for j in jobs)},
         'files': [
             {'file': f, 'source': u, **({'fill': fills[f]} if f in fills else {}), 'original': o, 'credit': c,
-             'label': 'measured'}
+             'label': LABELS.get(c, 'measured'), **home_extra.get(f, {})}
             for f, u, o, _, c, _, _ in downloaded
         ],
     }

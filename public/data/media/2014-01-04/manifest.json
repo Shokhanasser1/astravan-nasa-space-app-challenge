@@ -8,7 +8,8 @@
   },
   "credits": {
     "helioviewer": "Courtesy of NASA/SDO and the AIA, EVE, and HMI science teams. Image rendered by Helioviewer.org.",
-    "gibs": "NASA EOSDIS GIBS / Worldview"
+    "gibs": "NASA EOSDIS GIBS / Worldview",
+    "svs": "NASA/Goddard Space Flight Center Scientific Visualization Studio"
   },
   "files": [
     {
@@ -80,6 +81,15 @@
       "original": "MODIS_Terra_CorrectedReflectance_TrueColor 2014-01-10 + MODIS_Aqua_CorrectedReflectance_TrueColor",
       "credit": "gibs",
       "label": "measured"
+    },
+    {
+      "file": "moon.webp",
+      "source": "https://svs.gsfc.nasa.gov/vis/a000000/a004100/a004118/frames/730x730_1x1_30p/moon.0164.jpg",
+      "original": "moon.0164.jpg",
+      "credit": "svs",
+      "label": "computed",
+      "time": "2014-01-07T19:00Z",
+      "phase_pct": 46.31
     }
   ]
 }

@@ -158,8 +158,8 @@ use context7 (drei, R3F) and the web.
 | Service | Request | What it gives us | |
 |---|---|---|---|
 | Helioviewer (SDO AIA from 2010) | `https://api.helioviewer.org/v2/getClosestImage/?date=…Z&sourceId=9`, then `takeScreenshot` | **In use**: Sun pictures of the 2012–2014 weeks (the SDO browse archive starts in 2016) | ✓ |
-| DSCOVR EPIC | `https://epic.gsfc.nasa.gov/api/natural/date/YYYY-MM-DD` → `https://epic.gsfc.nasa.gov/archive/natural/YYYY/MM/DD/png/<image>.png` | A real photo of the whole Earth that day, from 1.5 million km — for the truth screen. From mid-2015: 8 of our 14 weeks. Proposal, not fetched | ✓ |
-| SVS Dial-A-Moon | `https://svs.gsfc.nasa.gov/api/dialamoon/YYYY-MM-DDTHH:MM` | The Moon as Houston saw it that hour (phase, tilt) — "home looks back at you". Undocumented endpoint behind the SVS pages | ✓ |
+| DSCOVR EPIC | `https://epic.gsfc.nasa.gov/api/natural/date/YYYY-MM-DD` → `https://epic.gsfc.nasa.gov/archive/natural/YYYY/MM/DD/png/<image>.png` | **In use**: the whole Earth on the storm day, truth screen (7 weeks; none before mid-2015) | ✓ |
+| SVS Dial-A-Moon | `https://svs.gsfc.nasa.gov/api/dialamoon/YYYY-MM-DDTHH:MM` | **In use**: the Moon as Earth saw it at the storm's hour, truth screen (all weeks). Undocumented endpoint behind the SVS pages | ✓ |
 | NASA Image and Video Library | `https://images-api.nasa.gov/search?q=lunar%20south%20pole&media_type=image` | Photos with a NASA ID (LRO, Apollo, south pole) for the Data page; keep the ID in `CREDITS.md` | ✓ |
 | DONKI WSA-ENLIL runs (CCMC) | `https://ccmc.gsfc.nasa.gov/DONKI-API/get/WSAEnlilSimulations?startDate=…&endDate=…` | Model arrival times of the week's CMEs — "the cloud was expected at…" | ✓ |
 | Moon Trek tiles | API doc `https://trek.nasa.gov/tiles/apidoc/trekAPI.html`; LOLA colour hillshade `…/tiles/Moon/SP/LRO_LOLA_ClrShade_SPole75_30mp_v04/…`; sunlight % `…/tiles/Moon/SP/WAC_POLE_ILL_PCT_SOUTH_100M/…` (havolalar.md lines 1411, 1343) | A south-pole map for the base-map screen or ground tint; same LOLA data as our terrain. Find each layer's credit line first | ✓ (API doc, one tile) |

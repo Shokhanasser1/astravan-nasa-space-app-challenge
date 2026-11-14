@@ -141,7 +141,7 @@ export interface WeekMedia {
   week: string;
   flare?: { begin: string; peak: string; source: string };
   credits: Record<string, string>;
-  files: { file: string; credit: string; label: string }[];
+  files: { file: string; credit: string; label: string; time?: string; phase_pct?: number }[];
 }
 const cache = new Map<string, Promise<WeekMedia | null>>();
 
@@ -216,6 +216,37 @@ export function SunTruth({ weekId, tr }: { weekId: string; tr: Tr }) {
         ))}
       </div>
       <p className="text-center text-[0.65rem] opacity-60">{creditOf(media, 'sdo-peak.webp')}</p>
+    </div>
+  );
+}
+
+/**
+ * On the truth screen: home on the storm day — EPIC's photo of the whole Earth (weeks from mid-2015) and the Moon as
+ * Earth saw it that hour (SVS Dial-A-Moon, north up, so the south-pole base sits at the bottom edge).
+ */
+export function HomeTruth({ weekId, tr }: { weekId: string; tr: Tr }) {
+  const media = useWeekMedia(weekId);
+  if (!media) return null;
+  const shots = (['epic.webp', 'moon.webp'] as const)
+    .map((name) => media.files.find((f) => f.file === name))
+    .filter((f): f is WeekMedia['files'][number] => !!f);
+  if (!shots.length) return null;
+  return (
+    <div className="flex flex-col items-center gap-1" data-testid="home-truth">
+      <div className="flex gap-3">
+        {shots.map((f) => (
+          <figure key={f.file} className="flex w-28 flex-col items-center gap-1">
+            <img src={mediaUrl(media.week, f.file)} alt="" className="h-24 w-24 rounded-full object-cover" />
+            <figcaption className="text-center text-xs opacity-80">
+              {f.file === 'epic.webp'
+                ? tr('ui.truth.earth', { date: f.time?.slice(0, 10) ?? '' })
+                : tr('ui.truth.moon', { pct: Math.round(f.phase_pct ?? 0) })}
+              <Mark label={f.label === 'computed' ? 'computed' : 'measured'} tr={tr} />
+            </figcaption>
+          </figure>
+        ))}
+      </div>
+      <p className="text-center text-[0.65rem] opacity-60">{shots.map((f) => media.credits[f.credit]).join(' · ')}</p>
     </div>
   );
 }

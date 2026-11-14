@@ -76,6 +76,8 @@
   "ui.truth.sun": "The real flare: {date}, {time} UTC",
   "ui.truth.before": "Before",
   "ui.truth.peak": "Peak",
+  "ui.truth.earth": "Earth on {date}, from 1.5 million km",
+  "ui.truth.moon": "Moon from Earth, {pct}% lit. Base: bottom edge",
   "ui.hand.on": "Hand control (camera)",
   "ui.hand.off": "Stop the camera",
   "ui.hand.loading": "Starting the camera…",
