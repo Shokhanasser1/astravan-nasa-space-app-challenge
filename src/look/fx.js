@@ -100,16 +100,30 @@ export class GroundFx {
     }
   }
 
-  /** game: the demo's Game (body, facing, g, gravityKey, groundHeight). */
+  /**
+   * game: { body: { pos, onGround }, facing, g, gravityKey, groundHeight, footfalls? }.
+   * footfalls (from the astronaut's AnimController): [{ x, z, yaw, side, run, landing }] where a boot is flat on the
+   * ground — the print goes exactly under the boot. Without it, prints are spaced by distance walked (fallback).
+   */
   update(dt, game) {
     const b = game.body;
     const p = b.pos;
     const ground = b.onGround;
-    if (this.last && ground) {
+    const events = game.footfalls;
+    const d = this.last ? Math.hypot(p[0] - this.last[0], p[2] - this.last[2]) : 0;
+    const speed = d / Math.max(dt, 1e-3);
+    if (events) {
+      for (const e of events) {
+        this.stamp(game, e.x, e.z, e.yaw, 0);
+        const y = game.groundHeight(e.x, e.z) ?? p[1];
+        if (!e.landing) {
+          this.kick(e.x, y, e.z, Math.sin(e.yaw), Math.cos(e.yaw), e.run ? 7 : 3, 0.35 + speed * 0.25);
+        }
+      }
+      events.length = 0;
+    } else if (this.last && ground) {
       const dx = p[0] - this.last[0], dz = p[2] - this.last[2];
-      const d = Math.hypot(dx, dz);
       this.dist += d;
-      const speed = d / Math.max(dt, 1e-3);
       const stride = speed > 2.2 ? 1.25 : 0.72;
       if (this.dist > stride && d > 0) {
         this.dist = 0;
@@ -120,8 +134,10 @@ export class GroundFx {
     }
     this.air = ground ? this.air : this.air + dt;
     if (ground && !this.wasGround && this.air > 0.3) {   // landing from a jump: both feet and a ring of dust
-      this.stamp(game, p[0], p[2], game.facing, 1);
-      this.stamp(game, p[0], p[2], game.facing, -1);
+      if (!events) {
+        this.stamp(game, p[0], p[2], game.facing, 1);
+        this.stamp(game, p[0], p[2], game.facing, -1);
+      }
       this.kick(p[0], p[1], p[2], 0, 0, 22, 0.9);
       this.dist = 0;
     }

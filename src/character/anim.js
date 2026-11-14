@@ -13,6 +13,15 @@ export const CLIP_SPEED = { Walk: 1.0, Run: 2.0, Carry: 0.8 };
 const LEGACY_SPEED = { Walk: MOVE.walk, Run: MOVE.run, Carry: MOVE.walk };
 
 /**
+ * When each boot is flat and planted, as a fraction of the clip (Walk/Carry: left heel strike at 0, right at 0.5,
+ * duty 0.6; Run lope: left lands at 5/40, right at 25/40, flat ~5 frames later). A footfall is reported there, at
+ * the boot's real position, so boot prints land exactly under the boots.
+ */
+export const STANCE = { Walk: [[0.2, 'L'], [0.7, 'R']], Carry: [[0.2, 'L'], [0.7, 'R']], Run: [[0.25, 'L'], [0.75, 'R']] };
+const BOOT_CENTRE = 0.58;   // the sole's centre lies 58 % of the way from the ankle to the toe joint
+const SIDE = { L: 'Left', R: 'Right' };
+
+/**
  * Animation state machine with cross-fades: Idle / Walk / Run / Carry (+ CarryIdle, Pour) and the jump in three
  * parts: JumpStart (scrubbed by the wind-up), JumpAir (scrubbed by flight progress), JumpLand (played once).
  * Falls back to the single Jump clip when the GLB has no JumpStart/JumpAir.
@@ -44,7 +53,61 @@ export class AnimController {
     this.airTime = 0;
     this.current = null;
     this.state = '';
+    /** Footfalls since the last read: { x, z, yaw, side: 'L' | 'R', run } in world space. The reader empties it. */
+    this.footfalls = [];
+    this.boots = {};
+    for (const k of ['L', 'R']) {
+      const foot = model.getObjectByName(SIDE[k] + 'Foot');
+      const toe = model.getObjectByName(SIDE[k] + 'ToeBase');
+      if (foot && toe) this.boots[k] = { foot, toe };
+    }
+    this.phase = -1;
+    this.phaseOf = '';
+    this.va = new THREE.Vector3();
+    this.vb = new THREE.Vector3();
     this.play('Idle', 0);
+  }
+
+  /** World position and heading of boot k's sole centre (call after the mixer has posed the bones). */
+  bootOnGround(k) {
+    const b = this.boots[k];
+    if (!b) return null;
+    b.toe.updateWorldMatrix(true, false);
+    b.foot.getWorldPosition(this.va);
+    b.toe.getWorldPosition(this.vb);
+    const dx = this.vb.x - this.va.x, dz = this.vb.z - this.va.z;
+    return { x: this.va.x + dx * BOOT_CENTRE, z: this.va.z + dz * BOOT_CENTRE, yaw: Math.atan2(dx, dz) };
+  }
+
+  /** Report a footfall when the playing locomotion clip passes a boot's mid-stance. */
+  trackFootfalls() {
+    const st = STANCE[this.state];
+    const a = this.current;
+    if (!st || !a || !this.split || a.getEffectiveWeight() < 0.5) {
+      this.phaseOf = '';
+      return;
+    }
+    const d = a.getClip().duration;
+    const ph = (((a.time % d) + d) % d) / d;
+    if (this.phaseOf === this.state) {
+      for (const [at, k] of st) {
+        const crossed = this.phase <= ph ? this.phase < at && at <= ph : this.phase < at || at <= ph;
+        if (crossed) {
+          const p = this.bootOnGround(k);
+          if (p) this.footfalls.push({ ...p, side: k, run: this.state === 'Run' });
+        }
+      }
+    }
+    this.phase = ph;
+    this.phaseOf = this.state;
+  }
+
+  /** Both boots at once (landing from a jump). */
+  bothFeet() {
+    for (const k of ['L', 'R']) {
+      const p = this.bootOnGround(k);
+      if (p) this.footfalls.push({ ...p, side: k, run: false, landing: true });
+    }
   }
 
   /** timeScale that keeps the planted boot of clip `name` still at ground speed `speed`. */
@@ -74,9 +137,12 @@ export class AnimController {
   /** s: { onGround, windup, vy, v0, speed, carrying, pouring, running, k } */
   update(dt, s) {
     this.k = s.k || 1;
+    const landed = this.split && this.wasAir && s.onGround && this.airTime > 0.3;
     if (this.split) this.updateSplit(dt, s);
     else this.updateLegacy(dt, s);
     this.mixer.update(dt);
+    this.trackFootfalls();
+    if (landed) this.bothFeet();
   }
 
   updateSplit(dt, s) {

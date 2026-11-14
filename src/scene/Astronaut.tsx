@@ -58,8 +58,15 @@ export function Astronaut({ body, visible }: { body: Body; visible: boolean }) {
 
   // what the prints and the dust read (allocated once)
   const look = useMemo(
-    () => ({ body: { pos: [0, 0, 0], onGround: true }, facing: 0, g: GRAVITY.moon, gravityKey: 'moon', groundHeight }),
-    [],
+    () => ({
+      body: { pos: [0, 0, 0], onGround: true },
+      facing: 0,
+      g: GRAVITY.moon,
+      gravityKey: 'moon',
+      groundHeight,
+      footfalls: anim.footfalls, // boot prints exactly where the animated boots are planted
+    }),
+    [anim],
   );
 
   useFrame((_, delta) => {
@@ -72,7 +79,10 @@ export function Astronaut({ body, visible }: { body: Body; visible: boolean }) {
       onGround: body.onGround, windup: body.windup, vy: body.vy, v0: body.v0 || 1.2,
       speed, carrying: false, pouring: false, running: body.running, k: 1,
     });
-    if (!visible) return;
+    if (!visible) {
+      anim.footfalls.length = 0;
+      return;
+    }
     look.body.pos[0] = body.x;
     look.body.pos[1] = body.y;
     look.body.pos[2] = body.z;
