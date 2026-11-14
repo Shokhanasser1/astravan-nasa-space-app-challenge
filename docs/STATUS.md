@@ -23,8 +23,9 @@ DONKI), дата недели раскрывается в конце. Репоз
   - `asilbek/work` — свободная ходьба за `features.freeWalk` (`false`) или `?walk`; 57 тестов, e2e проходит неделю
     на телефоне и ноутбуке, +3 КБ gzip. Асилбек вольёт сам.
   - **`blender/` влит в `main` 14.11 ~19:30 по решению Самандара** (в сборку игры не входит, `npm run verify` зелёный).
-    Тяжёлые `.blend` и исходные GLB NASA (~250 МБ) в git не кладём — они выкладываются в релиз-архив `blender-sources-2026-11-14`
-    (pre-release). Ниже — заметка до слияния, в силе: в игру только через `npm run glb` + `CREDITS.md`.
+    Тяжёлые `.blend`, исходные GLB NASA и PNG-рендеры в git не кладём — **они выложены в релиз
+    [`blender-sources-2026-11-14`](https://github.com/Shokhanasser1/astravan-nasa-space-app-challenge/releases/tag/blender-sources-2026-11-14)** (pre-release, один zip ~400 МБ, 7 `.blend`;
+    что внутри и как открыть — `README.md` и `blender/README.md`). В репозиторий их не коммитить. Ниже — заметка до слияния, в силе: в игру только через `npm run glb` + `CREDITS.md`.
   - `samandar/work` — только `blender/`, 247 файлов, ~16 МБ (GLB-модели NASA, рендеры, спрайты, сцены). До слияния
     решить: хранить вне `main` или в Git LFS; в игру — только сжатое `npm run glb` (≤ 1 МБ: `gateway.glb` 1,6 МБ и
     `perseverance.glb` 1,03 МБ больше); строки в `CREDITS.md`; слова «Gateway», «NRHO», «6,5 дня» в игру не идут
