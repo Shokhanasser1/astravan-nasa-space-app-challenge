@@ -5,6 +5,9 @@
  */
 export const features = {
   // 3.0 wow / knowledge / data layers, in cut order (top = keep longest)
+  // Team extension (14 Nov): playable astronaut with movement, collisions and physics. Off until it plays a whole
+  // week on a phone; the first-person rig is the fallback.
+  character: false,
   light: true, // 2 · one Sun, long shadows, tone mapping
   sound: true, // 3 · breath, Quindar, inside/outside (cut → breath + radio tone only)
   invisibleStorm: true, // 4 · dosimeter, scout-cam snow, sparks (cut → dosimeter only)

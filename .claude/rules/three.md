@@ -17,7 +17,21 @@ ui-ux-pro-max three.js guidelines (MIT). Positions: `docs/layout.md`.
   never decides a rule. Camera point, look angles and animation timers are scene-local state (refs), not game state.
 - One `<Canvas>` for the whole game (`Stage.tsx`), never remounted; swap content inside it.
 
-## First-person rig (Dizayn 2.0)
+## Character and physics (team extension, 14 Nov evening)
+- New work, allowed: a playable astronaut, walking, collisions, physics. It goes behind `features.character`; the
+  first-person rig below stays the playable fallback until the character build plays a whole week on a phone.
+- Physics: Rapier through `@react-three/rapier` is the R3F standard (new dependency → ask Shoxjahon aka). It ships
+  WebAssembly: load it lazily so the first frame never waits for it.
+- Colliders are primitives (capsule for the astronaut, boxes and cylinders for buildings, a plane or heightfield for
+  the ground), never the render mesh. Static base, fixed time step, let bodies sleep.
+- Moon gravity 1.62 m/s² is one constant in one place. Gauges (air, dose) never change in physics code: the engine
+  owns them; the scene reports what happened (walked outside, jumped) through an action.
+- Astronaut: one skinned GLB with its clips (idle, walk, run, jump) via drei `useAnimations`, inside `<Suspense>`
+  with a grey capsule fallback. Controls: touch joystick on phones, WASD/arrows on laptops; the camera follows with
+  damping. The motion-sickness rules below still apply (no shake, no roll, level horizon).
+- Same phone budget: < 100k triangles, ~50 draw calls. Measure with `?perf` on a real phone after each step.
+
+## First-person rig (Dizayn 2.0) — current G2 build
 - Eye height 1.7 m. Standing points: 1 airlock, 2 power hub (main place: batteries, sockets, confirm lever,
   all buildings visible behind), 3 garden window, 4 workshop, 5 hill (craters, Earth, Scout leaves, Ice card),
   6 ladder (Day 7 launch), plus inside the habitat (morning, night log, shelter).
