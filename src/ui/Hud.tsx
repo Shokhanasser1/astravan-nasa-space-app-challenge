@@ -37,8 +37,8 @@ export function Hud({ model, view, dispatch, lang, setLang, sound, setSound, onS
   const tr = (k: string, v?: Record<string, string | number>) => t(lang, k, v);
   const primary =
     view.phase === 'plan'
-      ? { label: tr('board.confirmDay'), action: { type: 'CONFIRM' } as const }
-      : { label: tr('hud.next'), action: { type: 'NEXT' } as const };
+      ? { label: tr('ui.board.confirmDay'), action: { type: 'CONFIRM' } as const }
+      : { label: tr('ui.hud.next'), action: { type: 'NEXT' } as const };
 
   return (
     <div className="pointer-events-none fixed inset-0 flex flex-col justify-between p-4" onPointerDown={() => audio.unlock()}>
@@ -48,21 +48,21 @@ export function Hud({ model, view, dispatch, lang, setLang, sound, setSound, onS
             {l.toUpperCase()}
           </Btn>
         ))}
-        <Btn active={sound} onClick={() => setSound(!sound)} aria-label={tr('hud.sound')}>
+        <Btn active={sound} onClick={() => setSound(!sound)} aria-label={tr('ui.hud.sound')}>
           ♪
         </Btn>
       </div>
 
       {model.screen === 'start' && (
         <div className="pointer-events-auto flex flex-col items-center gap-4 self-center">
-          <Btn onClick={onStart}>{tr('start.mission')}</Btn>
+          <Btn onClick={onStart}>{tr('ui.start.mission')}</Btn>
         </div>
       )}
 
       {model.screen === 'game' && view.phase !== 'truth' && (
         <div className="pointer-events-auto flex items-center justify-between gap-2">
           <span className="text-lg" data-phase={view.phase}>
-            {tr('hud.dayOf', { day: view.day, total: 7 })} · {view.phase}
+            {tr('ui.hud.dayOf', { day: view.day, total: 7 })} · {view.phase}
           </span>
           <Btn onClick={() => dispatch(primary.action)}>{primary.label}</Btn>
         </div>
@@ -71,7 +71,7 @@ export function Hud({ model, view, dispatch, lang, setLang, sound, setSound, onS
       {model.screen === 'game' && view.phase === 'truth' && (
         <div className="pointer-events-auto flex flex-col items-center gap-4 self-center">
           <span className="text-2xl">{model.week?.id}</span>
-          <Btn onClick={() => dispatch({ type: 'NEXT' })}>{tr('end.again')}</Btn>
+          <Btn onClick={() => dispatch({ type: 'NEXT' })}>{tr('ui.end.again')}</Btn>
         </div>
       )}
     </div>

@@ -12,7 +12,7 @@ export const features = {
   guesses: true, // 6 · seven predictions (cut → days 1, 4, 7)
   truthSequence: true, // 7 · 25-second sequence (cut → old truth screen + SDO photo)
   earthOfTheDay: true, // 8 · GIBS texture on the globe (cut → generic Earth texture, phase still right)
-  levels: true, // 9 · Cadet / Pilot / Commander (cut → one level)
+  levels: true, // 9 · ★ / ★★ / ★★★ (cut → one level)
   dustArcs: true, // 10
   shadowClock: false, // 11 · optional
   // v2 "should" / "nice"

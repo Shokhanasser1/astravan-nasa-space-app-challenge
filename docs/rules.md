@@ -19,7 +19,7 @@ weeks the warning and alert fall here; family call on Day 4. Day 6: garden resul
 
 | Gauge | Start | How it moves |
 |---|---|---|
-| Energy | 6 batteries a day (Cadet 7), 1 stored | Unused batteries are stored, up to 2 |
+| Energy | 6 batteries a day (★: 7), 1 stored | Unused batteries are stored, up to 2 |
 | Air and water (reserve) | 5 of 8 | Crew uses 2 a day; each battery on Life Support adds 1 |
 | Dose | 0 | Every day: background + storm + time outside |
 | Garden health | 3 of 4 | −1, 0 or +1 a day by energy |

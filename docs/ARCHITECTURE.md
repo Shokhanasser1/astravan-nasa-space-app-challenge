@@ -1,7 +1,7 @@
 # HOME BY SEVEN — system architecture
 
-Base: the team's developer guide (*Dasturchilar qo'llanmasi*, 13 Nov) and work plan (*Ish rejasi*), updated by
-concept 3.0 (14 Nov: light, invisible storm, guesses, real Earth and Sun). This file adds the infrastructure
+Base: the team's **final version** (*Yakuniy versiya*, 14 Nov — wins on conflicts), Dizayn 2.0 (first person,
+visor UI), the developer guide and the work plan, and concept 3.0 (light, invisible storm, guesses, real Earth and Sun). This file adds the infrastructure
 around it: tests and CI, offline play, quality tiers, checks, hosting. Stack and versions: `docs/STACK.md`.
 
 ## 1. The system in one picture
@@ -34,9 +34,9 @@ src/
   engine/  rules.ts  weeks.json  sky.json  week.ts  plans.test.ts      lane A — Samandar
   state/   game.ts (View, Model, Action, reducer, toView)              lane B — Samandar
   scene/   Stage.tsx  BaseScene.tsx  Light.tsx  quality.ts             lane C — Shoxjahon aka
-           Terrain  Storm  Rig  parts/{Habitat Garden Workshop Lander Scout SolarWing Hub Dish}  (from the skeleton)
-  ui/      Hud  Labels  CardModal  AlertModal  MorningReport  NightLog  Truth  Curve            lane D — Shoxjahon aka
-  i18n/    en.json  uz.json  ru.json  t.ts                              lane F — Sarvar
+           Terrain  Storm  Rig (first person, 6 points)  parts/{Habitat Garden Workshop Lander Scout SolarWing Hub Dish}
+  ui/      Visor (day+level, 3 gauges, radio line, target rings, edge state), WristTablet, Start, Truth  lane D — Asilbek
+  i18n/    <lang>/{ui,scene,story,engine,data}.json  t.ts   keys per lane; words by Aminjon
   audio/   audio.ts  dosimeter.ts      config/ features.ts   lib/ storage.ts labels.ts   net/ api.ts (off)
 public/models/  hab.glb lander.glb …    public/data/media/<week>/  sdo-*.jpg earth-*.jpg    public/fallback/base.webp
 docs/    scenario.md  rules.md  strings.md  layout.md  (plain text from the PDFs, for agents)
@@ -79,6 +79,9 @@ day 4, ends in 90 s), before/after questions (counted on the device), saving to 
 
 ## 5. Scene (lane C)
 
+- **First person** (final version, Dizayn 2.0): eye height 1.7 m, six standing points (airlock, power hub = main,
+  garden window, workshop, hill, ladder) + inside; swipe to look, tap a marker to float there (~1 s), tap objects to act;
+  no shake, level horizon. Fallback: same scene, overview camera. Camera point is scene-local state.
 - One `<Canvas>` (`Stage.tsx`), never remounted. `frameloop="demand"` while calm; `always` during run, launch, storms.
 - Quality tiers (`quality.ts`, developer guide §05): pc → phone → phoneLow → min. `PerformanceMonitor` steps down:
   DPR 1 → Bloom off → shadow 1024 → no shadows, half storm. The child never sets anything.
@@ -90,10 +93,12 @@ day 4, ends in 90 s), before/after questions (counted on the device), saving to 
 - No WebGL or a crash → a still picture of the base; the game stays fully playable in the DOM layer.
 - `./shot.sh '{"plant":0}' '{"plant":4}'` → screenshots at 390×844 and 1280×760 + draw calls and triangles.
 
-## 6. UI (lane D)
+## 6. UI (lane D, Asilbek)
 
-DOM above the Canvas. Every button shows its price before it is pressed (`model.preview`). Undo until
-"Confirm day". ≤ 8 words per instruction (Cadet ≤ 5, read aloud). Tap targets ≥ 48 px. Fits 360×640.
+Visor UI, no floating modal windows (Dizayn 2.0 §04): day + level top centre, three gauges bottom, one radio line,
+target rings, visor edge state; price/result and night log on the wrist tablet; batteries are scene objects.
+Levels ★/★★/★★★ change text length and data depth only. DOM above the Canvas. Every button shows its price before it is pressed (`model.preview`). Undo until
+"Confirm day". ≤ 8 words per instruction (★ ≤ 5, read aloud). Tap targets ≥ 48 px. Fits 360×640.
 Labels in 3D: DOM elements placed by camera projection (skeleton's `Project`), not drei `<Html>`.
 Truth curve: one SVG path, log axis, no chart library.
 

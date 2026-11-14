@@ -14,7 +14,21 @@ const warnings = [];
 const json = (p) => JSON.parse(readFileSync(join(root, p), 'utf8'));
 
 // 1. Strings
-const dicts = { en: json('src/i18n/en.json'), uz: json('src/i18n/uz.json'), ru: json('src/i18n/ru.json') };
+// One file per language and lane (src/i18n/<lang>/<lane>.json). Keys must start with the lane's prefix,
+// and a key may live in only one lane file — this is what keeps five agents from colliding.
+const LANES = ['ui', 'scene', 'story', 'engine', 'data'];
+const dicts = { en: {}, uz: {}, ru: {} };
+for (const lang of Object.keys(dicts)) {
+  for (const lane of LANES) {
+    const path = `src/i18n/${lang}/${lane}.json`;
+    if (!existsSync(join(root, path))) continue;
+    for (const [key, value] of Object.entries(json(path))) {
+      if (!key.startsWith(`${lane}.`)) errors.push(`${path} "${key}": keys in this file must start with "${lane}."`);
+      if (key in dicts[lang]) errors.push(`${path} "${key}": key already defined in another lane file`);
+      dicts[lang][key] = value;
+    }
+  }
+}
 for (const [key, text] of Object.entries(dicts.uz)) {
   if (/[OoGg]['‘’`ʼ]/.test(text)) errors.push(`uz.json "${key}": write oʻ/gʻ with ʻ (U+02BB)`);
   else if (/\p{L}['’`]\p{L}/u.test(text)) errors.push(`uz.json "${key}": tutuq belgisi is ʼ (U+02BC)`);
