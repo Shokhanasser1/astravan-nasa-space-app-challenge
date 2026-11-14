@@ -1,3 +1,4 @@
+import { CalendarDays, Radiation, Wind, Zap } from 'lucide-react';
 import type { Board, Model, View } from '../../state/game';
 import type { Tr } from './kit';
 import { Mark } from './Holo';
@@ -11,10 +12,13 @@ export function DayBadge({ view, board, tr }: { view: View; board: Board | null;
   const known = board ? board.info.known : true;
   const level = board?.info.level ?? view.level;
   return (
-    <div className="pointer-events-none flex flex-col items-center gap-1 text-center" data-testid="day-badge">
-      <span className="text-sm uppercase tracking-widest text-white/80">{tr('ui.hud.dayOf', { day: view.day, total: 7 })}</span>
+    <div className="glass pointer-events-none flex flex-col items-center gap-1 rounded-[18px] px-4 py-2 text-center" data-testid="day-badge">
+      <span className="flex items-center gap-2 text-sm font-semibold uppercase tracking-widest text-[#f3f6ff]">
+        <CalendarDays size={16} aria-hidden="true" className="text-measured" />
+        {tr('ui.hud.dayOf', { day: view.day, total: 7 })}
+      </span>
       <span
-        className={`rounded-full px-3 py-1 text-sm font-bold ${known ? (level > 0 ? 'bg-alert text-black' : 'bg-white/15') : 'bg-alert text-black'}`}
+        className={`rounded-full px-3 py-1 text-sm font-bold ${known ? (level > 0 ? 'bg-alert text-[#2a1b00]' : 'bg-white/15') : 'bg-alert text-[#2a1b00]'}`}
         data-level={known ? level : '?'}
       >
         {known ? `${level} · ${tr(`ui.level.${level}`)}` : `? · ${tr('ui.level.unknown')}`}
@@ -45,10 +49,13 @@ export function Gauges({ model, board, tr }: { model: Model; board: Board | null
   if (!g) return null;
   const p = board?.preview;
   const total = board?.limits.available ?? 0;
+  const cell = 'glass flex flex-col gap-0.5 rounded-[18px] px-2 py-1.5';
+  const label = 'flex flex-wrap items-center justify-center gap-x-1.5 gap-y-0.5 text-xs font-medium text-[#c2cbec]';
   return (
     <div className="pointer-events-none grid grid-cols-3 gap-2 text-center text-sm" data-testid="gauges">
-      <div className="rounded-xl bg-black/60 px-2 py-1">
-        <div className="text-white/70">
+      <div className={cell}>
+        <div className={label}>
+          <Zap size={16} aria-hidden="true" className="shrink-0 text-[#ffc94a]" />
           {tr('ui.gauge.energy')}
           <Mark label="rule" tr={tr} />
         </div>
@@ -56,8 +63,9 @@ export function Gauges({ model, board, tr }: { model: Model; board: Board | null
           {p ? `${p.left} / ${total}` : total || '—'}
         </div>
       </div>
-      <div className="rounded-xl bg-black/60 px-2 py-1">
-        <div className="text-white/70">
+      <div className={cell}>
+        <div className={label}>
+          <Wind size={16} aria-hidden="true" className="shrink-0 text-measured" />
           {tr('ui.gauge.air')}
           <Mark label="rule" tr={tr} />
         </div>
@@ -65,8 +73,9 @@ export function Gauges({ model, board, tr }: { model: Model; board: Board | null
           {g.air} / 8{p && p.reserveAfter !== g.air ? ` → ${p.reserveAfter}` : ''}
         </div>
       </div>
-      <div className="rounded-xl bg-black/60 px-2 py-1">
-        <div className="text-white/70">
+      <div className={cell}>
+        <div className={label}>
+          <Radiation size={16} aria-hidden="true" className="shrink-0 text-computed" />
           {tr('ui.gauge.dose')}
           <Mark label="computed" tr={tr} />
         </div>

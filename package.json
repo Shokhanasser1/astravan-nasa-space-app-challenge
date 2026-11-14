@@ -28,10 +28,12 @@
     "node": ">=22.12"
   },
   "dependencies": {
+    "@fontsource-variable/lexend": "5.2.11",
     "@mediapipe/tasks-vision": "1.2.0",
     "@react-three/drei": "10.7.9",
     "@react-three/fiber": "9.8.2",
     "@react-three/postprocessing": "3.2.2",
+    "lucide-react": "0.468.0",
     "postprocessing": "6.39.6",
     "react": "19.3.1",
     "react-dom": "19.3.1",

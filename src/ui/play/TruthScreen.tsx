@@ -1,3 +1,4 @@
+import { RotateCcw } from 'lucide-react';
 import type { Dispatch } from 'react';
 import type { Action, Truth } from '../../state/game';
 import { Btn, Panel, type Tr } from './kit';
@@ -20,7 +21,7 @@ export function TruthScreen({ truth, dispatch, tr }: { truth: Truth; dispatch: D
       className="mx-auto flex min-h-0 max-h-full w-full max-w-lg touch-pan-y flex-col gap-3 overflow-y-auto overscroll-contain"
       data-testid="truth"
     >
-      <h1 className="text-center text-xl font-bold">{tr('ui.truth.real')}</h1>
+      <h1 className="title-grad text-center text-2xl font-bold">{tr('ui.truth.real')}</h1>
       <p className="text-center text-lg tabular-nums" data-testid="truth-dates">
         {first} — {last}
       </p>
@@ -28,7 +29,7 @@ export function TruthScreen({ truth, dispatch, tr }: { truth: Truth; dispatch: D
         {truth.days.map((d) => (
           <div key={d.day} className="flex flex-1 flex-col items-center gap-1">
             <span className="text-xs tabular-nums">{d.ratio}×</span>
-            <div className={`w-full rounded-t ${d.level > 0 ? 'bg-alert' : 'bg-white/40'}`} style={{ height: `${barHeight(d.ratio)}%` }} />
+            <div className={`w-full rounded-t ${d.level > 0 ? 'bg-[#ff8a3d]' : 'bg-[#8b96c0]/60'}`} style={{ height: `${barHeight(d.ratio)}%` }} />
             <span className="text-xs">{d.day}</span>
           </div>
         ))}
@@ -39,7 +40,7 @@ export function TruthScreen({ truth, dispatch, tr }: { truth: Truth; dispatch: D
       </p>
       <SunTruth weekId={truth.weekId} tr={tr} />
       <HomeTruth weekId={truth.weekId} tr={tr} />
-      <div className="grid grid-cols-3 gap-2 text-center">
+      <div className="grid grid-cols-3 gap-2 text-center [&>div]:rounded-[16px] [&>div]:border [&>div]:border-[rgba(150,175,255,0.16)] [&>div]:bg-[rgba(150,175,255,0.08)] [&>div]:py-2">
         <div>
           <div className="text-xs text-white/70">{tr('ui.truth.crew')}</div>
           <div className="text-2xl font-bold tabular-nums" data-testid="truth-crew">
@@ -60,7 +61,8 @@ export function TruthScreen({ truth, dispatch, tr }: { truth: Truth; dispatch: D
       <p className="text-center text-lg font-bold" data-testid="truth-title" data-title={r.title}>
         {tr(r.titleKey)}
       </p>
-      <Btn data-testid="again" onClick={() => dispatch({ type: 'NEXT' })}>
+      <Btn data-testid="again" className="primary big" onClick={() => dispatch({ type: 'NEXT' })}>
+        <RotateCcw size={20} aria-hidden="true" />
         {tr('ui.end.again')}
       </Btn>
     </Panel>

@@ -1,4 +1,5 @@
 import { useEffect, useState, useSyncExternalStore, type ReactNode } from 'react';
+import { Volume2 } from 'lucide-react';
 import type { Lang } from '../../i18n/t';
 import { audio } from '../../audio/audio';
 import { telemetry } from '../../character/telemetry';
@@ -26,7 +27,7 @@ export function Mark({ label, tr }: { label: DataLabel; tr: Tr }) {
 
 export function HoloPanel({ className = '', children, ...rest }: { className?: string; children: ReactNode; 'data-testid'?: string }) {
   return (
-    <div {...rest} className={`holo holo-in rounded-2xl px-3 py-2 ${className}`}>
+    <div {...rest} className={`holo holo-in rounded-[20px] px-3 py-2 ${className}`}>
       {children}
     </div>
   );
@@ -80,12 +81,12 @@ export function CapcomHolo({ textKey, tr, lang, sound }: { textKey: string | nul
     <HoloPanel className="pointer-events-auto mx-auto flex max-w-md items-center gap-3" data-testid="radio">
       <CapcomFace speaking={speaking} />
       <div className="flex min-w-0 flex-col">
-        <span className="text-[0.7rem] font-semibold uppercase tracking-widest text-measured">{tr('ui.capcom.name')}</span>
+        <span className="eyebrow !text-measured">{tr('ui.capcom.name')}</span>
         <p className="text-base leading-snug">{text}</p>
       </div>
       {lang !== 'uz' && (
-        <button type="button" className="ml-auto grid h-12 w-12 shrink-0 place-items-center rounded-full text-xl" aria-label={tr('ui.capcom.speak')} onClick={say}>
-          🔊
+        <button type="button" className="abtn ml-auto !rounded-full !p-0" aria-label={tr('ui.capcom.speak')} onClick={say}>
+          <Volume2 size={20} aria-hidden="true" />
         </button>
       )}
     </HoloPanel>
@@ -111,7 +112,7 @@ export function PhysicsHolo({ tr }: { tr: Tr }) {
   const earth = jumpHeight(v, GRAVITY.earth);
   return (
     <HoloPanel className="pointer-events-none flex w-64 flex-col gap-1 self-end text-sm tabular-nums" data-testid="physics-holo">
-      <span className="text-[0.7rem] font-semibold uppercase tracking-widest text-measured">{tr('ui.phys.title')}</span>
+      <span className="eyebrow !text-measured">{tr('ui.phys.title')}</span>
       <div>
         {tr('ui.phys.yours', { h: fmt(t.jump) })}
         <Mark label="computed" tr={tr} />
@@ -255,7 +256,7 @@ export function HomeTruth({ weekId, tr }: { weekId: string; tr: Tr }) {
 export function Briefing({ tr, lang, sound }: { tr: Tr; lang: Lang; sound: boolean }) {
   return (
     <HoloPanel className="pointer-events-auto flex max-w-md flex-col gap-2" data-testid="briefing">
-      <h1 className="text-center text-2xl font-bold tracking-widest">{tr('ui.start.title')}</h1>
+      <h1 className="title-grad text-center text-3xl font-bold tracking-wide">{tr('ui.start.title')}</h1>
       <CapcomHolo textKey="ui.start.brief" tr={tr} lang={lang} sound={sound} />
     </HoloPanel>
   );

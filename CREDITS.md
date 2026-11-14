@@ -62,3 +62,6 @@ Helioviewer.org."). Each week's exact request URLs are in `public/data/media/<we
 | Claude Code skill `webapp-testing` | Apache-2.0 (Anthropic) | https://github.com/anthropics/skills |
 | Claude Code skills `react-performance`, `vite-patterns`, `e2e-testing`, `ui-demo`, `i18n-sync` | MIT (Affaan Mustafa, ECC) | `.claude/skills/*/LICENSE` |
 | three.js guidelines in `.claude/rules/three.md` (adapted) | MIT (ui-ux-pro-max) | https://github.com/nextlevelbuilder/ui-ux-pro-max-skill |
+| Lexend variable font (`@fontsource-variable/lexend` 5.2.11) | OFL-1.1 | https://github.com/googlefonts/lexend |
+| Lucide icons (`lucide-react` 0.468.0) | ISC | https://lucide.dev |
+| Interface style (colours, type, panels, buttons, icon style) adapted from ASTRA by HamzaAli0911; no text, names or images taken | MIT | https://github.com/HamzaAli0911/astra-mission-trainer |
