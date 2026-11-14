@@ -14,7 +14,7 @@ a NASA server while it runs. Every on-screen number has one of four labels: **me
 | `public/data/media/<week>/sdo-before.webp`, `sdo-peak.webp` | SDO 131 Å browse image before the flare and at the peak | measured |
 | `public/data/media/<week>/earth-<date>.webp` | GIBS true-colour Earth for each day, wrapped on the globe | measured |
 | `public/data/media/<week>/manifest.json` | the list of files above with request URL, download date and label — **look files up here**, do not build names by hand | — |
-| `public/data/facts.json` | every number in the game with its source link (fact sheet) | — |
+| `public/data/facts.json` | every number in the game with its source link (fact sheet): 17 facts, each with value, unit, label, source {title, url}, the quoted page text and the sentence key `data.fact.<id>`; drafts and sources in `docs/specs/2026-11-14-facts.md`, checked by `src/lib/facts.test.ts` | per fact |
 
 Format of a day in `weeks.json` (values as built for 28 Oct 2021; that day also has two M-class flares):
 
@@ -63,7 +63,8 @@ Known limits (14 Nov): `sky.json` and the media exist for week 2021-10-25 only �
 12° a day for the Sun and have no Earth data or photos; no week after June 2024 (RadLab ends; iSWA HAPI has CRaTER
 to October 2026); the storm starts on day 4 in 8 of 14 weeks; CRaTER measures in lunar orbit behind thin
 shielding, so the game shows the ratio to the calm value, never a dose "at the base"; the SDO 131 Å picture is
-extreme ultraviolet in false colour; `public/data/facts.json` and the Data page are not built yet.
+extreme ultraviolet in false colour; `public/data/facts.json` is built (17 facts, 14 Nov; the `data.fact.*` texts
+are still empty, Sarvar checks the numbers), the Data page is not built yet.
 
 ## Rules
 

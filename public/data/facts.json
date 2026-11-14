@@ -1,0 +1,189 @@
+{
+  "about": "Fact sheet for the Data page: the real-world numbers behind HOME BY SEVEN. Each fact has a stable id, a value and unit, one of the four labels (measured, computed, rule, story; src/lib/labels.ts), one source link, the words on that page (quote) and, for computed facts, the calculation. The sentence the player reads is the i18n key data.fact.<id> in src/i18n/<lang>/data.json (written by Aminjon; drafts in docs/specs/2026-11-14-facts.md). Numbers checked by Sarvar. Every source was fetched on the date below. Validated by src/lib/facts.test.ts.",
+  "checked": "2026-11-14",
+  "facts": [
+    {
+      "id": "moonGravity",
+      "value": 1.62,
+      "unit": "m/s²",
+      "label": "measured",
+      "key": "data.fact.moonGravity",
+      "source": { "title": "Moon Fact Sheet (NSSDCA, NASA Goddard)", "url": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/moonfact.html" },
+      "quote": "Surface gravity (m/s2): Moon 1.62, Earth 9.80, Ratio (Moon/Earth) 0.165",
+      "where": "Walking and jumping physics (Moon gravity in CLAUDE.md, docs/TASKS.md §4.9)"
+    },
+    {
+      "id": "jumpHeight",
+      "value": 6,
+      "unit": "× higher",
+      "label": "computed",
+      "key": "data.fact.jumpHeight",
+      "source": { "title": "Earth's Moon: Facts (NASA Science)", "url": "https://science.nasa.gov/moon/facts/" },
+      "quote": "the gravity on the surface of the Moon is one-sixth of Earth's, which is why in footage of moonwalks, astronauts appear to almost bounce across the surface.",
+      "calc": "Jump height = v² ÷ 2g, so the same take-off speed lifts you 9.80 ÷ 1.62 = 6.05 times higher (gravity values from the NSSDCA Moon Fact Sheet).",
+      "where": "Astronaut jump (docs/TASKS.md §4.9)"
+    },
+    {
+      "id": "moonDistance",
+      "value": 384400,
+      "unit": "km",
+      "label": "measured",
+      "key": "data.fact.moonDistance",
+      "source": { "title": "How Far Away Is the Moon? (NASA Space Place)", "url": "https://spaceplace.nasa.gov/moon-distance/en/" },
+      "quote": "The Moon is an average of 238,855 miles (384,400 km) away. How far away is that? That's 30 Earths.",
+      "where": "Data page; distance behind the radio delay and Earth's size in the sky"
+    },
+    {
+      "id": "radioDelay",
+      "value": 1.3,
+      "unit": "s",
+      "label": "computed",
+      "key": "data.fact.radioDelay",
+      "source": { "title": "Laser Beams Reflected Between Earth and Moon Boost Science (NASA)", "url": "https://www.nasa.gov/missions/laser-beams-reflected-between-earth-and-moon-boost-science/" },
+      "quote": "By measuring how long it takes laser light to bounce back — about 2.5 seconds on average — researchers can calculate the distance between Earth laser stations and Moon reflectors",
+      "calc": "Radio travels at the speed of light: 2.5 s there and back ÷ 2 ≈ 1.3 s one way; also 384,400 km ÷ 299,792 km/s = 1.28 s.",
+      "where": "Radio with Houston (story.radio.*)"
+    },
+    {
+      "id": "sunLap",
+      "value": 29.5,
+      "unit": "days",
+      "label": "computed",
+      "key": "data.fact.sunLap",
+      "source": { "title": "Top Moon Questions (NASA Science)", "url": "https://science.nasa.gov/moon/top-moon-questions/" },
+      "quote": "The Moon takes about one month to orbit Earth (27.3 days to complete a revolution, but 29.5 days to change from new moon to new moon). … It takes a little more than two additional days for sunlight to hit the Moon in the same way it did on day zero.",
+      "calc": "One lap of the Sun around the Moon's sky = new moon to new moon = 29.5 days; 360° ÷ 29.5 days ≈ 12° a day, the Sun's daily step in sky.json.",
+      "where": "Sun moves ~12° a day (src/engine/sky.json sun_az_deg, src/scene/Stage.tsx fallback, docs/layout.md)"
+    },
+    {
+      "id": "lowSun",
+      "value": 1.5,
+      "unit": "°",
+      "label": "computed",
+      "key": "data.fact.lowSun",
+      "source": { "title": "Shadows near the Moon's South Pole (NASA Science)", "url": "https://science.nasa.gov/resource/shadows-near-the-moons-south-pole/" },
+      "quote": "At the Moon's North and South Poles, the Sun is never more than 1.5° above or below the horizon. … At the Moon's poles, the Sun is always near the horizon, and the shadows are perpetually long",
+      "calc": "Sky mechanics: 'Unlike Earth's 23.5-degree tilt, the Moon is tilted only 1.5 degrees on its axis' (https://www.nasa.gov/humans-in-space/nasas-artemis-base-camp-on-the-moon-will-need-light-water-elevation/), so near the pole the Sun skims the horizon. The game keeps the Sun at 1.5° (a game rule: sky.json sun_el_deg); at 1.5° a shadow is 1 ÷ tan 1.5° ≈ 38 times longer than the object.",
+      "where": "Low Sun and long shadows (src/scene/Light.tsx)"
+    },
+    {
+      "id": "earthSize",
+      "value": 1.9,
+      "unit": "°",
+      "label": "computed",
+      "key": "data.fact.earthSize",
+      "source": { "title": "Earth Fact Sheet (NSSDCA, NASA Goddard)", "url": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/earthfact.html" },
+      "quote": "Equatorial radius (km) 6378.137",
+      "calc": "Earth's width seen from the Moon: 2 × 6,378 km ÷ 384,400 km = 0.0332 rad = 1.9°. The Moon seen from Earth: 2 × 1,737.4 km ÷ 384,400 km = 0.52° (Moon Fact Sheet), so Earth looks about 3.7 times wider.",
+      "where": "Earth in the sky (sky.json earth_el_deg, features.earthOfTheDay)"
+    },
+    {
+      "id": "noAir",
+      "value": 3e-15,
+      "unit": "bar",
+      "label": "measured",
+      "key": "data.fact.noAir",
+      "source": { "title": "Moon Fact Sheet (NSSDCA, NASA Goddard)", "url": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/moonfact.html" },
+      "quote": "Surface pressure (night): 3 x 10-15 bar (2 x 10-12 torr)",
+      "note": "Earth's air at sea level is about 1 bar. Almost no air: no sound outside, a black sky, almost no ambient light.",
+      "where": "Silence outside (.claude/rules/hud-text.md, Sound), black sky and ambient ≈ 0 (src/scene/Light.tsx)"
+    },
+    {
+      "id": "coldCrater",
+      "value": -248,
+      "unit": "°C",
+      "label": "measured",
+      "key": "data.fact.coldCrater",
+      "source": { "title": "Ten Cool Things Seen in the First Year of LRO (NASA Scientific Visualization Studio)", "url": "https://svs.gsfc.nasa.gov/10595" },
+      "quote": "Diviner, LRO's temperature instrument, found a place in the floor of the moon's Hermite Crater that was detected to be -415 degrees Fahrenheit (-248 Celsius) making it the coldest temperature measured anywhere in the solar system. For comparison, scientists believe that Pluto's surface only gets down to about -300 degrees Fahrenheit (-184 Celsius). Extremely cold regions similar to the one in Hermite Crater were found at the bottoms of several permanently shaded craters at the lunar south pole",
+      "where": "Shadow card (story.card.shadow.*)"
+    },
+    {
+      "id": "iceCrater",
+      "value": 2009,
+      "unit": "year",
+      "label": "measured",
+      "key": "data.fact.iceCrater",
+      "source": { "title": "LCROSS mission page (NASA Science)", "url": "https://science.nasa.gov/mission/lcross/" },
+      "quote": "As planned, LCROSS and its Centaur stage impacted the Moon on Oct. 9, 2009. … The Centaur then crashed onto the surface of the Moon at 11:31 UT in the Cabeus crater at the lunar south pole. … They also confirmed that in some places the water on the south pole is in the form of pure ice crystals.",
+      "where": "Ice card (story.card.ice.*)"
+    },
+    {
+      "id": "crater",
+      "value": 2009,
+      "unit": "year",
+      "label": "measured",
+      "key": "data.fact.crater",
+      "source": { "title": "Lunar Reconnaissance Orbiter (NASA Science)", "url": "https://science.nasa.gov/mission/lro/" },
+      "quote": "LRO has been studying the Moon from up close since 2009, making it the longest-lived lunar orbiting mission ever. The orbiter has mapped the Moon's surface and measured its temperature, composition, and radiation environment",
+      "note": "CRaTER is LRO's radiation instrument: 'The instrument comprises tissue-equivalent plastic and silicon detectors to determine the effects of radiation on human tissue.' (https://nssdc.gsfc.nasa.gov/nmc/experiment/display.action?id=2009-031A-06). The game's archive is CRaTER-D1D2 via NASA OSDR RadLab, 2012–2024.",
+      "where": "Radiation level and ratio on every day (src/engine/weeks.json, ui.truth.*)"
+    },
+    {
+      "id": "calmDose",
+      "value": "5–13",
+      "unit": "µGy/h",
+      "label": "measured",
+      "key": "data.fact.calmDose",
+      "source": { "title": "LRO CRaTER hourly dose rate, NASA OSDR RadLab API (request for the week of 25 Oct 2021)", "url": "https://visualization.osdr.nasa.gov/radlab/api/?instrument=CRaTER&timestamp%3E=2021-09-28&timestamp%3C2021-11-01T01&absorbed_dose_rate%3E=0&format=json" },
+      "quote": "Hourly CRaTER-D1D2 absorbed_dose_rate: the 25th percentile of the 600 readings from 28 Sep to 24 Oct 2021 is 12.43 µGy/h (re-computed from this request on 2026-11-14).",
+      "note": "Range of the calm value (normal_uGy_h) over the 14 weeks in src/engine/weeks.json: 4.86 (2024-05-08) to 13.37 (2020-06-01); every week's request URL is in weeks.json sources. Measured in lunar orbit behind thin shielding, never a dose at the base.",
+      "where": "★★★ radiation badge in µGy/h; the calm value that ratios are divided by (weeks.json normal_uGy_h)"
+    },
+    {
+      "id": "stormPeak",
+      "value": 3692,
+      "unit": "× normal",
+      "label": "measured",
+      "key": "data.fact.stormPeak",
+      "source": { "title": "LRO CRaTER hourly dose rate, NASA OSDR RadLab API (request for the week of 20 Jan 2012)", "url": "https://visualization.osdr.nasa.gov/radlab/api/?instrument=CRaTER&timestamp%3E=2011-12-24&timestamp%3C2012-01-27T01&absorbed_dose_rate%3E=0&format=json" },
+      "quote": "CRaTER-D1D2 hourly readings on 24 Jan 2012: 13,803 to 61,829 µGy/h (re-fetched 2026-11-14).",
+      "note": "Week 2012-01-20, day 5 (24 Jan 2012): day mean 32,395 µGy/h ÷ calm value 8.77 µGy/h = 3692, the largest ratio in weeks.json (weeks.json method: rows are stamped at the end of their hour).",
+      "where": "Truth screen curve (src/ui/play/TruthScreen.tsx), level 4 badge"
+    },
+    {
+      "id": "levelStep",
+      "value": 10,
+      "unit": "× per level",
+      "label": "rule",
+      "key": "data.fact.levelStep",
+      "source": { "title": "NOAA Space Weather Scales (NOAA Space Weather Prediction Center)", "url": "https://www.spaceweather.gov/noaa-scales-explanation" },
+      "quote": "Solar Radiation Storms — Physical measure (Flux level of >= 10 MeV particles): S 1 10, S 2 10^2, S 3 10^3, S 4 10^4, S 5 10^5",
+      "note": "The game's levels 0–4 start at 2, 10, 100 and 1,000 times normal (docs/rules.md, Radiation). The cut points are a game rule shaped like NOAA's scale, where each level is ten times the one before; the game applies them to the CRaTER ratio, not to particle flux.",
+      "where": "Radiation level badge 0–4 (ui.level.*)"
+    },
+    {
+      "id": "donkiFlare",
+      "value": "X1.0",
+      "unit": "flare class",
+      "label": "measured",
+      "key": "data.fact.donkiFlare",
+      "source": { "title": "DONKI flare record FLR 18096 (CCMC, NASA Goddard)", "url": "https://ccmc.gsfc.nasa.gov/DONKI/view/FLR/18096/-1" },
+      "quote": "Intensity : X1.0 class … Start Time : 2021-10-28T15:17:00Z Peak Time : 2021-10-28T15:35:00Z End Time : 2021-10-28T15:48:00Z Detecting Spacecraft GOES-P: EXIS",
+      "note": "DONKI is the space-weather event database of the Community Coordinated Modeling Center; the game reads its flare (FLR) and particle (SEP) records for each week. Same flare in the API: https://ccmc.gsfc.nasa.gov/DONKI-API/get/FLR?startDate=2021-10-25&endDate=2021-10-31",
+      "where": "Flare alert card, week 2021-10-25 day 4 (weeks.json flares, public/data/media/2021-10-25/manifest.json)"
+    },
+    {
+      "id": "sdo131",
+      "value": 131,
+      "unit": "Å",
+      "label": "measured",
+      "key": "data.fact.sdo131",
+      "source": { "title": "SDO data channels (NASA Solar Dynamics Observatory)", "url": "https://sdo.gsfc.nasa.gov/data/channels.php" },
+      "quote": "131 Å — Fe xx, xxiii — Flaring regions — 7.0, 7.2",
+      "note": "131 Å = 13.1 nm, extreme ultraviolet that eyes cannot see; log T 7.0 = about 10 million kelvin. The colours of the picture are false colour.",
+      "where": "Sun pictures before and at the flare (public/data/media/<week>/sdo-*.webp)"
+    },
+    {
+      "id": "earthPhoto",
+      "value": 1,
+      "unit": "day",
+      "label": "measured",
+      "key": "data.fact.earthPhoto",
+      "source": { "title": "VIIRS (LAADS DAAC, NASA)", "url": "https://ladsweb.modaps.eosdis.nasa.gov/missions-and-measurements/viirs/" },
+      "quote": "VIIRS is one of five instruments onboard the Suomi National Polar-orbiting Partnership (NPP) satellite … Swath Dimensions: 3000km, nearly global coverage every day",
+      "note": "The Earth pictures of week 2021-10-25 are the GIBS layer VIIRS_SNPP_CorrectedReflectance_TrueColor for each day of the week (manifest.json).",
+      "where": "Earth of that day on the globe (public/data/media/<week>/earth-<date>.webp)"
+    }
+  ]
+}
