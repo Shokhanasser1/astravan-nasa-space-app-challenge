@@ -1,0 +1,107 @@
+import { useRef } from 'react';
+import { useFrame, useThree } from '@react-three/fiber';
+import { Instance, Instances } from '@react-three/drei';
+import * as THREE from 'three';
+import { DOOR_AZ, LAYOUT } from '../layout';
+import { camState } from '../anim';
+import { GLOW, MAT } from './materials';
+import type { TapHandler } from './tap';
+
+const R = 1.7; // shell radius; 3.6 m tall with the dome (docs/layout.md)
+const GAP = THREE.MathUtils.degToRad(70); // open side of the interior: the window towards the hub
+const WINDOW_AZ = [DOOR_AZ - Math.PI / 2, DOOR_AZ + Math.PI / 2];
+
+/** Habitat → Life Support. Windows glow when it has batteries; wall rings rise around it (one per level). */
+export function Habitat({ on, wall, tap }: { on: boolean; wall: number; tap: TapHandler }) {
+  const [x, z] = LAYOUT.habitat;
+  return (
+    <group position={[x, 0, z]}>
+      <group onClick={tap}>
+        <mesh position={[0, 1.4, 0]} material={MAT.panel} castShadow receiveShadow>
+          <cylinderGeometry args={[R, R, 2.4, 32, 1, true]} />
+        </mesh>
+        <mesh position={[0, 2.6, 0]} scale={[1, 0.6, 1]} material={MAT.panel} castShadow>
+          <sphereGeometry args={[R, 32, 10, 0, Math.PI * 2, 0, Math.PI / 2]} />
+        </mesh>
+        <mesh position={[0, 0.1, 0]} material={MAT.gold}>
+          <cylinderGeometry args={[R + 0.05, R + 0.05, 0.2, 32]} />
+        </mesh>
+        <mesh position={[Math.sin(DOOR_AZ) * (R + 0.01), 1.1, Math.cos(DOOR_AZ) * (R + 0.01)]} rotation-y={DOOR_AZ} material={MAT.glass}>
+          <planeGeometry args={[0.9, 1.8]} />
+        </mesh>
+        <Instances limit={2} material={on ? GLOW.window : GLOW.dark} frustumCulled={false}>
+          <planeGeometry args={[0.55, 0.38]} />
+          {WINDOW_AZ.map((a) => (
+            <Instance key={a} position={[Math.sin(a) * (R + 0.01), 1.9, Math.cos(a) * (R + 0.01)]} rotation={[0, a, 0]} />
+          ))}
+        </Instances>
+      </group>
+      <Interior />
+      {Array.from({ length: Math.min(3, wall) }, (_, i) => (
+        <WallRing key={i} level={i} />
+      ))}
+    </group>
+  );
+}
+
+/** Seen only from the inside point: unlit walls with the open side towards the hub, floor, ceiling, one lamp. */
+function Interior() {
+  const ref = useRef<THREE.Group>(null);
+  useFrame(() => {
+    if (ref.current) ref.current.visible = camState.inside;
+  });
+  const thetaStart = DOOR_AZ + GAP / 2;
+  return (
+    <group ref={ref} visible={false}>
+      <mesh position={[0, 1.4, 0]}>
+        <cylinderGeometry args={[R - 0.08, R - 0.08, 2.4, 32, 1, true, thetaStart, Math.PI * 2 - GAP]} />
+        <meshBasicMaterial color="#262b3a" side={THREE.BackSide} />
+      </mesh>
+      {/* sill and lintel: the gap becomes a window from 1.0 m to 2.2 m */}
+      <mesh position={[0, 0.6, 0]}>
+        <cylinderGeometry args={[R - 0.08, R - 0.08, 0.8, 12, 1, true, thetaStart - GAP, GAP]} />
+        <meshBasicMaterial color="#2e3444" side={THREE.BackSide} />
+      </mesh>
+      <mesh position={[0, 2.4, 0]}>
+        <cylinderGeometry args={[R - 0.08, R - 0.08, 0.4, 12, 1, true, thetaStart - GAP, GAP]} />
+        <meshBasicMaterial color="#2e3444" side={THREE.BackSide} />
+      </mesh>
+      <mesh position={[0, 2.55, 0]} rotation-x={Math.PI / 2}>
+        <circleGeometry args={[R - 0.08, 32]} />
+        <meshBasicMaterial color="#1b1f2b" />
+      </mesh>
+      <mesh position={[0, 0.21, 0]} rotation-x={-Math.PI / 2}>
+        <circleGeometry args={[R - 0.08, 32]} />
+        <meshBasicMaterial color="#30343f" />
+      </mesh>
+      <mesh position={[Math.sin(DOOR_AZ + Math.PI) * 1.1, 0.5, Math.cos(DOOR_AZ + Math.PI) * 1.1]} rotation-y={DOOR_AZ}>
+        <boxGeometry args={[1.5, 0.5, 0.7]} />
+        <meshBasicMaterial color="#3b4152" />
+      </mesh>
+      <mesh position={[0, 2.45, 0]} material={GLOW.window}>
+        <boxGeometry args={[0.9, 0.04, 0.12]} />
+      </mesh>
+    </group>
+  );
+}
+
+/** One regolith ring; a new level rises from the ground in 0.6 s. */
+function WallRing({ level }: { level: number }) {
+  const ref = useRef<THREE.Mesh>(null);
+  const start = useRef(-1);
+  const invalidate = useThree((s) => s.invalidate);
+  const y = 0.18 + level * 0.36;
+  useFrame((state) => {
+    const m = ref.current;
+    if (!m) return;
+    if (start.current < 0) start.current = state.clock.elapsedTime;
+    const t = Math.min(1, (state.clock.elapsedTime - start.current) / 0.6);
+    m.position.y = y - 0.5 * (1 - t) * (1 - t);
+    if (t < 1) invalidate();
+  });
+  return (
+    <mesh ref={ref} position={[0, y - 0.5, 0]} rotation-x={-Math.PI / 2} material={MAT.regolith}>
+      <torusGeometry args={[2.2, 0.22, 8, 40]} />
+    </mesh>
+  );
+}

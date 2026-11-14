@@ -8,6 +8,7 @@ import { features } from '../config/features';
 import { LOWER, TIERS, hasWebGL, initialTier, type Tier } from './quality';
 import { Light } from './Light';
 import { BaseScene } from './BaseScene';
+import { Rig } from './Rig';
 
 // Draco decoder from our own server (copied by scripts/copy-decoders.mjs), never from Google's CDN:
 // the venue Wi-Fi may be down (developer guide §06). Meshopt-compressed models need no decoder file.
@@ -16,6 +17,10 @@ useGLTF.setDecoderPath(`${import.meta.env.BASE_URL}draco/`);
 const Perf = lazy(() => import('r3f-perf').then((m) => ({ default: m.Perf })));
 const params = new URLSearchParams(location.search);
 const showPerf = params.has('perf');
+// Fallback camera (developer guide view from outside): ?cam=overview. Default is first person (Rig).
+const overview = params.get('cam') === 'overview';
+// Visual fallback when sky.json has no entry for the week: the Sun circles ~12° a day (developer guide §03).
+const sunFallback = (day: number) => 268 + 12 * (day - 1);
 
 /** Dev/shot only: exposes renderer.info (calls, triangles) for scripts/shot.mjs and agents. */
 function Probe() {
@@ -68,7 +73,7 @@ export function Stage({ view, onTap }: { view: View; onTap: (k: Machine) => void
         onCreated={({ gl, camera }) => {
           gl.toneMapping = THREE.ACESFilmicToneMapping;
           gl.outputColorSpace = THREE.SRGBColorSpace;
-          camera.lookAt(0, 1, 0);
+          if (overview) camera.lookAt(0, 1, 0);
         }}
         role="img"
         aria-label="Moon base"
@@ -76,9 +81,10 @@ export function Stage({ view, onTap }: { view: View; onTap: (k: Machine) => void
         <PerformanceMonitor onDecline={() => setTier((t) => LOWER[t])} flipflops={2} />
         {/* Stars do not twinkle: no air. Replace with the Yale Bright Star catalogue when ready. */}
         <Stars radius={900} depth={50} count={2500} factor={4} fade={false} speed={0} />
-        {features.light ? <Light sunAzDeg={view.sunAzDeg} shadowSize={q.shadow} /> : <ambientLight intensity={0.6} />}
+        {features.light ? <Light sunAzDeg={view.sunAzDeg ?? sunFallback(view.day)} shadowSize={q.shadow} /> : <ambientLight intensity={0.6} />}
         <Suspense fallback={null}>
           <BaseScene view={view} onTap={onTap} />
+          {!overview && <Rig view={view} />}
           <Preload all />
         </Suspense>
         {(q.bloom || q.vignette) && (
