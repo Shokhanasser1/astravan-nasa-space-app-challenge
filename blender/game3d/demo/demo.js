@@ -3,7 +3,7 @@
 //
 // Ishga tushirish:  cd ~/dev/oy-karvonsaroyi-3d/game3d && python3 -m http.server 8000
 //                   -> http://localhost:8000/demo/        (file:// orqali GLB yuklanmaydi)
-// URL parametrlari:  ?g=earth|mars|moon   ?level=none (oy_level.glb bo'lsa ham placeholder)   ?debug=1
+// URL parametrlari:  ?g=earth|mars|moon   ?level=none (oy_level.glb bo'lsa ham placeholder)   ?props=0   ?debug=1
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
@@ -121,7 +121,10 @@ async function makeEarth() {
     const mat = new THREE.MeshStandardMaterial({ color: 0x3a6fd8, roughness: 0.75, emissive: 0x050a18 });
     holder.add(new THREE.Mesh(new THREE.SphereGeometry(1, 48, 24), mat));
   }
-  holder.traverse((o) => { if (o.isMesh) { o.castShadow = false; o.receiveShadow = false; } });
+  holder.traverse((o) => {
+    if ((o.name || '').startsWith('COL_')) o.visible = false;      // asset collider box: never draw it
+    if (o.isMesh) { o.castShadow = false; o.receiveShadow = false; }
+  });
   return holder;
 }
 
@@ -170,6 +173,7 @@ async function setupSky() {
   const sm = touchFirst ? 1024 : 2048;
   sun.shadow.mapSize.set(sm, sm);
   Object.assign(sun.shadow.camera, { left: -22, right: 22, top: 22, bottom: -22, near: 1, far: 160 });
+  sun.shadow.camera.updateProjectionMatrix();          // three does not do this for directional shadows
   sun.shadow.bias = -0.0004;
   sun.shadow.normalBias = 0.03;
   scene.add(sun, sun.target);
@@ -180,10 +184,12 @@ async function setupSky() {
 
 // ---------------------------------------------------------------------------- level
 const SCENERY = [
-  // id = game3d/assets/<id>.glb (real scale, origin bottom-centre). Replaces the placeholder + its COL boxes.
-  { id: 'hdu-1', replace: ['HDU_placeholder', 'COL_hdu_a', 'COL_hdu_b'], pos: [0, 0, -12], yaw: 0 },
-  { id: 'sev', replace: ['SEV_placeholder', 'COL_sev'], pos: [9, 0, -3], yaw: 0.5 },
-  { id: 'rassor', replace: [], pos: [-7, 0, -5], yaw: 0.9 },
+  // id = game3d/assets/<id>.glb (real scale, metres; COL_<id> boxes inside). Replaces the placeholder + its COL boxes.
+  // hdu-1 (shell) and hdu-2 (deck, porch ramp) share one NASA frame -> same transform; ramp turned toward the spawn.
+  { id: 'hdu-1', replace: ['HDU_placeholder', 'COL_hdu_a', 'COL_hdu_b'], pos: [0, 0, -14], yaw: Math.PI },
+  { id: 'hdu-2', replace: [], pos: [0, 0, -14], yaw: Math.PI },
+  { id: 'sev', replace: ['SEV_placeholder', 'COL_sev'], pos: [9, 0, -2], yaw: 0.5 },
+  { id: 'rassor', replace: [], pos: [-5, 0, -1], yaw: 0.9 },
 ];
 const usedAssets = [];
 
@@ -216,7 +222,9 @@ async function decorateFallback(root) {
   // crew-lock bag look-alike for the BAG_ placeholders
   const bagG = await loadGLB('assets/crew-lock-bag.glb');
   if (bagG) {
-    const bags = root.children.filter((o) => (o.name || '').startsWith('BAG_'));
+    const bags = root.children.filter((o) => (o.name || '').startsWith('BAG_'))
+      .sort((a, b) => a.position.y - b.position.y);
+    const placed = [];
     for (const bag of bags) {
       const v = bagG.scene.clone(true);
       const lb = localBox(v);
@@ -228,6 +236,14 @@ async function decorateFallback(root) {
       v.position.set(-c.x * s, -lb.min.y * s, -c.z * s);
       bag.clear();
       bag.add(v);
+      // re-stack: the real bag has another height than the placeholder box
+      let y = 0;
+      for (const o of placed) {
+        if (Math.hypot(o.position.x - bag.position.x, o.position.z - bag.position.z) < 0.3) y = Math.max(y, o.position.y + o.userData.h);
+      }
+      bag.position.y = y;
+      bag.userData.h = size.y * s;
+      placed.push(bag);
     }
     usedAssets.push('crew-lock-bag');
   }
@@ -297,7 +313,9 @@ function updateHud(game, levelFrom) {
     $('hCompare').textContent = `Yerda / on Earth: ${fmt(h.jumpHEarth)} m → bu yerda ${fmt(h.ratio, 1)}× baland`;
   }
   $('hLast').textContent = h.lastJumpPeak > 0 ? `${fmt(h.lastJumpPeak)} m` : '—';
-  $('hWeight').textContent = `${Math.round(h.weightN)} N  (Yerda ${Math.round(h.weightNEarth)} N)`;
+  $('hWeight').textContent = h.gravityKey === 'earth'
+    ? `${Math.round(h.weightN)} N  (Oyda ${Math.round(h.totalKg * GRAVITY.moon)} N)`
+    : `${Math.round(h.weightN)} N  (Yerda ${Math.round(h.weightNEarth)} N)`;
   let prompt = '';
   if (game.messageT > 0) prompt = game.message;
   else if (h.pouring) prompt = 'Suv quyilmoqda… · Pouring water';
@@ -335,7 +353,7 @@ async function main() {
   }
   if (!levelRoot) {
     levelRoot = buildFallbackLevel();
-    await decorateFallback(levelRoot);
+    if (params.get('props') !== '0') await decorateFallback(levelRoot);   // ?props=0: boxes only (weak tablets)
   }
   scene.add(levelRoot);
 

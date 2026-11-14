@@ -76,6 +76,7 @@ export class Game {
     this.character = character;
     this.anim = character && character.clips && Object.keys(character.clips).length
       ? new AnimController(character.model, character.clips) : null;
+    this.settleBags();                                       // floating bags in a level drop onto their support
     if (character) {
       character.model.position.fromArray(this.body.pos);
       character.model.rotation.y = this.facing;
@@ -87,13 +88,18 @@ export class Game {
     return this.level.ground.heightAt(x, z);
   }
 
-  /** ground or the top of a bag under (x, z) — so bags can be stacked */
-  supportHeight(x, z, exceptBag = null) {
+  /**
+   * Highest surface under (x, z) that is not above maxY: the ground, the top of a bag (stacking)
+   * or the top of an upright box (a shelf / crate). Used to put bags down and to let them settle.
+   */
+  supportHeight(x, z, exceptBag = null, maxY = Infinity) {
     let y = this.groundHeight(x, z);
     for (const c of this.colliders) {
-      if (!c.enabled || !c.bag || c.bag === exceptBag) continue;
+      if (!c.enabled || (c.bag && c.bag === exceptBag)) continue;
+      if (Math.abs(c.u[1][1]) < 0.95) continue;               // only level (upright) tops
       if (!pointInOBB([x, c.c[1], z], c)) continue;
       const top = c.c[1] + c.e[1];
+      if (top > maxY) continue;
       if (y === null || top > y) y = top;
     }
     return y;
@@ -175,7 +181,8 @@ export class Game {
     if (!this.body.onGround) return false;
     const before = { parent: bag.parent, pos: bag.position.clone(), quat: bag.quaternion.clone(),
       scale: bag.scale.clone(), cols: bag.userData.colliders };
-    const box = dropBag(bag, this.levelRoot, this.body.pos, this.facing, (x, z) => this.supportHeight(x, z, bag));
+    const reach = this.body.pos[1] + 1.2;                    // can put it on a low crate, not on a roof
+    const box = dropBag(bag, this.levelRoot, this.body.pos, this.facing, (x, z) => this.supportHeight(x, z, bag, reach));
     // refuse to drop into a wall / vehicle
     const blocked = this.colliders.some((c) => c.enabled && !c.bag && obbOverlapApprox(box, c));
     if (blocked) {
@@ -202,9 +209,10 @@ export class Game {
     free.sort((a, b) => bottom(a) - bottom(b));
     for (const bag of free) {
       const c = this.bagCentre(bag);
-      const support = this.supportHeight(c.x, c.z, bag);
+      const low = bottom(bag);
+      const support = this.supportHeight(c.x, c.z, bag, low + 0.02);
       if (support === null) continue;
-      const dy = support - bottom(bag);
+      const dy = support - low;
       if (dy < -0.01) {
         const wp = bag.getWorldPosition(new THREE.Vector3());
         wp.y += dy;

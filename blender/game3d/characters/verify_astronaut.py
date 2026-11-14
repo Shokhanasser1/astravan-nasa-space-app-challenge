@@ -3,8 +3,11 @@
   /Applications/Blender.app/Contents/MacOS/Blender -b --factory-startup \
       -P game3d/characters/verify_astronaut.py -- [--renders]
 
-Prints: bone count + names, clip names + lengths (s), triangle count, size (m), texture sizes.
---renders: Cycles CPU 16 sample renders of poses from every clip -> _work/verify_*.png
+Prints: bone count + names, clip names + lengths (s), triangle count, size (m), texture sizes,
+and a logo check (coloured pixels where the flags / NASA logo / patch were painted over -> CLEAN).
+--renders: Cycles CPU 16 sample renders of poses -> _work/verify_<clip>_<frame>_<az>.png
+   options: Clip:frame ... (frames at 24 fps after import), --az=<deg> (repeatable), --res=<px height>,
+            --dist=<m>;  --dump-tex: save the embedded textures to _work/tex_*.png
 """
 import bpy, sys, os, math
 from mathutils import Vector, Matrix

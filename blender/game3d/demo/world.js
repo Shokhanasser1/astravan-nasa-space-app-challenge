@@ -122,6 +122,34 @@ export function obbsFromMesh(mesh, name = mesh.name) {
   });
 }
 
+/**
+ * Exact boxes from glTF extras (game3d/assets convention): userData.boxes = JSON string (or array) of
+ * [cx, cy, cz, sx, sy, sz] in the collider node's own space. Returns null when there are none.
+ */
+export function obbsFromBoxes(node, name = node.name) {
+  let boxes = node.userData && node.userData.boxes;
+  if (typeof boxes === 'string') {
+    try { boxes = JSON.parse(boxes); } catch (_) { return null; }
+  }
+  if (!Array.isArray(boxes) || !boxes.length) return null;
+  node.updateWorldMatrix(true, false);
+  const m = node.matrixWorld;
+  const e = m.elements;
+  const ax = new THREE.Vector3(e[0], e[1], e[2]);
+  const ay = new THREE.Vector3(e[4], e[5], e[6]);
+  const az = new THREE.Vector3(e[8], e[9], e[10]);
+  const sx = ax.length(), sy = ay.length(), sz = az.length();
+  ax.normalize(); ay.normalize(); az.normalize();
+  const out = [];
+  for (const b of boxes) {
+    if (!Array.isArray(b) || b.length < 6) continue;
+    const c = new THREE.Vector3(b[0], b[1], b[2]).applyMatrix4(m);
+    out.push(makeOBB(c.toArray(), [ax.toArray(), ay.toArray(), az.toArray()],
+      [Math.max(b[3] * sx / 2, 0.01), Math.max(b[4] * sy / 2, 0.01), Math.max(b[5] * sz / 2, 0.01)], name));
+  }
+  return out.length ? out : null;
+}
+
 /** Box in the object's own frame (all meshes, incl. hidden), ignoring its current transform. */
 export function localBox(obj) {
   obj.updateWorldMatrix(true, true);
@@ -174,6 +202,7 @@ export function parseLevel(root) {
   });
   const meshes = [];
   root.traverse((o) => { if (o.isMesh) meshes.push(o); });
+  const doneBoxes = new Set();
   for (const o of meshes) {
     const col = ancestorWith(o, (a) => hasPrefix(a, 'COL_'));
     if (col) {
@@ -183,7 +212,10 @@ export function parseLevel(root) {
         continue;
       }
       const bag = ancestorWith(o, (a) => hasPrefix(a, 'BAG_'));
-      for (const b of obbsFromMesh(o, col.name)) {
+      if (doneBoxes.has(col)) continue;
+      const exact = obbsFromBoxes(col, col.name);      // assets: exact boxes from glTF extras
+      if (exact) doneBoxes.add(col);
+      for (const b of exact || obbsFromMesh(o, col.name)) {
         b.bag = bag || null;
         colliders.push(b);
       }
@@ -294,6 +326,7 @@ export function buildFallbackLevel() {
   const spawn = new THREE.Object3D();
   spawn.name = 'SPAWN_player';
   spawn.position.set(0, 0, 4);
+  spawn.rotation.y = Math.PI;          // face -Z: the bags and the base are in front
   root.add(spawn);
   return root;
 }
