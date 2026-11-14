@@ -1,26 +1,21 @@
-import type { Dispatch } from 'react';
-import type { Action, Model, View } from '../state/game';
-import { t, type Lang } from '../i18n/t';
+import { useEffect, useMemo, type Dispatch } from 'react';
+import { board as selectBoard, truth as selectTruth, type Action, type Model, type View } from '../state/game';
+import type { Lang } from '../i18n/t';
 import { audio } from '../audio/audio';
+import { Btn, makeTr } from './play/kit';
+import { DayBadge, Gauges, RadioLine, radioKey } from './play/Visor';
+import { NightTablet, PlanTablet } from './play/Tablet';
+import { TruthScreen } from './play/TruthScreen';
 
 /**
- * Lane D (Shoxjahon aka). DOM layer above the Canvas: gauges, labels, four modals, truth screen, language.
- * PLACEHOLDER wiring so the whole loop is playable today; replace with Hud, Labels, CardModal, AlertModal,
- * MorningReport, NightLog, Truth, Curve. Rules: every button shows its price before it is pressed (model.preview);
- * ≤ 8 words per instruction; tap targets ≥ 48 px; fits 360×640; no Uzbek text overflows.
- * 3D labels: DOM elements positioned by camera projection (skeleton's Project), not drei <Html>.
+ * Lane D (Asilbek). DOM layer above the Canvas. This is the PLAYABLE G2 wiring (14 Nov): every control dispatches
+ * the right action and every number comes from the engine selectors (`board`, `truth`). The visor design
+ * (Dizayn 2.0 §04: rings on objects, wrist tablet, visor edge) restyles or replaces `play/*` — keep the wiring.
+ * Text only through keys; the words are written by lane F.
  */
 const LANGS: Lang[] = ['en', 'uz', 'ru'];
-
-function Btn(props: React.ButtonHTMLAttributes<HTMLButtonElement> & { active?: boolean }) {
-  const { active, className = '', ...rest } = props;
-  return (
-    <button
-      {...rest}
-      className={`min-h-12 min-w-12 rounded-xl px-4 py-2 font-semibold ${active ? 'bg-white text-black' : 'bg-white/10 text-white'} active:scale-95 ${className}`}
-    />
-  );
-}
+const RUN_MS = 4000; // the day runs (≤ 6 s, skippable)
+const LAUNCH_MS = 4000;
 
 interface Props {
   model: Model;
@@ -31,47 +26,82 @@ interface Props {
   sound: boolean;
   setSound: (s: boolean) => void;
   onStart: () => void;
+  onContinue?: () => void;
 }
 
-export function Hud({ model, view, dispatch, lang, setLang, sound, setSound, onStart }: Props) {
-  const tr = (k: string, v?: Record<string, string | number>) => t(lang, k, v);
+function TopBar({ lang, setLang, sound, setSound, tr }: Pick<Props, 'lang' | 'setLang' | 'sound' | 'setSound'> & { tr: (k: string) => string }) {
+  return (
+    <div className="pointer-events-auto flex gap-2 self-end">
+      {LANGS.map((l) => (
+        <Btn key={l} data-testid={`lang-${l}`} active={lang === l} onClick={() => setLang(l)}>
+          {l.toUpperCase()}
+        </Btn>
+      ))}
+      <Btn data-testid="sound" active={sound} onClick={() => setSound(!sound)} aria-label={tr('ui.hud.sound')}>
+        ♪
+      </Btn>
+    </div>
+  );
+}
+
+export function Hud({ model, view, dispatch, lang, setLang, sound, setSound, onStart, onContinue }: Props) {
+  const tr = useMemo(() => makeTr(lang), [lang]);
+  const board = useMemo(() => selectBoard(model), [model]);
+  const truth = useMemo(() => selectTruth(model), [model]);
+  const { phase, screen } = model;
+
+  // The day runs by itself and the lander lifts off by itself; the main button skips.
+  useEffect(() => {
+    if (screen !== 'game' || (phase !== 'run' && phase !== 'launch')) return;
+    const id = setTimeout(() => dispatch({ type: 'NEXT' }), phase === 'run' ? RUN_MS : LAUNCH_MS);
+    return () => clearTimeout(id);
+  }, [phase, screen, model.game?.day, dispatch]);
+
+  const confirmBlocked = phase === 'plan' && board?.preview?.warning === 'engine.warn.chooseCard';
   const primary =
-    view.phase === 'plan'
+    phase === 'plan'
       ? { label: tr('ui.board.confirmDay'), action: { type: 'CONFIRM' } as const }
       : { label: tr('ui.hud.next'), action: { type: 'NEXT' } as const };
 
   return (
-    <div className="pointer-events-none fixed inset-0 flex flex-col justify-between p-4" onPointerDown={() => audio.unlock()}>
-      <div className="pointer-events-auto flex gap-2 self-end">
-        {LANGS.map((l) => (
-          <Btn key={l} active={lang === l} onClick={() => setLang(l)}>
-            {l.toUpperCase()}
-          </Btn>
-        ))}
-        <Btn active={sound} onClick={() => setSound(!sound)} aria-label={tr('ui.hud.sound')}>
-          ♪
-        </Btn>
+    <div
+      className="pointer-events-none fixed inset-0 flex flex-col justify-between gap-2 p-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-[max(1rem,env(safe-area-inset-top))]"
+      onPointerDown={() => audio.unlock()}
+    >
+      <div className="flex items-start justify-between gap-2">
+        {screen === 'game' && phase !== 'truth' ? <DayBadge view={view} board={board} tr={tr} /> : <span />}
+        <TopBar lang={lang} setLang={setLang} sound={sound} setSound={setSound} tr={tr} />
       </div>
 
-      {model.screen === 'start' && (
+      {screen !== 'game' && (
         <div className="pointer-events-auto flex flex-col items-center gap-4 self-center">
-          <Btn onClick={onStart}>{tr('ui.start.mission')}</Btn>
+          <Btn data-testid="start-mission" onClick={onStart}>
+            {tr('ui.start.mission')}
+          </Btn>
+          {onContinue && (
+            <Btn data-testid="continue" onClick={onContinue}>
+              {tr('ui.start.continue')}
+            </Btn>
+          )}
         </div>
       )}
 
-      {model.screen === 'game' && view.phase !== 'truth' && (
-        <div className="pointer-events-auto flex items-center justify-between gap-2">
-          <span className="text-lg" data-phase={view.phase}>
-            {tr('ui.hud.dayOf', { day: view.day, total: 7 })} · {view.phase}
-          </span>
-          <Btn onClick={() => dispatch(primary.action)}>{primary.label}</Btn>
-        </div>
-      )}
+      {screen === 'game' && phase === 'truth' && truth && <TruthScreen truth={truth} dispatch={dispatch} tr={tr} />}
 
-      {model.screen === 'game' && view.phase === 'truth' && (
-        <div className="pointer-events-auto flex flex-col items-center gap-4 self-center">
-          <span className="text-2xl">{model.week?.id}</span>
-          <Btn onClick={() => dispatch({ type: 'NEXT' })}>{tr('ui.end.again')}</Btn>
+      {screen === 'game' && phase !== 'truth' && (
+        <div className="flex flex-col gap-2" data-phase={phase}>
+          {(phase === 'morning' || phase === 'plan') && <RadioLine textKey={radioKey(model, board)} tr={tr} />}
+          {phase === 'plan' && board && <PlanTablet board={board} model={model} dispatch={dispatch} tr={tr} />}
+          {phase === 'night' && <NightTablet model={model} tr={tr} />}
+          <Gauges model={model} board={phase === 'plan' ? board : null} tr={tr} />
+          <Btn
+            data-testid={phase === 'plan' ? 'confirm-day' : 'next'}
+            className="pointer-events-auto w-full text-lg"
+            disabled={confirmBlocked}
+            onClick={() => dispatch(primary.action)}
+          >
+            {primary.label}
+          </Btn>
         </div>
       )}
     </div>
