@@ -31,6 +31,20 @@ Pick a real week for a whole class: `/?week=2021-10-25`.
 - `docs/AI-USE.md` — how AI tools were used
 - `CREDITS.md` — every third-party file and its licence
 - `CLAUDE.md`, `.claude/` — rules and skills for Claude Code
+- `blender/README.md` — Samandar's NASA 3D work (outside the game build); heavy sources are in a Release, see below
+
+## Blender sources: in Releases, not in git
+
+The heavy 3D files are kept out of git so that every `git pull` and CI run stays small. Download them from the
+GitHub Release [`blender-sources-2026-11-14`](https://github.com/Shokhanasser1/astravan-nasa-space-app-challenge/releases/tag/blender-sources-2026-11-14) (pre-release):
+one zip, `oy-karvonsaroyi-3d-blender-sources.zip`, ~400 MB (479 files).
+
+- 7 Blender files: `scenes/{yer,xks,oy,mars,koinot}/*.blend`, `review/BARCHA_RENDERLAR.blend` (all renders in one file),
+  `game3d/characters/_work/astronaut_rig.blend` (skeleton and animations).
+- The 35 original NASA GLBs (`source/models/`), 97 full-size PNG renders and 64 PNG sprite sheets.
+- Unzip it outside the repo (for example `~/dev/oy-karvonsaroyi-3d`) and open the `.blend` files in Blender 5.3+.
+  How to use them: `blender/README.md`.
+- **Do not commit these files to the repo.** If you change them, publish a new Release or tell Samandar.
 
 ## Use of Super Intelligence (SI)
 
