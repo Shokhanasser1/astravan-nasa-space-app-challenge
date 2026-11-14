@@ -35,3 +35,4 @@ shots/
 
 # Plan workspaces (executing-plans ledger)
 .superpowers/
+__pycache__/
