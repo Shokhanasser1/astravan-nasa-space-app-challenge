@@ -163,6 +163,8 @@ export function MapPanel({ apply, tr }: { apply: (e: Effect) => void; tr: Tr }) 
 const HELP: { keys: string[]; touch: string; text: string; walk?: boolean }[] = [
   { keys: ['W', 'A', 'S', 'D'], touch: '🕹', text: 'ui.help.walk', walk: true },
   { keys: ['←', '→'], touch: '🕹', text: 'ui.help.turn', walk: true },
+  { keys: ['Shift'], touch: '🕹', text: 'ui.help.run', walk: true },
+  { keys: ['Space'], touch: '⤒', text: 'ui.help.jump', walk: true },
   { keys: ['🖱'], touch: '👆', text: 'ui.help.look' },
   { keys: ['E', '🖱'], touch: '✋', text: 'ui.help.use' },
   { keys: ['Q'], touch: '↩', text: 'ui.help.undo' },

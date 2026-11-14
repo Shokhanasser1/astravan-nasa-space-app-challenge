@@ -19,7 +19,21 @@ npm run e2e        # Playwright, phone and laptop (first: npx playwright install
 npm run db         # local PocketBase for playtest results (optional)
 ```
 
-Pick a real week for a whole class: `/?week=2021-10-25`.
+Pick a real week for a whole class: `/?week=2021-10-25`. Try hand control (experiment, laptop camera): `/?hands`.
+
+## What you play
+
+- A suited astronaut on the real ground of the Shackleton–de Gerlache ridge (NASA LRO LOLA): walk (W A S D or the
+  stick), lope (Shift), jump 0.44 m at Moon gravity (Space or ⤒); after a jump a hologram shows h = v²/2g and the
+  Earth jump. Six base buildings (NASA-based models), each a machine of the week.
+- Each day: radiation from the real week (LRO CRaTER, hourly; flares and particles from DONKI), mission control
+  (CAPCOM) as a hologram that reads its line aloud, a plan with prices shown before you press, the night log.
+- The sky of that week: the Sun's direction (computed, checked against JPL Horizons), Earth of the day at its real
+  height with the NASA GIBS picture of that day, and on the flare's day the SDO photo of the Sun.
+- On the way home the truth: the real dates, the measured curve, the SDO flare before and at its peak.
+- Every number carries a mark: measured, computed or game rule. Nothing about the player leaves the device; progress
+  is saved in the browser.
+- Controls: `?` in the game, or `docs/specs/2026-11-14-controls-guide.html`.
 
 ## Docs
 

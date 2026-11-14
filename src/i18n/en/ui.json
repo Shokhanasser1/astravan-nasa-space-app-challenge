@@ -81,5 +81,7 @@
   "ui.hand.loading": "Starting the camera…",
   "ui.hand.help": "☝️ point · 🤏 tap · ✋ walk · ✊ jump",
   "ui.hand.private": "Only hand points. No picture is kept or sent.",
-  "ui.hand.error": "No camera, or it was not allowed."
+  "ui.hand.error": "No camera, or it was not allowed.",
+  "ui.help.run": "Hold to lope (Apollo-style run)",
+  "ui.help.jump": "Jump (0.44 m on the Moon)"
 }

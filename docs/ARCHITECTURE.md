@@ -37,11 +37,17 @@ src/
   engine/  rules.ts  weeks.json  sky.json  week.ts  plans.test.ts      lane A — engine session
   state/   game.ts (View, Model, Action, reducer, toView)              lane B — engine session
   scene/   Stage.tsx  BaseScene.tsx  Light.tsx  quality.ts             lane C — Shoxjahon aka
-           Terrain  Storm  Rig (first person, 6 points)  parts/{Habitat Garden Workshop Lander Scout SolarWing Hub Dish}
-  ui/      Visor (day+level, 3 gauges, radio line, target rings, edge state), WristTablet, Start, Truth  lane D — Asilbek
+           Terrain + ground.ts (real LOLA ground)  Earth (Earth of the day)  Rig (6 points; third person outside)
+           Astronaut  parts/{Habitat Garden Workshop Lander Scout SolarWing Hub Dish}  models/ (NASA-based GLBs)
+  look/    terrain.js rocks.js textures.js fx.js noise.js — real ground, skyline, rocks, boot prints, dust (shared)
+  character/ physics.js (Moon physics, sources inside)  anim.js (clips)  body.ts (walk, lope, jump)  telemetry.ts
+  walk/    collide.ts world.ts (hitboxes)  input.ts (keys, stick, jump)  move.ts walker.ts
+  hand/    gestures.ts tracker.ts — hand control experiment (?hands), MediaPipe on the device
+  ui/      Hud.tsx; play/{Visor Tablet Holo TruthScreen Controls WalkStick HandControl}  lane D — Asilbek
   i18n/    <lang>/{ui,scene,story,engine,data}.json  t.ts   keys per lane; words by Aminjon
   audio/   audio.ts  dosimeter.ts      config/ features.ts   lib/ storage.ts labels.ts   net/ api.ts (off)
-public/models/<pack>/  hab.glb lander.glb …    public/data/media/<week>/  manifest.json sdo-*.webp earth-*.webp    public/fallback/base.webp
+public/models/<pack>/  nasa-base/*.glb astronaut/astronaut.glb …   public/data/media/<week>/  manifest.json sdo-*.webp earth-*.webp
+public/data/terrain/site.json (LOLA)   public/data/facts.json
 docs/    rules.md  layout.md  DATA.md  (plain text from the PDFs, for agents)
 CLAUDE.md  shot.sh
 ```
@@ -83,9 +89,16 @@ day 4, ends in 90 s), before/after questions (counted on the device), saving to 
 
 ## 5. Scene (lane C)
 
+- **The astronaut** (`features.character`, 15 Nov): outside, the camera follows Samandar's rigged astronaut from
+  behind; it walks at 1.0 m/s, lopes at 2.0 m/s (Shift) and jumps 0.44 m (Space, ⤒) at Moon gravity
+  (`src/character/`), on the free walk's hitboxes; boot prints and ballistic dust (`src/look/fx.js`). A float to a
+  standing point is one long lunar hop. Inside the habitat and in the truth pull-back the camera is first person.
 - **First person** (final version, Dizayn 2.0): eye height 1.7 m, six standing points (airlock, power hub = main,
   garden window, workshop, hill, ladder) + inside; swipe to look, tap a marker to float there (~1 s), tap objects to act;
   no shake, level horizon. Fallback: same scene, overview camera. Camera point is scene-local state.
+- **Real ground and sky**: the LOLA heights of the Shackleton–de Gerlache ridge with the team's hill and Ice crater on
+  top (`ground.ts`), rocks, the real 60 km skyline pulled in to 1.5–1.95 km along the line of sight, mountain shadows
+  re-baked each day (`Terrain.tsx`); Earth of the day at its Horizons elevation with its GIBS picture (`Earth.tsx`).
 - One `<Canvas>` (`Stage.tsx`), never remounted. `frameloop="demand"` while calm; `always` during run, launch, storms.
 - Quality tiers (`quality.ts`, developer guide §05): pc → phone → phoneLow → min. `PerformanceMonitor` steps down:
   DPR 1 → Bloom off → shadow 1024 → no shadows, half storm. The child never sets anything.
@@ -107,6 +120,9 @@ Difficulty ★/★★/★★★ changes text length and data depth, and the engi
 Labels in 3D: DOM elements placed by camera projection (a small projector component in `src/scene/` writes their
 position from a ref each frame — to be created; not drei `<Html>`).
 Truth curve: one SVG path, log axis, no chart library.
+Holograms (`play/Holo.tsx`, 15 Nov): mission control (CAPCOM) as a visor hologram that reads its line aloud between
+Quindar tones, the start-screen briefing, the jump physics card (h = v²/2g, F = m·g), the SDO photo on the flare day,
+and the measured / computed / game rule marks on numbers. Hand control experiment: `?hands` (`play/HandControl.tsx`).
 
 ## 7. Data (lane Data — Shoxjahon aka's Claude sessions) — `docs/DATA.md`
 
