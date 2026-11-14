@@ -1,0 +1,3218 @@
+{
+  "meta": {
+    "loyiha": "Oy karvonsaroyi — Team OUTPOST, NASA Space Apps 2026 (Toshkent)",
+    "yaratilgan": "2026-11-14 14:42",
+    "muallif": "claude1 (fakt-tekshiruvchi ishchi)",
+    "holat_belgilari": {
+      "tasdiqlangan": "rasmiy sahifada (nasa.gov, science.nasa.gov, jpl.nasa.gov, ntrs.nasa.gov, nssdc.gsfc.nasa.gov, goes-r.gov / noaa.gov, cdscc.nasa.gov) o'qilgan; URL berilgan",
+      "taxminiy": "ikkilamchi manba, qidiruv natijasi orqali olingan yoki hisoblangan baho",
+      "null": "topilmadi — raqam o'ylab topilmagan"
+    },
+    "brend_qoidasi": "Ruxsat: 'made with NASA data / NASA 3D models'. Mumkin emas: NASA bizni qo'llab-quvvatlaydi degan ma'no; NASA logotipi, bayroq, missiya nishonlari o'yin rasmida.",
+    "kartalar_soni": 35
+  },
+  "maxsus_tekshiruvlar": [
+    {
+      "savol": "Mount Hadley tekislikdan qancha baland? (studiya: ~1.5 km)",
+      "javob": "~4.5 km. Studiyadagi ~1.5 km XATO.",
+      "tafsilot": "Apollo 15 Preliminary Science Report (NASA SP-289), 5-17-rasm: 'Mount Hadley (approximately 4.5 km high)'. NASA 3D/rasm sahifasidagi 'about 4,765 feet' (≈1.45 km) — 14,765 ft (=4.5 km) dagi '1' tushib qolgan xato bo'lishi ehtimoli katta.",
+      "manbalar": [
+        "https://www.nasa.gov/history/alsj/a15/a15psrf5-17.html",
+        "https://science.nasa.gov/3d-resources/moon-mount-hadley/",
+        "https://www.nasa.gov/image-article/mount-hadley/"
+      ],
+      "holat": "tasdiqlangan"
+    },
+    {
+      "savol": "apollo-11-site relyefi necha marta bo'rttirilgan? (studiya: 60×)",
+      "javob": "60× — TO'G'RI. Hudud 30 × 30 km.",
+      "tafsilot": "NASA 3D sahifasi: 'Height map of the area around the Apollo 11 landing site (30x30 km). Exaggerated 60 times in the Z axis.'",
+      "manbalar": [
+        "https://science.nasa.gov/3d-resources/apollo-11-landing-site/"
+      ],
+      "holat": "tasdiqlangan"
+    },
+    {
+      "savol": "NASA HDU va 'Deep Space Habitat' bir xil qurilmami?",
+      "javob": "Ha — bir xil HDU qobig'i, faqat har xil jihozlangan: 2010 — PEM, 2011–2012 — DSH (HDU-DSH).",
+      "tafsilot": "NASA 3D sahifasi DSH ni 'HDU-DSH shell' deb ataydi; NASA 2012 rasm izohi: '2011 version of the deep space habitat ... includes the Habitat Demonstration Unit with the student-built X-Hab loft on top'. NTRS: 2010 da HDU 'PEM' sifatida sinalgan. hdu-1 / hdu-2 = bitta modelning 'part 1' / 'part 2' fayllari.",
+      "manbalar": [
+        "https://science.nasa.gov/3d-resources/habitat-demonstration-unit/",
+        "https://www.nasa.gov/image-article/deep-space-habitat-x-hab-loft/",
+        "https://ntrs.nasa.gov/citations/20110013501"
+      ],
+      "holat": "tasdiqlangan"
+    },
+    {
+      "savol": "Crew Lock Bag va Cargo Transfer Bag o'lchamlari",
+      "javob": "CTB (bitta): 16¾ × 19¾ × 9¼ dyuym ≈ 42.5 × 50.2 × 23.5 sm, 27 kg gacha (STS-92 press kit, tasdiqlangan). CLB: ochiq manbada o'lcham TOPILMADI (null).",
+      "tafsilot": "Ular har xil sumkalar: CTB — XKS yuk sumkasi; CLB — EVA asbob sumkasi. NASA 'water wall' tadqiqotlari CTB larni suv bilan to'ldirishni o'rgangan, CLB ni emas.",
+      "manbalar": [
+        "https://www.nasa.gov/wp-content/uploads/2023/05/sts-092-press-kit.pdf",
+        "https://ntrs.nasa.gov/api/citations/20160006051/downloads/20160006051.pdf",
+        "https://science.nasa.gov/3d-resources/crew-lock-bag/"
+      ],
+      "holat": "tasdiqlangan"
+    },
+    {
+      "savol": "Gateway hozirgi holati (PPE + HALO, 2026)",
+      "javob": "2026-03-24: NASA Gateway'ni 'hozirgi shaklda to'xtatish'ni e'lon qildi. PPE → SR-1 Freedom (2028 oxiri, Mars). HALO → Oy yuzasidagi 3 ta texnologik namoyish. Hech narsa uchirilmagan.",
+      "tafsilot": "NASA 3D sahifasidagi 'Artemis IV dan oldin' degan matn eskirgan.",
+      "manbalar": [
+        "https://www.nasa.gov/news-release/nasa-unveils-initiatives-to-achieve-americas-national-space-policy/",
+        "https://www.nasa.gov/mission/space-reactor-1-freedom/",
+        "https://www.nasa.gov/missions/moon-base/nasa-provides-updates-on-moon-base-cargo-landers-tech-demonstrations/"
+      ],
+      "holat": "tasdiqlangan"
+    }
+  ],
+  "kartalar": [
+    {
+      "id": "lro",
+      "rasmiy_nomi": "Lunar Reconnaissance Orbiter (LRO) — ichidagi CRaTER asbobi bilan",
+      "nima_uz": "Oy atrofida aylanib, uni suratga oladigan, xaritasini chizadigan va radiatsiyani o'lchaydigan robot sun'iy yo'ldosh.",
+      "what_en": "A robot spacecraft that circles the Moon, photographs and maps it, and measures space radiation there.",
+      "raqamlar": [
+        {
+          "nom": "uchirishdagi massa",
+          "qiymat": 1846,
+          "birlik": "kg",
+          "holat": "tasdiqlangan",
+          "manba": "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=2009-031A",
+          "izoh": "NSSDC: 'launch mass of about 1846 kg'"
+        },
+        {
+          "nom": "massa (science.nasa.gov Quick Facts)",
+          "qiymat": 1850,
+          "birlik": "kg (4,000 funt)",
+          "holat": "tasdiqlangan",
+          "manba": "https://science.nasa.gov/mission/lro/about/",
+          "izoh": "NSSDC bilan deyarli bir xil; ba'zi manbalarda 1916 kg (yoqilg'i bilan) ham uchraydi"
+        },
+        {
+          "nom": "quruq massa",
+          "qiymat": 949,
+          "birlik": "kg",
+          "holat": "tasdiqlangan",
+          "manba": "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=2009-031A",
+          "izoh": "'less than 949 kg' (yoqilg'isiz, ko'pi bilan)"
+        },
+        {
+          "nom": "ilmiy asboblar massasi",
+          "qiymat": 92,
+          "birlik": "kg",
+          "holat": "tasdiqlangan",
+          "manba": "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=2009-031A"
+        },
+        {
+          "nom": "o'lcham (yig'ilgan holda, U×E×B)",
+          "qiymat": "3.9 × 2.7 × 2.6",
+          "birlik": "m",
+          "holat": "taxminiy",
+          "manba": "https://spaceflightnow.com/atlas/av020/090610lro.html",
+          "izoh": "Spaceflight Now: '152 inches tall' (~3.9 m); qolgan ikki o'lcham ikkilamchi manbalardan. Rasmiy NASA HTML sahifasida topilmadi"
+        },
+        {
+          "nom": "CRaTER asbobi massasi",
+          "qiymat": 5.6,
+          "birlik": "kg",
+          "holat": "tasdiqlangan",
+          "manba": "https://nssdc.gsfc.nasa.gov/nmc/experiment/display.action?id=2009-031A-06"
+        },
+        {
+          "nom": "boshlang'ich ish orbitasi balandligi",
+          "qiymat": 50,
+          "birlik": "km",
+          "holat": "tasdiqlangan",
+          "manba": "https://science.nasa.gov/mission/lro/about/",
+          "izoh": "'roughly circular at 31 miles (50 kilometers)'"
+        }
+      ],
+      "yillar": [
+        {
+          "voqea": "uchirilgan (LCROSS bilan birga, Atlas V)",
+          "sana": "2009-06-18",
+          "holat": "tasdiqlangan",
+          "manba": "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=2009-031A"
+        },
+        {
+          "voqea": "Oy orbitasiga chiqqan",
+          "sana": "2009-06-23",
+          "holat": "tasdiqlangan",
+          "manba": "https://science.nasa.gov/mission/lro/about/"
+        }
+      ],
+      "hozir": {
+        "matn": "Hali ham Oy atrofida aylanib ishlayapti — Oy atrofidagi eng uzoq ishlagan missiya.",
+        "holat": "tasdiqlangan",
+        "manba": "https://lunar.gsfc.nasa.gov/"
+      },
+      "fakt_uz": "CRaTER ichida inson mushagiga o'xshatib yasalgan maxsus plastmassa (A-150 'to'qimaga teng' plastik) bor: u radiatsiya odam tanasiga qanday ta'sir qilishini o'lchaydi.",
+      "fakt_en": "CRaTER carries a special plastic made to act like human muscle (A-150 tissue-equivalent plastic), so it can measure how radiation would affect a person's body.",
+      "fakt_holat": "tasdiqlangan",
+      "fakt_manba": "https://nssdc.gsfc.nasa.gov/nmc/experiment/display.action?id=2009-031A-06",
+      "oyin_roli": "LRO/CRaTER — Oy yonida quyosh bo'ronlarini o'lchagan 'radiatsiya hisoblagichi'. (Sentyabr 2017 hodisasini CRaTER qayd etgani konferensiya tezisida aytilgan — taxminiy manba: https://ams.confex.com/ams/2019Annual/webprogram/Paper355280.html)",
+      "manbalar": [
+        "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=2009-031A",
+        "https://nssdc.gsfc.nasa.gov/nmc/experiment/display.action?id=2009-031A-06",
+        "https://science.nasa.gov/mission/lro/about/"
+      ],
+      "hujjatlarda_tilga_olingan": [
+        "koinot"
+      ],
+      "bekat_men_taxmin": "oy",
+      "model_inventory": {
+        "title": "Lunar Reconnaissance Orbiter",
+        "bbox_xyz_birlik": [
+          5.446,
+          5.5052,
+          3.6629
+        ],
+        "izoh": "Blender birliklari (Z yuqoriga); masshtab model sayin farq qiladi"
+      },
+      "karta_toliq": true
+    },
+    {
+      "id": "curiosity",
+      "rasmiy_nomi": "Mars Science Laboratory — Curiosity rover (ichida RAD radiatsiya detektori)",
+      "nima_uz": "Marsda yuradigan avtomobil kattaligidagi robot-laboratoriya: toshlarni burg'ulab, Marsda qachonlardir mayda hayot uchun sharoit bo'lganmi — tekshiradi.",
+      "what_en": "A car-sized robot lab driving on Mars, drilling rocks to find out if Mars could once have supported tiny life.",
+      "raqamlar": [
+        {
+          "nom": "massa",
+          "qiymat": 899,
+          "birlik": "kg (1,982 funt)",
+          "holat": "tasdiqlangan",
+          "manba": "https://mars.nasa.gov/multimedia/interactives/learncuriosity/index-2.html"
+        },
+        {
+          "nom": "o'lchami (U × E × B)",
+          "qiymat": "3 × 2.7 × 2.2",
+          "birlik": "m (10 × 9 × 7 ft)",
+          "holat": "tasdiqlangan",
+          "manba": "https://mars.nasa.gov/multimedia/interactives/learncuriosity/index-2.html"
+        },
+        {
+          "nom": "MMRTG energiya manbai: diametr × uzunlik; massa",
+          "qiymat": "64 × 66 sm; ~45 kg",
+          "birlik": "",
+          "holat": "tasdiqlangan",
+          "manba": "https://mars.nasa.gov/multimedia/interactives/learncuriosity/index-2.html"
+        },
+        {
+          "nom": "g'ildirak diametri",
+          "qiymat": 50.8,
+          "birlik": "cm (20 in)",
+          "holat": "tasdiqlangan",
+          "manba": "https://science.nasa.gov/mission/mars-2020-perseverance/rover-components/"
+        },
+        {
+          "nom": "RAD asbobi massasi",
+          "qiymat": 1.56,
+          "birlik": "kg",
+          "holat": "taxminiy",
+          "izoh": "RAD jamoasi konferensiya maqolasi"
+        }
+      ],
+      "yillar": [
+        {
+          "voqea": "uchirilgan",
+          "sana": "2011-11-26",
+          "holat": "tasdiqlangan",
+          "manba": "https://science.nasa.gov/mission/msl-curiosity/"
+        },
+        {
+          "voqea": "Gale krateriga qo'ngan",
+          "sana": "2012-08-06",
+          "holat": "tasdiqlangan",
+          "manba": "https://science.nasa.gov/mission/msl-curiosity/"
+        },
+        {
+          "voqea": "Sharp tog'i bo'ylab 1 km balandlikka ko'tarilgan",
+          "sana": "2026-08-26",
+          "holat": "tasdiqlangan",
+          "manba": "https://science.nasa.gov/mission/msl-curiosity/"
+        }
+      ],
+      "hozir": {
+        "matn": "Marsda, Gale krateri ichidagi Sharp tog'ida ishlamoqda.",
+        "holat": "tasdiqlangan",
+        "manba": "https://science.nasa.gov/mission/msl-curiosity/"
+      },
+      "fakt_uz": "2017-yil 11-sentabrdagi quyosh bo'ronida RAD Mars yuzasida shu paytgacha o'lchangan eng katta radiatsiyadan 2 baravardan ko'p qayd etdi; yuqori qiymat 2 kundan ortiq davom etdi, Marsda esa butun sayyora bo'ylab qutb yog'dusi paydo bo'ldi.",
+      "fakt_en": "During the solar storm of 11 Sept 2017, RAD measured radiation on the Martian surface more than double any level seen before; it lasted over two days, and a planet-wide aurora lit up Mars.",
+      "fakt_holat": "tasdiqlangan",
+      "fakt_manba": "https://www.jpl.nasa.gov/news/large-solar-storm-sparks-global-aurora-and-doubles-radiation-levels-on-the-martian-surface/",
+      "oyin_roli": "Curiosity RAD — 2017-yil sentabr bo'ronini Mars yuzasida o'lchagan.",
+      "model_izoh": "tex_05 teksturasida NASA belgisi va yozuvlar bor — bo'yash kerak.",
+      "manbalar": [
+        "https://science.nasa.gov/mission/msl-curiosity/",
+        "https://www.jpl.nasa.gov/news/large-solar-storm-sparks-global-aurora-and-doubles-radiation-levels-on-the-martian-surface/",
+        "https://mars.nasa.gov/multimedia/interactives/learncuriosity/index-2.html"
+      ],
+      "hujjatlarda_tilga_olingan": [
+        "mars"
+      ],
+      "bekat_men_taxmin": "mars",
+      "model_inventory": {
+        "title": "Curiosity rover (MSL)",
+        "bbox_xyz_birlik": [
+          2.7818,
+          3.9447,
+          2.2152
+        ],
+        "izoh": "Blender birliklari (Z yuqoriga); masshtab model sayin farq qiladi"
+      },
+      "karta_toliq": true
+    },
+    {
+      "id": "sdo",
+      "rasmiy_nomi": "Solar Dynamics Observatory (SDO)",
+      "nima_uz": "Quyoshni kechayu kunduz kuzatib, uni juda aniq suratga oladigan kosmik observatoriya.",
+      "what_en": "A space observatory that watches the Sun all day and night and takes very sharp pictures of it.",
+      "raqamlar": [
+        {
+          "nom": "uchirishdagi massa",
+          "qiymat": 3000,
+          "birlik": "kg",
+          "holat": "tasdiqlangan",
+          "manba": "https://sdo.gsfc.nasa.gov/mission/spacecraft.php",
+          "izoh": "asboblar 300 kg, kema 1300 kg, yoqilg'i 1400 kg"
+        },
+        {
+          "nom": "uzunligi (Quyoshga qaragan o'q bo'yicha)",
+          "qiymat": 4.5,
+          "birlik": "m",
+          "holat": "tasdiqlangan",
+          "manba": "https://sdo.gsfc.nasa.gov/mission/spacecraft.php"
+        },
+        {
+          "nom": "har bir yon tomoni",
+          "qiymat": 2.22,
+          "birlik": "m",
+          "holat": "tasdiqlangan",
+          "manba": "https://sdo.gsfc.nasa.gov/mission/spacecraft.php"
+        },
+        {
+          "nom": "ochilgan quyosh panellari kengligi",
+          "qiymat": 6.25,
+          "birlik": "m",
+          "holat": "tasdiqlangan",
+          "manba": "https://sdo.gsfc.nasa.gov/mission/spacecraft.php"
+        },
+        {
+          "nom": "quvvat",
+          "qiymat": 1500,
+          "birlik": "W",
+          "holat": "tasdiqlangan",
+          "manba": "https://sdo.gsfc.nasa.gov/mission/spacecraft.php"
+        },
+        {
+          "nom": "AIA kamerasi: suratlar oralig'i (10 to'lqin uzunligida)",
+          "qiymat": 12,
+          "birlik": "soniya",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/solar-system/watch-a-10-year-time-lapse-of-sun-from-nasas-sdo/",
+          "izoh": "nasa.gov: 'AIA ... captures images every 12 seconds at 10 different wavelengths'. Eslatma: sdo.gsfc.nasa.gov/instruments sahifasida '10 seconds' deyilgan — 12 s aniqroq (AIA spetsifikatsiyasi)"
+        },
+        {
+          "nom": "SDO uchala asbobi bilan: bitta surat har",
+          "qiymat": 0.75,
+          "birlik": "soniyada",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/solar-system/watch-a-10-year-time-lapse-of-sun-from-nasas-sdo/"
+        }
+      ],
+      "yillar": [
+        {
+          "voqea": "uchirilgan",
+          "sana": "2010-02-11",
+          "holat": "tasdiqlangan",
+          "manba": "https://science.nasa.gov/mission/sdo/"
+        }
+      ],
+      "hozir": {
+        "matn": "Yer atrofidagi orbitada, Quyoshni kuzatishda davom etmoqda.",
+        "holat": "taxminiy",
+        "manba": "https://science.nasa.gov/mission/sdo/",
+        "izoh": "Sahifada 'faol' degan aniq so'z ko'rilmadi; missiya sahifasi yangilanib turibdi"
+      },
+      "fakt_uz": "SDO ning AIA kamerasi Quyoshni 10 xil 'rang'da (to'lqin uzunligida) har 12 soniyada suratga oladi — bu ranglarning ko'pini odam ko'zi ko'rmaydi.",
+      "fakt_en": "SDO's AIA camera photographs the Sun in 10 different \"colours\" (wavelengths) every 12 seconds — most of them invisible to our eyes.",
+      "fakt_holat": "tasdiqlangan",
+      "fakt_manba": "https://www.nasa.gov/solar-system/watch-a-10-year-time-lapse-of-sun-from-nasas-sdo/",
+      "oyin_roli": "SDO — 'Quyosh kamerasi': chaqnashni birinchi bo'lib ko'radi.",
+      "manbalar": [
+        "https://sdo.gsfc.nasa.gov/mission/spacecraft.php",
+        "https://www.nasa.gov/solar-system/watch-a-10-year-time-lapse-of-sun-from-nasas-sdo/",
+        "https://science.nasa.gov/mission/sdo/"
+      ],
+      "hujjatlarda_tilga_olingan": [
+        "koinot"
+      ],
+      "bekat_men_taxmin": "koinot",
+      "model_inventory": {
+        "title": "Solar Dynamics Observatory",
+        "bbox_xyz_birlik": [
+          37.0167,
+          37.0347,
+          30.7474
+        ],
+        "izoh": "Blender birliklari (Z yuqoriga); masshtab model sayin farq qiladi"
+      },
+      "karta_toliq": true
+    },
+    {
+      "id": "goes",
+      "rasmiy_nomi": "GOES — Geostationary Operational Environmental Satellite (raqamlar GOES-R seriyasi uchun: GOES-16/17/18/19)",
+      "nima_uz": "Yerdan 35 ming km dan ko'proq balandlikda bir joyda 'osilib' turib, ob-havoni va Quyoshdan keladigan bo'ronlarni kuzatadigan sun'iy yo'ldosh.",
+      "what_en": "A satellite that \"hangs\" over one spot more than 35,000 km above Earth, watching the weather and storms coming from the Sun.",
+      "raqamlar": [
+        {
+          "nom": "o'lcham",
+          "qiymat": "6.1 × 5.6 × 3.9",
+          "birlik": "m",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.goes-r.gov/spacesegment/spacecraft.html",
+          "izoh": "20 ft × 18.4 ft × 12.8 ft"
+        },
+        {
+          "nom": "quruq massa (GOES-R, S, T)",
+          "qiymat": 2857,
+          "birlik": "kg",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.goes-r.gov/spacesegment/spacecraft.html"
+        },
+        {
+          "nom": "uchirishdagi massa (yoqilg'i bilan, GOES-R, S, T)",
+          "qiymat": 5192,
+          "birlik": "kg",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.goes-r.gov/spacesegment/spacecraft.html"
+        },
+        {
+          "nom": "orbita balandligi",
+          "qiymat": "> 22 000 mil (~35 400 km dan ortiq)",
+          "birlik": "",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/news-release/nasa-opens-media-accreditation-for-noaas-goes-r-november-launch/",
+          "izoh": "NASA: 'more than 22,000 miles above Earth'"
+        }
+      ],
+      "yillar": [
+        {
+          "voqea": "GOES-R (keyin GOES-16) uchirilgan",
+          "sana": "2016-11-19",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/news-release/nasa-successfully-launches-noaa-advanced-geostationary-weather-satellite/",
+          "izoh": "NASA RELEASE 16-109: 'Saturday ... lifted off at 6:42 p.m. EST'"
+        },
+        {
+          "voqea": "GOES-19 'GOES-East' bo'lib ishga tushgan",
+          "sana": "2025-04-07",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.ospo.noaa.gov/data/messages/2025/04/MSG_20250407_1510.html"
+        },
+        {
+          "voqea": "2017-09-06 dagi X9.3 chaqnashni GOES-15 rentgen sensori (XRS) o'lchagan",
+          "sana": "2017-09-06",
+          "holat": "taxminiy",
+          "manba": "https://kauai.ccmc.gsfc.nasa.gov/DONKI/view/FLR/13010/4",
+          "izoh": "NASA DONKI katalogi; sahifa bu yerdan ochilmadi, qidiruv natijasi orqali"
+        }
+      ],
+      "hozir": {
+        "matn": "GOES-19 — GOES-East (2025-04 dan), GOES-18 — GOES-West; GOES-16 zaxiraga 104.7°W ga olib qo'yilgan.",
+        "holat": "taxminiy",
+        "manba": "https://www.goes-r.gov/users/transitionToOperations19.html",
+        "izoh": "NOAA sahifalari (qidiruv orqali); rasmiy NOAA manbalari"
+      },
+      "fakt_uz": "GOES-19 da CCOR-1 degan 'quyosh soyaboni' bor: u Quyoshning yorqin diskini to'sib, atrofdan otilib chiqqan plazma bulutlarini (CME) ko'radi — bo'ron Yerga 1–3 kun oldin ogohlantirish beradi.",
+      "fakt_en": "GOES-19 carries CCOR-1, a coronagraph that blocks the bright Sun to spot clouds of solar plasma (CMEs) — giving warnings 1–3 days before a storm hits Earth.",
+      "fakt_holat": "taxminiy",
+      "fakt_manba": "https://www.goes-r.gov/users/transitionToOperations19.html",
+      "oyin_roli": "GOES — 'birinchi bo'ron signali' (rentgen va zarracha sensorlari).",
+      "model_izoh": "Model materiallari 'Goes2-...' deb nomlangan; qaysi GOES avlodi ekani aniq emas. inventory o'lchami 0.134 × 0.111 × 0.122 — masshtabsiz.",
+      "manbalar": [
+        "https://www.goes-r.gov/spacesegment/spacecraft.html",
+        "https://www.ospo.noaa.gov/data/messages/2025/04/MSG_20250407_1510.html",
+        "https://www.nasa.gov/news-release/nasa-opens-media-accreditation-for-noaas-goes-r-november-launch/"
+      ],
+      "hujjatlarda_tilga_olingan": [
+        "koinot"
+      ],
+      "bekat_men_taxmin": "yer",
+      "model_inventory": {
+        "title": "GOES weather satellite",
+        "bbox_xyz_birlik": [
+          0.1344,
+          0.1114,
+          0.122
+        ],
+        "izoh": "Blender birliklari (Z yuqoriga); masshtab model sayin farq qiladi"
+      },
+      "karta_toliq": true
+    },
+    {
+      "id": "hdu-1",
+      "rasmiy_nomi": "Habitat Demonstration Unit (HDU) — NASA 3D modelining 1-qismi (part 1)",
+      "nima_uz": "Oy yoki Marsda yashash uchun uy qanday bo'lishini Yerda sinab ko'rish uchun qurilgan haqiqiy o'lchamdagi namuna-uy.",
+      "what_en": "A full-size test house built on Earth to try out how people could live on the Moon or Mars.",
+      "raqamlar": [
+        {
+          "nom": "ichki diametri",
+          "qiymat": 5.0,
+          "birlik": "m (16.4 ft)",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/pdf/468441main_HDU_FactSheet_508.pdf",
+          "izoh": "NASA fakt varag'i 'HDU – Deep Space Habitat'"
+        },
+        {
+          "nom": "umumiy balandligi (qobiq)",
+          "qiymat": 3.3,
+          "birlik": "m (10.8 ft) = 2.0 m silindr + 2 × 0.64 m gumbaz",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/pdf/468441main_HDU_FactSheet_508.pdf"
+        },
+        {
+          "nom": "ostidagi kvadrat tagkursi (cradle)",
+          "qiymat": 4.2,
+          "birlik": "m (13.8 ft) tomoni",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/pdf/468441main_HDU_FactSheet_508.pdf"
+        },
+        {
+          "nom": "hajmi, 2 qavatda (loft bilan)",
+          "qiymat": 148.1,
+          "birlik": "m³ (5,230.1 ft³)",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/pdf/468441main_HDU_FactSheet_508.pdf"
+        },
+        {
+          "nom": "hajmi (3D sahifa: bir qavatli DSH)",
+          "qiymat": 56,
+          "birlik": "m³ (taxminan)",
+          "holat": "tasdiqlangan",
+          "manba": "https://science.nasa.gov/3d-resources/habitat-demonstration-unit/",
+          "izoh": "Fakt varag'idagi 148.1 m³ dan farq qiladi — boshqa konfiguratsiya/hisoblash usuli"
+        },
+        {
+          "nom": "qobiq",
+          "qiymat": "8 ta shisha tola-kompozit bo'lak + C-shaklli po'lat qovurg'alar (parvozga yaroqsiz)",
+          "birlik": "",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/pdf/468441main_HDU_FactSheet_508.pdf"
+        },
+        {
+          "nom": "massa",
+          "qiymat": null,
+          "birlik": "t",
+          "holat": null,
+          "izoh": "Fakt varag'ida yo'q; oy hujjatidagi ~12 t tekshirilmadi"
+        }
+      ],
+      "yillar": [
+        {
+          "voqea": "Desert RATS 2010 dala sinovi — 'Pressurized Excursion Module (PEM)' ko'rinishida",
+          "sana": "2010-08 … 09",
+          "holat": "tasdiqlangan",
+          "manba": "https://ntrs.nasa.gov/citations/20110013501"
+        },
+        {
+          "voqea": "Desert RATS 2011 — 'Deep Space Habitat (DSH)' ko'rinishida: tepada talabalar qurgan X-Hab qavati, bir yonda gigiyena xonasi, boshqa yonda shlyuz",
+          "sana": "2011",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/image-article/deep-space-habitat-x-hab-loft/"
+        }
+      ],
+      "hozir": {
+        "matn": "Hozirgi joyi topilmadi.",
+        "holat": null
+      },
+      "fakt_uz": "Uyning tepasidagi puflab ochiladigan qavatni universitet talabalari qurgan: Viskonsin-Medison universiteti jamoasi 2011-yilgi X-Hab tanlovida g'olib bo'lgan.",
+      "fakt_en": "The inflatable loft on top was built by university students — the University of Wisconsin-Madison team won NASA's 2011 X-Hab challenge.",
+      "fakt_holat": "tasdiqlangan",
+      "fakt_manba": "https://www.nasa.gov/image-article/university-of-wisconsin-madisons-x-hab-challenge-winning-loft/",
+      "oyin_roli": "Oy uyi (karvonsaroy).",
+      "maxsus_tekshiruv": "HDU va 'Deep Space Habitat' — BIR XIL qurilma (bir xil qobiq), faqat yil sayin har xil jihozlangan: 2010 — PEM, 2011–2012 — DSH (HDU-DSH). hdu-1 va hdu-2 esa ikkita uy emas, NASA 3D sahifasidagi bitta modelning 'part 1' va 'part 2' fayllari.",
+      "model_izoh": "Teksturada AQSh bayrog'i va NASA belgilari bor — bo'yash kerak.",
+      "manbalar": [
+        "https://www.nasa.gov/pdf/468441main_HDU_FactSheet_508.pdf",
+        "https://science.nasa.gov/3d-resources/habitat-demonstration-unit/",
+        "https://www.nasa.gov/image-article/deep-space-habitat-x-hab-loft/",
+        "https://ntrs.nasa.gov/citations/20110013501"
+      ],
+      "hujjatlarda_tilga_olingan": [
+        "oy"
+      ],
+      "bekat_men_taxmin": "oy",
+      "model_inventory": {
+        "title": "Habitat Demonstration Unit (1)",
+        "bbox_xyz_birlik": [
+          380.1981,
+          165.9291,
+          217.4252
+        ],
+        "izoh": "Blender birliklari (Z yuqoriga); masshtab model sayin farq qiladi"
+      },
+      "karta_toliq": true
+    },
+    {
+      "id": "hdu-2",
+      "rasmiy_nomi": "Habitat Demonstration Unit (HDU) — NASA 3D modelining 2-qismi (part 2)",
+      "nima_uz": "Yuqoridagi namuna-uyning ikkinchi qismi (bitta model ikki faylga bo'lingan).",
+      "what_en": "The second part of the same test-house model (one model split into two files).",
+      "raqamlar": [
+        {
+          "nom": "o'lcham",
+          "qiymat": null,
+          "birlik": "m",
+          "holat": null,
+          "izoh": "hdu-1 kartasiga qarang; alohida rasmiy o'lcham yo'q"
+        }
+      ],
+      "yillar": [
+        {
+          "voqea": "hdu-1 kartasiga qarang",
+          "sana": "2010–2011",
+          "holat": "tasdiqlangan",
+          "manba": "https://science.nasa.gov/3d-resources/habitat-demonstration-unit/"
+        }
+      ],
+      "hozir": {
+        "matn": "hdu-1 ga qarang.",
+        "holat": null
+      },
+      "fakt_uz": "2011-yilgi 'Deep Space Habitat' ko'rinishida uyga gigiyena xonasi va shlyuz (airlock) yonidan ulangan.",
+      "fakt_en": "In its 2011 \"Deep Space Habitat\" form, a hygiene room and an airlock were attached to its sides.",
+      "fakt_holat": "tasdiqlangan",
+      "fakt_manba": "https://www.nasa.gov/image-article/deep-space-habitat-x-hab-loft/",
+      "oyin_roli": "Oy uyi (karvonsaroy) — ikkinchi qism.",
+      "maxsus_tekshiruv": "hdu-1 bilan bir xil: bitta HDU modelining 2-fayli.",
+      "manbalar": [
+        "https://science.nasa.gov/3d-resources/habitat-demonstration-unit/",
+        "https://www.nasa.gov/image-article/deep-space-habitat-x-hab-loft/"
+      ],
+      "hujjatlarda_tilga_olingan": [
+        "oy"
+      ],
+      "bekat_men_taxmin": "oy",
+      "model_inventory": {
+        "title": "Habitat Demonstration Unit (2)",
+        "bbox_xyz_birlik": [
+          656.4165,
+          458.526,
+          226.4183
+        ],
+        "izoh": "Blender birliklari (Z yuqoriga); masshtab model sayin farq qiladi"
+      },
+      "karta_toliq": true
+    },
+    {
+      "id": "crew-lock-bag",
+      "rasmiy_nomi": "Crew Lock Bag (CLB) — XKS ochiq kosmosga chiqish (EVA) asboblar sumkasi",
+      "nima_uz": "Kosmonavtlar ochiq kosmosga chiqqanda asboblarni solib, kiyimga bog'lab yuradigan maxsus sumka.",
+      "what_en": "A special bag astronauts tether to themselves to carry tools during spacewalks.",
+      "raqamlar": [
+        {
+          "nom": "CLB o'lchami",
+          "qiymat": null,
+          "birlik": "m",
+          "holat": null,
+          "izoh": "Ochiq NASA manbasida CLB o'lchami TOPILMADI. Model bbox 14.05 × 5.41 × 15.46 birlik — birligi noma'lum"
+        },
+        {
+          "nom": "Taqqoslash uchun: bitta (single) CTB",
+          "qiymat": "16¾ × 19¾ × 9¼ in (≈42.5 × 50.2 × 23.5 cm), 60 funt (≈27 kg) gacha",
+          "birlik": "",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/wp-content/uploads/2023/05/sts-092-press-kit.pdf",
+          "izoh": "STS-92 press kit. Boshqa hujjatlarda balandligi ~24.8–25 cm (9¾ in) — versiya/tashqi-ichki o'lcham farqi"
+        },
+        {
+          "nom": "CTB o'lchamlari: yarim / ikkitalik / uchtalik",
+          "qiymat": "16¾×9¾×9¼ / 18¾×19¾×18¾ / 18¾×19¾×28",
+          "birlik": "in",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/wp-content/uploads/2023/05/sts-092-press-kit.pdf"
+        },
+        {
+          "nom": "2008-yilda yo'qolgan sumka massasi",
+          "qiymat": 18,
+          "birlik": "kg (taxm.)",
+          "holat": "taxminiy",
+          "manba": "https://www.guinnessworldrecords.com/world-records/689697-largest-object-lost-on-a-spacewalk",
+          "izoh": "Guinness; boshqa xabarlarda ~30 funt (13.6 kg)"
+        }
+      ],
+      "yillar": [
+        {
+          "voqea": "STS-126 ochiq kosmosga chiqishda CLB suzib ketgan",
+          "sana": "2008-11-18",
+          "holat": "taxminiy",
+          "manba": "https://www3.nasa.gov/centers/kennedy/pdf/340811main_STS-126.pdf",
+          "izoh": "NASA STS-126 hujjati sumkani va ichidagilarni sanaydi; sana Guinness/CBS"
+        },
+        {
+          "voqea": "u sumka atmosferada yonib ketgan",
+          "sana": "2009-08-03",
+          "holat": "taxminiy",
+          "manba": "https://www.guinnessworldrecords.com/world-records/689697-largest-object-lost-on-a-spacewalk"
+        }
+      ],
+      "hozir": {
+        "matn": "XKS da EVA asbob sumkasi sifatida ishlatiladi.",
+        "holat": "taxminiy",
+        "manba": "https://science.nasa.gov/3d-resources/crew-lock-bag/"
+      },
+      "fakt_uz": "2008-yilda bitta shunday sumka kosmonavt qo'lidan chiqib ketib, Yer atrofida aylanib yurgan — uni hatto Yerdan durbin bilan ko'rish mumkin bo'lgan, keyin atmosferada yonib ketgan.",
+      "fakt_en": "In 2008 one of these bags slipped away during a spacewalk and orbited Earth on its own until it burned up in the atmosphere in 2009.",
+      "fakt_holat": "taxminiy",
+      "fakt_manba": "https://www.guinnessworldrecords.com/world-records/689697-largest-object-lost-on-a-spacewalk",
+      "oyin_roli": "Suv devori 'g'ishti': sumkalarni suv bilan to'ldirib, radiatsiyadan devor quriladi. Haqiqatda NASA bunday 'suv devori'ni CLB emas, CTB (yuk sumkalari) bilan o'rgangan — o'yinda shuni aytish to'g'riroq.",
+      "maxsus_tekshiruv": "CLB va CTB har xil narsa: CTB — XKS yuk sumkasi (single: 42.5×50.2×23.5 sm, STS-92 press kit); CLB — kichikroq EVA asbob sumkasi, o'lchami ochiq manbalarda yo'q. NASA 'water wall' tadqiqotlari CTB larni suv bilan to'ldirishni ko'rib chiqqan (NTRS 20160006051).",
+      "manbalar": [
+        "https://science.nasa.gov/3d-resources/crew-lock-bag/",
+        "https://ntrs.nasa.gov/api/citations/20160006051/downloads/20160006051.pdf",
+        "https://www.nasa.gov/wp-content/uploads/2023/05/sts-092-press-kit.pdf"
+      ],
+      "hujjatlarda_tilga_olingan": [
+        "oy",
+        "xks"
+      ],
+      "bekat_men_taxmin": "xks",
+      "model_inventory": {
+        "title": "Crew Lock Bag (ISS EVA)",
+        "bbox_xyz_birlik": [
+          14.05,
+          5.4112,
+          15.4634
+        ],
+        "izoh": "Blender birliklari (Z yuqoriga); masshtab model sayin farq qiladi"
+      },
+      "karta_toliq": true
+    },
+    {
+      "id": "emu",
+      "rasmiy_nomi": "Extravehicular Mobility Unit (EMU) — ochiq kosmos skafandri",
+      "nima_uz": "Kosmonavt ochiq kosmosga chiqqanda kiyadigan, ichida kislorod, suv va sovutish tizimi bor 'bir kishilik kosmik kema'.",
+      "what_en": "The spacesuit astronauts wear outside the station — a one-person spacecraft with oxygen, water and cooling.",
+      "raqamlar": [
+        {
+          "nom": "sovutish kiyimidagi suv quvurlari uzunligi",
+          "qiymat": 300,
+          "birlik": "ft (≈91 m)",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/centers-and-facilities/johnson/spacewalk-spacesuit-basics/",
+          "izoh": "'About 300 feet of tubes'"
+        },
+        {
+          "nom": "XKS EMU massasi (ryukzak + SAFER bilan, Yerda)",
+          "qiymat": 145,
+          "birlik": "kg (≈319 funt)",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/wp-content/uploads/2015/07/2019_07_ea_emu.pdf"
+        },
+        {
+          "nom": "shattl EMU massasi (ryukzak + SAFER bilan)",
+          "qiymat": 124.7,
+          "birlik": "kg (≈275 funt)",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/wp-content/uploads/2015/07/2019_07_ea_emu.pdf"
+        },
+        {
+          "nom": "ichki bosim",
+          "qiymat": 29.6,
+          "birlik": "kPa (4.3 psia)",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/wp-content/uploads/2015/07/2019_07_ea_emu.pdf"
+        },
+        {
+          "nom": "ichimlik suvi xaltasi",
+          "qiymat": 21,
+          "birlik": "untsiya (≈0.62 l)",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/wp-content/uploads/2015/07/2019_07_ea_emu.pdf"
+        },
+        {
+          "nom": "mos keladigan odam bo'yi",
+          "qiymat": "5 ft 2 in … 6 ft 2 in (≈1.57 … 1.88 m)",
+          "birlik": "",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/wp-content/uploads/2015/07/2019_07_ea_emu.pdf",
+          "izoh": "5-persentil ayol (110 funt) … 95-persentil erkak (223 funt)"
+        }
+      ],
+      "yillar": [
+        {
+          "voqea": "shattl davrining birinchi ochiq kosmosga chiqishi (STS-6)",
+          "sana": "1983-04-07",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/image-article/spacewalk-during-maiden-voyage-of-shuttle-challenger/"
+        }
+      ],
+      "hozir": {
+        "matn": "XKS da ochiq kosmosga chiqishda ishlatilmoqda.",
+        "holat": "tasdiqlangan",
+        "manba": "https://www.nasa.gov/centers-and-facilities/johnson/spacewalk-spacesuit-basics/"
+      },
+      "fakt_uz": "Skafandr ichidagi maxsus 'ichki kiyim'ga taxminan 300 fut (90 metrdan ko'p) ingichka suv quvuri tikilgan — sovuq suv kosmonavtni terlatmaydi. Yana ichida ichimlik suvi xaltasi ham bor.",
+      "fakt_en": "About 300 feet (90+ m) of thin water tubes are sewn into the cooling underwear inside the suit, and there is a drink bag too.",
+      "fakt_holat": "tasdiqlangan",
+      "fakt_manba": "https://www.nasa.gov/centers-and-facilities/johnson/spacewalk-spacesuit-basics/",
+      "oyin_roli": "Kosmonavt kiyimi: suv nafaqat ichish, balki sovutish uchun ham kerak.",
+      "manbalar": [
+        "https://www.nasa.gov/wp-content/uploads/2015/07/2019_07_ea_emu.pdf",
+        "https://www.nasa.gov/centers-and-facilities/johnson/spacewalk-spacesuit-basics/",
+        "https://www.nasa.gov/image-article/spacewalk-during-maiden-voyage-of-shuttle-challenger/"
+      ],
+      "hujjatlarda_tilga_olingan": [
+        "oy",
+        "xks"
+      ],
+      "bekat_men_taxmin": "xks",
+      "model_inventory": {
+        "title": "EMU spacesuit",
+        "bbox_xyz_birlik": [
+          1.1349,
+          1.4134,
+          2.0028
+        ],
+        "izoh": "Blender birliklari (Z yuqoriga); masshtab model sayin farq qiladi"
+      },
+      "karta_toliq": true
+    },
+    {
+      "id": "mark-3",
+      "rasmiy_nomi": "Mark III (MK III, H-1) — NASA JSC tajriba sayyora skafandri",
+      "nima_uz": "Oy va Mars yuzasida yurish uchun sinab ko'rilgan, qattiq qismlari ko'p tajriba skafandri.",
+      "what_en": "An experimental spacesuit with many hard parts, tested for walking on the Moon and Mars.",
+      "raqamlar": [
+        {
+          "nom": "ish bosimi",
+          "qiymat": 8.3,
+          "birlik": "psi (≈57 kPa)",
+          "holat": "tasdiqlangan",
+          "manba": "https://science.nasa.gov/3d-resources/mark-iii-spacesuit/"
+        },
+        {
+          "nom": "taqqoslash: shattl skafandri bosimi",
+          "qiymat": 4.3,
+          "birlik": "psi",
+          "holat": "tasdiqlangan",
+          "manba": "https://science.nasa.gov/3d-resources/mark-iii-spacesuit/"
+        },
+        {
+          "nom": "massa",
+          "qiymat": "~59",
+          "birlik": "kg",
+          "holat": "taxminiy",
+          "manba": "https://www.fplib.org/partners/mwade/craft/nasrkiii.htm",
+          "izoh": "Encyclopedia Astronautica (ikkilamchi)"
+        }
+      ],
+      "yillar": [
+        {
+          "voqea": "yaratilgan",
+          "sana": "1980-yillar oxiri",
+          "holat": "taxminiy",
+          "izoh": "ikkilamchi manbalar 1987–1988 deydi"
+        }
+      ],
+      "hozir": {
+        "matn": "NASA Jonson markazining tajriba skafandri; Desert RATS kabi dala sinovlarida ishlatilgan.",
+        "holat": "taxminiy",
+        "manba": "https://www.fplib.org/partners/mwade/craft/nasrkiii.htm"
+      },
+      "fakt_uz": "Mark III yuqoriroq bosimda ishlaydi (8.3 psi), shuning uchun kosmonavt tashqariga chiqishdan oldin uzoq vaqt sof kislorod bilan 'oldindan nafas olish'i shart bo'lmaydi.",
+      "fakt_en": "Mark III works at a higher pressure (8.3 psi), so the astronaut would not need a long \"pre-breathe\" of pure oxygen before going outside.",
+      "fakt_holat": "tasdiqlangan",
+      "fakt_manba": "https://science.nasa.gov/3d-resources/mark-iii-spacesuit/",
+      "oyin_roli": "Sayyora yuzasi skafandri.",
+      "model_izoh": "texturelogo materialida NASA belgisi — yashirish kerak.",
+      "manbalar": [
+        "https://science.nasa.gov/3d-resources/mark-iii-spacesuit/"
+      ],
+      "hujjatlarda_tilga_olingan": [
+        "oy"
+      ],
+      "bekat_men_taxmin": "mars",
+      "model_inventory": {
+        "title": "Mark III suit",
+        "bbox_xyz_birlik": [
+          1.1132,
+          1.1306,
+          1.9897
+        ],
+        "izoh": "Blender birliklari (Z yuqoriga); masshtab model sayin farq qiladi"
+      },
+      "karta_toliq": true
+    },
+    {
+      "id": "astronaut",
+      "rasmiy_nomi": "Astronaut (umumiy kosmonavt figurasi, DigitalSpace Corporation modeli; EMU uslubidagi skafandrda)",
+      "nima_uz": "Ochiq kosmos skafandrini kiygan kosmonavt.",
+      "what_en": "An astronaut wearing a spacewalk suit.",
+      "raqamlar": [
+        {
+          "nom": "bo'yi",
+          "qiymat": null,
+          "birlik": "m",
+          "holat": null,
+          "izoh": "Umumiy figura — aniq odam emas, real o'lcham yo'q"
+        }
+      ],
+      "yillar": [],
+      "hozir": {
+        "matn": "Umumiy model (aniq shaxs emas).",
+        "holat": null
+      },
+      "fakt_uz": "XKS dagi kosmonavtlar suyak va mushak zaiflashmasligi uchun har kuni kamida 2 soat sport bilan shug'ullanadi.",
+      "fakt_en": "Astronauts on the ISS exercise at least two hours every day to keep their muscles and bones strong.",
+      "fakt_holat": "tasdiqlangan",
+      "fakt_manba": "https://www.nasa.gov/international-space-station/space-station-facts-and-figures/",
+      "oyin_roli": "Karvon a'zosi / o'yinchi qahramoni. (Teksturada AQSh bayrog'i va NASA belgisi bor — bo'yash kerak.)",
+      "manbalar": [
+        "https://science.nasa.gov/3d-resources/astronaut/",
+        "https://www.nasa.gov/international-space-station/space-station-facts-and-figures/"
+      ],
+      "hujjatlarda_tilga_olingan": [
+        "xks"
+      ],
+      "bekat_men_taxmin": "xks",
+      "model_inventory": {
+        "title": "Astronaut",
+        "bbox_xyz_birlik": [
+          68.9093,
+          27.6009,
+          74.2627
+        ],
+        "izoh": "Blender birliklari (Z yuqoriga); masshtab model sayin farq qiladi"
+      },
+      "karta_toliq": true
+    },
+    {
+      "id": "helmet",
+      "rasmiy_nomi": "EVA dubulg'asi (NASA Ames umumiy 'Helmet' modeli)",
+      "nima_uz": "Skafandrning shaffof, mustahkam dubulg'asi: bosh atrofida havo bosimini ushlaydi va kislorod beradi.",
+      "what_en": "The spacesuit's clear, strong helmet: it holds the air pressure around the head and supplies oxygen.",
+      "raqamlar": [
+        {
+          "nom": "o'lchami",
+          "qiymat": null,
+          "birlik": "cm",
+          "holat": null,
+          "izoh": "Umumiy model; rasmiy o'lcham manbasi bu model uchun yo'q"
+        }
+      ],
+      "yillar": [],
+      "hozir": {
+        "matn": "Umumiy model.",
+        "holat": null
+      },
+      "fakt_uz": "Dubulg'a ichida kichik ko'pik bo'lagi bor — kosmonavt qo'lini kirita olmagani uchun burnini shunga ishqab qashiydi! Oltin qoplamali visor esa quyosh ko'zoynagi vazifasini bajaradi.",
+      "fakt_en": "Inside the helmet is a small foam block astronauts use to scratch their nose! The gold-coated visor works like sunglasses.",
+      "fakt_holat": "tasdiqlangan",
+      "fakt_manba": "https://www.nasa.gov/centers-and-facilities/johnson/spacewalk-spacesuit-basics/",
+      "oyin_roli": "Kosmonavt jihozi.",
+      "manbalar": [
+        "https://science.nasa.gov/3d-resources/helmet/",
+        "https://www.nasa.gov/centers-and-facilities/johnson/spacewalk-spacesuit-basics/"
+      ],
+      "hujjatlarda_tilga_olingan": [
+        "xks",
+        "yer"
+      ],
+      "bekat_men_taxmin": "xks",
+      "model_inventory": {
+        "title": "EVA helmet",
+        "bbox_xyz_birlik": [
+          14.0664,
+          14.0732,
+          13.7307
+        ],
+        "izoh": "Blender birliklari (Z yuqoriga); masshtab model sayin farq qiladi"
+      },
+      "karta_toliq": true
+    },
+    {
+      "id": "robonaut-2",
+      "rasmiy_nomi": "Robonaut 2 (R2)",
+      "nima_uz": "NASA va General Motors yasagan, odamga o'xshash robot — kosmosga uchgan birinchi gumanoid robot.",
+      "what_en": "A human-like robot built by NASA and General Motors — the first humanoid robot in space.",
+      "raqamlar": [
+        {
+          "nom": "bir qo'li ko'tara oladigan yuk (Yer og'irligida, istalgan holatda)",
+          "qiymat": 20,
+          "birlik": "funt (≈9 kg)",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/robonaut2/"
+        },
+        {
+          "nom": "har bir qo'lning erkinlik darajasi",
+          "qiymat": 7,
+          "birlik": "ta",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/robonaut2/"
+        },
+        {
+          "nom": "og'irligi",
+          "qiymat": 330,
+          "birlik": "funt (≈150 kg)",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/wp-content/uploads/2016/09/robonaut2_508.pdf",
+          "izoh": "R2 fakt varag'i. 2010 yilgi press-relizda '300-pound R2' deyilgan"
+        },
+        {
+          "nom": "bo'yi (beldan boshgacha)",
+          "qiymat": "3 ft 4 in (≈1.02 m)",
+          "birlik": "",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/wp-content/uploads/2016/09/robonaut2_508.pdf"
+        },
+        {
+          "nom": "yelka kengligi",
+          "qiymat": "2 ft 7 in (≈0.79 m)",
+          "birlik": "",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/wp-content/uploads/2016/09/robonaut2_508.pdf"
+        },
+        {
+          "nom": "jami erkinlik darajasi / sensorlar / protsessorlar",
+          "qiymat": "42 / 350+ / 38",
+          "birlik": "",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/wp-content/uploads/2016/09/robonaut2_508.pdf"
+        }
+      ],
+      "yillar": [
+        {
+          "voqea": "STS-133 (Discovery) bilan uchirilgan",
+          "sana": "2011-02-24",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/robonaut2/"
+        },
+        {
+          "voqea": "oyoqlar (mobility platform) qo'shilgan",
+          "sana": "2014",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/robonaut2/"
+        },
+        {
+          "voqea": "ta'mirlash uchun Yerga qaytarilgan (SpaceX CRS-14)",
+          "sana": "2018-05-05",
+          "holat": "taxminiy",
+          "manba": "https://www.space.com/40524-robonaut-returns-earth-after-seven-years.html"
+        }
+      ],
+      "hozir": {
+        "matn": "Yerda; Smitson Milliy havo va kosmos muzeyiga ijaraga berilgan.",
+        "holat": "taxminiy",
+        "manba": "https://www.space.com/robonaut-2-r2-humanoid-smithsonian-display"
+      },
+      "fakt_uz": "R2 'qorni bilan o'ylaydi': boshi kameralarga to'la bo'lgani uchun uning kompyuter-miyasi tanasida joylashgan.",
+      "fakt_en": "R2 \"thinks with its stomach\": its head is full of cameras, so its computer brain sits in its torso.",
+      "fakt_holat": "tasdiqlangan",
+      "fakt_manba": "https://www.nasa.gov/robonaut2/",
+      "oyin_roli": "Yordamchi robot.",
+      "manbalar": [
+        "https://www.nasa.gov/robonaut2/",
+        "https://www.nasa.gov/wp-content/uploads/2016/09/robonaut2_508.pdf",
+        "https://science.nasa.gov/3d-resources/robonaut-2/"
+      ],
+      "hujjatlarda_tilga_olingan": [
+        "xks"
+      ],
+      "bekat_men_taxmin": "xks",
+      "model_inventory": {
+        "title": "Robonaut 2",
+        "bbox_xyz_birlik": [
+          2.3386,
+          0.6813,
+          2.6097
+        ],
+        "izoh": "Blender birliklari (Z yuqoriga); masshtab model sayin farq qiladi"
+      },
+      "karta_toliq": true
+    },
+    {
+      "id": "perseverance",
+      "rasmiy_nomi": "Mars 2020 — Perseverance rover",
+      "nima_uz": "Marsda qadimgi hayot izlarini qidirib, tosh namunalarini maxsus naychalarga yig'adigan robot-rover.",
+      "what_en": "A Mars rover that searches for signs of ancient life and collects rock samples in special tubes.",
+      "raqamlar": [
+        {
+          "nom": "uzunligi",
+          "qiymat": 3,
+          "birlik": "m (10 ft)",
+          "holat": "tasdiqlangan",
+          "manba": "https://science.nasa.gov/mission/mars-2020-perseverance/rover-components/"
+        },
+        {
+          "nom": "eni",
+          "qiymat": 2.7,
+          "birlik": "m (9 ft)",
+          "holat": "tasdiqlangan",
+          "manba": "https://science.nasa.gov/mission/mars-2020-perseverance/rover-components/"
+        },
+        {
+          "nom": "balandligi",
+          "qiymat": 2.2,
+          "birlik": "m (7 ft)",
+          "holat": "tasdiqlangan",
+          "manba": "https://science.nasa.gov/mission/mars-2020-perseverance/rover-components/"
+        },
+        {
+          "nom": "massa",
+          "qiymat": 1025,
+          "birlik": "kg",
+          "holat": "tasdiqlangan",
+          "manba": "https://science.nasa.gov/mission/mars-2020-perseverance/rover-components/"
+        },
+        {
+          "nom": "g'ildirak diametri",
+          "qiymat": 52.5,
+          "birlik": "cm",
+          "holat": "tasdiqlangan",
+          "manba": "https://science.nasa.gov/mission/mars-2020-perseverance/rover-components/"
+        },
+        {
+          "nom": "bosib o'tgan yo'l (rekord)",
+          "qiymat": 45.22,
+          "birlik": "km (2026-10-11 holatiga)",
+          "holat": "tasdiqlangan",
+          "manba": "https://science.nasa.gov/mission/mars-2020-perseverance/"
+        }
+      ],
+      "yillar": [
+        {
+          "voqea": "uchirilgan",
+          "sana": "2020-07-30",
+          "holat": "tasdiqlangan",
+          "manba": "https://science.nasa.gov/mission/mars-2020-perseverance/"
+        },
+        {
+          "voqea": "Jezero krateriga qo'ngan",
+          "sana": "2021-02-18",
+          "holat": "tasdiqlangan",
+          "manba": "https://science.nasa.gov/mission/mars-2020-perseverance/"
+        },
+        {
+          "voqea": "Opportunity'ning masofa rekordini yangilagan",
+          "sana": "2026-10-11",
+          "holat": "tasdiqlangan",
+          "manba": "https://science.nasa.gov/mission/mars-2020-perseverance/"
+        }
+      ],
+      "hozir": {
+        "matn": "Marsda, Jezero krateri hududida ishlamoqda.",
+        "holat": "tasdiqlangan",
+        "manba": "https://science.nasa.gov/mission/mars-2020-perseverance/"
+      },
+      "fakt_uz": "Perseverance boshqa sayyora yuzasida hech bir mashina yurmagan masofani bosib o'tdi — 45 km dan ortiq.",
+      "fakt_en": "Perseverance has driven farther on another world than any vehicle ever — over 45 km.",
+      "fakt_holat": "tasdiqlangan",
+      "fakt_manba": "https://science.nasa.gov/mission/mars-2020-perseverance/",
+      "oyin_roli": "Mars bekati: namunalar yig'uvchi.",
+      "model_izoh": "arm_graphics va blade teksturalarida NASA/JPL belgilari, bayroq va yozuvlar bor — bo'yash kerak.",
+      "manbalar": [
+        "https://science.nasa.gov/mission/mars-2020-perseverance/",
+        "https://science.nasa.gov/mission/mars-2020-perseverance/rover-components/"
+      ],
+      "hujjatlarda_tilga_olingan": [
+        "mars"
+      ],
+      "bekat_men_taxmin": "mars",
+      "model_inventory": {
+        "title": "Perseverance rover (Mars 2020)",
+        "bbox_xyz_birlik": [
+          2.7046,
+          3.1083,
+          2.8463
+        ],
+        "izoh": "Blender birliklari (Z yuqoriga); masshtab model sayin farq qiladi"
+      },
+      "karta_toliq": true
+    },
+    {
+      "id": "apollo-lm",
+      "rasmiy_nomi": "Apollo Lunar Module (LM) — Apollo Oy moduli",
+      "nima_uz": "Ikki kosmonavtni Oy orbitasidan Oy yuzasiga tushirib, keyin yana orbitaga olib chiqqan kema.",
+      "what_en": "The spacecraft that took two astronauts down to the Moon and back up to lunar orbit.",
+      "raqamlar": [
+        {
+          "nom": "massa (Apollo 11, yoqilg'i bilan)",
+          "qiymat": 15103,
+          "birlik": "kg",
+          "holat": "tasdiqlangan",
+          "manba": "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1969-059C"
+        },
+        {
+          "nom": "qarama-qarshi oyoqlar oralig'i",
+          "qiymat": 9.4,
+          "birlik": "m",
+          "holat": "tasdiqlangan",
+          "manba": "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1969-059C"
+        },
+        {
+          "nom": "pastki (qo'nish) bosqichi: eni × qalinligi",
+          "qiymat": "4.2 × 1.7",
+          "birlik": "m",
+          "holat": "tasdiqlangan",
+          "manba": "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1969-059C"
+        },
+        {
+          "nom": "yuqori (ko'tarilish) bosqichi: balandligi; eni",
+          "qiymat": "2.8; 4.0 × 4.3",
+          "birlik": "m",
+          "holat": "tasdiqlangan",
+          "manba": "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1969-059C"
+        },
+        {
+          "nom": "ekipaj kabinasi hajmi",
+          "qiymat": 6.65,
+          "birlik": "m³",
+          "holat": "tasdiqlangan",
+          "manba": "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1969-059C"
+        },
+        {
+          "nom": "umumiy balandligi",
+          "qiymat": "~7.0",
+          "birlik": "m",
+          "holat": "taxminiy",
+          "izoh": "Ikkilamchi manbalar (~7.04 m); rasmiy sahifada topilmadi"
+        }
+      ],
+      "yillar": [
+        {
+          "voqea": "Apollo 11 bilan birinchi qo'nish",
+          "sana": "1969-07-20",
+          "holat": "tasdiqlangan",
+          "manba": "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1969-059C"
+        },
+        {
+          "voqea": "oxirgi qo'nish (Apollo 17)",
+          "sana": "1972",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/learning-resources/for-kids-and-students/what-was-the-saturn-v-grades-5-8/"
+        }
+      ],
+      "hozir": {
+        "matn": "Oltita LM ning pastki bosqichlari Oyda qolgan (ular ko'tarilish uchun 'start maydonchasi' bo'lgan).",
+        "holat": "tasdiqlangan",
+        "manba": "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1969-059C"
+      },
+      "fakt_uz": "LM ning pastki qismi Yerga hech qachon qaytmagan: u yuqori qism uchun start maydonchasi bo'lib, Oyda qolib ketgan.",
+      "fakt_en": "The LM's lower half never came home: it served as a launch pad for the upper half and was left on the Moon.",
+      "fakt_holat": "tasdiqlangan",
+      "fakt_manba": "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1969-059C",
+      "oyin_roli": "Tarix kartasi. (Teksturada AQSh bayrog'i va 'UNITED STATES' yozuvi bor — bo'yash kerak.)",
+      "manbalar": [
+        "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1969-059C",
+        "https://science.nasa.gov/3d-resources/apollo-lunar-module/"
+      ],
+      "hujjatlarda_tilga_olingan": [],
+      "bekat_men_taxmin": "oy",
+      "model_inventory": {
+        "title": "Apollo Lunar Module",
+        "bbox_xyz_birlik": [
+          6.4274,
+          6.4266,
+          5.0128
+        ],
+        "izoh": "Blender birliklari (Z yuqoriga); masshtab model sayin farq qiladi"
+      },
+      "karta_toliq": true
+    },
+    {
+      "id": "viking",
+      "rasmiy_nomi": "Viking Lander (Viking 1 va Viking 2 qo'nish apparatlari)",
+      "nima_uz": "Marsga xavfsiz qo'ngan va u yerdan rasm yuborgan birinchi AQSh apparati.",
+      "what_en": "The first US spacecraft to land safely on Mars and send back pictures.",
+      "raqamlar": [
+        {
+          "nom": "qo'nishdan keyingi massa",
+          "qiymat": "~600",
+          "birlik": "kg",
+          "holat": "tasdiqlangan",
+          "manba": "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1975-075C"
+        },
+        {
+          "nom": "uchirishdagi massa (85 kg yoqilg'i bilan)",
+          "qiymat": 657,
+          "birlik": "kg",
+          "holat": "tasdiqlangan",
+          "manba": "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1975-075C"
+        },
+        {
+          "nom": "oyoq tagliklari orasidagi masofa (teng tomonli uchburchak tomoni)",
+          "qiymat": 2.21,
+          "birlik": "m",
+          "holat": "tasdiqlangan",
+          "manba": "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1975-075C"
+        },
+        {
+          "nom": "asos (olti burchak) tomonlari",
+          "qiymat": "1.09 va 0.56",
+          "birlik": "m",
+          "holat": "tasdiqlangan",
+          "manba": "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1975-075C"
+        },
+        {
+          "nom": "ilmiy asboblar massasi",
+          "qiymat": "~91",
+          "birlik": "kg",
+          "holat": "tasdiqlangan",
+          "manba": "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1975-075C"
+        },
+        {
+          "nom": "har bir RTG energiya manbai",
+          "qiymat": "13.6 kg, 30 W",
+          "birlik": "",
+          "holat": "tasdiqlangan",
+          "manba": "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1975-075C"
+        }
+      ],
+      "yillar": [
+        {
+          "voqea": "Viking 1 uchirilgan",
+          "sana": "1975-08-20",
+          "holat": "tasdiqlangan",
+          "manba": "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1975-075C"
+        },
+        {
+          "voqea": "Viking 1 Chryse Planitia ga qo'ngan",
+          "sana": "1976-07-20",
+          "holat": "tasdiqlangan",
+          "manba": "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1975-075C"
+        },
+        {
+          "voqea": "Viking 2 Utopia Planitia ga qo'ngan",
+          "sana": "1976-09-03",
+          "holat": "tasdiqlangan",
+          "manba": "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1975-083C"
+        },
+        {
+          "voqea": "Viking 2 o'chirilgan (batareyalar ishdan chiqqan)",
+          "sana": "1980-04-11",
+          "holat": "tasdiqlangan",
+          "manba": "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1975-083C"
+        },
+        {
+          "voqea": "Viking 1 bilan aloqa uzilgan",
+          "sana": "1982-11-13",
+          "holat": "tasdiqlangan",
+          "manba": "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1975-075C"
+        }
+      ],
+      "hozir": {
+        "matn": "Ikkalasi ham Mars yuzasida, ishlamaydi.",
+        "holat": "tasdiqlangan",
+        "manba": "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1975-075C"
+      },
+      "fakt_uz": "Viking 1 qo'nish apparati Marsda 6 yildan ortiq (1976–1982) ishlagan.",
+      "fakt_en": "The Viking 1 lander worked on Mars for more than six years (1976–1982).",
+      "fakt_holat": "tasdiqlangan",
+      "fakt_manba": "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1975-075C",
+      "oyin_roli": "Mars tarixi kartasi.",
+      "manbalar": [
+        "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1975-075C",
+        "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1975-083C",
+        "https://science.nasa.gov/3d-resources/viking-lander/"
+      ],
+      "hujjatlarda_tilga_olingan": [
+        "koinot",
+        "mars"
+      ],
+      "bekat_men_taxmin": "mars",
+      "model_inventory": {
+        "title": "Viking lander",
+        "bbox_xyz_birlik": [
+          16.7394,
+          12.5515,
+          8.9722
+        ],
+        "izoh": "Blender birliklari (Z yuqoriga); masshtab model sayin farq qiladi"
+      },
+      "karta_toliq": true
+    },
+    {
+      "id": "iss",
+      "rasmiy_nomi": "International Space Station (ISS) — Xalqaro kosmik stansiya (XKS)",
+      "nima_uz": "Yer atrofida aylanadigan, kosmonavtlar yashab ishlaydigan katta 'kosmik uy-laboratoriya'.",
+      "what_en": "A big house-and-laboratory in space that circles Earth, where astronauts live and work.",
+      "raqamlar": [
+        {
+          "nom": "uzunligi (bir chetidan ikkinchisigacha)",
+          "qiymat": 109,
+          "birlik": "m (356 ft)",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/international-space-station/space-station-facts-and-figures/"
+        },
+        {
+          "nom": "massa",
+          "qiymat": 419725,
+          "birlik": "kg",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/international-space-station/space-station-facts-and-figures/"
+        },
+        {
+          "nom": "yashash hajmi",
+          "qiymat": 388,
+          "birlik": "m³",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/international-space-station/space-station-facts-and-figures/"
+        },
+        {
+          "nom": "bosimli hajm",
+          "qiymat": 1005,
+          "birlik": "m³",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/international-space-station/space-station-facts-and-figures/"
+        },
+        {
+          "nom": "ferma (truss) uzunligi",
+          "qiymat": 94,
+          "birlik": "m",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/international-space-station/space-station-facts-and-figures/"
+        },
+        {
+          "nom": "bir kunda Yer atrofida aylanishlar",
+          "qiymat": 16,
+          "birlik": "marta",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/international-space-station/space-station-facts-and-figures/"
+        },
+        {
+          "nom": "o'rtacha balandligi",
+          "qiymat": "~250 mil (≈400 km)",
+          "birlik": "",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/learning-resources/for-kids-and-students/what-is-the-international-space-station-grades-5-8/"
+        },
+        {
+          "nom": "tezligi",
+          "qiymat": "17 500 mil/soat (≈28 000 km/soat)",
+          "birlik": "",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/learning-resources/for-kids-and-students/what-is-the-international-space-station-grades-5-8/"
+        },
+        {
+          "nom": "bir kosmonavtga kuniga kerak suv (ichish, ovqat, gigiyena)",
+          "qiymat": "~1 gallon (≈3.8 l)",
+          "birlik": "",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/missions/station/iss-research/nasa-achieves-water-recovery-milestone-on-international-space-station/"
+        },
+        {
+          "nom": "suvni qayta tiklash ulushi",
+          "qiymat": 98,
+          "birlik": "%",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/missions/station/iss-research/nasa-achieves-water-recovery-milestone-on-international-space-station/",
+          "izoh": "2023-yilda erishilgan maqsad"
+        },
+        {
+          "nom": "quvvat sig'imi (8 ta IROSA dan keyin)",
+          "qiymat": 215,
+          "birlik": "kW (taxminan)",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/blogs/spacestation/2026/11/05/spacewalkers-install-final-roll-out-solar-array/",
+          "izoh": "160 kW dan ~215 kW gacha. Eslatma: facts sahifasi '8 solar arrays provide 75 to 90 kW' deydi — bu boshqa ko'rsatkich"
+        }
+      ],
+      "yillar": [
+        {
+          "voqea": "birinchi qism uchirilgan",
+          "sana": "1998",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/international-space-station-frequently-asked-questions/"
+        },
+        {
+          "voqea": "doimiy ekipaj bilan yashay boshlagan",
+          "sana": "2000-11",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/international-space-station/space-station-facts-and-figures/"
+        },
+        {
+          "voqea": "8-chi (oxirgi) IROSA quyosh paneli o'rnatilgan",
+          "sana": "2026-11-05",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/blogs/spacestation/2026/11/05/spacewalkers-install-final-roll-out-solar-array/"
+        },
+        {
+          "voqea": "rejalashtirilgan ish tugashi va boshqariladigan tushirish",
+          "sana": "2030 (ish tugagach)",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/news-release/nasa-selects-international-space-station-us-deorbit-vehicle/"
+        }
+      ],
+      "hozir": {
+        "matn": "Yer orbitasida; 2000-yil noyabridan beri doim odamlar yashaydi.",
+        "holat": "tasdiqlangan",
+        "manba": "https://www.nasa.gov/international-space-station/space-station-facts-and-figures/"
+      },
+      "fakt_uz": "XKS kosmonavtlar olib kelgan suvning taxminan 98% ini qayta tozalab, yana ichishga yaroqli qiladi — hatto terdan ham!",
+      "fakt_en": "The ISS recovers about 98% of the water the crew brings along, so it can be cleaned and used again.",
+      "fakt_holat": "tasdiqlangan",
+      "fakt_manba": "https://www.nasa.gov/missions/station/iss-research/nasa-achieves-water-recovery-milestone-on-international-space-station/",
+      "oyin_roli": "XKS bekati — karvonsaroy: suv baki shu yerda to'ldiriladi.",
+      "manbalar": [
+        "https://www.nasa.gov/international-space-station/space-station-facts-and-figures/",
+        "https://www.nasa.gov/missions/station/iss-research/nasa-achieves-water-recovery-milestone-on-international-space-station/",
+        "https://www.nasa.gov/blogs/spacestation/2026/11/05/spacewalkers-install-final-roll-out-solar-array/"
+      ],
+      "hujjatlarda_tilga_olingan": [
+        "oy",
+        "xks"
+      ],
+      "bekat_men_taxmin": "xks",
+      "model_inventory": {
+        "title": "International Space Station",
+        "bbox_xyz_birlik": [
+          14.4177,
+          45.5444,
+          45.4325
+        ],
+        "izoh": "Blender birliklari (Z yuqoriga); masshtab model sayin farq qiladi"
+      },
+      "karta_toliq": true
+    },
+    {
+      "id": "dsn-34m",
+      "rasmiy_nomi": "Deep Space Network (DSN) 34 metrli 'beam waveguide' antennasi (masalan DSS-34, Kanberra)",
+      "nima_uz": "Uzoq kosmosdagi kemalar bilan radio orqali 'gaplashadigan' ulkan likopchasimon antenna.",
+      "what_en": "A giant dish antenna that \"talks\" by radio to spacecraft far out in space.",
+      "raqamlar": [
+        {
+          "nom": "likopcha diametri",
+          "qiymat": 34,
+          "birlik": "m",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/technology/space-comms/deep-space-network/nasas-deep-space-network-starts-new-dish-marks-60-years-in-australia/",
+          "izoh": "NASA: '112-foot-wide (34-meter-wide)'"
+        },
+        {
+          "nom": "balandligi (DSS-34)",
+          "qiymat": 35,
+          "birlik": "m",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.cdscc.nasa.gov/Pages/Antennas/dss34.html"
+        },
+        {
+          "nom": "massasi",
+          "qiymat": null,
+          "birlik": "t",
+          "holat": null,
+          "izoh": "Rasmiy NASA/JPL manbasida topilmadi"
+        }
+      ],
+      "yillar": [
+        {
+          "voqea": "DSS-34 qurilgan",
+          "sana": "1994–1997",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.cdscc.nasa.gov/Pages/Antennas/dss34.html"
+        },
+        {
+          "voqea": "DSS-34 ishga tushgan",
+          "sana": "1997",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.cdscc.nasa.gov/Pages/Antennas/dss34.html"
+        },
+        {
+          "voqea": "Madrid majmuasi DSN ga qo'shilgan",
+          "sana": "1964",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/technology/space-comms/deep-space-network/nasas-deep-space-network-starts-new-dish-marks-60-years-in-australia/"
+        },
+        {
+          "voqea": "Kanberra majmuasi DSN ga qo'shilgan",
+          "sana": "1965-03-19",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/technology/space-comms/deep-space-network/nasas-deep-space-network-starts-new-dish-marks-60-years-in-australia/"
+        }
+      ],
+      "hozir": {
+        "matn": "Ishlayapti. DSN ning uchta majmuasi bor: Goldstone (AQSh), Madrid (Ispaniya), Kanberra (Avstraliya).",
+        "holat": "tasdiqlangan",
+        "manba": "https://www.nasa.gov/technology/space-comms/deep-space-network/nasas-deep-space-network-starts-new-dish-marks-60-years-in-australia/"
+      },
+      "fakt_uz": "Voyager 2 kemasiga buyruq yubora oladigan yagona joy — Avstraliyadagi Kanberra antennalari, chunki kema janub tomonga uchib ketyapti.",
+      "fakt_en": "The only place that can send commands to Voyager 2 is the Canberra complex in Australia, because the probe is heading \"south\".",
+      "fakt_holat": "tasdiqlangan",
+      "fakt_manba": "https://www.nasa.gov/technology/space-comms/deep-space-network/nasas-deep-space-network-starts-new-dish-marks-60-years-in-australia/",
+      "oyin_roli": "DSN — Oy va Mars bilan gaplashadigan antenna.",
+      "manbalar": [
+        "https://www.cdscc.nasa.gov/Pages/Antennas/dss34.html",
+        "https://www.nasa.gov/technology/space-comms/deep-space-network/nasas-deep-space-network-starts-new-dish-marks-60-years-in-australia/"
+      ],
+      "hujjatlarda_tilga_olingan": [
+        "yer"
+      ],
+      "bekat_men_taxmin": "yer",
+      "model_inventory": {
+        "title": "Deep Space Network 34 m antenna",
+        "bbox_xyz_birlik": [
+          34.0248,
+          33.9695,
+          36.7921
+        ],
+        "izoh": "Blender birliklari (Z yuqoriga); masshtab model sayin farq qiladi"
+      },
+      "karta_toliq": true
+    },
+    {
+      "id": "moon-globe",
+      "rasmiy_nomi": "Oy (Moon) — globus, tekstura: LRO LROC WAC (NASA SVS CGI Moon Kit)",
+      "nima_uz": "Yerning yagona tabiiy yo'ldoshi — har kecha osmonda ko'radigan Oyimiz.",
+      "what_en": "Earth's only natural satellite — the Moon we see in the night sky.",
+      "raqamlar": [
+        {
+          "nom": "diametri",
+          "qiymat": 3474.8,
+          "birlik": "km",
+          "holat": "tasdiqlangan",
+          "manba": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/moonfact.html",
+          "izoh": "o'rtacha radius 1737.4 km × 2"
+        },
+        {
+          "nom": "massa",
+          "qiymat": "7.346 × 10^22",
+          "birlik": "kg",
+          "holat": "tasdiqlangan",
+          "manba": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/moonfact.html"
+        },
+        {
+          "nom": "sirtdagi og'irlik kuchi tezlanishi",
+          "qiymat": 1.62,
+          "birlik": "m/s² (Yerning ~1/6)",
+          "holat": "tasdiqlangan",
+          "manba": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/moonfact.html"
+        },
+        {
+          "nom": "Yergacha o'rtacha masofa (yarim katta o'q)",
+          "qiymat": 384400,
+          "birlik": "km",
+          "holat": "tasdiqlangan",
+          "manba": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/moonfact.html"
+        },
+        {
+          "nom": "ekvatorda kunduz–tun harorati",
+          "qiymat": "−178 … +117",
+          "birlik": "°C (95 K … 390 K)",
+          "holat": "tasdiqlangan",
+          "manba": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/moonfact.html"
+        }
+      ],
+      "yillar": [],
+      "hozir": {
+        "matn": "Yer atrofida aylanmoqda.",
+        "holat": "tasdiqlangan",
+        "manba": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/moonfact.html"
+      },
+      "fakt_uz": "Oyda harorat tunda −178 °C gacha tushib, kunduzi +117 °C gacha ko'tariladi — havo yo'qligi uchun issiqlikni ushlab turadigan 'adyol' yo'q.",
+      "fakt_en": "On the Moon it gets as cold as −178 °C at night and as hot as +117 °C by day — there is no air \"blanket\" to hold the heat.",
+      "fakt_holat": "tasdiqlangan",
+      "fakt_manba": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/moonfact.html",
+      "oyin_roli": "Oy bekati.",
+      "manbalar": [
+        "https://nssdc.gsfc.nasa.gov/planetary/factsheet/moonfact.html"
+      ],
+      "hujjatlarda_tilga_olingan": [],
+      "bekat_men_taxmin": "oy",
+      "model_inventory": {
+        "title": "Moon globe",
+        "bbox_xyz_birlik": [
+          2.0,
+          2.0,
+          2.0
+        ],
+        "izoh": "Blender birliklari (Z yuqoriga); masshtab model sayin farq qiladi"
+      },
+      "karta_toliq": true
+    },
+    {
+      "id": "earth-globe",
+      "rasmiy_nomi": "Yer (Earth) — globus, tekstura: NASA Blue Marble Next Generation",
+      "nima_uz": "Bizning uyimiz — ustida suyuq suv va hayot bor sayyora.",
+      "what_en": "Our home planet, with liquid water and life.",
+      "raqamlar": [
+        {
+          "nom": "ekvator diametri",
+          "qiymat": 12756.3,
+          "birlik": "km",
+          "holat": "tasdiqlangan",
+          "manba": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/earthfact.html",
+          "izoh": "ekvator radiusi 6378.137 km × 2"
+        },
+        {
+          "nom": "massa",
+          "qiymat": "5.9722 × 10^24",
+          "birlik": "kg",
+          "holat": "tasdiqlangan",
+          "manba": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/earthfact.html"
+        },
+        {
+          "nom": "sirtdagi og'irlik kuchi tezlanishi",
+          "qiymat": 9.82,
+          "birlik": "m/s²",
+          "holat": "tasdiqlangan",
+          "manba": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/earthfact.html"
+        },
+        {
+          "nom": "o'rtacha harorat",
+          "qiymat": 15,
+          "birlik": "°C (288 K)",
+          "holat": "tasdiqlangan",
+          "manba": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/earthfact.html"
+        },
+        {
+          "nom": "o'z o'qi atrofida aylanish (yulduz sutkasi)",
+          "qiymat": 23.9345,
+          "birlik": "soat",
+          "holat": "tasdiqlangan",
+          "manba": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/earthfact.html"
+        }
+      ],
+      "yillar": [],
+      "hozir": {
+        "matn": "Quyosh atrofidagi 3-sayyora.",
+        "holat": "tasdiqlangan",
+        "manba": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/earthfact.html"
+      },
+      "fakt_uz": "Yer o'z o'qi atrofida 24 soatda emas, 23 soat 56 daqiqada bir marta aylanadi (yulduzlarga nisbatan).",
+      "fakt_en": "Measured against the stars, Earth spins once in 23 hours 56 minutes, not 24 hours.",
+      "fakt_holat": "tasdiqlangan",
+      "fakt_manba": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/earthfact.html",
+      "oyin_roli": "Karvon yo'lining boshlanishi.",
+      "manbalar": [
+        "https://nssdc.gsfc.nasa.gov/planetary/factsheet/earthfact.html"
+      ],
+      "hujjatlarda_tilga_olingan": [
+        "oy",
+        "xks"
+      ],
+      "bekat_men_taxmin": "yer",
+      "model_inventory": {
+        "title": "Earth globe",
+        "bbox_xyz_birlik": [
+          2.0,
+          2.0,
+          2.0
+        ],
+        "izoh": "Blender birliklari (Z yuqoriga); masshtab model sayin farq qiladi"
+      },
+      "karta_toliq": true
+    },
+    {
+      "id": "mars-globe",
+      "rasmiy_nomi": "Mars — globus, tekstura: Viking mozaikasi",
+      "nima_uz": "Quyoshdan 4-sayyora — qizil tuproqli, sovuq, havosi juda siyrak sayyora.",
+      "what_en": "The fourth planet from the Sun — red, cold, with very thin air.",
+      "raqamlar": [
+        {
+          "nom": "ekvator diametri",
+          "qiymat": 6792.4,
+          "birlik": "km",
+          "holat": "tasdiqlangan",
+          "manba": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/marsfact.html",
+          "izoh": "ekvator radiusi 3396.2 km × 2"
+        },
+        {
+          "nom": "massa",
+          "qiymat": "6.4169 × 10^23",
+          "birlik": "kg",
+          "holat": "tasdiqlangan",
+          "manba": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/marsfact.html"
+        },
+        {
+          "nom": "sirtdagi og'irlik kuchi tezlanishi",
+          "qiymat": 3.73,
+          "birlik": "m/s² (Yerning ~38%)",
+          "holat": "tasdiqlangan",
+          "manba": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/marsfact.html"
+        },
+        {
+          "nom": "sutka (quyosh kuni)",
+          "qiymat": 24.6597,
+          "birlik": "soat",
+          "holat": "tasdiqlangan",
+          "manba": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/marsfact.html"
+        },
+        {
+          "nom": "o'rtacha harorat",
+          "qiymat": -59,
+          "birlik": "°C",
+          "holat": "tasdiqlangan",
+          "manba": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/marsfact.html"
+        },
+        {
+          "nom": "sirt bosimi",
+          "qiymat": 6.36,
+          "birlik": "mbar (Yerda ~1014)",
+          "holat": "tasdiqlangan",
+          "manba": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/marsfact.html"
+        },
+        {
+          "nom": "Yergacha masofa (eng yaqin … eng uzoq)",
+          "qiymat": "54.6 … 401.4",
+          "birlik": "million km",
+          "holat": "tasdiqlangan",
+          "manba": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/marsfact.html"
+        }
+      ],
+      "yillar": [],
+      "hozir": {
+        "matn": "Quyosh atrofidagi 4-sayyora.",
+        "holat": "tasdiqlangan",
+        "manba": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/marsfact.html"
+      },
+      "fakt_uz": "Marsdagi bir kun Yerdagidan atigi ~40 daqiqa uzunroq (24.66 soat).",
+      "fakt_en": "A day on Mars is only about 40 minutes longer than a day on Earth (24.66 hours).",
+      "fakt_holat": "tasdiqlangan",
+      "fakt_manba": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/marsfact.html",
+      "oyin_roli": "Mars bekati — yo'lning oxiri.",
+      "manbalar": [
+        "https://nssdc.gsfc.nasa.gov/planetary/factsheet/marsfact.html"
+      ],
+      "hujjatlarda_tilga_olingan": [
+        "mars"
+      ],
+      "bekat_men_taxmin": "mars",
+      "model_inventory": {
+        "title": "Mars globe",
+        "bbox_xyz_birlik": [
+          2.0,
+          2.0,
+          2.0
+        ],
+        "izoh": "Blender birliklari (Z yuqoriga); masshtab model sayin farq qiladi"
+      },
+      "karta_toliq": true
+    },
+    {
+      "id": "moon-near-side",
+      "rasmiy_nomi": "Moon (near side) — NASA 3D Resources bosma (STL) relyef modeli",
+      "nima_uz": "Oyning Yerga qaragan tomonidan bir bo'lakning 3D bosma relyef xaritasi.",
+      "what_en": "A 3D-printable relief map of a patch of the Moon's near side (the side that faces Earth).",
+      "raqamlar": [
+        {
+          "nom": "bosma o'lchami (standart)",
+          "qiymat": 8,
+          "birlik": "cm",
+          "holat": "tasdiqlangan",
+          "manba": "https://science.nasa.gov/3d-resources/moon/"
+        },
+        {
+          "nom": "ko'rsatilgan hudud",
+          "qiymat": "~400 × 400",
+          "birlik": "km",
+          "holat": "tasdiqlangan",
+          "manba": "https://science.nasa.gov/3d-resources/moon/"
+        },
+        {
+          "nom": "masshtab",
+          "qiymat": "1 : 5 000 000 (1 cm = 50 km)",
+          "birlik": "",
+          "holat": "tasdiqlangan",
+          "manba": "https://science.nasa.gov/3d-resources/moon/"
+        },
+        {
+          "nom": "vertikal bo'rttirish (exaggeration)",
+          "qiymat": null,
+          "birlik": "×",
+          "holat": null,
+          "izoh": "NASA sahifasida aytilmagan"
+        }
+      ],
+      "yillar": [],
+      "hozir": {
+        "matn": "Ma'lumot: NASA/Goddard.",
+        "holat": "tasdiqlangan",
+        "manba": "https://science.nasa.gov/3d-resources/moon/"
+      },
+      "fakt_uz": "Oyning bizga qaragan tomoni orqa tomoniga qaraganda silliqroq: milliardlab yil oldin katta lava oqimlari ko'p kraterlarni to'ldirib yuborgan.",
+      "fakt_en": "The near side of the Moon is smoother than the far side because huge lava flows filled many craters billions of years ago.",
+      "fakt_holat": "tasdiqlangan",
+      "fakt_manba": "https://science.nasa.gov/3d-resources/moon/",
+      "oyin_roli": "Oy bekati fon relyefi.",
+      "maxsus_tekshiruv": "DIQQAT: bu model butun yarim sharni EMAS, faqat ~400 km li bo'lakni ko'rsatadi (NASA sahifasi).",
+      "manbalar": [
+        "https://science.nasa.gov/3d-resources/moon/"
+      ],
+      "hujjatlarda_tilga_olingan": [
+        "oy"
+      ],
+      "bekat_men_taxmin": "oy",
+      "model_inventory": {
+        "title": "Moon near side (relief print)",
+        "bbox_xyz_birlik": [
+          78.4157,
+          78.4157,
+          3.6472
+        ],
+        "izoh": "Blender birliklari (Z yuqoriga); masshtab model sayin farq qiladi"
+      },
+      "karta_toliq": true
+    },
+    {
+      "id": "apollo-11-site",
+      "rasmiy_nomi": "Apollo 11 qo'nish joyi (Tinchlik dengizi) — balandlik xaritasi, NASA 3D Resources",
+      "nima_uz": "Odamlar 1969-yilda Oyga birinchi bo'lib qo'ngan joy atrofining 3D relyef xaritasi.",
+      "what_en": "A 3D height map of the area where people first landed on the Moon in 1969.",
+      "raqamlar": [
+        {
+          "nom": "xarita qamragan hudud",
+          "qiymat": "30 × 30",
+          "birlik": "km",
+          "holat": "tasdiqlangan",
+          "manba": "https://science.nasa.gov/3d-resources/apollo-11-landing-site/"
+        },
+        {
+          "nom": "vertikal bo'rttirish",
+          "qiymat": 60,
+          "birlik": "×",
+          "holat": "tasdiqlangan",
+          "manba": "https://science.nasa.gov/3d-resources/apollo-11-landing-site/",
+          "izoh": "'Exaggerated 60 times in the Z axis'"
+        },
+        {
+          "nom": "qo'nish nuqtasi",
+          "qiymat": "0.67416° N, 23.47314° E",
+          "birlik": "",
+          "holat": "tasdiqlangan",
+          "manba": "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1969-059C"
+        },
+        {
+          "nom": "Oydan olib kelingan tosh va tuproq",
+          "qiymat": 21.55,
+          "birlik": "kg",
+          "holat": "tasdiqlangan",
+          "manba": "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1969-059C"
+        },
+        {
+          "nom": "kosmonavtlar yurgan umumiy masofa",
+          "qiymat": "~250",
+          "birlik": "m",
+          "holat": "tasdiqlangan",
+          "manba": "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1969-059C"
+        }
+      ],
+      "yillar": [
+        {
+          "voqea": "Apollo 11 'Eagle' qo'ngan",
+          "sana": "1969-07-20",
+          "holat": "tasdiqlangan",
+          "manba": "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1969-059C"
+        }
+      ],
+      "hozir": {
+        "matn": "Qo'nish moduli pastki qismi va asboblar hali ham shu joyda.",
+        "holat": "tasdiqlangan",
+        "manba": "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1969-059C"
+      },
+      "fakt_uz": "Qo'ngandan keyin Armstrong birinchi bo'lib aytgan gap: \"Houston, Tranquility Base here — the Eagle has landed\" (Houston, bu Tinchlik bazasi — Burgut qo'ndi).",
+      "fakt_en": "Right after landing Armstrong said: \"Houston, Tranquility Base here — the Eagle has landed.\"",
+      "fakt_holat": "tasdiqlangan",
+      "fakt_manba": "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1969-059C",
+      "oyin_roli": "Oy bekati — tarixiy joy.",
+      "maxsus_tekshiruv": "Studiyadagi '60×' TO'G'RI (NASA 3D sahifasi). Demak modeldagi tepaliklar haqiqiydan 60 marta baland ko'rinadi.",
+      "manbalar": [
+        "https://science.nasa.gov/3d-resources/apollo-11-landing-site/",
+        "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1969-059C"
+      ],
+      "hujjatlarda_tilga_olingan": [
+        "oy"
+      ],
+      "bekat_men_taxmin": "oy",
+      "model_inventory": {
+        "title": "Apollo 11 landing site (terrain print)",
+        "bbox_xyz_birlik": [
+          255.5,
+          255.5,
+          18.7301
+        ],
+        "izoh": "Blender birliklari (Z yuqoriga); masshtab model sayin farq qiladi"
+      },
+      "karta_toliq": true
+    },
+    {
+      "id": "mount-hadley",
+      "rasmiy_nomi": "Mons Hadley (Hadli tog'i), Apollo 15 qo'nish joyi yonida — NASA 3D Resources STL",
+      "nima_uz": "Oydagi baland tog' — Apollo 15 kosmonavtlari uning etagiga yaqin qo'ngan.",
+      "what_en": "A tall mountain on the Moon; Apollo 15 astronauts landed near its foot.",
+      "raqamlar": [
+        {
+          "nom": "tekislikdan balandligi",
+          "qiymat": 4.5,
+          "birlik": "km (taxminan)",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/history/alsj/a15/a15psrf5-17.html",
+          "izoh": "Apollo 15 Preliminary Science Report, 5-17-rasm: 'Mount Hadley (approximately 4.5 km high)'"
+        },
+        {
+          "nom": "NASA 3D/rasm izohidagi balandlik",
+          "qiymat": 4765,
+          "birlik": "ft (≈1.45 km)",
+          "holat": "tasdiqlangan",
+          "manba": "https://science.nasa.gov/3d-resources/moon-mount-hadley/",
+          "izoh": "Sahifada shunday yozilgan, LEKIN bu xato ko'rinadi: 4.5 km = 14 765 ft — boshidagi '1' tushib qolgan"
+        },
+        {
+          "nom": "Apennin tog'lari massivlari (Hadley va Hadley Delta)",
+          "qiymat": "3 … 5",
+          "birlik": "km",
+          "holat": "taxminiy",
+          "manba": "https://www.nasa.gov/history/alsj/a15/a15psrf5-17.html",
+          "izoh": "PSR matni; qidiruv orqali"
+        },
+        {
+          "nom": "Hadley Delta balandligi",
+          "qiymat": "~3.5",
+          "birlik": "km",
+          "holat": "taxminiy",
+          "manba": "https://lroc.im-ldi.com/images/783",
+          "izoh": "LROC (ikkilamchi)"
+        },
+        {
+          "nom": "Apollo 15 qo'nish joyi",
+          "qiymat": "26.13° N, 3.63° E",
+          "birlik": "",
+          "holat": "tasdiqlangan",
+          "manba": "https://nssdc.gsfc.nasa.gov/planetary/lunar/apollo15info.html"
+        }
+      ],
+      "yillar": [
+        {
+          "voqea": "Apollo 15 Oyga qo'ngan",
+          "sana": "1971-07-30",
+          "holat": "tasdiqlangan",
+          "manba": "https://nssdc.gsfc.nasa.gov/planetary/lunar/apollo15info.html"
+        }
+      ],
+      "hozir": {
+        "matn": "Oyda; Apollo 15 rover izlari hali ham bor (LRO suratlari).",
+        "holat": "taxminiy",
+        "manba": "https://www.nasa.gov/image-article/apollo-15-interplanetary-mountaineers/"
+      },
+      "fakt_uz": "Apollo 15 — Oyda birinchi marta 'Oy avtomobili' (Lunar Roving Vehicle) ishlatilgan missiya. Kosmonavtlar Hadley Delta etagiga mashinada borgan.",
+      "fakt_en": "Apollo 15 was the first mission to use the Lunar Roving Vehicle on the Moon.",
+      "fakt_holat": "tasdiqlangan",
+      "fakt_manba": "https://www.nasa.gov/image-article/apollo-15-interplanetary-mountaineers/",
+      "oyin_roli": "Oy bekati — bolg'a va pat tajribasi o'tkazilgan joy.",
+      "maxsus_tekshiruv": "Studiyadagi '~1.5 km' XATO. Rasmiy Apollo 15 ilmiy hisoboti ~4.5 km deydi. 1.5 km raqami NASA rasm izohidagi '4,765 feet' dan kelgan; bu 14 765 ft (= 4.5 km) ning yozuv xatosi bo'lishi ehtimoli katta (bir Apollo rasm katalogi: 'about 4,500 meters (approximately 14,765 feet)').",
+      "manbalar": [
+        "https://www.nasa.gov/history/alsj/a15/a15psrf5-17.html",
+        "https://science.nasa.gov/3d-resources/moon-mount-hadley/",
+        "https://nssdc.gsfc.nasa.gov/planetary/lunar/apollo15info.html"
+      ],
+      "hujjatlarda_tilga_olingan": [
+        "oy"
+      ],
+      "bekat_men_taxmin": "oy",
+      "model_inventory": {
+        "title": "Mount Hadley (terrain print)",
+        "bbox_xyz_birlik": [
+          304.0006,
+          304.0006,
+          56.9665
+        ],
+        "izoh": "Blender birliklari (Z yuqoriga); masshtab model sayin farq qiladi"
+      },
+      "karta_toliq": true
+    },
+    {
+      "id": "mission-control",
+      "rasmiy_nomi": "Christopher C. Kraft Jr. Mission Control Center (Building 30, NASA Johnson Space Center, Houston) — model: Apollo davri boshqaruv xonasi",
+      "nima_uz": "Yerdagi 'bosh xona': bu yerdan mutaxassislar kosmosdagi kosmonavtlarni 24 soat kuzatib, ularga yordam beradi.",
+      "what_en": "The \"control room\" on Earth where experts watch over astronauts in space 24 hours a day and help them.",
+      "raqamlar": [
+        {
+          "nom": "xona o'lchami",
+          "qiymat": null,
+          "birlik": "m",
+          "holat": null,
+          "izoh": "NASA sahifalarida topilmadi"
+        }
+      ],
+      "yillar": [
+        {
+          "voqea": "Houston MCC birinchi marta ishlatilgan",
+          "sana": "1965-06",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/history/building-on-a-mission-the-houston-mission-control-center/",
+          "izoh": "'nerve center ... since June 1965'"
+        },
+        {
+          "voqea": "Milliy tarixiy obida (National Historic Landmark)",
+          "sana": "1985",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/johnson/history/apollo-mcc-restoration/"
+        },
+        {
+          "voqea": "Apollo boshqaruv xonasi tiklangan",
+          "sana": "2018-11 … 2019-07",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/johnson/history/apollo-mcc-restoration/"
+        }
+      ],
+      "hozir": {
+        "matn": "Ishlayapti: XKS ni kecha-kunduz kuzatadi; tarixiy Apollo xonasi muzey sifatida tiklangan.",
+        "holat": "tasdiqlangan",
+        "manba": "https://www.nasa.gov/johnson/jsc-mission-control-center/"
+      },
+      "fakt_uz": "1971-yilda Apollo 15 Oyga qo'nganda kosmonavt Devid Skott birinchi bo'lib aynan shu xonaga gapirgan: \"Okay, Houston. The Falcon is on the Plain at Hadley.\"",
+      "fakt_en": "When Apollo 15 landed on the Moon in 1971, commander David Scott called this room first: \"Okay, Houston. The Falcon is on the Plain at Hadley.\"",
+      "fakt_holat": "tasdiqlangan",
+      "fakt_manba": "https://www.nasa.gov/history/50-years-ago-apollo-15-on-the-moon-at-hadley-apennine/",
+      "oyin_roli": "Mission Control — 'Houston': karvonga ko'rsatma beradi.",
+      "manbalar": [
+        "https://www.nasa.gov/johnson/jsc-mission-control-center/",
+        "https://www.nasa.gov/history/building-on-a-mission-the-houston-mission-control-center/",
+        "https://www.nasa.gov/johnson/history/apollo-mcc-restoration/"
+      ],
+      "hujjatlarda_tilga_olingan": [
+        "yer"
+      ],
+      "bekat_men_taxmin": "yer",
+      "model_inventory": {
+        "title": "Mission Control",
+        "bbox_xyz_birlik": [
+          14.5094,
+          24.5556,
+          5.8873
+        ],
+        "izoh": "Blender birliklari (Z yuqoriga); masshtab model sayin farq qiladi"
+      },
+      "karta_toliq": true
+    },
+    {
+      "id": "mobile-launcher",
+      "rasmiy_nomi": "Mobile Launcher 1 (ML-1) — SLS raketasi uchun harakatlanuvchi uchirish minorasi",
+      "nima_uz": "Raketani yig'ish, uchirish maydoniga olib borish va undan uchirish uchun ishlatiladigan ulkan po'lat minora-platforma.",
+      "what_en": "A huge steel tower and platform used to build up the rocket, carry it to the launch pad and launch it.",
+      "raqamlar": [
+        {
+          "nom": "umumiy balandligi (yerdan)",
+          "qiymat": 380,
+          "birlik": "ft (≈115.8 m)",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/humans-in-space/exploration-ground-systems/mobile-launcher/"
+        },
+        {
+          "nom": "minora: kvadrat tomoni",
+          "qiymat": 40,
+          "birlik": "ft (≈12.2 m)",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/humans-in-space/exploration-ground-systems/mobile-launcher/"
+        },
+        {
+          "nom": "minora balandligi",
+          "qiymat": 355,
+          "birlik": "ft (≈108 m), \"about\"",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/humans-in-space/exploration-ground-systems/mobile-launcher/"
+        },
+        {
+          "nom": "zinapoyalar soni",
+          "qiymat": 662,
+          "birlik": "ta",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/humans-in-space/exploration-ground-systems/mobile-launcher/"
+        },
+        {
+          "nom": "og'irligi",
+          "qiymat": 11.5,
+          "birlik": "million funt (≈5.2 million kg)",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/humans-in-space/exploration-ground-systems/mobile-launcher/"
+        }
+      ],
+      "yillar": [
+        {
+          "voqea": "Artemis I uchirilishi",
+          "sana": "2022-11-16",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/mission/artemis-i/"
+        },
+        {
+          "voqea": "Artemis II uchirilishi",
+          "sana": "2026-04-01",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/mission/artemis-ii/"
+        }
+      ],
+      "hozir": {
+        "matn": "Kennedi kosmik markazida, keyingi Artemis uchirishlariga tayyorlanmoqda.",
+        "holat": "taxminiy",
+        "manba": "https://www.nasa.gov/humans-in-space/exploration-ground-systems/mobile-launcher/"
+      },
+      "fakt_uz": "Minorada 662 ta zinapoya bor — tepasiga piyoda chiqish juda uzoq!",
+      "fakt_en": "The tower has 662 steps — a very long climb to the top!",
+      "fakt_holat": "tasdiqlangan",
+      "fakt_manba": "https://www.nasa.gov/humans-in-space/exploration-ground-systems/mobile-launcher/",
+      "oyin_roli": "Yer bekati: karvon shu yerdan uchadi.",
+      "manbalar": [
+        "https://www.nasa.gov/humans-in-space/exploration-ground-systems/mobile-launcher/",
+        "https://science.nasa.gov/3d-resources/mobile-launcher/"
+      ],
+      "hujjatlarda_tilga_olingan": [
+        "yer"
+      ],
+      "bekat_men_taxmin": "yer",
+      "model_inventory": {
+        "title": "Mobile Launcher",
+        "bbox_xyz_birlik": [
+          1.0194,
+          0.8672,
+          2.4643
+        ],
+        "izoh": "Blender birliklari (Z yuqoriga); masshtab model sayin farq qiladi"
+      },
+      "karta_toliq": true
+    },
+    {
+      "id": "sev",
+      "rasmiy_nomi": "Space Exploration Vehicle (SEV) — Multi-Mission SEV prototipi",
+      "nima_uz": "Ichida ikki kosmonavt yashay oladigan, 12 g'ildirakli, bosimli kabinali 'kosmik yuk mashinasi'.",
+      "what_en": "A 12-wheeled, pickup-truck-sized rover with a pressurized cabin where two astronauts can live.",
+      "raqamlar": [
+        {
+          "nom": "uzunligi",
+          "qiymat": 4.48,
+          "birlik": "m (14.7 ft)",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/wp-content/uploads/2015/08/464826main_sev_factsheet_508.pdf",
+          "izoh": "SEV (yuzada yuruvchi) spetsifikatsiyasi, NASA fakt varag'i FS-2011-08-045-JSC"
+        },
+        {
+          "nom": "balandligi",
+          "qiymat": 3.05,
+          "birlik": "m (10 ft)",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/wp-content/uploads/2015/08/464826main_sev_factsheet_508.pdf"
+        },
+        {
+          "nom": "g'ildiraklar orasidagi masofa (wheelbase)",
+          "qiymat": 3.96,
+          "birlik": "m (13 ft)",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/wp-content/uploads/2015/08/464826main_sev_factsheet_508.pdf"
+        },
+        {
+          "nom": "massa",
+          "qiymat": 2994,
+          "birlik": "kg (6,600 funt)",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/wp-content/uploads/2015/08/464826main_sev_factsheet_508.pdf"
+        },
+        {
+          "nom": "ko'tara oladigan yuk",
+          "qiymat": 998,
+          "birlik": "kg (2,200 funt)",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/wp-content/uploads/2015/08/464826main_sev_factsheet_508.pdf"
+        },
+        {
+          "nom": "g'ildirak diametri × eni",
+          "qiymat": "0.99 × 0.30",
+          "birlik": "m (39 × 12 in)",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/wp-content/uploads/2015/08/464826main_sev_factsheet_508.pdf"
+        },
+        {
+          "nom": "g'ildiraklar soni",
+          "qiymat": 12,
+          "birlik": "ta",
+          "holat": "tasdiqlangan",
+          "manba": "https://science.nasa.gov/3d-resources/space-exploration-vehicle/"
+        },
+        {
+          "nom": "tezligi",
+          "qiymat": "~10",
+          "birlik": "km/soat",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/wp-content/uploads/2015/08/464826main_sev_factsheet_508.pdf"
+        },
+        {
+          "nom": "ekipaj",
+          "qiymat": "2 (favqulodda 4)",
+          "birlik": "kishi",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/wp-content/uploads/2015/08/464826main_sev_factsheet_508.pdf"
+        },
+        {
+          "nom": "bo'ron boshpanasi sifatida ekipajni himoya qilish muddati",
+          "qiymat": 72,
+          "birlik": "soat gacha",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/wp-content/uploads/2015/08/464826main_sev_factsheet_508.pdf"
+        },
+        {
+          "nom": "shlyuz atrofidagi muz qatlami (radiatsiyadan himoya)",
+          "qiymat": 2.5,
+          "birlik": "cm",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/wp-content/uploads/2015/08/464826main_sev_factsheet_508.pdf"
+        }
+      ],
+      "yillar": [
+        {
+          "voqea": "g'ildirakli shassi konsepsiyasi ko'rsatilgan",
+          "sana": "2007",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/wp-content/uploads/2015/08/464826main_sev_factsheet_508.pdf"
+        },
+        {
+          "voqea": "yangilangan versiya tayyor",
+          "sana": "2009",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/wp-content/uploads/2015/08/464826main_sev_factsheet_508.pdf"
+        }
+      ],
+      "hozir": {
+        "matn": "Prototip; Space Center Houston da namoyishda ekani xabar qilingan.",
+        "holat": "taxminiy",
+        "manba": "https://spacecenter.org/?p=43633"
+      },
+      "fakt_uz": "SEV kabinasi quyosh bo'roni paytida 'boshpana' bo'la oladi: ekipajni 72 soatgacha himoya qiladi. Kirish shlyuzi atrofida esa 2.5 sm muzlagan suv qatlami bor — u radiatsiyani to'sadi! G'ildiraklari 360° buriladi, qisqichbaqa kabi yonboshiga yura oladi.",
+      "fakt_en": "The SEV cabin doubles as a solar-storm shelter that can protect the crew for up to 72 hours, and its hatch is wrapped in 2.5 cm of frozen water that blocks radiation. Its wheels pivot 360° so it can drive sideways like a crab.",
+      "fakt_holat": "tasdiqlangan",
+      "fakt_manba": "https://www.nasa.gov/wp-content/uploads/2015/08/464826main_sev_factsheet_508.pdf",
+      "oyin_roli": "Haydaladigan boshpana: bo'ron paytida ichiga yashirinish mumkin. Bu o'yin g'oyasi HAQIQIY NASA konsepsiyasiga to'g'ri keladi (SEV = storm shelter, muz/suv bilan himoya).",
+      "manbalar": [
+        "https://www.nasa.gov/wp-content/uploads/2015/08/464826main_sev_factsheet_508.pdf",
+        "https://science.nasa.gov/3d-resources/space-exploration-vehicle/"
+      ],
+      "hujjatlarda_tilga_olingan": [
+        "oy"
+      ],
+      "bekat_men_taxmin": "oy",
+      "model_inventory": {
+        "title": "Space Exploration Vehicle",
+        "bbox_xyz_birlik": [
+          4.0385,
+          5.91,
+          3.9685
+        ],
+        "izoh": "Blender birliklari (Z yuqoriga); masshtab model sayin farq qiladi"
+      },
+      "karta_toliq": true
+    },
+    {
+      "id": "rassor",
+      "rasmiy_nomi": "Regolith Advanced Surface Systems Operations Robot (RASSOR) — NASA Kennedi (Swamp Works)",
+      "nima_uz": "Oy va Mars tuprog'ini qazib oladigan, ikki uchida aylanadigan chelak-barabanlari bor kichik robot-ekskavator.",
+      "what_en": "A small digging robot with spinning bucket drums at both ends, made to dig Moon and Mars soil.",
+      "raqamlar": [
+        {
+          "nom": "massa (RASSOR 2.0)",
+          "qiymat": 66,
+          "birlik": "kg",
+          "holat": "tasdiqlangan",
+          "manba": "https://ntrs.nasa.gov/citations/20210011366"
+        },
+        {
+          "nom": "bir kunda qaziy oladigan tuproq (kamida)",
+          "qiymat": 2.7,
+          "birlik": "tonna",
+          "holat": "tasdiqlangan",
+          "manba": "https://ntrs.nasa.gov/citations/20210011366"
+        },
+        {
+          "nom": "birinchi RASSOR massasi",
+          "qiymat": "~45–50",
+          "birlik": "kg",
+          "holat": "taxminiy",
+          "izoh": "ikkilamchi manbalar"
+        }
+      ],
+      "yillar": [],
+      "hozir": {
+        "matn": "Prototip; ishlari 'IPEx' (ISRU Pilot Excavator) loyihasida davom etgan.",
+        "holat": "taxminiy",
+        "manba": "https://ntrs.nasa.gov/citations/20210011366"
+      },
+      "fakt_uz": "Ikki chelak-baraban qarama-qarshi tomonga aylanadi — shuning uchun past og'irlik kuchida ham robot qazayotganda o'zini o'zi itarib yubormaydi.",
+      "fakt_en": "Its two drums spin in opposite directions, so the digging forces cancel out and the robot doesn't push itself away in low gravity.",
+      "fakt_holat": "taxminiy",
+      "fakt_manba": "https://ntrs.nasa.gov/citations/20210011366",
+      "oyin_roli": "Razvedkachi (scout): oldinga borib yo'lni tekshiradi.",
+      "manbalar": [
+        "https://ntrs.nasa.gov/citations/20210011366",
+        "https://science.nasa.gov/3d-resources/regolith-advanced-surface-systems-operations-robot-rassor/"
+      ],
+      "hujjatlarda_tilga_olingan": [
+        "oy"
+      ],
+      "bekat_men_taxmin": "oy",
+      "model_inventory": {
+        "title": "RASSOR excavator robot",
+        "bbox_xyz_birlik": [
+          0.8482,
+          1.6571,
+          0.9382
+        ],
+        "izoh": "Blender birliklari (Z yuqoriga); masshtab model sayin farq qiladi"
+      },
+      "karta_toliq": true
+    },
+    {
+      "id": "sls",
+      "rasmiy_nomi": "Space Launch System (SLS) Block 1",
+      "nima_uz": "Odamlarni Oyga yuborish uchun qurilgan NASA'ning juda kuchli raketasi.",
+      "what_en": "NASA's super-powerful rocket built to send people to the Moon.",
+      "raqamlar": [
+        {
+          "nom": "balandligi",
+          "qiymat": 322,
+          "birlik": "ft (≈98 m)",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/sites/default/files/files/SLS-Fact-Sheet_aug2014-finalv3.pdf"
+        },
+        {
+          "nom": "balandligi (aniqroq)",
+          "qiymat": 322.4,
+          "birlik": "ft (98.3 m)",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/wp-content/uploads/2026/02/sls-5644-sls-block-1b-fact-sheet-dec2025-508.pdf",
+          "izoh": "Dekabr 2025 Block 1B fakt varag'i Block 1 ni shunday beradi"
+        },
+        {
+          "nom": "to'ldirilgan massasi",
+          "qiymat": 5.75,
+          "birlik": "million funt (≈2.6 million kg)",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/sites/default/files/files/SLS-Fact-Sheet_aug2014-finalv3.pdf"
+        },
+        {
+          "nom": "uchishdagi tortish kuchi",
+          "qiymat": 8.8,
+          "birlik": "million funt (≈39 MN)",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/sites/default/files/files/SLS-Fact-Sheet_aug2014-finalv3.pdf",
+          "izoh": "Saturn V dan 15% kuchliroq"
+        }
+      ],
+      "yillar": [
+        {
+          "voqea": "Artemis I (ekipajsiz)",
+          "sana": "2022-11-16",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/mission/artemis-i/"
+        },
+        {
+          "voqea": "Artemis II (4 kishi, Oy atrofida)",
+          "sana": "2026-04-01",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/mission/artemis-ii/"
+        }
+      ],
+      "hozir": {
+        "matn": "Ikki marta uchgan (Artemis I va II). Keyingi raketa Artemis III uchun yig'ilmoqda.",
+        "holat": "tasdiqlangan",
+        "manba": "https://www.nasa.gov/humans-in-space/space-launch-system/"
+      },
+      "fakt_uz": "SLS uchishda Saturn V dan 15% ko'proq tortish kuchi beradi.",
+      "fakt_en": "At liftoff SLS makes 15% more thrust than the Saturn V.",
+      "fakt_holat": "tasdiqlangan",
+      "fakt_manba": "https://www.nasa.gov/sites/default/files/files/SLS-Fact-Sheet_aug2014-finalv3.pdf",
+      "oyin_roli": "Yer bekati: karvonni kosmosga chiqaradigan raketa.",
+      "manbalar": [
+        "https://www.nasa.gov/sites/default/files/files/SLS-Fact-Sheet_aug2014-finalv3.pdf",
+        "https://www.nasa.gov/wp-content/uploads/2026/02/sls-5644-sls-block-1b-fact-sheet-dec2025-508.pdf",
+        "https://www.nasa.gov/mission/artemis-ii/"
+      ],
+      "hujjatlarda_tilga_olingan": [
+        "yer"
+      ],
+      "bekat_men_taxmin": "yer",
+      "model_inventory": {
+        "title": "Space Launch System",
+        "bbox_xyz_birlik": [
+          45.2969,
+          22.976,
+          198.7409
+        ],
+        "izoh": "Blender birliklari (Z yuqoriga); masshtab model sayin farq qiladi"
+      },
+      "karta_toliq": true
+    },
+    {
+      "id": "saturn-v",
+      "rasmiy_nomi": "Saturn V",
+      "nima_uz": "1960–70-yillarda Apollo kosmonavtlarini Oyga olib borgan ulkan raketa.",
+      "what_en": "The giant rocket that carried the Apollo astronauts to the Moon in the 1960s and 1970s.",
+      "raqamlar": [
+        {
+          "nom": "balandligi",
+          "qiymat": 111,
+          "birlik": "m (363 ft)",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/learning-resources/for-kids-and-students/what-was-the-saturn-v-grades-5-8/"
+        },
+        {
+          "nom": "to'ldirilgan massasi",
+          "qiymat": 2.8,
+          "birlik": "million kg (6.2 million funt)",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/learning-resources/for-kids-and-students/what-was-the-saturn-v-grades-5-8/"
+        },
+        {
+          "nom": "tortish kuchi",
+          "qiymat": 34.5,
+          "birlik": "million N (7.6 million funt)",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/learning-resources/for-kids-and-students/what-was-the-saturn-v-grades-5-8/"
+        },
+        {
+          "nom": "uchirishlar soni",
+          "qiymat": 13,
+          "birlik": "ta",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/learning-resources/for-kids-and-students/what-was-the-saturn-v-grades-5-8/",
+          "izoh": "Sahifadagi ro'yxatdan sanaldi: Apollo 4, 6, 8–17 va Skylab"
+        }
+      ],
+      "yillar": [
+        {
+          "voqea": "birinchi uchirish (Apollo 4)",
+          "sana": "1967",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/learning-resources/for-kids-and-students/what-was-the-saturn-v-grades-5-8/"
+        },
+        {
+          "voqea": "oxirgi uchirish (Skylab)",
+          "sana": "1973",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/learning-resources/for-kids-and-students/what-was-the-saturn-v-grades-5-8/"
+        }
+      ],
+      "hozir": {
+        "matn": "Iste'fodagi raketa. Dunyoda 3 ta Saturn V namoyish qilinadi (Kennedi, Jonson va Xantsvill).",
+        "holat": "taxminiy",
+        "manba": "https://spacecenter.org/?p=19517"
+      },
+      "fakt_uz": "To'la yoqilg'i bilan Saturn V taxminan 400 ta filning og'irligiga teng bo'lgan.",
+      "fakt_en": "Fully fuelled, the Saturn V weighed about as much as 400 elephants.",
+      "fakt_holat": "tasdiqlangan",
+      "fakt_manba": "https://www.nasa.gov/learning-resources/for-kids-and-students/what-was-the-saturn-v-grades-5-8/",
+      "oyin_roli": "Tarix kartasi: Oyga birinchi yo'l. (Teksturada bayroq/yozuv bor — o'yin rasmida bo'yash kerak.)",
+      "manbalar": [
+        "https://www.nasa.gov/learning-resources/for-kids-and-students/what-was-the-saturn-v-grades-5-8/",
+        "https://science.nasa.gov/3d-resources/saturn-v/"
+      ],
+      "hujjatlarda_tilga_olingan": [
+        "yer"
+      ],
+      "bekat_men_taxmin": "yer",
+      "model_inventory": {
+        "title": "Saturn V",
+        "bbox_xyz_birlik": [
+          2.0143,
+          2.0143,
+          12.9868
+        ],
+        "izoh": "Blender birliklari (Z yuqoriga); masshtab model sayin farq qiladi"
+      },
+      "karta_toliq": true
+    },
+    {
+      "id": "orion",
+      "rasmiy_nomi": "Orion kosmik kemasi (ekipaj moduli)",
+      "nima_uz": "Kosmonavtlarni Oyga olib boradigan va Yerga xavfsiz qaytaradigan kapsula.",
+      "what_en": "The capsule that carries astronauts to the Moon and brings them safely back to Earth.",
+      "raqamlar": [
+        {
+          "nom": "issiqlik qalqoni diametri",
+          "qiymat": 16.5,
+          "birlik": "ft (≈5.03 m)",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/reference/crew-module/",
+          "izoh": "dunyodagi eng katta ablyativ issiqlik qalqoni"
+        },
+        {
+          "nom": "yashash hajmi",
+          "qiymat": 330,
+          "birlik": "ft³ (≈9.3 m³)",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/reference/crew-module/"
+        },
+        {
+          "nom": "ekipaj",
+          "qiymat": 4,
+          "birlik": "kishi",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/reference/orion-fun-facts/"
+        },
+        {
+          "nom": "mustaqil uchish muddati (dastlabki missiyalar)",
+          "qiymat": 21,
+          "birlik": "kun gacha",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/reference/orion-fun-facts/"
+        },
+        {
+          "nom": "qismlar soni",
+          "qiymat": 355056,
+          "birlik": "ta",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/reference/orion-fun-facts/"
+        },
+        {
+          "nom": "qaytishda tashqi harorat",
+          "qiymat": "~5000",
+          "birlik": "°F (≈2760 °C)",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/reference/orion-fun-facts/"
+        },
+        {
+          "nom": "Artemis I da Yerdan eng uzoq masofa",
+          "qiymat": 268563,
+          "birlik": "mil (≈432 200 km)",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/mission/artemis-i/"
+        },
+        {
+          "nom": "ekipaj moduli massasi",
+          "qiymat": "~9300 (qo'nishda)",
+          "birlik": "kg",
+          "holat": "taxminiy",
+          "izoh": "ikkilamchi manbalar"
+        }
+      ],
+      "yillar": [
+        {
+          "voqea": "Artemis I (ekipajsiz)",
+          "sana": "2022-11-16 … 2022-12-11",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/mission/artemis-i/"
+        },
+        {
+          "voqea": "Artemis II (Wiseman, Glover, Koch, Hansen)",
+          "sana": "2026-04-01 … 2026-04-10",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/mission/artemis-ii/"
+        }
+      ],
+      "hozir": {
+        "matn": "Artemis II muvaffaqiyatli qaytdi (2026-04-10); keyingi Orion Artemis III uchun tayyorlanmoqda.",
+        "holat": "tasdiqlangan",
+        "manba": "https://www.nasa.gov/mission/artemis-ii/"
+      },
+      "fakt_uz": "Oydan qaytishda Orion soatiga ~40 000 km tezlikda atmosferaga kiradi va issiqlik qalqoni ~2760 °C gacha qiziydi.",
+      "fakt_en": "Coming home from the Moon, Orion hits the air at about 25,000 mph and its heat shield faces about 5,000°F.",
+      "fakt_holat": "tasdiqlangan",
+      "fakt_manba": "https://www.nasa.gov/reference/orion-fun-facts/",
+      "oyin_roli": "Uyga qaytish / qutqaruv kemasi.",
+      "manbalar": [
+        "https://www.nasa.gov/reference/crew-module/",
+        "https://www.nasa.gov/reference/orion-fun-facts/",
+        "https://www.nasa.gov/mission/artemis-ii/"
+      ],
+      "hujjatlarda_tilga_olingan": [
+        "koinot",
+        "oy",
+        "yer"
+      ],
+      "bekat_men_taxmin": "oy",
+      "model_inventory": {
+        "title": "Orion capsule",
+        "bbox_xyz_birlik": [
+          16.3094,
+          16.3044,
+          10.634
+        ],
+        "izoh": "Blender birliklari (Z yuqoriga); masshtab model sayin farq qiladi"
+      },
+      "karta_toliq": true
+    },
+    {
+      "id": "gateway",
+      "rasmiy_nomi": "Gateway — Oy orbitasidagi rejalashtirilgan stansiya (PPE + HALO yadrosi). HOLAT: 2026-03-24 dan 'hozirgi shaklda to'xtatilgan'",
+      "nima_uz": "Oy atrofida aylanishi rejalashtirilgan kichik kosmik stansiya — lekin 2026-yilda NASA uni to'xtatib, Oy yuzasidagi bazaga e'tibor qaratdi.",
+      "what_en": "A small space station planned to orbit the Moon — but in 2026 NASA paused it to focus on a base on the lunar surface.",
+      "raqamlar": [
+        {
+          "nom": "PPE (quvvat va harakat moduli) quvvati",
+          "qiymat": 60,
+          "birlik": "kW",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/reference/gateway-about/",
+          "izoh": "quyosh-elektr harakatlantiruvchi kema"
+        },
+        {
+          "nom": "SR-1 Freedom tarkibidagi PPE quvvati",
+          "qiymat": 48,
+          "birlik": "kW",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/mission/space-reactor-1-freedom/"
+        },
+        {
+          "nom": "HALO shartnoma qiymati (2021)",
+          "qiymat": 935,
+          "birlik": "million $",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/news-release/nasa-northrop-grumman-finalize-moon-outpost-living-quarters-contract/"
+        },
+        {
+          "nom": "to'liq yig'ilgandagi rejalashtirilgan o'lcham (bo'yi × eni × uzunligi)",
+          "qiymat": "43 × 19 × 20",
+          "birlik": "m",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/gateway-frequently-asked-questions/",
+          "izoh": "141 × 62 × 67 ft — REJA, qurilmagan"
+        },
+        {
+          "nom": "to'liq yig'ilgandagi rejalashtirilgan massa",
+          "qiymat": 63000,
+          "birlik": "kg",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/gateway-frequently-asked-questions/"
+        },
+        {
+          "nom": "rejalashtirilgan yashash hajmi",
+          "qiymat": 125,
+          "birlik": "m³",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/gateway-frequently-asked-questions/"
+        },
+        {
+          "nom": "rejalashtirilgan NRHO orbitasi: Oyga eng yaqin … eng uzoq",
+          "qiymat": "1500 … 70000",
+          "birlik": "km",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/gateway-frequently-asked-questions/"
+        },
+        {
+          "nom": "bir aylanish davri",
+          "qiymat": 6.5,
+          "birlik": "kun",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/gateway-frequently-asked-questions/"
+        }
+      ],
+      "yillar": [
+        {
+          "voqea": "HALO shartnomasi yakunlangan",
+          "sana": "2021-07-09",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/news-release/nasa-northrop-grumman-finalize-moon-outpost-living-quarters-contract/"
+        },
+        {
+          "voqea": "NASA: 'Gateway'ni hozirgi shaklda to'xtatamiz, Oy bazasiga o'tamiz'",
+          "sana": "2026-03-24",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/news-release/nasa-unveils-initiatives-to-achieve-americas-national-space-policy/"
+        },
+        {
+          "voqea": "PPE — 'Space Reactor-1 Freedom' (yadro-elektr kemasi) asosiga aylandi; uchirish rejasi",
+          "sana": "2028 oxiri",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/mission/space-reactor-1-freedom/"
+        },
+        {
+          "voqea": "HALO ning quvvat va avionika qismlari Oy yuzasidagi 3 ta texnologik namoyishga moslanmoqda (Northrop Grumman)",
+          "sana": "2026",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/missions/moon-base/nasa-provides-updates-on-moon-base-cargo-landers-tech-demonstrations/"
+        }
+      ],
+      "hozir": {
+        "matn": "Uchirilmagan. Dastur to'xtatilgan; PPE SR-1 Freedom ga, HALO qismlari Oy bazasi namoyishlariga qayta ishlatilmoqda.",
+        "holat": "tasdiqlangan",
+        "manba": "https://www.nasa.gov/news-release/nasa-unveils-initiatives-to-achieve-americas-national-space-policy/"
+      },
+      "fakt_uz": "Gateway uchun qurilgan PPE endi Marsga uchadigan birinchi yadro energiyali kema — 'SR-1 Freedom' ning 'tanasi' bo'ladi.",
+      "fakt_en": "The PPE built for Gateway is now becoming the body of SR-1 Freedom, NASA's first fission-powered spacecraft, headed for Mars.",
+      "fakt_holat": "tasdiqlangan",
+      "fakt_manba": "https://www.nasa.gov/mission/space-reactor-1-freedom/",
+      "oyin_roli": "O'yinda ishlayotgan stansiya sifatida KO'RSATMASLIK kerak — 'rejalashtirilgan, 2026 da to'xtatilgan' deb yozish to'g'ri.",
+      "maxsus_tekshiruv": "Holat (2026-11): NASA 2026-03-24 da Gateway'ni 'hozirgi shaklda to'xtatish'ni e'lon qildi. PPE → SR-1 Freedom (2028 oxiri, Mars). HALO → Oy yuzasidagi 3 ta namoyish yuki. NASA 3D sahifasidagi 'Artemis IV dan oldin uchiriladi' matni ESKIRGAN. 3D model 'Gateway Core' — PPE+HALO dan ko'proq modullarni (I-Hab, Lunar View va b.) ko'rsatadi.",
+      "model_izoh": "DSXR teksturasida 'Canada' yozuvi bor.",
+      "manbalar": [
+        "https://www.nasa.gov/news-release/nasa-unveils-initiatives-to-achieve-americas-national-space-policy/",
+        "https://www.nasa.gov/mission/space-reactor-1-freedom/",
+        "https://www.nasa.gov/missions/moon-base/nasa-provides-updates-on-moon-base-cargo-landers-tech-demonstrations/",
+        "https://www.nasa.gov/gateway-frequently-asked-questions/"
+      ],
+      "hujjatlarda_tilga_olingan": [
+        "koinot"
+      ],
+      "bekat_men_taxmin": "oy",
+      "model_inventory": {
+        "title": "Lunar Gateway",
+        "bbox_xyz_birlik": [
+          17.8828,
+          30.0697,
+          38.9708
+        ],
+        "izoh": "Blender birliklari (Z yuqoriga); masshtab model sayin farq qiladi"
+      },
+      "karta_toliq": true
+    },
+    {
+      "id": "oru",
+      "rasmiy_nomi": "Orbital Replacement Unit (ORU) — orbitada almashtiriladigan blok (model: Shattl davri ORU / 'ORU Carrier' bo'lishi ehtimoli bor)",
+      "nima_uz": "Kosmik stansiyadagi buzilsa yoki eskirsa, kosmonavtlar butunlay chiqarib, yangisiga almashtira oladigan 'quti'-qism (masalan, batareya).",
+      "what_en": "A box-shaped part of a space station that astronauts can pull out and swap for a new one when it breaks or wears out — like a battery.",
+      "raqamlar": [
+        {
+          "nom": "XKS: yangi litiy-ion batareyalar soni",
+          "qiymat": 24,
+          "birlik": "ta",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/blogs/spacestation/2020/07/16/nasa-astronauts-conclude-todays-spacewalk/",
+          "izoh": "48 ta eski nikel-vodorod batareya o'rniga"
+        },
+        {
+          "nom": "bitta Li-ion batareya ORU o'lchami",
+          "qiymat": "~41 × 37 × 21 in (≈104 × 94 × 53 cm)",
+          "birlik": "",
+          "holat": "tasdiqlangan",
+          "manba": "https://ntrs.nasa.gov/api/citations/20160012048/downloads/20160012048.pdf",
+          "izoh": "NASA Glenn (Dalton), NTRS 20160012048"
+        },
+        {
+          "nom": "bitta Li-ion batareya ORU massasi (spetsifikatsiya)",
+          "qiymat": 435,
+          "birlik": "funt (≈197 kg)",
+          "holat": "tasdiqlangan",
+          "manba": "https://ntrs.nasa.gov/api/citations/20160012048/downloads/20160012048.pdf",
+          "izoh": "Spaceflight101 dagi 169 kg noto'g'ri chiqdi"
+        },
+        {
+          "nom": "ichidagi elementlar (ketma-ket)",
+          "qiymat": 30,
+          "birlik": "ta Li-ion (eski Ni-H2 da 76 ta)",
+          "holat": "tasdiqlangan",
+          "manba": "https://ntrs.nasa.gov/api/citations/20160012048/downloads/20160012048.pdf"
+        },
+        {
+          "nom": "modelning o'zi (ORU Carrier) o'lchami",
+          "qiymat": null,
+          "birlik": "m",
+          "holat": null,
+          "izoh": "Rasmiy o'lcham topilmadi"
+        }
+      ],
+      "yillar": [
+        {
+          "voqea": "XKS batareyalarini almashtirish ishi",
+          "sana": "2017–2020 (~3.5 yil)",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/blogs/spacestation/2020/07/16/nasa-astronauts-conclude-todays-spacewalk/",
+          "izoh": "2020-07 da 'nearly completes a 3.5-year effort'"
+        }
+      ],
+      "hozir": {
+        "matn": "XKS dagi Li-ion batareya ORU lari ishlamoqda.",
+        "holat": "taxminiy",
+        "manba": "https://www.nasa.gov/blogs/spacestation/2020/07/16/nasa-astronauts-conclude-todays-spacewalk/"
+      },
+      "fakt_uz": "Bitta yangi litiy-ion batareya ikkita eski batareyaning ishini bajaradi — shuning uchun 48 ta eski o'rniga 24 tasi yetarli bo'ldi.",
+      "fakt_en": "One new lithium-ion battery does the job of two old ones, so 24 new batteries replaced 48 old ones.",
+      "fakt_holat": "tasdiqlangan",
+      "fakt_manba": "https://www.nasa.gov/blogs/spacestation/2020/07/16/nasa-astronauts-conclude-todays-spacewalk/",
+      "oyin_roli": "Batareya / quvvat qutisi.",
+      "model_izoh": "GLB ichidagi tugun nomi 'spaceshutt', tekstura — oltin folga. data.nasa.gov dagi 'Orbital Replacement Unit Carrier' (2,776 uch) bilan mos keladi — taxminiy.",
+      "manbalar": [
+        "https://www.nasa.gov/blogs/spacestation/2020/07/16/nasa-astronauts-conclude-todays-spacewalk/",
+        "https://ntrs.nasa.gov/api/citations/20160012048/downloads/20160012048.pdf",
+        "https://data.nasa.gov/dataset/nasa-3d-models-orbital-replacement-unit-carrier"
+      ],
+      "hujjatlarda_tilga_olingan": [
+        "xks"
+      ],
+      "bekat_men_taxmin": "xks",
+      "model_inventory": {
+        "title": "Orbital Replacement Unit",
+        "bbox_xyz_birlik": [
+          173.5071,
+          150.9982,
+          141.4483
+        ],
+        "izoh": "Blender birliklari (Z yuqoriga); masshtab model sayin farq qiladi"
+      },
+      "karta_toliq": true
+    },
+    {
+      "id": "hammer",
+      "rasmiy_nomi": "Bolg'a (NASA Ames umumiy 'Hammer' modeli) — o'yinda Apollo 15 'bolg'a va pat' tajribasi uchun",
+      "nima_uz": "Oddiy bolg'a — lekin Oyda u bilan mashhur tajriba qilingan: havosiz joyda bolg'a va pat bir vaqtda tushadi.",
+      "what_en": "A hammer — used on the Moon for a famous test: with no air, a hammer and a feather fall at the same speed.",
+      "raqamlar": [
+        {
+          "nom": "Apollo 15 geologik bolg'asi massasi",
+          "qiymat": 1.32,
+          "birlik": "kg",
+          "holat": "tasdiqlangan",
+          "manba": "https://nssdc.gsfc.nasa.gov/planetary/lunar/apollo_15_feather_drop.html",
+          "izoh": "alyuminiy"
+        },
+        {
+          "nom": "lochin pati massasi (hisobotda)",
+          "qiymat": 0.03,
+          "birlik": "kg",
+          "holat": "tasdiqlangan",
+          "manba": "https://nssdc.gsfc.nasa.gov/planetary/lunar/apollo_15_feather_drop.html",
+          "izoh": "NSSDC: bu raqam katta, ehtimol xato; odatiy pat 0.3–3 g"
+        },
+        {
+          "nom": "tashlangan balandlik",
+          "qiymat": "~1.6",
+          "birlik": "m",
+          "holat": "tasdiqlangan",
+          "manba": "https://nssdc.gsfc.nasa.gov/planetary/lunar/apollo_15_feather_drop.html"
+        },
+        {
+          "nom": "modeldagi bolg'aning real o'lchami",
+          "qiymat": null,
+          "birlik": "m",
+          "holat": null,
+          "izoh": "Umumiy model, haqiqiy Apollo bolg'asi emas"
+        }
+      ],
+      "yillar": [
+        {
+          "voqea": "Devid Skott bolg'a va patni tashlagan (3-chi Oy sayri oxirida)",
+          "sana": "1971-08-02",
+          "holat": "taxminiy",
+          "manba": "https://nssdc.gsfc.nasa.gov/planetary/lunar/apollo_15_feather_drop.html",
+          "izoh": "Sana sahifada yo'q; 3-EVA sanasi umumiy ma'lum"
+        }
+      ],
+      "hozir": {
+        "matn": "Umumiy model.",
+        "holat": null
+      },
+      "fakt_uz": "Oyda havo yo'q, shuning uchun 1.32 kg li bolg'a ham, yengil pat ham yerga bir vaqtda tushgan. Pat lochin (falcon) pati edi — qo'nish modulining nomi ham 'Falcon' edi! Skott: \"How about that! Which proves that Mr. Galileo was correct\" (Mana! Demak, janob Galiley haq ekan).",
+      "fakt_en": "With no air on the Moon, the 1.32 kg hammer and the feather hit the ground together. The feather was a falcon feather — for the lander named Falcon. Scott said: \"How about that! Which proves that Mr. Galileo was correct in his findings.\"",
+      "fakt_holat": "tasdiqlangan",
+      "fakt_manba": "https://www.nasa.gov/history/50-years-ago-apollo-15-on-the-moon-at-hadley-apennine/",
+      "oyin_roli": "Apollo 15 bolg'a-va-pat tajribasi mini-o'yini.",
+      "manbalar": [
+        "https://nssdc.gsfc.nasa.gov/planetary/lunar/apollo_15_feather_drop.html",
+        "https://www.nasa.gov/history/50-years-ago-apollo-15-on-the-moon-at-hadley-apennine/",
+        "https://science.nasa.gov/3d-resources/hammer/"
+      ],
+      "hujjatlarda_tilga_olingan": [
+        "oy"
+      ],
+      "bekat_men_taxmin": "oy",
+      "model_inventory": {
+        "title": "EVA hammer",
+        "bbox_xyz_birlik": [
+          0.1558,
+          0.3564,
+          0.0692
+        ],
+        "izoh": "Blender birliklari (Z yuqoriga); masshtab model sayin farq qiladi"
+      },
+      "karta_toliq": true
+    },
+    {
+      "id": "sample-tube",
+      "rasmiy_nomi": "Mars 2020 namuna naychasi (sample tube) — NASA 3D Resources STL",
+      "nima_uz": "Perseverance Mars toshi bo'lagini solib, mahkam yopib qo'yadigan titan naycha.",
+      "what_en": "A titanium tube in which Perseverance seals a core of Mars rock.",
+      "raqamlar": [
+        {
+          "nom": "uzunligi",
+          "qiymat": "< 15.2",
+          "birlik": "cm (6 dyuymdan kam)",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.jpl.nasa.gov/news/a-martian-roundtrip-nasas-perseverance-rover-sample-tubes/"
+        },
+        {
+          "nom": "massa",
+          "qiymat": "< 57",
+          "birlik": "g (2 untsiyadan kam)",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.jpl.nasa.gov/news/a-martian-roundtrip-nasas-perseverance-rover-sample-tubes/"
+        },
+        {
+          "nom": "naychalar soni (jami)",
+          "qiymat": 43,
+          "birlik": "ta",
+          "holat": "tasdiqlangan",
+          "manba": "https://science.nasa.gov/mission/mars-2020-perseverance/mars-rock-samples/",
+          "izoh": "38 tasi namuna uchun, 5 tasi 'guvoh' (witness) naycha"
+        },
+        {
+          "nom": "to'ldirilgan namunalar",
+          "qiymat": "30 / 38",
+          "birlik": "",
+          "holat": "tasdiqlangan",
+          "manba": "https://science.nasa.gov/mission/mars-2020-perseverance/mars-rock-samples/",
+          "izoh": "sahifadagi joriy holat"
+        },
+        {
+          "nom": "Three Forks deposiga qo'yilgan naychalar",
+          "qiymat": 10,
+          "birlik": "ta",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/missions/mars-2020-perseverance/perseverance-rover/nasas-perseverance-rover-completes-mars-sample-depot/"
+        }
+      ],
+      "yillar": [
+        {
+          "voqea": "Three Forks deposi tugallangan (10-naycha tashlangan)",
+          "sana": "2023-01-29",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/missions/mars-2020-perseverance/perseverance-rover/nasas-perseverance-rover-completes-mars-sample-depot/"
+        }
+      ],
+      "hozir": {
+        "matn": "Naychalar Marsda: bir qismi rover ichida, 10 tasi Three Forks deposida. Ularni Yerga olib kelish (Mars Sample Return) dasturi 2026 byudjetida mablag' olmagan; NASA arzonroq yo'llarni o'rganmoqda.",
+        "holat": "taxminiy",
+        "manba": "https://www.planetary.org/articles/advocacy-success-fy2026-nasa-budget"
+      },
+      "fakt_uz": "Har bir naycha laboratoriyadagi oddiy probirka kattaligida, lekin shunchalik toza qilib yasalganki, ichidagi narsa '100% Mars'dan' ekaniga olimlar ishonch hosil qilishi kerak.",
+      "fakt_en": "Each tube is about the size of a lab test tube, but made so clean that scientists can be sure what is inside is \"100% Mars\".",
+      "fakt_holat": "tasdiqlangan",
+      "fakt_manba": "https://www.jpl.nasa.gov/news/a-martian-roundtrip-nasas-perseverance-rover-sample-tubes/",
+      "oyin_roli": "Namuna idishi.",
+      "manbalar": [
+        "https://www.jpl.nasa.gov/news/a-martian-roundtrip-nasas-perseverance-rover-sample-tubes/",
+        "https://science.nasa.gov/mission/mars-2020-perseverance/mars-rock-samples/",
+        "https://science.nasa.gov/3d-resources/mars-2020-sample-tube/"
+      ],
+      "hujjatlarda_tilga_olingan": [
+        "oy"
+      ],
+      "bekat_men_taxmin": "mars",
+      "model_inventory": {
+        "title": "Mars 2020 sample tube",
+        "bbox_xyz_birlik": [
+          0.9055,
+          0.9681,
+          5.6004
+        ],
+        "izoh": "Blender birliklari (Z yuqoriga); masshtab model sayin farq qiladi"
+      },
+      "karta_toliq": true
+    },
+    {
+      "id": "solar-wing",
+      "rasmiy_nomi": "Sun'iy yo'ldosh quyosh 'qanoti' — NASA Ames 'Satellite Kit — wings 1' (umumiy qism)",
+      "nima_uz": "Quyosh nurini elektrga aylantiradigan panel — kosmik kemaning 'qanoti'.",
+      "what_en": "A panel that turns sunlight into electricity — a spacecraft's \"wing\".",
+      "raqamlar": [
+        {
+          "nom": "modelning real o'lchami",
+          "qiymat": null,
+          "birlik": "m",
+          "holat": null,
+          "izoh": "Umumiy o'quv-kit qismi; real buyum emas"
+        },
+        {
+          "nom": "XKS quyosh panellari qanot kengligi (taqqoslash)",
+          "qiymat": 109,
+          "birlik": "m (356 ft)",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/international-space-station/space-station-facts-and-figures/"
+        },
+        {
+          "nom": "XKS quvvat sig'imi 8 ta IROSA dan keyin",
+          "qiymat": 215,
+          "birlik": "kW (taxminan)",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/blogs/spacestation/2026/11/05/spacewalkers-install-final-roll-out-solar-array/"
+        }
+      ],
+      "yillar": [
+        {
+          "voqea": "XKS ga 8-chi va oxirgi IROSA o'rnatilgan",
+          "sana": "2026-11-05",
+          "holat": "tasdiqlangan",
+          "manba": "https://www.nasa.gov/blogs/spacestation/2026/11/05/spacewalkers-install-final-roll-out-solar-array/"
+        }
+      ],
+      "hozir": {
+        "matn": "Model — o'quv to'plami qismi.",
+        "holat": "tasdiqlangan",
+        "manba": "https://science.nasa.gov/3d-resources/satellite-kit/"
+      },
+      "fakt_uz": "XKS ning quyosh panellari qanoti 109 m — dunyodagi eng katta yo'lovchi samolyoti Airbus A380 qanotidan (80 m) ham uzun!",
+      "fakt_en": "The ISS solar-array wingspan (109 m) is longer than the wings of the biggest passenger plane, the Airbus A380 (80 m).",
+      "fakt_holat": "tasdiqlangan",
+      "fakt_manba": "https://www.nasa.gov/international-space-station/space-station-facts-and-figures/",
+      "oyin_roli": "Quvvat (elektr) manbai.",
+      "model_izoh": "Fayl hajmi 4860 bayt = 'Satellite Kit wings 1.glb' (4.75 KB) bilan bir xil.",
+      "manbalar": [
+        "https://science.nasa.gov/3d-resources/satellite-kit/",
+        "https://www.nasa.gov/international-space-station/space-station-facts-and-figures/",
+        "https://www.nasa.gov/blogs/spacestation/2026/11/05/spacewalkers-install-final-roll-out-solar-array/"
+      ],
+      "hujjatlarda_tilga_olingan": [
+        "oy",
+        "xks"
+      ],
+      "bekat_men_taxmin": "xks",
+      "model_inventory": {
+        "title": "Satellite solar wing",
+        "bbox_xyz_birlik": [
+          0.09,
+          0.099,
+          0.002
+        ],
+        "izoh": "Blender birliklari (Z yuqoriga); masshtab model sayin farq qiladi"
+      },
+      "karta_toliq": true
+    }
+  ],
+  "tasdiqlanmagan_raqamlar": {
+    "null": [
+      {
+        "id": "dsn-34m",
+        "nom": "massasi",
+        "izoh": "Rasmiy NASA/JPL manbasida topilmadi"
+      },
+      {
+        "id": "mission-control",
+        "nom": "xona o'lchami",
+        "izoh": "NASA sahifalarida topilmadi"
+      },
+      {
+        "id": "crew-lock-bag",
+        "nom": "CLB o'lchami",
+        "izoh": "Ochiq NASA manbasida CLB o'lchami TOPILMADI. Model bbox 14.05 × 5.41 × 15.46 birlik — birligi noma'lum"
+      },
+      {
+        "id": "astronaut",
+        "nom": "bo'yi",
+        "izoh": "Umumiy figura — aniq odam emas, real o'lcham yo'q"
+      },
+      {
+        "id": "helmet",
+        "nom": "o'lchami",
+        "izoh": "Umumiy model; rasmiy o'lcham manbasi bu model uchun yo'q"
+      },
+      {
+        "id": "oru",
+        "nom": "modelning o'zi (ORU Carrier) o'lchami",
+        "izoh": "Rasmiy o'lcham topilmadi"
+      },
+      {
+        "id": "solar-wing",
+        "nom": "modelning real o'lchami",
+        "izoh": "Umumiy o'quv-kit qismi; real buyum emas"
+      },
+      {
+        "id": "moon-near-side",
+        "nom": "vertikal bo'rttirish (exaggeration)",
+        "izoh": "NASA sahifasida aytilmagan"
+      },
+      {
+        "id": "hammer",
+        "nom": "modeldagi bolg'aning real o'lchami",
+        "izoh": "Umumiy model, haqiqiy Apollo bolg'asi emas"
+      },
+      {
+        "id": "hdu-1",
+        "nom": "massa",
+        "izoh": "Fakt varag'ida yo'q; oy hujjatidagi ~12 t tekshirilmadi"
+      },
+      {
+        "id": "hdu-2",
+        "nom": "o'lcham",
+        "izoh": "hdu-1 kartasiga qarang; alohida rasmiy o'lcham yo'q"
+      }
+    ],
+    "taxminiy": [
+      {
+        "id": "lro",
+        "nom": "o'lcham (yig'ilgan holda, U×E×B)",
+        "qiymat": "3.9 × 2.7 × 2.6",
+        "izoh": "Spaceflight Now: '152 inches tall' (~3.9 m); qolgan ikki o'lcham ikkilamchi manbalardan. Rasmiy NASA HTML sahifasida topilmadi"
+      },
+      {
+        "id": "goes",
+        "nom": "2017-09-06 dagi X9.3 chaqnashni GOES-15 rentgen sensori (XRS) o'lchagan",
+        "qiymat": "2017-09-06",
+        "izoh": "NASA DONKI katalogi; sahifa bu yerdan ochilmadi, qidiruv natijasi orqali"
+      },
+      {
+        "id": "crew-lock-bag",
+        "nom": "2008-yilda yo'qolgan sumka massasi",
+        "qiymat": 18,
+        "izoh": "Guinness; boshqa xabarlarda ~30 funt (13.6 kg)"
+      },
+      {
+        "id": "crew-lock-bag",
+        "nom": "STS-126 ochiq kosmosga chiqishda CLB suzib ketgan",
+        "qiymat": "2008-11-18",
+        "izoh": "NASA STS-126 hujjati sumkani va ichidagilarni sanaydi; sana Guinness/CBS"
+      },
+      {
+        "id": "crew-lock-bag",
+        "nom": "u sumka atmosferada yonib ketgan",
+        "qiymat": "2009-08-03",
+        "izoh": ""
+      },
+      {
+        "id": "robonaut-2",
+        "nom": "ta'mirlash uchun Yerga qaytarilgan (SpaceX CRS-14)",
+        "qiymat": "2018-05-05",
+        "izoh": ""
+      },
+      {
+        "id": "mount-hadley",
+        "nom": "Apennin tog'lari massivlari (Hadley va Hadley Delta)",
+        "qiymat": "3 … 5",
+        "izoh": "PSR matni; qidiruv orqali"
+      },
+      {
+        "id": "mount-hadley",
+        "nom": "Hadley Delta balandligi",
+        "qiymat": "~3.5",
+        "izoh": "LROC (ikkilamchi)"
+      },
+      {
+        "id": "hammer",
+        "nom": "Devid Skott bolg'a va patni tashlagan (3-chi Oy sayri oxirida)",
+        "qiymat": "1971-08-02",
+        "izoh": "Sana sahifada yo'q; 3-EVA sanasi umumiy ma'lum"
+      },
+      {
+        "id": "apollo-lm",
+        "nom": "umumiy balandligi",
+        "qiymat": "~7.0",
+        "izoh": "Ikkilamchi manbalar (~7.04 m); rasmiy sahifada topilmadi"
+      },
+      {
+        "id": "rassor",
+        "nom": "birinchi RASSOR massasi",
+        "qiymat": "~45–50",
+        "izoh": "ikkilamchi manbalar"
+      },
+      {
+        "id": "orion",
+        "nom": "ekipaj moduli massasi",
+        "qiymat": "~9300 (qo'nishda)",
+        "izoh": "ikkilamchi manbalar"
+      },
+      {
+        "id": "curiosity",
+        "nom": "RAD asbobi massasi",
+        "qiymat": 1.56,
+        "izoh": "RAD jamoasi konferensiya maqolasi"
+      },
+      {
+        "id": "mark-3",
+        "nom": "massa",
+        "qiymat": "~59",
+        "izoh": "Encyclopedia Astronautica (ikkilamchi)"
+      },
+      {
+        "id": "mark-3",
+        "nom": "yaratilgan",
+        "qiymat": "1980-yillar oxiri",
+        "izoh": "ikkilamchi manbalar 1987–1988 deydi"
+      }
+    ]
+  }
+}
