@@ -1,8 +1,14 @@
 ---
 name: webapp-testing
-description: Toolkit for interacting with and testing local web applications using Playwright. Supports verifying frontend functionality, debugging UI behavior, capturing browser screenshots, and viewing browser logs.
+description: Optional Python Playwright toolkit for quick interactive checks of the running dev server (click around, screenshot, read console logs). Not for the project's e2e tests - those use the e2e-testing skill and npm run e2e.
 license: Complete terms in LICENSE.txt
 ---
+
+> **HOME BY SEVEN:** optional. Needs Python 3 and `pip install playwright` (not part of the project setup).
+> For the game flow use `npm run e2e` (Node Playwright, `e2e-testing` skill); for scene pictures and draw calls use
+> `./shot.sh`. Use this skill only for quick interactive checks of a running dev server (`npm run dev`, port 5173).
+> The helper scripts live in this skill folder: `.claude/skills/webapp-testing/scripts/`.
+
 
 # Web Application Testing
 
@@ -38,7 +44,7 @@ To start a server, run `--help` first, then use the helper:
 
 **Single server:**
 ```bash
-python scripts/with_server.py --server "npm run dev" --port 5173 -- python your_automation.py
+python .claude/skills/webapp-testing/scripts/with_server.py --server "npm run dev" --port 5173 -- python your_automation.py
 ```
 
 **Multiple servers (e.g., backend + frontend):**
@@ -85,8 +91,8 @@ with sync_playwright() as p:
 - **Use bundled scripts as black boxes** - To accomplish a task, consider whether one of the scripts available in `scripts/` can help. These scripts handle common, complex workflows reliably without cluttering the context window. Use `--help` to see usage, then invoke directly. 
 - Use `sync_playwright()` for synchronous scripts
 - Always close the browser when done
-- Use descriptive selectors: `text=`, `role=`, CSS selectors, or IDs
-- Add appropriate waits: `page.wait_for_selector()` or `page.wait_for_timeout()`
+- Selectors: `[data-testid=...]` or `role=` (never `text=` — the game's words are written later by people)
+- Waits: `page.wait_for_selector()` or `expect(...)` polling, never `page.wait_for_timeout()`
 
 ## Reference Files
 

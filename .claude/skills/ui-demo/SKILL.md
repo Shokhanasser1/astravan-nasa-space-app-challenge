@@ -1,11 +1,17 @@
 ---
 name: ui-demo
-description: Record polished UI demo videos using Playwright. Use when the user asks to create a demo, walkthrough, screen recording, or tutorial video of a web application. Produces WebM videos with visible cursor, natural pacing, and professional feel.
+description: Record the HOME BY SEVEN demo video (Space Apps limit 30 s) or a walkthrough with Playwright, with a visible cursor and burned-in subtitles. Use only when someone asks for a demo, walkthrough or screen recording.
 metadata:
   origin: ECC
 ---
 
 # UI Demo Video Recorder
+
+> **HOME BY SEVEN:** the submitted demo is ≤ 30 s (`submission-check`), recorded from the real game
+> (`npm run dev`, port 5173), phone viewport first. **Subtitle and caption words come from the team's human-written
+> video script (Aminjon)** — pass them in; never write them yourself (`CLAUDE.md`, hard rules). Every scripted action
+> is required: a missing target throws, and the video is kept only if the run ends on the expected screen (assert the
+> truth screen, `getByTestId('truth')`). Select by `data-testid`, never by words.
 
 Record polished demo videos of web applications using Playwright's video recording with an injected cursor overlay, natural pacing, and storytelling flow.
 
@@ -221,8 +227,7 @@ async function moveAndClick(page, locator, label, opts = {}) {
   const el = typeof locator === 'string' ? page.locator(locator).first() : locator;
   const visible = await el.isVisible().catch(() => false);
   if (!visible) {
-    console.error(`WARNING: moveAndClick skipped - "${label}" not visible`);
-    return false;
+    throw new Error(`moveAndClick: "${label}" not visible`); // required step: fail the recording
   }
   try {
     await el.scrollIntoViewIfNeeded();
@@ -234,8 +239,7 @@ async function moveAndClick(page, locator, label, opts = {}) {
     }
     await el.click(clickOpts);
   } catch (e) {
-    console.error(`WARNING: moveAndClick failed on "${label}": ${e.message}`);
-    return false;
+    throw new Error(`moveAndClick failed on "${label}": ${e.message}`);
   }
   await page.waitForTimeout(postClickDelay);
   return true;
@@ -358,7 +362,7 @@ const { chromium } = require('playwright');
 const path = require('path');
 const fs = require('fs');
 
-const BASE_URL = process.env.QA_BASE_URL || 'http://localhost:3000';
+const BASE_URL = process.env.QA_BASE_URL || 'http://localhost:5173';
 const VIDEO_DIR = path.join(__dirname, 'screenshots');
 const OUTPUT_NAME = 'demo-FEATURE.webm';
 const REHEARSAL = process.argv.includes('--rehearse');
@@ -401,13 +405,16 @@ const REHEARSAL = process.argv.includes('--rehearse');
 
     await showSubtitle(page, 'Step 4 - Result');
     // final reveal
+    // HOME BY SEVEN: keep the video only if the run reached the expected screen
+    await page.getByTestId('truth').waitFor({ state: 'visible', timeout: 15000 });
     await showSubtitle(page, '');
   } catch (err) {
-    console.error('DEMO ERROR:', err.message);
+    console.error('DEMO ERROR (video discarded):', err.message);
+    process.exitCode = 1;
   } finally {
     await context.close();
     const video = page.video();
-    if (video) {
+    if (video && !process.exitCode) {
       const src = await video.path();
       const dest = path.join(VIDEO_DIR, OUTPUT_NAME);
       try {

@@ -1,6 +1,6 @@
 ---
 name: test-driven-development
-description: Use when implementing any feature or bugfix, before writing implementation code
+description: Use when implementing or fixing logic (game rules, reducer, audio timing, data scripts) before writing implementation code
 ---
 
 # Test-Driven Development (TDD)
@@ -13,6 +13,13 @@ Write the test first. Watch it fail. Write minimal code to pass.
 
 **Violating the letter of the rules is violating the spirit of the rules.**
 
+## Scope in HOME BY SEVEN
+
+Test-first is mandatory for logic in `src/engine`, `src/state`, `src/audio` and `scripts/data` (Vitest,
+`npm test`). Scene and visor work (`src/scene`, `src/ui`, models, CSS) is proved by evidence instead — `./shot.sh`
+screenshots and counts, an e2e step, a phone check — not by unit tests of how things look. Config and generated
+files need no test. Never change a game rule or a golden number to make a test pass: report the mismatch.
+
 ## When to Use
 
 **Always:**
@@ -21,10 +28,8 @@ Write the test first. Watch it fail. Write minimal code to pass.
 - Refactoring
 - Behavior changes
 
-**Exceptions (ask your human partner):**
-- Throwaway prototypes
-- Generated code
-- Configuration files
+**Exceptions in this project (no need to ask):** everything outside the scope above — scene and visor visuals,
+configuration, generated files, throwaway prototypes that are deleted before merge.
 
 Thinking "skip TDD just this once"? Stop. That's rationalization.
 
@@ -34,15 +39,10 @@ Thinking "skip TDD just this once"? Stop. That's rationalization.
 NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST
 ```
 
-Write code before the test? Delete it. Start over.
-
-**No exceptions:**
-- Don't keep it as "reference"
-- Don't "adapt" it while writing tests
-- Don't look at it
-- Delete means delete
-
-Implement fresh from tests. Period.
+Wrote logic for this task before its test? Set it aside, write the failing test, watch it fail, then bring the
+code back only as far as the test demands. This is about code **you** are writing in this task: never delete a
+teammate's code. Existing untested code that you must change gets a regression test around the behavior you
+change first.
 
 ## Red-Green-Refactor
 
@@ -251,7 +251,7 @@ When writing or changing any test, read [writing-good-tests.md](writing-good-tes
 - "TDD is dogmatic, I'm being pragmatic"
 - "This is different because..."
 
-**All of these mean: Delete code. Start over with TDD.**
+**All of these mean: stop, write the failing test for the code you are writing now, then continue.**
 
 ## Example: Bug Fix
 
@@ -303,7 +303,7 @@ Before marking work complete:
 - [ ] Tests use real code (mocks only if unavoidable)
 - [ ] Edge cases and errors covered
 
-Can't check all boxes? You skipped TDD. Start over.
+Can't check all boxes? Add the missing test before you call the task done.
 
 ## When Stuck
 

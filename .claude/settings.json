@@ -1,26 +1,47 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npm run dev*)",
-      "Bash(npm run build*)",
-      "Bash(npm run preview*)",
-      "Bash(npm run check*)",
-      "Bash(npm run typecheck*)",
-      "Bash(npm run verify*)",
-      "Bash(npm run e2e*)",
-      "Bash(npm test*)",
-      "Bash(npx vitest*)",
-      "Bash(npx tsc*)",
-      "Bash(git status*)",
-      "Bash(git diff*)",
-      "Bash(git log*)",
-      "Bash(git branch*)"
+      "Bash(npm run dev *)",
+      "Bash(npm run build *)",
+      "Bash(npm run preview *)",
+      "Bash(npm run check *)",
+      "Bash(npm run typecheck *)",
+      "Bash(npm run verify *)",
+      "Bash(npm run e2e *)",
+      "Bash(npm run shot *)",
+      "Bash(npm run donki *)",
+      "Bash(npm test *)",
+      "Bash(npx vitest *)",
+      "Bash(npx tsc *)",
+      "Bash(./shot.sh *)",
+      "Bash(git status *)",
+      "Bash(git diff *)",
+      "Bash(git log *)",
+      "Bash(git show *)",
+      "Bash(git branch)",
+      "Bash(git branch --show-current)",
+      "Bash(git branch -vv)"
+    ],
+    "ask": [
+      "Bash(git reset --hard *)",
+      "Bash(git checkout -- *)",
+      "Bash(git restore *)",
+      "Bash(git clean *)",
+      "Bash(git stash *)",
+      "Bash(git branch -D *)",
+      "Bash(git rebase --skip *)"
     ],
     "deny": [
-      "Read(./.env*)",
-      "Read(./scripts/data/.env*)",
-      "Bash(git push --force*)",
-      "Bash(git push -f*)"
+      "Read(.env)",
+      "Read(.env.*)",
+      "Read(!.env.example)",
+      "Bash(git push *--force*)",
+      "Bash(git push *-f *)",
+      "Bash(git push *-f)",
+      "Bash(git push *+*)",
+      "Bash(docker compose *down *-v*)",
+      "Bash(docker compose down -v*)",
+      "Bash(docker-compose *down *-v*)"
     ]
   }
 }

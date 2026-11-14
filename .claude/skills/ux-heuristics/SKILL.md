@@ -1,6 +1,6 @@
 ---
 name: ux-heuristics
-description: Usability evaluation using Nielsen's 10 heuristics plus supporting laws (Fitts, Hick, Miller, Jakob) and a severity-rated audit protocol. Use when reviewing a UI/flow for usability problems, doing a UX audit, or sanity-checking a design before shipping. Complements refactoring-ui (visual polish) — this one is about behavior, flow, and comprehension.
+description: Usability evaluation using Nielsen's 10 heuristics plus supporting laws (Fitts, Hick, Miller, Jakob) and a severity-rated audit protocol. Use when reviewing a UI/flow for usability problems, doing a UX audit, or sanity-checking a design before shipping. In HOME BY SEVEN: required before the G4 freeze on the day screen and the truth screen; judge against .claude/rules/ui.md (children 7-14, 360x640, three languages).
 ---
 
 # UX Heuristics — usability evaluation protocol
