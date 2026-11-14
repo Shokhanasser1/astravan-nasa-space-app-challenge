@@ -4,8 +4,9 @@ import { expect, test } from '@playwright/test';
 // driven only through the DOM layer (works without WebGL). Selectors are data-testid only — never words or keys.
 test('loads, starts and plays the first mission to the truth screen', async ({ page }) => {
   // A whole week with the 3D scene drawn in software (SwiftShader, no GPU): ~55 s at laptop size before ASTRA's
-  // base (15 Nov), more with it. Real phones and laptops draw on the GPU; their speed is checked with ?perf.
-  test.setTimeout(120_000);
+  // base (15 Nov), more with it (a laptop run on a busy machine reached Day 6 at 120 s, so 180 s). Real phones and
+  // laptops draw on the GPU; their speed is checked with ?perf.
+  test.setTimeout(180_000);
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
 
