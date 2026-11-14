@@ -8,7 +8,8 @@
 //      https://www.nasa.gov/wp-content/uploads/2015/07/2019_07_ea_emu.pdf
 //  - Sumka (CTB): 42.5 × 50.2 × 23.5 sm, 27 kg gacha (STS-92 press kit):
 //      https://www.nasa.gov/wp-content/uploads/2023/05/sts-092-press-kit.pdf
-//  - Odam massasi 75 kg, tezliklar, tezlanish, sakrash tezligi — O'YIN TANLOVI (taxmin).
+//  - Odam massasi 75 kg, tezlanish, sakrash tezligi — O'YIN TANLOVI (taxmin).
+//  - Yurish 1.0 / lope 2.0 m/s: Apollo o'lchovlari (team repo docs/specs/2026-11-14-physics-numbers.md, W8–W9).
 
 export const GRAVITY = { moon: 1.62, earth: 9.81, mars: 3.71 };
 export const GRAVITY_NAMES = {
@@ -26,8 +27,8 @@ export const BODY = {
 };
 
 export const MOVE = {
-  walk: 1.4,           // m/s, o'yin tanlovi
-  run: 3.2,            // m/s, o'yin tanlovi (Oyda "kenguru sakrashi")
+  walk: 1.0,           // m/s, Apollo yurishi 0.7–1.0 (docs/specs/2026-11-14-physics-numbers.md); Walk klipi shunga yasalgan
+  run: 2.0,            // m/s, Apollo "lope" (navbatma-navbat oyoq) yuqori chegarasi; Run klipi shunga yasalgan
   jumpV0: 1.2,         // m/s, oyoqlar bergan tik tezlik (Yer va Oyda bir xil)
   accelPerG: 1.5,      // yerdagi tezlanish = 1.5·g (ishqalanish og'irlikka bog'liq) ...
   accelMin: 2.5,       // ... lekin kamida 2.5 m/s² (o'yin qulay bo'lishi uchun)
@@ -35,7 +36,7 @@ export const MOVE = {
   airControl: 0.25,    // havoda boshqaruv ulushi
   stepUp: 0.35,        // shuncha balandlikka "qadam bilan" chiqadi, m
   groundSnap: 0.06,    // pastga qiyalikda yerga yopishish, m
-  windup: 0.15,        // sakrashdan oldin cho'kish vaqti, s
+  windup: 0.833,       // sakrashdan oldin cho'kish, s = JumpStart klipi (Oyda 14 sm cho'kish + itarilish ≥ 0.8 s)
   coyote: 0.1,         // yerdan chiqqach ham sakrash mumkin bo'lgan vaqt, s
 };
 

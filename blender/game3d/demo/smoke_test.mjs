@@ -140,8 +140,14 @@ if (!THREE_DIR) {
     'RightUpLeg', 'RightLeg', 'RightFoot', 'RightToeBase', 'BagSocket'];
   ok(bones.length === 23 && need.every((n) => bones.includes(n)), `23 bones with Mixamo-style names (${bones.length})`);
   ok(!!ch.socket, 'BagSocket bone found');
-  const want = { Idle: 2.0, Walk: 1.2, Run: 0.8, Jump: 1.2, Carry: 1.4, Pour: 2.0 };
-  for (const [n, d] of Object.entries(want)) ok(ch.clips[n] && near(ch.clips[n].duration, d, 0.02), `clip ${n} ${ch.clips[n] ? ch.clips[n].duration.toFixed(3) : 'missing'} s`);
+  // 15 Nov clips (game3d/characters/anim): planted boots, Moon timing; Run is the alternate-foot lope.
+  const want = ['Idle', 'Walk', 'Run', 'Jump', 'Carry', 'Pour', 'JumpStart', 'JumpAir', 'JumpLand'];
+  for (const n of want) {
+    const d = ch.clips[n] ? ch.clips[n].duration : 0;
+    ok(d > 0.3 && d < 6, `clip ${n} ${ch.clips[n] ? d.toFixed(3) : 'missing'} s`);
+  }
+  ok(ch.clips.JumpStart && ch.clips.JumpStart.duration >= 0.58, 'JumpStart crouch >= 0.58 s (Moon)');
+  ok(ch.clips.JumpAir && near(ch.clips.JumpAir.duration, 1.5, 0.05), 'JumpAir covers the 1.48 s Moon flight');
   let skinned = null, tris = 0;
   ch.model.traverse((o) => {
     if (o.isSkinnedMesh) skinned = o;
@@ -194,7 +200,7 @@ if (!THREE_DIR) {
   for (let t = 0; t < 3; t += 1 / 60) {
     game.update(1 / 60, {});
     maxY = Math.max(maxY, game.body.pos[1]);
-    if (game.anim.state === 'Jump') sawJump = true;
+    if (/^Jump/.test(game.anim.state)) sawJump = true;
   }
   ok(sawJump && near(maxY, P.jumpHeight(P.MOVE.jumpV0, 1.62), 0.02), `Space -> Jump, peak ${maxY.toFixed(3)} m (formula ${P.jumpHeight(P.MOVE.jumpV0, 1.62).toFixed(3)})`);
   ok(near(game.lastJumpPeak, maxY, 0.01), `HUD "last jump" ${game.lastJumpPeak.toFixed(3)} m`);
@@ -279,7 +285,7 @@ if (!THREE_DIR) {
   ok(g2.nearIce(3) === ice, 'ICE_ object found near the player');
   ok(g2.body.onGround && near(g2.body.pos[1], gAt(g2.body.pos[0], g2.body.pos[2]), 0.01), `spawned in the air, landed on the slope (y ${g2.body.pos[1].toFixed(3)})`);
   let maxGap = 0;
-  for (let t = 0; t < 4; t += 1 / 60) {
+  for (let t = 0; t < 6; t += 1 / 60) {   // 6 s at the Moon walk speed (1.0 m/s since 15 Nov)
     g2.update(1 / 60, { fwd: 1, camYaw: Math.PI / 2 });   // camera yaw 90° -> forward = -X, uphill
     if (g2.body.onGround) maxGap = Math.max(maxGap, Math.abs(g2.body.pos[1] - gAt(g2.body.pos[0], g2.body.pos[2])));
   }

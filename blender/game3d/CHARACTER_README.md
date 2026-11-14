@@ -41,18 +41,24 @@ AstronautRig (armature tuguni)
 
 PLSS ryukzak, shlem va ko'krakdagi DCM pulti qattiq (Spine2/Head ga to'liq bog'langan), shuning uchun egilmaydi. Nomlar Mixamo'ga o'xshash, retarget qilish oson.
 
-### Animatsiyalar (30 fps, alohida glTF animation)
+### Animatsiyalar (30 fps, alohida glTF animation) — 15 Nov, Oy fizikasiga moslangan
 
-| Klip | Uzunlik | Takror | Nima |
-|---|---|---|---|
-| `Idle` | 2.0 s | loop | Tik turish, nafas olish |
-| `Walk` | 1.2 s | loop | Oyda sakrab-sakrab yurish ("bunny hop") |
-| `Run` | 0.8 s | loop | Yugurish, uzun sakrashlar |
-| `Jump` | 1.2 s | bir marta | Cho'kish (0–0.17 s), itarilish, havoda, qo'nish |
-| `Carry` | 1.4 s | loop | Sumkani oldida ko'tarib sekin yurish |
-| `Pour` | 2.0 s | loop | Sumkani ko'krakkacha ko'tarib, ~75° egib suv quyish |
+| Klip | Uzunlik | Takror | Tezlik (oyoq shu tezlikda yerga qadaladi) | Nima |
+|---|---|---|---|---|
+| `Idle` | 2.0 s | loop | 0 | Tik turish, nafas, og'irlikni oyoqdan oyoqqa o'tkazish |
+| `Walk` | 1.33 s | loop | 1.0 m/s | Oyda yurish: tizza bukik, tovon → panja dumalashi, son tebranishi 2.4 sm |
+| `Run` | 1.33 s | loop | 2.0 m/s | Apollo uslubidagi lope: navbatma-navbat oyoq, har qadamda ikkala oyoq 0.33 s havoda (g = 1.62) |
+| `Carry` | 1.27 s | loop | 0.8 m/s | Sumkani ikki qo'lda ko'tarib yurish (BagSocket) |
+| `Pour` | 2.0 s | loop | 0 | Sumkani ko'krakkacha ko'tarib, ~75° egib suv quyish |
+| `JumpStart` | 0.83 s | bir marta | 0 | Idle → Oyda sekin cho'kish (14 sm) → itarilish; oxirgi kadr = uchish pozasi, son +1.2 m/s |
+| `JumpAir` | 1.5 s | bir marta | 0 | Butun parvoz (1.48 s, 0.44 m): o'yin uni parvoz ulushi u bo'yicha aylantiradi (0 uchish, 0.5 cho'qqi, 1 qo'nish) |
+| `JumpLand` | 0.73 s | bir marta | 0 | Qo'nish: tizzalar zarbani yutadi (14.5 sm), oxiri = Idle'ning birinchi kadri |
+| `Jump` | 3.13 s | bir marta | 0 | Uchalasi bitta klipda, son haqiqiy parabola bo'yicha 0.44 m ko'tariladi (eski kod va ko'rish uchun) |
 
-Hamma klip joyida (root motion yo'q): personajni o'yin kodi suradi. Demo `Jump` klipini vaqtga emas, tik tezlikka qarab aylantiradi (havoda qancha tursa, klip shuncha cho'ziladi).
+Hamma klip joyida (root motion yo'q): personajni o'yin kodi suradi. Yurish kliplarini `timeScale = tezlik / klip tezligi`
+bilan o'ynating — shunda yerdagi oyoq sirpanmaydi (`demo/world.js` → `CLIP_SPEED`). O'lchovlar (skinlangan mesh'da):
+botish ≤ 4 mm, yerdagi oyoq sirpanishi ≤ 1.3 sm, son pastga tezlanishi hech qayerda −1.62 m/s² dan oshmaydi.
+Manba skriptlar: `characters/anim/` (`lunar_rig.py` — IK, bake, o'lchov; `clips/*.py` — kliplar; `ship.sh` — yig'ish).
 
 ### Three.js'da ishlatish
 
@@ -74,9 +80,13 @@ function playClip(name, fade = 0.25) {           // silliq almashish (crossfade)
   current.fadeOut(fade);
   current = next;
 }
-const jump = mixer.clipAction(clip('Jump'));
-jump.setLoop(THREE.LoopOnce, 1);
-jump.clampWhenFinished = true;
+for (const n of ['Jump', 'JumpStart', 'JumpAir', 'JumpLand']) {   // bir marta o'ynaydi, oxirida to'xtaydi
+  const a = mixer.clipAction(clip(n));
+  a.setLoop(THREE.LoopOnce, 1);
+  a.clampWhenFinished = true;
+}
+// yurish: oyoq sirpanmasligi uchun klip tezligini harakat tezligiga moslang
+// mixer.clipAction(clip('Walk')).timeScale = speed / 1.0;   // Run: / 2.0, Carry: / 0.8
 
 // sumkani qo'lga berish: BagSocket suyagiga bola qilib qo'shing
 model.getObjectByName('BagSocket').add(bagObject);
@@ -84,7 +94,7 @@ model.getObjectByName('BagSocket').add(bagObject);
 // har kadrda: mixer.update(dt);
 ```
 
-To'liq holat mashinasi (Idle/Walk/Run/Jump/Carry/Pour) `demo/world.js` dagi `AnimController` da.
+To'liq holat mashinasi (Idle/Walk/Run/Carry/Pour + JumpStart/JumpAir/JumpLand) `demo/world.js` dagi `AnimController` da.
 
 ## Demo'ni ishga tushirish
 
@@ -129,7 +139,8 @@ Tezlik (m/s), tortishish (m/s²), yuk (kg), umumiy massa (odam + EMU + yuk), tez
 | EMU skafandr massasi | 145 kg | NASA EMU fact sheet — https://www.nasa.gov/wp-content/uploads/2015/07/2019_07_ea_emu.pdf |
 | Sumka (CTB) | 42.5 × 50.2 × 23.5 sm, 27 kg gacha | STS-92 press kit — https://www.nasa.gov/wp-content/uploads/2023/05/sts-092-press-kit.pdf |
 | Odam massasi | 75 kg | o'yin tanlovi (taxmin) |
-| Yurish / yugurish | 1.4 / 3.2 m/s | o'yin tanlovi |
+| Yurish / yugurish (lope) | 1.0 / 2.0 m/s | Apollo o'lchovlari (15 Nov; oldin 1.4 / 3.2 edi) |
+| Sakrashdan oldin cho'kish | 0.83 s | `JumpStart` klipi uzunligi (Oyda tezroq cho'kib bo'lmaydi; oldin 0.15 s) |
 | Sakrashdagi tik tezlik | 1.2 m/s | o'yin tanlovi (Yerda ham, Oyda ham bir xil) |
 
 Agar `game3d/manifest.json` da `"gravity"` bo'lsa, demo o'sha qiymatni oladi (hozir: 9.81 / 1.62 / 3.71).

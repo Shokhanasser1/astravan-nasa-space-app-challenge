@@ -1,0 +1,202 @@
+{
+ "Idle": {
+  "frames": 60,
+  "seconds": 2.0,
+  "loop": true,
+  "speed": 0.0,
+  "module": "idle_pour.py",
+  "sink": -0.0003,
+  "slide": {
+   "L": 0.0005,
+   "R": 0.0023
+  },
+  "hips_acc": [
+   -0.039,
+   0.039
+  ],
+  "flight_s": 0.0,
+  "hips_z": [
+   0.824,
+   0.832
+  ],
+  "note": "standing breath + weight shift, boots planted"
+ },
+ "Pour": {
+  "frames": 60,
+  "seconds": 2.0,
+  "loop": true,
+  "speed": 0.0,
+  "module": "idle_pour.py",
+  "sink": -0.0004,
+  "slide": {
+   "L": 0.0,
+   "R": 0.0
+  },
+  "hips_acc": [
+   0.0,
+   0.0
+  ],
+  "flight_s": 0.0,
+  "hips_z": [
+   0.815,
+   0.815
+  ],
+  "note": "bag lifted and tipped ~75 deg, boots planted"
+ },
+ "JumpStart": {
+  "frames": 25,
+  "seconds": 0.8333,
+  "loop": false,
+  "speed": 0.0,
+  "module": "jump.py",
+  "sink": -0.0014,
+  "slide": {
+   "L": 0.0075,
+   "R": 0.0075
+  },
+  "hips_acc": [
+   -1.5,
+   5.541
+  ],
+  "flight_s": 0.0,
+  "hips_z": [
+   0.685,
+   0.905
+  ],
+  "note": "idle -> lunar crouch (bottom f16) -> push -> take-off on the toe tips, hips +1.2 m/s at the last frame; scrub by wind-up progress",
+  "takeoff_v": 1.2,
+  "crouch_bottom_frame": 16
+ },
+ "JumpAir": {
+  "frames": 45,
+  "seconds": 1.5,
+  "loop": false,
+  "speed": 0.0,
+  "module": "jump.py",
+  "sink": -0.0015,
+  "slide": {
+   "L": 0.0089,
+   "R": 0.0111
+  },
+  "hips_acc": [
+   -0.0,
+   0.0
+  ],
+  "flight_s": 1.3,
+  "hips_z": [
+   0.84,
+   0.905
+  ],
+  "note": "flight pose, scrub by flight progress u (0 take-off, 0.5 apex, 1 touch-down); no vertical root motion, boots reach z=0 on the last frame"
+ },
+ "JumpLand": {
+  "frames": 22,
+  "seconds": 0.7333,
+  "loop": false,
+  "speed": 0.0,
+  "module": "jump.py",
+  "sink": -0.0028,
+  "slide": {
+   "L": 0.0076,
+   "R": 0.0076
+  },
+  "hips_acc": [
+   -1.45,
+   5.505
+  ],
+  "flight_s": 0.0,
+  "hips_z": [
+   0.695,
+   0.84
+  ],
+  "note": "touch-down (hips arrive at -1.24 m/s) -> absorb (bottom f7) -> idle_params(0.0)"
+ },
+ "Jump": {
+  "frames": 94,
+  "seconds": 3.1333,
+  "loop": false,
+  "speed": 0.0,
+  "module": "jump.py",
+  "sink": -0.0026,
+  "slide": {
+   "L": 0.0075,
+   "R": 0.0075
+  },
+  "hips_acc": [
+   -1.62,
+   7.053
+  ],
+  "flight_s": 1.533,
+  "hips_z": [
+   0.685,
+   1.3494
+  ],
+  "note": "JumpStart + flight on the real parabola (apex f47) + JumpLand in one clip"
+ },
+ "Run": {
+  "frames": 40,
+  "seconds": 1.3333,
+  "loop": true,
+  "speed": 2.0,
+  "module": "lope.py",
+  "sink": -0.0014,
+  "slide": {
+   "L": 0.0128,
+   "R": 0.0128
+  },
+  "hips_acc": [
+   -1.62,
+   3.428
+  ],
+  "flight_s": 0.583,
+  "hips_z": [
+   0.7552,
+   0.8125
+  ],
+  "note": "Apollo alternate-foot lope, 2.0 m/s, contact 0.333s + flight 0.333s per step, step 1.33 m"
+ },
+ "Walk": {
+  "frames": 40,
+  "seconds": 1.3333,
+  "loop": true,
+  "speed": 1.0,
+  "module": "walk_carry.py",
+  "sink": -0.0035,
+  "slide": {
+   "L": 0.0107,
+   "R": 0.0121
+  },
+  "hips_acc": [
+   -0.645,
+   1.777
+  ],
+  "flight_s": 0.0,
+  "hips_z": [
+   0.7731,
+   0.7971
+  ],
+  "note": "lunar walk, planted at 1.0 m/s, left heel strike at t=0, duty 0.6"
+ },
+ "Carry": {
+  "frames": 38,
+  "seconds": 1.2667,
+  "loop": true,
+  "speed": 0.8,
+  "module": "walk_carry.py",
+  "sink": -0.003,
+  "slide": {
+   "L": 0.0101,
+   "R": 0.0111
+  },
+  "hips_acc": [
+   -0.473,
+   1.31
+  ],
+  "flight_s": 0.0,
+  "hips_z": [
+   0.7987,
+   0.8147
+  ],
+  "note": "two-hand bag carry, planted at 0.8 m/s, left heel strike at t=0"
+ }
+}
