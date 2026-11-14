@@ -56,18 +56,18 @@ export function Beacon() {
   const parts = useMemo(
     () => ({
       beam: beamGeometry(),
+      // normal blending, not additive: on the bright regolith an additive beam burns out to a white pillar
       beamMat: new THREE.MeshBasicMaterial({
-        color: new THREE.Color('#9fe0ff').multiplyScalar(1.4),
+        color: '#62cfff',
         vertexColors: true,
         transparent: true,
         opacity: 0.4,
-        blending: THREE.AdditiveBlending,
         depthWrite: false,
         side: THREE.DoubleSide,
         toneMapped: false,
       }),
       arrow: new THREE.ConeGeometry(0.26, 0.5, 4).rotateX(Math.PI),
-      arrowMat: new THREE.MeshBasicMaterial({ color: new THREE.Color('#ffd98a').multiplyScalar(1.8), toneMapped: false }),
+      arrowMat: new THREE.MeshBasicMaterial({ color: new THREE.Color('#ffab2e').multiplyScalar(1.3), toneMapped: false }),
     }),
     [],
   );
@@ -87,7 +87,7 @@ export function Beacon() {
     const t = clock.elapsedTime;
     const hz = idle ? 2.2 : 0.8;
     const wave = 0.5 + 0.5 * Math.sin(t * hz * Math.PI * 2);
-    parts.beamMat.opacity = idle ? 0.3 + 0.45 * wave : 0.28 + 0.14 * wave;
+    parts.beamMat.opacity = idle ? 0.25 + 0.35 * wave : 0.25 + 0.12 * wave;
     if (arrow.current) {
       arrow.current.position.y = ARROW_Y + (idle ? 0.3 : 0.16) * wave;
       arrow.current.rotation.y = t * 1.2;

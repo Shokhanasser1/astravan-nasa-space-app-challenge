@@ -107,8 +107,9 @@ export function Rig({ view }: { view: View }) {
       setPoint(p);
       if (walker || character) setHop((h) => h + 1);
     }
-    // No walking while the lander lifts off or the truth sequence plays.
-    walkInput.phaseOk = view.phase !== 'launch' && view.phase !== 'truth';
+    // Walking has a job only while planning (carry batteries hub → machines; 15 Nov): the other phases move the
+    // astronaut by themselves (morning airlock, night inside, launch, truth).
+    walkInput.phaseOk = view.phase === 'plan';
   }, [view.phase, walker]);
 
   // The base map (M or 🗺) floats to a standing point, exactly like tapping its glowing marker.
