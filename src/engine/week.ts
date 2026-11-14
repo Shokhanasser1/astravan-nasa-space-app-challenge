@@ -4,7 +4,7 @@
  * Day record from concept v2, section 07 (real values, 28 October 2021):
  * { "day": 4, "date": "2021-10-28", "mean_uGy_h": 114, "max_uGy_h": 567, "hours": 23, "ratio": 9.17,
  *   "level": 1, "alert": true, "r_label": "measured", "flares": [...], "particles": [...] }
- * Adjust these types to the real file once it is in the repo.
+ * Built by scripts/data/weeks.mjs (LRO CRaTER via NASA OSDR RadLab + DONKI); method in that file's header.
  */
 
 /** Four labels for every number on screen (concept 3.0, section 05). */
@@ -30,15 +30,19 @@ export interface WeekDay {
   hours: number; // < 18 → "partly measured"
   ratio: number;
   level: 0 | 1 | 2 | 3 | 4;
-  alert: boolean;
+  alert: boolean; // X-class flare that day, or the week's first particle event → "Flare alert" card
+  watch?: boolean; // before the storm: a fast front-side eruption or an M5+ flare → Houston's "Watch" line
   r_label: DataLabel;
   flares: Flare[];
   particles: ParticleEvent[];
+  hourly?: (number | null)[]; // 24 hourly ratios (reading / normal), null = no reading that hour
 }
 
 export interface Week {
   id: string; // first day, YYYY-MM-DD; also the class code (?week=)
-  kind?: string; // quiet | false alarm | storm | severe | hard
+  kind?: string; // quiet | false alarm | storm | severe | hard mode
+  normal_uGy_h?: number; // calm value of the 27 days before the week
+  peak_level?: number;
   days: WeekDay[];
   [key: string]: unknown;
 }
