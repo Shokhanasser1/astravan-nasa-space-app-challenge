@@ -14,7 +14,11 @@
       (function () {
         var q = new URLSearchParams(location.search);
         var keep = ['classic', 'week', 'view', 'models', 'walk', 'perf', 'debug'].some(function (k) { return q.has(k); });
-        if (!keep && !navigator.webdriver) location.replace('./oy/demo/' + location.hash);
+        var path = location.pathname;
+        // Vite dev serves this file for /oy/demo/ (public folder has no directory index): open the demo file itself.
+        if (/\/oy\/demo\/$/.test(path)) { location.replace('index.html' + location.hash); return; }
+        if (path.indexOf('/oy/') !== -1) return; // never loop
+        if (!keep && !navigator.webdriver) location.replace('oy/demo/index.html' + location.hash);
       })();
     </script>
   </head>
