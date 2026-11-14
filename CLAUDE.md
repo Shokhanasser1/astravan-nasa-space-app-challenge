@@ -94,9 +94,10 @@ Delegate anything that means reading many files or pages; keep your own context 
   Docker Desktop without asking.
 - **One repo, one game, real decisions** (Shoxjahon aka, 15 Nov, after a second game was added and the live link
   was pointed at it without the team's agreement):
-  - One repository, one `main`; work arrives only through branches merged into `main`. Code from another
-    repository or project is never dropped in as a second app or a copy of someone's other repo — bring the useful
-    parts into our game as normal changes on a branch.
+  - One repository, one `main`; work arrives only through branches merged into `main`. Other repositories are
+    welcome as sources (libraries, examples, `E:\useful-dev-tools`, the team's earlier projects such as
+    `E:\uzcosmos` or `E:\nasa-space-app-challenge`): take what helps into our game as normal changes on a branch,
+    credited in `CREDITS.md` / `docs/AI-USE.md`. Not allowed: dropping another project in as a second app.
   - One game: `index.html` is the game. No second game page, no redirect of the live link, no change of the entry
     point without Shoxjahon aka's decision written in `docs/STATUS.md` with his name and the time.
   - Write "decided" only for a real decision and name who made it; one person's wish is a proposal. A Claude
