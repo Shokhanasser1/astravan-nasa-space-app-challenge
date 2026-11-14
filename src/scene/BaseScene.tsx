@@ -11,7 +11,9 @@ import { Garden } from './parts/Garden';
 import { Workshop } from './parts/Workshop';
 import { Scout } from './parts/Scout';
 import { Lander } from './parts/Lander';
+import { BatteryBank, IceDrill, SolarArrays } from './AstraProps';
 import { SolarWing } from './parts/SolarWing';
+import { rich } from './rich';
 import { Cables, Hub } from './parts/Hub';
 import { Dish } from './parts/Dish';
 import { tapOnly } from './parts/tap';
@@ -64,7 +66,9 @@ export function BaseScene({ view, onTap, onUndo }: { view: View; onTap: (k: Mach
       <group onContextMenu={undo.launch}>
         <Lander on={a.launch > 0} phase={view.phase} tap={tap.launch} />
       </group>
-      <SolarWing />
+      {rich ? <SolarArrays view={view} /> : <SolarWing />}
+      {rich && <BatteryBank view={view} />}
+      {rich && <IceDrill />}
       <Hub batteries={view.batteries} />
       <Cables alloc={a} />
       <Dish />

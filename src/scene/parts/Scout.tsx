@@ -3,6 +3,8 @@ import { LAYOUT } from '../layout';
 import { GLOW, MAT } from './materials';
 import type { TapHandler } from './tap';
 import { Shell } from '../models/Shell';
+import { ScoutRover } from '../AstraProps';
+import { rich } from '../rich';
 
 const WHEELS: [number, number][] = [
   [-0.58, -0.5],
@@ -11,8 +13,8 @@ const WHEELS: [number, number][] = [
   [0.58, 0.5],
 ];
 
-/** Scout rover → Explore. Mast up, eye glows when it has batteries. Faces the base (north). */
-export function Scout({ on, tap }: { on: boolean; tap: TapHandler }) {
+/** The light scout (phones): the NASA kit model or the grey shapes, mast up, eye glows when it has batteries. */
+function KitScout({ on, tap }: { on: boolean; tap: TapHandler }) {
   const [x, z] = LAYOUT.scout;
   return (
     <group position={[x, 0, z]} onClick={tap}>
@@ -41,6 +43,18 @@ export function Scout({ on, tap }: { on: boolean; tap: TapHandler }) {
       <mesh position={[0, 1.68, -0.5]} material={on ? GLOW.eye : GLOW.dark}>
         <boxGeometry args={[0.26, 0.14, 0.12]} />
       </mesh>
+    </group>
+  );
+}
+
+/** Scout rover → Explore. On computers the rocker-bogie science scout (ASTRA); on phones the light one. Faces the base. */
+export function Scout({ on, tap }: { on: boolean; tap: TapHandler }) {
+  if (!rich) return <KitScout on={on} tap={tap} />;
+  const [x, z] = LAYOUT.scout;
+  return (
+    <group position={[x, 0, z]} onClick={tap}>
+      {/* the science scout from the ASTRA trainer (src/vendor/astra), front to the base; its mast camera carries the eye */}
+      <ScoutRover on={on} scale={0.72} />
     </group>
   );
 }
