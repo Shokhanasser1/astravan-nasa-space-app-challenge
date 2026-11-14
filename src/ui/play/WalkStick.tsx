@@ -11,6 +11,26 @@ import { touchUi } from './Controls';
  */
 const KNOB = 0.4; // knob diameter, share of the stick
 
+/** The astronaut's jump on a touch screen (Space on a keyboard): 0.44 m on the Moon, about six times the Earth jump. */
+export function JumpButton() {
+  if (!touchUi) return null;
+  return (
+    <button
+      type="button"
+      data-testid="jump"
+      aria-label="Jump"
+      className="hud-side pointer-events-auto grid h-16 w-16 touch-none select-none place-items-center rounded-full border-2 border-[#4fb3ff]/70 bg-[#4fb3ff]/10 text-2xl text-white/80"
+      onPointerDown={(e) => {
+        e.preventDefault();
+        walkInput.jump = true;
+        invalidate();
+      }}
+    >
+      ⤒
+    </button>
+  );
+}
+
 export function WalkStick() {
   const base = useRef<HTMLDivElement>(null);
   const [knob, setKnob] = useState({ x: 0, y: 0 });

@@ -3,7 +3,6 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import { VitePWA } from 'vite-plugin-pwa';
-import { fileURLToPath } from 'node:url';
 
 export default defineConfig({
   // Relative base: the same build works on the VPS (/), GitHub Pages (/<repo>/) and Cloudflare Pages.
@@ -25,24 +24,12 @@ export default defineConfig({
       workbox: {
         globPatterns: ['**/*.{js,css,html,woff2,png,webp,jpg,ktx2,glb,json,ogg,m4a}'],
         // Draco decoder only matters for Draco models (prefer meshopt); it loads on demand instead of on first visit.
-        // oy/**: the third-person demo's page and its big GLBs and skies load on demand (its code chunks are precached)
-        globIgnores: ['draco/**', 'oy/**'],
+        globIgnores: ['draco/**'],
         maximumFileSizeToCacheInBytes: 8 * 1024 * 1024,
         cleanupOutdatedCaches: true,
-        navigateFallbackDenylist: [/^\/api\//, /^\/_\//, /\/oy\//],
+        navigateFallbackDenylist: [/^\/api\//, /^\/_\//],
       },
     }),
-    {
-      // The service worker belongs to the team game's page: from /oy/demo/ the injected ./registerSW.js is a 404.
-      name: 'demo-page-no-sw-register',
-      apply: 'build',
-      enforce: 'post',
-      transformIndexHtml: {
-        order: 'post',
-        handler: (html, ctx) =>
-          ctx.path.includes('/oy/demo/') ? html.replace(/<script[^>]*registerSW\.js[^>]*><\/script>/, '') : html,
-      },
-    },
   ],
   server: {
     // `npm run db` runs PocketBase locally. The dev server is open to the LAN (--host), so only the two
@@ -57,11 +44,6 @@ export default defineConfig({
     assetsDir: 'bundle', // hashed files → cached forever by Caddy
     chunkSizeWarningLimit: 1500,
     rolldownOptions: {
-      // Two pages: the team game (index.html) and the third-person Moon demo (oy/demo/index.html → /oy/demo/).
-      input: {
-        main: fileURLToPath(new URL('index.html', import.meta.url)),
-        demo: fileURLToPath(new URL('oy/demo/index.html', import.meta.url)),
-      },
       output: {
         // three.js + R3F in their own long-cached chunk; game code changes do not invalidate it.
         advancedChunks: {

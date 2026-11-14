@@ -1,14 +1,13 @@
 // Real ground of the base site: NASA LRO LOLA heights (public/data/terrain/site.json, built by
 // scripts/data/moon_terrain.py) + small craters and bumps the 5 m grid cannot show + the graded base pad.
 // Near: a disc of ground around the base (walkable, takes shadows). Far: rings out to 60 km, the real skyline.
+// Used by src/scene/ground.ts and Terrain.tsx.
 import * as THREE from 'three';
 import { rng, fbm, noise, smoothstep } from './noise.js';
 
-export const R_MOON = 1737400;
-/** The graded pad the base stands on: the HDU, the SEV, RASSOR and the bags sit at y = 0 (demo.js SCENERY). */
-export const PAD = { x: 1, z: -6, rx: 22, rz: 21, blend: 14 };
+/** Default flat graded pad (the game passes its own, src/scene/ground.ts). */
+export const PAD = { x: 0, z: 0, rx: 20, rz: 20, blend: 14 };
 export const NEAR_R = 150;      // radius of the near ground disc, m
-export const PLAY = 100;        // half size of COL_ground = the demo's walking area (the old fallback plane)
 
 const REGOLITH = '#8d8a84';   // mature lunar soil, slightly warm grey (sRGB)
 
@@ -210,28 +209,6 @@ export function buildNear(H, { step, radius, sun }) {
   g.setAttribute('padW', new THREE.BufferAttribute(pad, 1));
   g.setIndex(idx);
   g.computeBoundingSphere();
-  return g;
-}
-
-/** The walking surface: same lattice and heights as the visual disc, a square of ±half. */
-export function buildCollider(H, { step, half }) {
-  const n = Math.round((2 * half) / step);
-  const h0 = (n * step) / 2;
-  const pos = new Float32Array((n + 1) * (n + 1) * 3);
-  for (let i = 0; i <= n; i++)
-    for (let j = 0; j <= n; j++) {
-      const x = -h0 + j * step, z = -h0 + i * step;
-      pos.set([x, H.height(x, z), z], (i * (n + 1) + j) * 3);
-    }
-  const idx = [];
-  for (let i = 0; i < n; i++)
-    for (let j = 0; j < n; j++) {
-      const a = i * (n + 1) + j, b = a + 1, d = a + n + 1, f = d + 1;
-      idx.push(a, d, b, b, d, f);
-    }
-  const g = new THREE.BufferGeometry();
-  g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-  g.setIndex(idx);
   return g;
 }
 

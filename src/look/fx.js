@@ -1,5 +1,6 @@
 // Boot prints and kicked-up dust. On the Moon a print stays (no wind) and dust flies in clean arcs and drops
-// straight back (no air to hold it up). Earth and Mars gravity in the demo also get air drag.
+// straight back (no air to hold it up): g = 1.62 m/s², no drag (concept dust arcs). Other gravities get air drag.
+// update(dt, game): game = { body: { pos: [x, y, z], onGround }, facing, g, gravityKey, groundHeight(x, z) }.
 import * as THREE from 'three';
 import { bootPrint } from './textures.js';
 import { rng } from './noise.js';
@@ -49,6 +50,18 @@ export class GroundFx {
     this.one = new THREE.Vector3(1, 1, 1);
     this.Y = new THREE.Vector3(0, 1, 0);
     this.qy = new THREE.Quaternion();
+  }
+
+  /** Take the prints and the dust out of the scene and free their GPU memory. */
+  dispose() {
+    for (const o of [this.prints, this.dust]) {
+      o.removeFromParent();
+      o.geometry.dispose();
+      const m = o.material;
+      m.map?.dispose();
+      m.normalMap?.dispose();
+      m.dispose();
+    }
   }
 
   /** Ground normal from three height samples. */

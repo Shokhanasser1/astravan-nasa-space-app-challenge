@@ -1,8 +1,0 @@
-public/oy — assets of the team's third-person Moon demo (Oy karvonsaroyi engine). Its page is oy/demo/index.html and
-its code src/oy/ (+ src/look/), built by Vite since 15 Nov.
-3D models: NASA 3D Resources / NASA Science (NASA/JPL-Caltech): HDU, SEV, RASSOR, crew lock bag, Earth globe;
-astronaut from the NASA EMU model, rigged and animated in Blender. Logos, flags and lettering painted out.
-Skies: made in Blender from NASA imagery (Blue Marble, SVS CGI Moon Kit, Viking). Not endorsed by NASA.
-Terrain (public/data/terrain/site.json): heights from NASA LRO LOLA, NASA GSFC Planetary Geodesy Data Archive (Site01 5 m/px,
-80-90S 20 m/px; Barker et al. 2021, 2023), built by scripts/data/moon_terrain.py. Rocks, prints, dust: code (look/).
-Code: Claude Code agents for Samandar (see docs/AI-USE.md). Three.js from npm, bundled by Vite (MIT).

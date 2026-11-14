@@ -1,5 +1,0 @@
-{
-  "private": true,
-  "type": "module",
-  "description": "Oy karvonsaroyi 3D demo: plain ES modules for the browser (no build step). type=module only lets Node run smoke_test.mjs without warnings."
-}

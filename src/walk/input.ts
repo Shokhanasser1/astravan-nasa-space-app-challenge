@@ -14,9 +14,14 @@ export const walkInput = {
   inGame: false,
   /** The day's phase lets you walk (not the launch or the truth sequence); set by the rig. */
   phaseOk: false,
+  /** Jump asked (Space or the touch ⤒ button); the astronaut's body takes it and clears it. */
+  jump: false,
 };
 
-const CODES = new Set(['KeyW', 'KeyA', 'KeyS', 'KeyD', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight']);
+const CODES = new Set(['KeyW', 'KeyA', 'KeyS', 'KeyD', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ShiftLeft', 'ShiftRight', 'Space']);
+
+/** Shift held: the astronaut lopes (2 m/s) instead of walking (1 m/s). */
+export const running = (): boolean => walkInput.keys.has('ShiftLeft') || walkInput.keys.has('ShiftRight');
 
 export interface Axes {
   /** Forward (+) or back (−). */
@@ -56,8 +61,9 @@ export function listenKeys(onChange: () => void): () => void {
   const down = (e: KeyboardEvent) => {
     if (!CODES.has(e.code) || e.ctrlKey || e.metaKey || e.altKey || typing(e.target)) return;
     if (!(walkInput.inGame && walkInput.phaseOk)) return;
-    // (Arrows would scroll the page.)
-    if (e.code.startsWith('Arrow')) e.preventDefault();
+    // (Arrows and Space would scroll the page.)
+    if (e.code.startsWith('Arrow') || e.code === 'Space') e.preventDefault();
+    if (e.code === 'Space' && !e.repeat) walkInput.jump = true;
     walkInput.keys.add(e.code);
     onChange();
   };

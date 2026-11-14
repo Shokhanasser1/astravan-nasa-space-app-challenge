@@ -13,6 +13,7 @@ Thumbs.db
 # Playwright
 test-results/
 playwright-report/
+.playwright-mcp/
 
 # Local PocketBase (npm run db)
 .pocketbase/

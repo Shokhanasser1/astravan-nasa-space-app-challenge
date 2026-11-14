@@ -10,12 +10,16 @@ import { GLOW } from './parts/materials';
 import { TAP_PX, tapOnly } from './parts/tap';
 import { groundHeight } from './ground';
 import { freeWalk } from '../walk/enabled';
-import { listenKeys, walkInput } from '../walk/input';
+import { axes, listenKeys, running, walkInput, type Axes } from '../walk/input';
+import { heading } from '../walk/move';
 import { createWalker, walkDebug } from '../walk/walker';
+import { clearance, type XZ } from '../walk/collide';
 import { INSIDE, OUTSIDE } from '../walk/world';
 import { features } from '../config/features';
 import { pickAim, type AimTarget } from '../controls/aim';
 import { onTravel, setAim } from '../controls/bus';
+import { STEP, createBody, stepBody } from '../character/body';
+import { Astronaut } from './Astronaut';
 
 /**
  * First-person rig (final version, Dizayn 2.0). Eye 1.7 m; six standing points + inside; one-finger drag looks
@@ -25,7 +29,16 @@ import { onTravel, setAim } from '../controls/bus';
  * Free walk (features.freeWalk, or ?walk in the address; src/walk/): once the camera has arrived at a point, W A S D,
  * the arrows or the touch stick walk on from it, stopped by the base's hitboxes. The points, the markers and the
  * floats all stay; a float always wins over the keys. Same motion-sickness rules: no bob, no roll, turn ≤ 60°/s.
+ *
+ * Astronaut (features.character, or ?character; src/character/): outside, you see the suited astronaut from behind
+ * and walk it (1 m/s, Shift lopes at 2 m/s, Space or the jump button jumps 0.44 m at Moon gravity); a float becomes
+ * one long lunar hop to the point. Inside the habitat and in the truth pull-back the camera is first-person as before.
  */
+const character = features.character || (typeof location !== 'undefined' && new URLSearchParams(location.search).has('character'));
+const HEAD = 1.55; // the camera aims at the helmet
+const CAM_DIST = 4.6;
+const CAM_TILT = 0.22; // rad: the follow camera looks a little down on the astronaut
+const ground = (x: number, z: number) => groundHeight(x, z);
 const reduced = typeof window !== 'undefined' && Boolean(window.matchMedia?.('(prefers-reduced-motion: reduce)').matches);
 const MAX_PITCH = THREE.MathUtils.degToRad(35);
 const MAX_TURN = THREE.MathUtils.degToRad(reduced ? 40 : 60); // rad/s, motion-sickness rule
@@ -65,7 +78,9 @@ export function Rig({ view }: { view: View }) {
   // `roaming` says you have, so that point's marker shows again.
   const [hop, setHop] = useState(0);
   const [roaming, setRoaming] = useState(false);
-  const walker = useMemo(() => (freeWalk ? createWalker() : null), []);
+  const walker = useMemo(() => (freeWalk && !character ? createWalker() : null), []);
+  const body = useMemo(() => createBody(POINTS.hub.pos[0], POINTS.hub.pos[2], ground), []);
+  const c = useRef({ acc: 0, quiet: 0, shadowT: 0, ax: { ahead: 0, side: 0, turn: 0 } as Axes, wish: { x: 0, z: 0 } as XZ }).current;
   const s = useRef({
     from: new THREE.Vector3(),
     to: new THREE.Vector3(),
@@ -90,7 +105,7 @@ export function Rig({ view }: { view: View }) {
     const p = phasePoint(view.phase);
     if (p) {
       setPoint(p);
-      if (walker) setHop((h) => h + 1);
+      if (walker || character) setHop((h) => h + 1);
     }
     // No walking while the lander lifts off or the truth sequence plays.
     walkInput.phaseOk = view.phase !== 'launch' && view.phase !== 'truth';
@@ -109,7 +124,7 @@ export function Rig({ view }: { view: View }) {
   useEffect(() => () => setAim(null), []);
 
   // Free walk: the keys. (The scene draws on demand, so every key press asks for a frame.)
-  useEffect(() => (walker ? listenKeys(invalidate) : undefined), [walker, invalidate]);
+  useEffect(() => (walker || character ? listenKeys(invalidate) : undefined), [walker, invalidate]);
 
   // New point → float there and turn to its default look.
   useEffect(() => {
@@ -122,6 +137,11 @@ export function Rig({ view }: { view: View }) {
       s.yawT = s.yaw;
       s.pitchT = s.pitch;
       s.t = 1;
+      // the astronaut starts on the point, looking where the camera looks (yaw 0 looks down −z, facing 0 is +z)
+      body.x = s.to.x;
+      body.z = s.to.z;
+      body.y = ground(body.x, body.z);
+      body.facing = s.yaw + Math.PI;
     } else {
       s.from.copy(camera.position);
       s.t = 0;
@@ -132,7 +152,7 @@ export function Rig({ view }: { view: View }) {
     walker?.stop();
     setRoaming(false);
     invalidate();
-  }, [point, hop, camera, invalidate, s, walker]);
+  }, [point, hop, camera, invalidate, s, walker, body]);
 
   // view.focus → turn towards the event, without moving.
   useEffect(() => {
@@ -193,8 +213,15 @@ export function Rig({ view }: { view: View }) {
 
   const launching = view.phase === 'launch';
 
+  // Third person: outside, on the ground (not inside the habitat, not the truth pull-back from orbit).
+  const third = character && point !== 'inside' && point !== 'orbit';
+
   useFrame((_, delta) => {
     const dt = Math.min(delta, 0.05);
+    if (third) {
+      followAstronaut(dt);
+      return;
+    }
     // Day 7 launch: keep the rising lander in view (pitch stays clamped, so it leaves the frame upwards).
     if (launching) {
       lander[1] = 3 + launchState.h;
@@ -235,6 +262,88 @@ export function Rig({ view }: { view: View }) {
     if (s.t < 1 || Math.abs(dy) > 1e-3 || Math.abs(dp) > 1e-3 || launching || walking) invalidate();
   });
 
+  /** The astronaut's frame: hop to a new point, or walk; then the follow camera behind it. */
+  function followAstronaut(dt: number) {
+    let active = false;
+    if (s.t < 1) {
+      // a float is one long lunar hop: glide along the line, a parabola over it, the JumpAir pose scrubbed by it
+      s.t = Math.min(1, s.t + dt / s.dur);
+      const t = ease(s.t);
+      const dx = s.to.x - s.from.x;
+      const dz = s.to.z - s.from.z;
+      const d = Math.hypot(dx, dz);
+      body.x = s.from.x + dx * t;
+      body.z = s.from.z + dz * t;
+      body.y = ground(body.x, body.z) + Math.sin(Math.PI * s.t) * Math.min(2.5, d * 0.12);
+      body.vx = 0;
+      body.vz = 0;
+      body.v0 = 1.2;
+      body.vy = 1.2 * (1 - 2 * s.t);
+      body.onGround = s.t >= 1 || d < 0.5;
+      body.windup = -1;
+      if (d > 0.5) body.facing = Math.atan2(dx, dz);
+      if (s.t >= 1) {
+        // landed: stand on the point and turn to what the camera turns to
+        body.y = ground(body.x, body.z);
+        body.vy = 0;
+        body.facing = s.yawT + Math.PI;
+      }
+      active = true;
+    } else if (walkInput.phaseOk) {
+      axes(c.ax);
+      heading(s.yaw, c.ax.ahead, c.ax.side, c.wish);
+      s.yawT += c.ax.turn * MAX_TURN * dt;
+      c.acc = Math.min(c.acc + dt, 0.1);
+      while (c.acc >= STEP) {
+        c.acc -= STEP;
+        active = stepBody(body, { x: c.wish.x, z: c.wish.z, run: running(), jump: walkInput.jump }, OUTSIDE, ground) || active;
+        walkInput.jump = false;
+      }
+      s.to.set(body.x, body.y + EYE, body.z);
+      if (!roaming && Math.hypot(body.x - POINTS[point].pos[0], body.z - POINTS[point].pos[2]) > 1.2) setRoaming(true);
+    }
+
+    const dy = s.yawT - s.yaw;
+    const dp = s.pitchT - s.pitch;
+    const k = 1 - Math.exp(-6 * dt);
+    s.yaw += clampAbs(dy * k, MAX_TURN * dt);
+    s.pitch += clampAbs(dp * k, MAX_TURN * dt);
+
+    // follow camera: behind and a little above the helmet, pulled in front of anything solid, never under the ground
+    const pitch = Math.max(-MAX_PITCH - CAM_TILT, s.pitch - CAM_TILT);
+    const fx = -Math.sin(s.yaw) * Math.cos(pitch);
+    const fy = Math.sin(pitch);
+    const fz = -Math.cos(s.yaw) * Math.cos(pitch);
+    const hx = body.x;
+    const hy = body.y + HEAD;
+    const hz = body.z;
+    let dist = CAM_DIST;
+    for (let d = 0.6; d <= CAM_DIST; d += 0.2) {
+      const px = hx - fx * d;
+      const py = hy - fy * d;
+      const pz = hz - fz * d;
+      if (py < 3.2 && OUTSIDE.solids.some((o) => clearance(o, px, pz, 0.2) < 0)) {
+        dist = Math.max(0.8, d - 0.3);
+        break;
+      }
+    }
+    camera.position.set(hx - fx * dist, hy - fy * dist, hz - fz * dist);
+    camera.position.y = Math.max(camera.position.y, ground(camera.position.x, camera.position.z) + 0.3);
+    camera.rotation.set(pitch, s.yaw, 0, 'YXZ'); // no roll: horizon always level
+    camState.inside = false;
+
+    // E / hand button: the building in front of the astronaut (its facing, in the camera's yaw convention)
+    if (features.controls) setAim(s.t < 1 || launching ? null : pickAim(body.x, body.z, body.facing + Math.PI, AIM));
+    // the Sun's shadow map is drawn once a day; while the astronaut moves, redraw it ten times a second
+    c.shadowT -= dt;
+    if (active && c.shadowT <= 0) {
+      c.shadowT = 0.1;
+      gl.shadowMap.needsUpdate = true;
+    }
+    c.quiet = active ? 0.6 : Math.max(0, c.quiet - dt);
+    if (active || c.quiet > 0 || Math.abs(dy) > 1e-3 || Math.abs(dp) > 1e-3 || launching) invalidate();
+  }
+
   const go = useMemo(
     () =>
       Object.fromEntries(
@@ -253,8 +362,13 @@ export function Rig({ view }: { view: View }) {
   const door: Vec3 = [LAYOUT.habitat[0] + Math.sin(DOOR_AZ) * 1.73, 1.1, LAYOUT.habitat[1] + Math.cos(DOOR_AZ) * 1.73];
   const hideMarkers = launching || view.phase === 'truth';
 
-  return hideMarkers ? null : (
+  const astronaut = character ? <Astronaut body={body} visible={point !== 'inside'} /> : null;
+
+  return hideMarkers ? (
+    astronaut
+  ) : (
     <group>
+      {astronaut}
       <Instances limit={MARKERS.length} material={GLOW.marker} frustumCulled={false}>
         <ringGeometry args={[0.42, 0.55, 32]} />
         {shown.map((p) => (

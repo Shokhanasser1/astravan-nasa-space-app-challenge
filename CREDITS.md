@@ -33,7 +33,7 @@ Solar images: "Courtesy of NASA/SDO and the AIA, EVE, and HMI science teams."
 |---|---|---|---|---|
 | public/models/nasa-base | Six base buildings: hab (after the Habitat Demonstration Unit), lander (Apollo Lunar Module), scout (Space Exploration Vehicle), dish (Deep Space Network 34-meter); garden and workshop team-made after the NASA HDU | NASA 3D Resources; modified by Samandar (team) in Blender, recoloured to the team palette, logos removed (`credit.txt`) | NASA media guidelines; not endorsed by NASA | https://github.com/nasa/NASA-3D-Resources/tree/master/3D%20Models |
 | public/models/nasa-lro | Lunar Reconnaissance Orbiter for the truth screen | NASA 3D Resources; modified by Samandar (team) in Blender, logos removed (`credit.txt`) | NASA media guidelines; not endorsed by NASA | https://github.com/nasa/NASA-3D-Resources/tree/master/3D%20Models |
-| public/models/astronaut | Astronaut, rigged, clips Idle/Walk/Run/Jump/Carry/Pour | NASA 3D Resources "Astronaut"; flags and insignia removed, rigged (23 bones) and animated by Samandar (team) in Blender (`credit.txt`) | NASA media guidelines; not endorsed by NASA | https://science.nasa.gov/3d-resources/astronaut/ |
+| public/models/astronaut | Astronaut, rigged, clips Idle/Walk/Run/Carry/Pour/Jump/JumpStart/JumpAir/JumpLand (the playable character) | NASA 3D Resources "Astronaut"; flags and insignia removed, rigged (23 bones) and animated by Samandar (team) in Blender (`credit.txt`) | NASA media guidelines; not endorsed by NASA | https://science.nasa.gov/3d-resources/astronaut/ |
 
 ## SI (AI) use
 
@@ -55,4 +55,3 @@ Solar images: "Courtesy of NASA/SDO and the AIA, EVE, and HMI science teams."
 | Claude Code skill `webapp-testing` | Apache-2.0 (Anthropic) | https://github.com/anthropics/skills |
 | Claude Code skills `react-performance`, `vite-patterns`, `e2e-testing`, `ui-demo`, `i18n-sync` | MIT (Affaan Mustafa, ECC) | `.claude/skills/*/LICENSE` |
 | three.js guidelines in `.claude/rules/three.md` (adapted) | MIT (ui-ux-pro-max) | https://github.com/nextlevelbuilder/ui-ux-pro-max-skill |
-| `public/oy/` third-person Moon demo: NASA 3D Resources models (HDU, SEV, RASSOR, crew lock bag, Earth globe), rigged astronaut from the NASA EMU model, Blender skies from NASA imagery; logos painted out | NASA media guidelines; not endorsed by NASA | `public/oy/credit.txt` |

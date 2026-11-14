@@ -6,7 +6,7 @@ import { Btn, makeTr } from './play/kit';
 import { DayBadge, Gauges, RadioLine, radioKey } from './play/Visor';
 import { NightTablet, PlanTablet } from './play/Tablet';
 import { TruthScreen } from './play/TruthScreen';
-import { WalkStick } from './play/WalkStick';
+import { JumpButton, WalkStick } from './play/WalkStick';
 import { ActionPad, CornerButtons, HelpPanel, Kbd, MapPanel, makeApply, touchUi, useGameKeys } from './play/Controls';
 import { freeWalk } from '../walk/enabled';
 import { releaseAll, walkInput } from '../walk/input';
@@ -159,6 +159,7 @@ export function Hud({ model, view, dispatch, lang, setLang, sound, setSound, onS
       {screen === 'game' && phase === 'truth' && truth && <TruthScreen truth={truth} dispatch={dispatch} tr={tr} />}
 
       {freeWalk && sides && <WalkStick />}
+      {freeWalk && sides && features.character && <JumpButton />}
       {features.controls && touchUi && sides && planning && <ActionPad board={board} aim={aim} apply={apply} tr={tr} />}
 
       {playing && !overlay && (
