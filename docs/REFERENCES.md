@@ -41,7 +41,7 @@ Facts here were true when researched; re-check anything a judge might ask about.
 | https://github.com/SadManQT/nasa-space-apps-2026 | Last Light Academy: 3D station at the Moon south pole, 7 shifts — closest to us |
 | https://github.com/StratonDefenseSecurity/junior-astronaut-mission-trainer | Mars Base: 3D third-person, six roles |
 | https://github.com/brian53013new/junior-astronaut-mission-trainer | Outpost Control: first-person 3D desk at the south pole |
-| https://github.com/HamzaAli0911/astra-mission-trainer | ASTRA: 3D outpost with rover and four cameras |
+| https://github.com/HamzaAli0911/astra-mission-trainer | ASTRA: 3D outpost with rover and four cameras — **visual benchmark**, see below |
 | https://github.com/WahiduzzamanRahat/juniorastraonauttrainer | Outpost One: budget and event cards |
 | https://github.com/mdmithen/Nasa-game-app | Listed in concept 3.0 sources |
 | https://github.com/Hlwan-Moe-Aung/solar-alert-trainer | Solar Alert: three decisions inside a 45-minute storm budget |
@@ -50,6 +50,14 @@ Facts here were true when researched; re-check anything a judge might ask about.
 | https://github.com/kavya-mutyala8/radio-silence-nasa-2026 | Radio Silence: delayed Mission Control replies |
 | https://github.com/DrDavidDa/moon-base-pals | Moon Base Pals: ages 6–9, "Listen" narration |
 | https://github.com/search?q=%22junior+astronaut+mission+trainer%22&type=repositories | Search to re-check before the pitch |
+
+**Visual benchmark: ASTRA** (https://hamzaali0911.github.io/astra-mission-trainer/, checked 14 Nov 13:50).
+React 19 + three 0.180 (no R3F) + Zustand + Lucide + Lexend; MIT. **No model files at all: every building is made in
+code**, the whole game transfers 584 KB, and it looks polished (Mars base on hex pads, soft warm light). Lessons:
+procedural buildings with good materials and light are enough — AI models are optional, not required; a top resource
+bar that shows "↓ N days left" under each value is a clear "price before choice". Their HUD is dense for 7–12-year-olds
+(five resources, four goals, minimap, eight action buttons, speed 1×/2×/4×): our three gauges and ≤ 8 words are a
+strength. Repo created 23 Oct, before the hackathon. Learn from it; do not copy code or art.
 
 What we lead with that they do not show: every hour of the storm measured (CRaTER), the real Sun photo and real Earth
 of that day, the week revealed at the end, seven predictions, Uzbek language, before/after numbers from real kids.
