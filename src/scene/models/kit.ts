@@ -54,6 +54,20 @@ export const ANIMATED: Record<Building, readonly string[]> = {
 };
 
 /**
+ * Moving parts that cast no shadow. The shadow map is redrawn only on demand (Light.tsx: `autoUpdate` off), so a part
+ * the scene turns every frame would leave its shadow behind in the old pose. The lander body keeps its shadow: it
+ * moves only at the launch.
+ */
+export const NO_SHADOW: Record<Building, readonly string[]> = {
+  hab: [],
+  garden: [],
+  workshop: ['arm'],
+  lander: [],
+  scout: [],
+  dish: ['dish_head'],
+};
+
+/**
  * Models with a few small inside-out fragments left from the NASA meshes (LM leg struts, SEV window recesses, DSN back
  * truss; B's notes): drawn with the double-sided twins of the palette materials. The habitat, garden and workshop are
  * clean and stay single-sided (from inside the habitat you must see through its shell).
@@ -150,14 +164,17 @@ export type PrepareOptions = {
   bothSides?: boolean;
   /** Show the model's own glow meshes (hidden by default). */
   showGlow?: boolean;
+  /** Node names whose meshes (and their children's) cast and receive no shadow. */
+  noShadow?: readonly string[];
 };
 
 /** A building as the game shows it: its height, its animated nodes, its sidedness. */
 export const prepareBuilding = (b: Building, scene: THREE.Object3D) =>
-  prepare(scene, HEIGHT[b], { animated: ANIMATED[b], bothSides: BOTH_SIDES.has(b) });
+  prepare(scene, HEIGHT[b], { animated: ANIMATED[b], bothSides: BOTH_SIDES.has(b), noShadow: NO_SHADOW[b] });
 
 export function prepare(source: THREE.Object3D, height: number, opts: PrepareOptions = {}): Prepared {
-  const { animated = [], bothSides = false, showGlow = false } = opts;
+  const { animated = [], bothSides = false, showGlow = false, noShadow = [] } = opts;
+  const shadowless = new Set(noShadow);
   const root = new THREE.Group();
   root.name = `${source.name || 'model'}_fitted`;
   root.add(source.clone(true));
@@ -197,7 +214,7 @@ export function prepare(source: THREE.Object3D, height: number, opts: PrepareOpt
     const geo = mesh.geometry;
     if (!geo.boundingSphere) geo.computeBoundingSphere();
     sphere.copy(geo.boundingSphere!).applyMatrix4(mesh.matrixWorld);
-    const big = solid && mesh.visible && sphere.radius >= SHADOW_MIN_RADIUS;
+    const big = solid && mesh.visible && sphere.radius >= SHADOW_MIN_RADIUS && !within(mesh, shadowless);
     mesh.castShadow = big;
     mesh.receiveShadow = big;
   });
@@ -208,6 +225,12 @@ export function prepare(source: THREE.Object3D, height: number, opts: PrepareOpt
     o.userData.rest = { p: o.position.clone(), q: o.quaternion.clone(), s: s > 0 ? s : 1 } satisfies Rest;
   }
   return { root, nodes, glows, unknown: [...unknown], owned };
+}
+
+/** True when `o` or one of its parents is named one of `names`. */
+function within(o: THREE.Object3D, names: ReadonlySet<string>): boolean {
+  for (let p: THREE.Object3D | null = o; p; p = p.parent) if (names.has(p.name)) return true;
+  return false;
 }
 
 const GLOW_MATERIALS: ReadonlySet<THREE.Material> = new Set<THREE.Material>([GLOW.window, GLOW.cableOn, GLOW.dark]);

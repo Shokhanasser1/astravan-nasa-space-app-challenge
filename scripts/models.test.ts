@@ -161,6 +161,10 @@ describe('public/models: size and format', () => {
 });
 
 describe('public/models/nasa-base: the six buildings', () => {
+  it('all six building files are shipped (a missing one would turn the whole base grey)', () => {
+    expect(missing).toEqual([]);
+  });
+
   it.each(present.length ? present : ['(none yet)'])('%s loads with GLTFLoader + MeshoptDecoder, named parts, budget', (b) => {
     if (!loaded.has(b)) return; // nothing there yet: the scene keeps the grey shapes
     const scene = loaded.get(b)!.scene;

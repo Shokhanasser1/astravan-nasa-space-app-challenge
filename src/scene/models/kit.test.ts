@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import * as THREE from 'three';
 import { GLOW, MAT } from '../parts/materials';
 import {
-  BOTH_SIDES, BUILDINGS, HEIGHT, REQUIRED_NODES, TWINS, kitProblems, lift, lookOf, prepare, sharedMaterial, spin, yaw,
+  ANIMATED, BOTH_SIDES, BUILDINGS, HEIGHT, NO_SHADOW, REQUIRED_NODES, TWINS, kitProblems, lift, lookOf, prepare, sharedMaterial, spin, yaw,
   type Building,
 } from './kit';
 
@@ -104,6 +104,35 @@ describe('prepare(): clone, remap, shadows, fit', () => {
     expect((p.nodes.get('hab_shell') as THREE.Mesh).receiveShadow).toBe(true);
     expect(p.nodes.get('glow_window')!.castShadow).toBe(false);
     expect(p.nodes.get('bolt')!.castShadow).toBe(false);
+  });
+
+  it('a part the scene turns every frame casts no shadow (the shadow map is redrawn only on demand)', () => {
+    const withHead = () => {
+      const s = scene();
+      const head = new THREE.Group();
+      head.name = 'dish_head';
+      head.position.y = 2;
+      head.add(box(1.6, 1.2, 1.6, named('panel'), 'reflector'));
+      s.add(head);
+      return s;
+    };
+    const casts = (p: ReturnType<typeof prepare>) => {
+      const out: boolean[] = [];
+      p.nodes.get('dish_head')!.traverse((o) => void ((o as THREE.Mesh).isMesh && out.push(o.castShadow || o.receiveShadow)));
+      return out;
+    };
+    const plain = prepare(withHead(), 3.6, { animated: ['dish_head'] });
+    expect(casts(plain)).toContain(true); // big enough to cast one: the option is what turns it off
+    const kept = prepare(withHead(), 3.6, { animated: ['dish_head'], noShadow: ['dish_head'] });
+    expect(casts(kept).length).toBeGreaterThan(0);
+    expect(casts(kept)).not.toContain(true);
+    expect(kept.nodes.get('hab_shell')!.castShadow).toBe(true);
+  });
+
+  it('the dish head and the workshop arm are the shadowless moving parts', () => {
+    expect(NO_SHADOW.dish).toEqual(['dish_head']);
+    expect(NO_SHADOW.workshop).toEqual(['arm']);
+    for (const b of BUILDINGS) for (const n of NO_SHADOW[b]) expect(ANIMATED[b]).toContain(n);
   });
 
   it('scales to the real height, base on the ground', () => {
