@@ -1,4 +1,5 @@
 import { useEffect, useRef, type Dispatch, type ReactNode } from 'react';
+import { Hand, Headphones, HelpCircle, Map as MapIcon, Tablet as TabletIcon, Undo2, X } from 'lucide-react';
 import type { Action, Board, Machine } from '../../state/game';
 import { command } from '../../controls/keys';
 import { TRAVEL, resolve, type Ctx, type Effect, type Overlay, type UiOp } from '../../controls/act';
@@ -49,7 +50,7 @@ export function useGameKeys(ctx: Ctx, apply: (e: Effect) => void) {
 export function Kbd({ k }: { k: string }) {
   if (!keyHints) return null;
   return (
-    <kbd className="ml-1 inline-block min-w-6 rounded-md border border-white/30 bg-white/10 px-1.5 text-center font-mono text-xs leading-5 text-white/80">
+    <kbd className="kbd ml-1">
       {k}
     </kbd>
   );
@@ -70,8 +71,8 @@ function PadBtn({ size, onClick, label, testid, disabled, children }: {
       aria-label={label}
       disabled={disabled}
       onClick={onClick}
-      className={`pointer-events-auto flex flex-col items-center justify-center rounded-full border-2 font-semibold leading-tight text-white backdrop-blur transition active:scale-95 disabled:opacity-35 ${
-        size === 'use' ? 'pad-use border-[#f0b43c] bg-[#f0b43c]/25' : 'pad-small border-[#f0b43c]/70 bg-black/45'
+      className={`pointer-events-auto flex flex-col items-center justify-center rounded-full font-semibold leading-tight transition active:scale-95 disabled:opacity-35 ${
+        size === 'use' ? 'pad-use abtn primary !gap-0 !rounded-full !p-0' : 'pad-small glass text-white'
       }`}
     >
       {children}
@@ -90,13 +91,13 @@ export function ActionPad({ board, aim, apply, tr }: { board: Board; aim: Machin
     <div className="hud-side hud-pad grid grid-cols-[auto_auto] items-end gap-2" data-testid="action-pad">
       {storm ? (
         <PadBtn size="small" testid="pad-houston" label={tr('ui.shelter.askHouston')} onClick={() => apply({ ui: 'houston' })}>
-          <span className="text-2xl">🎧</span>
+          <Headphones size={26} aria-hidden="true" />
         </PadBtn>
       ) : (
         <span />
       )}
       <PadBtn size="small" testid="pad-tablet" label={tr('ui.controls.tablet')} onClick={() => apply({ ui: 'tablet' })}>
-        <span className="text-2xl">📟</span>
+        <TabletIcon size={26} aria-hidden="true" />
       </PadBtn>
       <PadBtn
         size="small"
@@ -105,7 +106,7 @@ export function ActionPad({ board, aim, apply, tr }: { board: Board; aim: Machin
         disabled={!aim || board.info.forced}
         onClick={() => aim && apply({ action: { type: 'SET', k: aim, delta: -1 } })}
       >
-        <span className="text-2xl">↩</span>
+        <Undo2 size={26} aria-hidden="true" />
       </PadBtn>
       <PadBtn
         size="use"
@@ -114,7 +115,7 @@ export function ActionPad({ board, aim, apply, tr }: { board: Board; aim: Machin
         disabled={!aim || board.info.forced}
         onClick={() => aim && apply({ action: { type: 'SET', k: aim } })}
       >
-        <span className="text-3xl">✋</span>
+        <Hand size={32} aria-hidden="true" />
         <span className="max-w-full truncate px-1 text-[11px]">{name}</span>
       </PadBtn>
     </div>
@@ -127,11 +128,11 @@ export function CornerButtons({ map, open, tr }: { map: boolean; open: (o: UiOp)
     <div className="hud-corner pointer-events-auto flex flex-col gap-2">
       {map && (
         <Btn data-testid="open-map" aria-label={tr('ui.controls.map')} onClick={() => open('map')} className="text-xl">
-          🗺
+          <MapIcon size={22} aria-hidden="true" />
         </Btn>
       )}
       <Btn data-testid="open-help" aria-label={tr('ui.controls.help')} onClick={() => open('help')} className="text-xl">
-        ?
+        <HelpCircle size={22} aria-hidden="true" />
       </Btn>
     </div>
   );
@@ -142,15 +143,19 @@ export function MapPanel({ apply, tr }: { apply: (e: Effect) => void; tr: Tr }) 
   return (
     <Panel className="mx-auto flex w-full max-w-sm flex-col gap-2" data-testid="map" role="dialog" aria-label={tr('ui.controls.map')}>
       <div className="flex items-center justify-between gap-2">
-        <span className="text-sm font-bold uppercase tracking-widest text-white/80">🗺 {tr('ui.controls.map')}</span>
+        <span className="eyebrow flex items-center gap-2 !text-[#c2cbec]">
+          <MapIcon size={16} aria-hidden="true" />
+          {tr('ui.controls.map')}
+        </span>
         <Btn data-testid="close-panel" aria-label={tr('ui.controls.close')} onClick={() => apply({ ui: 'close' })}>
-          ✕<Kbd k="Esc" />
+          <X size={18} aria-hidden="true" />
+          <Kbd k="Esc" />
         </Btn>
       </div>
       <div className="grid grid-cols-1 gap-2 min-[420px]:grid-cols-2">
         {TRAVEL.map((p, i) => (
           <Btn key={p} data-testid={`travel-${p}`} onClick={() => apply({ travel: p })} className="flex items-center gap-2 text-left">
-            <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-white/15 text-sm tabular-nums">{i + 1}</span>
+            <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-[#ff8a3d] font-semibold text-[#2a1100] text-sm tabular-nums">{i + 1}</span>
             <span className="text-sm">{tr(`ui.point.${p}`)}</span>
           </Btn>
         ))}
@@ -182,16 +187,17 @@ export function HelpPanel({ apply, tr }: { apply: (e: Effect) => void; tr: Tr })
   return (
     <Panel className="mx-auto flex max-h-[80dvh] w-full max-w-md flex-col gap-2 overflow-y-auto" data-testid="help" role="dialog" aria-label={tr('ui.controls.help')}>
       <div className="flex items-center justify-between gap-2">
-        <span className="text-sm font-bold uppercase tracking-widest text-white/80">{tr('ui.controls.help')}</span>
+        <span className="eyebrow !text-[#c2cbec]">{tr('ui.controls.help')}</span>
         <Btn data-testid="close-panel" aria-label={tr('ui.controls.close')} onClick={() => apply({ ui: 'close' })}>
-          ✕<Kbd k="Esc" />
+          <X size={18} aria-hidden="true" />
+          <Kbd k="Esc" />
         </Btn>
       </div>
       {rows.map((r) => (
         <div key={r.text} className="grid grid-cols-[minmax(5.5rem,auto)_2rem_1fr] items-center gap-2 text-sm">
           <span className="flex flex-wrap gap-1">
             {r.keys.map((k) => (
-              <kbd key={k} className="rounded-md border border-white/30 bg-white/10 px-1.5 font-mono text-xs leading-5">
+              <kbd key={k} className="kbd">
                 {k}
               </kbd>
             ))}

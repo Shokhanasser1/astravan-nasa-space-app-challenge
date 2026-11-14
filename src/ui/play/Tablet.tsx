@@ -1,4 +1,5 @@
 import { type Dispatch } from "react";
+import { ChevronDown, Tablet as TabletIcon } from "lucide-react";
 import type { LogLine, Machine as EngineMachine } from "../../engine/rules";
 import type { Action, Board, Machine, Model } from "../../state/game";
 import { Btn, Delta, Panel, type Tr } from "./kit";
@@ -208,9 +209,9 @@ export function PlanTablet({
     <Panel className="hud-tablet flex max-h-[62vh] flex-col gap-3 overflow-y-auto" data-testid="plan-tablet">
       {onFold && (
         <div className="-mb-1 flex items-center justify-between gap-2">
-          <span className="text-xs uppercase tracking-widest text-white/60">📟 {tr("ui.controls.tablet")}</span>
+          <span className="eyebrow flex items-center gap-2"><TabletIcon size={16} aria-hidden="true" />{tr("ui.controls.tablet")}</span>
           <Btn data-testid="tablet-fold" aria-label={tr("ui.controls.close")} onClick={onFold} className="min-h-10 py-1 text-sm">
-            ▾<Kbd k="Tab" />
+            <ChevronDown size={18} aria-hidden="true" /><Kbd k="Tab" />
           </Btn>
         </div>
       )}
@@ -240,7 +241,7 @@ export function NightTablet({ model, tr }: { model: Model; tr: Tr }) {
   const log = model.game?.log ?? [];
   return (
     <Panel className="flex flex-col gap-1" data-testid="night-log">
-      <span className="text-xs uppercase tracking-widest text-white/60">
+      <span className="eyebrow">
         {tr("ui.night.title")}
       </span>
       {log.length ? (
