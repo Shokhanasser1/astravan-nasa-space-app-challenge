@@ -1,6 +1,6 @@
 ---
 paths:
-  - 'src/hud/**'
+  - 'src/ui/**'
   - 'src/state/**'
   - 'src/i18n/**'
   - 'src/audio/**'
@@ -20,4 +20,5 @@ paths:
 - Tap targets ≥ 48 px; every drag has a tap alternative; keep controls away from screen edges.
 - Sound starts only after the first tap (`audio.unlock()`); every sound has a visual twin; no sirens, no red flashing;
   the sound button is always visible. The dosimeter rate formula is a game rule; the ratio it reads is measured.
-- Zustand: select the smallest slice (`useGame((s) => s.game?.day)`), never the whole store in a hot component.
+- State: one `useReducer` in `src/state/game.ts`. UI reads `model`/`view` and dispatches START · SET · CHOOSE ·
+  CONFIRM · NEXT; it never changes numbers itself. Price before choice = `model.preview` (engine `preview`).

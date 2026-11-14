@@ -2,7 +2,7 @@
 // 1. Strings: Uzbek oʻ/gʻ use U+02BB and tutuq belgisi U+02BC; no Cyrillic in uz.json; no Latin-only ru.json lines
 //    are flagged as warnings; keys in uz/ru exist in en.
 // 2. Forbidden phrases in any language (concept 3.0, section 07 + NASA media guidelines).
-// 3. Data files in public/data have the expected shape (weeks.json, sky.json) when present.
+// 3. Data files src/engine/weeks.json and sky.json have the expected shape when present.
 // 4. Asset folders: lowercase names (GitHub Pages and Linux are case-sensitive), a licence file and a CREDITS row.
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
@@ -50,10 +50,12 @@ for (const [lang, dict] of Object.entries(dicts)) {
 // 3. Data files
 const LEVELS = new Set([0, 1, 2, 3, 4]);
 const LABELS = new Set(['measured', 'computed', 'rule', 'story']);
-if (existsSync(join(root, 'public/data/weeks.json'))) {
-  const file = json('public/data/weeks.json');
-  if (!Array.isArray(file.weeks)) errors.push('weeks.json: "weeks" must be an array');
-  for (const w of file.weeks ?? []) {
+if (existsSync(join(root, 'src/engine/weeks.json'))) {
+  const file = json('src/engine/weeks.json');
+  const list = Array.isArray(file) ? file : file.weeks;
+  if (!Array.isArray(list)) errors.push('weeks.json: expected an array of weeks or { weeks: [...] }');
+  if (Array.isArray(list) && list.length !== 14) warnings.push(`weeks.json: ${list.length} weeks (the concept has 14)`);
+  for (const w of list ?? []) {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(w.id ?? '')) errors.push(`weeks.json: bad week id ${w.id}`);
     if (!Array.isArray(w.days) || w.days.length !== 7) errors.push(`weeks.json ${w.id}: needs 7 days`);
     for (const d of w.days ?? []) {
@@ -67,10 +69,10 @@ if (existsSync(join(root, 'public/data/weeks.json'))) {
     }
   }
 } else {
-  warnings.push('public/data/weeks.json not added yet (Sarvar)');
+  warnings.push('src/engine/weeks.json not added yet (lane A)');
 }
-if (existsSync(join(root, 'public/data/sky.json'))) {
-  const sky = json('public/data/sky.json');
+if (existsSync(join(root, 'src/engine/sky.json'))) {
+  const sky = json('src/engine/sky.json');
   for (const [id, days] of Object.entries(sky.weeks ?? {})) {
     if (!Array.isArray(days) || days.length !== 7) errors.push(`sky.json ${id}: needs 7 days`);
   }

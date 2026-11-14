@@ -1,142 +1,120 @@
 # HOME BY SEVEN — system architecture
 
-Source of truth for the game design: concept v2 (`HOME_BY_SEVEN_game_concept_v2.pdf`) and concept 3.0
-(`HOME_BY_SEVEN_konsepsiya_3.0.pdf`). This file says how the code is built. Stack and versions: `docs/STACK.md`.
+Base: the team's developer guide (*Dasturchilar qo'llanmasi*, 13 Nov) and work plan (*Ish rejasi*), updated by
+concept 3.0 (14 Nov: light, invisible storm, guesses, real Earth and Sun). This file adds the infrastructure
+around it: tests and CI, offline play, quality tiers, checks, hosting. Stack and versions: `docs/STACK.md`.
 
 ## 1. The system in one picture
 
 ```
- BUILD TIME (scripts, Sarvar)                         RUN TIME (the player's phone, offline after first visit)
- ──────────────────────────────                       ─────────────────────────────────────────────────────────
- DONKI (FLR, SEP, notifications) ─┐                    ┌──────────── React app (one page, PWA) ───────────────┐
- RadLab · LRO CRaTER (hourly)  ───┼─► weeks.json ────► │ data/      load + validate weeks.json, sky.json        │
- JPL Horizons / PyEphem        ───┼─► sky.json   ────► │ engine/    L0 rules: startGame · previewDay · confirmDay│
- SDO browse (131 Å), GIBS Earth ──┼─► media/<week>/ ─► │ state/     Zustand store: engine state + UI phase      │
- Yale stars, LOLA relief, GLB  ───┘   models, audio    │   ├─► scene/  L1 3D base (R3F): Sun, shadows, Earth,   │
-                                                       │   │            dust, storm (scout-cam snow, sparks)    │
-                                                       │   ├─► hud/    DOM overlays: report, card, energy board,│
-                                                       │   │            night log, guess, truth sequence        │
-                                                       │   └─► audio/  Web Audio: breath, Quindar, dosimeter     │
-                                                       │ i18n/      en · uz · ru (+ speechSynthesis / uz voice) │
-                                                       │ net/       outbox ──────────────────────────────┐      │
-                                                       └─────────────────────────────────────────────────┼──────┘
-                                                                                                         ▼
- HOSTING: VPS (Caddy: HTTPS, HTTP/3, zstd, immutable cache) ── /api ──► PocketBase (SQLite)
-          GitHub Pages = backup link · Cloudflare Pages = frozen copy for judges
+ BUILD TIME (lane F, scripts)                     RUN TIME (phone or laptop browser; offline after the first visit)
+ ─────────────────────────────                    ──────────────────────────────────────────────────────────────────
+ DONKI + RadLab (LRO CRaTER) ─► weeks.json ─┐      ┌───────────────────────────── React page ─────────────────────────────┐
+ PyEphem / JPL Horizons      ─► sky.json   ─┼────► │ engine/  rules.ts · weeks.json · sky.json   pure functions (lane A)   │
+ SDO 131 Å, GIBS Earth       ─► public/data/media │ state/   game.ts: one reducer → View          (lane B)                 │
+ AI models (Higgsfield), Kenney, NASA 3D ─► public/models │        │ dispatch                     │ view                         │
+                                                   │        ▼                              ▼                              │
+                                                   │ ui/  Hud, Labels, modals, Truth   scene/  one Canvas: base, light,     │
+                                                   │      (DOM, lane D)                        storm, camera (lane C)       │
+                                                   │      └── they never talk to each other; both read the same view ──┘   │
+                                                   │ i18n/ en · uz · ru (lane F)   audio/ dosimeter, Quindar, voices         │
+                                                   └──────────────────────────────────────────────────────────────────────┘
+ HOSTING: static files. Main link = our VPS (Caddy: HTTPS, HTTP/3, compression, cache). Backup = GitHub Pages.
+ Frozen copy for judges = Cloudflare Pages. No internet in the hall = `npm run build && npx vite preview` on a laptop.
 ```
 
-**Golden rule: the game never calls NASA while it runs.** All data is fetched, checked and trimmed at build
-time and shipped inside the build. The NASA API key never reaches the repository or the browser.
+**No server for the game.** Everything is static; `weeks.json` is imported directly. No NASA call at run time,
+no account, nothing about children leaves the device (pitch answer 5). PocketBase stays in `server/` switched
+off (`features.sendResults = false`) in case the team ever changes that answer.
 
-## 2. Layers (from concept v2, section 09)
+## 2. Folders (developer guide §02)
 
-| Layer | What | Must / should | Rule |
-|---|---|---|---|
-| **L0 engine** | Numbers only: batteries, reserve, garden, wall, dose, cards, scores, titles | MUST | Pure TypeScript, no React/three imports, tested. Nothing above may change it |
-| **L1 base view** | Draws L0's numbers as a base: buildings, cables, tank, wall, Sun, shadows, Earth | MUST | Reads the store; never computes game numbers |
-| **L2 modules** | Wing, Dish, Rover garage | SHOULD | Engine already supports them; view only |
-| **L3 map + mission log** | Moonwalk map, seven patches | SHOULD | Engine only sees "how many Explore batteries"; if the map is missing, Explore stays a button |
-| **Wow layer (3.0)** | Light, silence, real Earth, dust arcs, real flare photo, invisible storm, day passing, launch + truth | per 3.0 cut list | Each wow is a separate component that can be switched off |
-| **Knowledge layer (3.0)** | Seven guesses, three levels (Cadet, Pilot, Commander) | SHOULD | A guess never changes resources; levels are settings of the same engine |
-| **Data layer (3.0)** | SDO, GIBS, Horizons, SOHO, Diviner/LCROSS facts | per cut list | Files prepared at build time; four labels on screen |
+```
+src/
+  engine/  rules.ts  weeks.json  sky.json  week.ts  plans.test.ts      lane A — Samandar
+  state/   game.ts (View, Model, Action, reducer, toView)              lane B — Samandar
+  scene/   Stage.tsx  BaseScene.tsx  Light.tsx  quality.ts             lane C — Shoxjahon aka
+           Terrain  Storm  Rig  parts/{Habitat Garden Workshop Lander Scout SolarWing Hub Dish}  (from the skeleton)
+  ui/      Hud  Labels  CardModal  AlertModal  MorningReport  NightLog  Truth  Curve            lane D — Shoxjahon aka
+  i18n/    en.json  uz.json  ru.json  t.ts                              lane F — Sarvar
+  audio/   audio.ts  dosimeter.ts      config/ features.ts   lib/ storage.ts labels.ts   net/ api.ts (off)
+public/models/  hab.glb lander.glb …    public/data/media/<week>/  sdo-*.jpg earth-*.jpg    public/fallback/base.webp
+docs/    scenario.md  rules.md  strings.md  layout.md  (plain text from the PDFs, for agents)
+CLAUDE.md  shot.sh
+```
 
-## 3. Engine contract (L0, owner Samandar)
-
-The tested engine is ported into `src/engine/` as pure functions. `src/engine/types.ts` holds the contract
-the screens rely on; Samandar adjusts the field names to the real engine **once**, early, and announces it.
+## 3. Engine (lane A) — the five functions of rules_engine.py
 
 ```ts
-startGame(input: { week: Week; settings: GameSettings; seed?: number }): GameState
-previewDay(state: GameState, plan: DayPlan): DayPreview      // price before choice: nothing is spent
-confirmDay(state: GameState, plan: DayPlan): GameState        // the day is final, returns a new state
+newGame(week, { modules: ['wall'] })              -> State
+dayInfo(state, week)                              -> { level, alert, choice, known, card }
+preview(state, week, alloc, cardChoice)           -> { left, reserveAfter, gardenAfter, blockedToday, warning }
+confirm(state, week, alloc, cardChoice)           -> State (+ log)
+result(state, week)                               -> { crew, science, title, blockedPct }
+alloc = { ls, gh, build, sc, launch, shelter }
 ```
 
-- Deterministic: same week + settings + seed + plans → same result. Random day cards use the seed.
-- Immutable: `confirmDay` returns a new object; undo before "Confirm day" = keep the old state.
-- Golden tests (`src/engine/engine.test.ts`): Plans A, B, C on 25–31 Oct 2021 give **7/14, 3/19, 8/9**
-  (Crew/Science). The 3,000-games-per-week simulation can run as a script against the same functions.
-- Settings carry the level: Cadet (7 batteries, 3 simple cards, 2 shelter buttons), Pilot (default), Commander.
+`src/engine/rules.ts` is a **stub** with these signatures (fixed values, no rules) so lanes C and D can work
+today. Lane A replaces the file with the port, names and numbers identical to Python. `plans.test.ts`
+(week 2021-10-25, cards Shadow day 2 and Ice day 3): A → 7/14, 77 % blocked, "Balance Master"; B → 3/19; C → 8/9.
+Pure: no React, three, `Date.now`, unseeded random.
 
-## 4. State (Zustand store, `src/state/store.ts`)
+## 4. State (lane B) — one reducer, one View
 
-One store, three slices. Components subscribe with selectors; 3D components read per-frame values with
-`useGame.getState()` inside `useFrame` (no React re-render per frame).
+Actions: `START · SET · CHOOSE · CONFIRM · NEXT`. Phases: `morning → plan → run → night → … → launch → truth`.
+The scene gets only `View` and calls `onTap(k)` → `dispatch({ type: 'SET', k })`.
 
-| Slice | Contents | Who writes |
-|---|---|---|
-| `game` | `GameState` from the engine, the chosen `Week`, today's draft `DayPlan`, `DayPreview` | engine calls only |
-| `flow` | screen (`title`, `story`, `training`, `day`, `truth`, `end`), day step 1–5, guess answer | HUD |
-| `settings` | language (en/uz/ru), level, sound on/off, reduced motion, quality tier | settings screen, persisted |
-
-Day step machine (concept v2, section 05):
-
-```
-morning report ─► guess card (3.0) ─► day card / shelter choice ─► energy board ─► day runs (≤6 s, skippable) ─► night log
-      ▲                                                                                                              │
-      └──────────────────────────────────── next day (Day 7: launch) ◄───────────────────────────────────────────────┘
+```ts
+type View = {
+  day: 1..7; level: 0..4; alert: boolean
+  alloc: { ls; gh; ws; sc; launch }; wall: 0..3; plant: 0..4; shelter: 'none' | 'half' | 'full'
+  phase: 'morning' | 'plan' | 'run' | 'night' | 'launch' | 'truth'; focus?: 'garden' | 'crater' | 'sun' | 'wing'
+  // concept 3.0 proposal: sunAzDeg, earthElDeg, earthPhase (sky.json), ratio (measured dose / normal)
+}
 ```
 
-## 5. Scene (L1 + wow layer, `src/scene/`)
+Only Samandar changes `View`. Note: the work plan names the workshop `build` in `alloc`, the developer guide `ws`
+in `View`; `toView` maps one to the other. Lane B adds: cards, alert, emergency day, express mission (starts at
+day 4, ends in 90 s), before/after questions (counted on the device), saving to localStorage.
 
-- One `<Canvas>` for the whole game, never remounted; scenes swap content (three.js rule: one renderer per page).
-- `SunLight`: one directional Sun at 1.5° elevation, azimuth from `sky.json` per day; near-zero hemisphere light
-  (0.06); ACES tone mapping; shadow map 2048, **recomputed once per day** (`autoUpdate = false`).
-- `Earth`: sphere sized to look 1.9° wide, day texture from GIBS for that date, lit by the same Sun so the phase
-  is automatically right. Fallback texture if the week has no GIBS image.
-- `Dust`: Points with ballistic arcs (g = 1.62 m/s², no drag). `StormFx`: scout-camera snow density and
-  shelter sparks driven by the hour's dose ratio.
-- Quality tiers (`src/scene/quality.ts`): DPR cap, shadow size, bloom on/off, particle count. drei
-  `PerformanceMonitor` drops a tier when FPS falls; the player can force "low" in settings.
-- Models: glTF/GLB optimized with `npm run glb` (meshopt + WebP/KTX2). Phone budget: ≤ 100k triangles in view.
+## 5. Scene (lane C)
 
-## 6. HUD (`src/hud/`)
+- One `<Canvas>` (`Stage.tsx`), never remounted. `frameloop="demand"` while calm; `always` during run, launch, storms.
+- Quality tiers (`quality.ts`, developer guide §05): pc → phone → phoneLow → min. `PerformanceMonitor` steps down:
+  DPR 1 → Bloom off → shadow 1024 → no shadows, half storm. The child never sets anything.
+- Light: concept 3.0 recipe (`Light.tsx`): Sun 1.5° above the horizon, azimuth from `sky.json`, ambient ≈ 0,
+  ACES, shadow recomputed once per day. Materials and colours: developer guide §10 table.
+- Storm: concept 3.0 — not drawn. Dosimeter clicks, scout-camera snow, sparks in the shelter, driven by `view.ratio`.
+- Models: grey code shapes first; GLB in `<Suspense fallback={<Proxy/>}>` later (after G2). Draco decoder from
+  `/draco/`. All six models or none.
+- No WebGL or a crash → a still picture of the base; the game stays fully playable in the DOM layer.
+- `./shot.sh '{"plant":0}' '{"plant":4}'` → screenshots at 390×844 and 1280×760 + draw calls and triangles.
 
-React DOM above the canvas: crisp text in three languages, accessible buttons, big tap targets (≥ 48 px),
-drag with tap alternative on the energy board. Tailwind for layout. Letterbox bars for story moments (CSS).
-One line of text on screen at a time during scenes (3.0, "kadrda bitta gap").
+## 6. UI (lane D)
 
-## 7. Audio (`src/audio/`)
+DOM above the Canvas. Every button shows its price before it is pressed (`model.preview`). Undo until
+"Confirm day". ≤ 8 words per instruction (Cadet ≤ 5, read aloud). Tap targets ≥ 48 px. Fits 360×640.
+Labels in 3D: DOM elements placed by camera projection (skeleton's `Project`), not drei `<Html>`.
+Truth curve: one SVG path, log axis, no chart library.
 
-Web Audio graph created on the first tap (browsers block audio before it). Code-generated sounds weigh nothing:
-dosimeter clicks (Poisson process, rate from the hour's dose ratio), Quindar tones before Houston, fan noise
-inside. Recorded files (OGG + M4A): breath loop, ~40 Uzbek voice lines. English and Russian lines use
-`speechSynthesis`. Every sound has a visual twin: the game is playable with sound off. No sirens, no red flashing.
+## 7. Data (lane F) — `docs/DATA.md`
 
-## 8. Data files (`public/data/`, owner Sarvar)
+`weeks.json` (14 weeks), `sky.json`, SDO and GIBS images per week, `facts.json`. Four labels on screen:
+measured, computed, game rule, story.
 
-| File | Contents | Built by |
-|---|---|---|
-| `weeks.json` | 14 real weeks; each day: date, mean/max µGy/h, hours measured, ratio, level 0–4, alert, flares, particles, label | rebuild script from DONKI + RadLab (key stays local) |
-| `sky.json` | per week, per day: Sun azimuth, Earth elevation, Earth phase (computed, checked against JPL Horizons) | PyEphem script |
-| `media/<week>/` | `sdo-<hhmm>.jpg` (before flare, at peak), `earth-<date>.jpg` (GIBS 2048×1024) | fetch script |
-| `facts.json` | every number shown in the game with its source link (Sarvar's fact sheet) | by hand |
+## 8. Infrastructure (added around the team's plan)
 
-Schemas live in `src/data/types.ts`; `npm run check` validates the files. A day with < 18 hours measured is
-labelled "partly measured". Four labels on screen (3.0): measured, computed, game rule, story.
-
-## 9. Server (`server/`, `docs/SERVER.md`)
-
-PocketBase behind Caddy on the team VPS. Anonymous, write-only for the game:
-- `playtests`: the three before/after questions (gravity, air, radiation), on-device session id, language, level.
-- `runs`: one summary per finished game: week id, level, crew, science, title, which cards/shelter choices.
-The game works without the server (outbox in localStorage, sent in the background). Class code = URL
-`?week=2021-10-25` (no backend needed). Local database for development: `npm run db`.
-
-## 10. Who owns what (concept v2, section 15)
-
-| Person | Owns in code |
+| Piece | What it gives |
 |---|---|
-| Samandar | `src/engine/`, `src/data/` loader and week picking, scores/titles, deploy |
-| Shoxjahon aka | `src/hud/`, `src/state/` day flow, `src/scene/` light and storm, `src/audio/` |
-| Asilbek | `public/models/`, textures, interface kit (colours, type, icons) → `src/hud/kit`, credits |
-| Sarvar | `public/data/`, data scripts in `scripts/data/`, `facts.json`, text in uz/ru, player test |
-| Aminjon | story/start/ending text (en), project page, video, pitch, `docs/AI-USE.md` |
+| `npm run verify` + GitHub Actions | check + typecheck + tests + build on every push; deploy only if green |
+| PWA (vite-plugin-pwa) | Second start instant; plays offline on phones, not only from a laptop |
+| `npm run check` | Uzbek ʻ/ʼ letters, forbidden words (live, Gateway, NRHO, "according to NASA"), data shape, asset names, credits |
+| `features.ts` | The cut list as switches |
+| Playwright e2e | A whole week on a phone viewport, no console errors |
+| VPS deploy + Pages backup | One link that never asks judges to log in |
 
-Shared files (`src/engine/types.ts`, `src/state/store.ts`, `src/i18n/*.json`) change in small, announced commits.
+## 9. Gates (Tashkent)
 
-## 11. Gates (Tashkent time)
-
-G1 skeleton online (engine reproduces Plans A/B/C) → **G2 Sat 20:00 seven days playable on a phone with grey
-boxes** → G3 Sun 09:00 content in → G4 Sun 11:00 freeze → G5 Sun 13:00 submitted. Nothing from the wow/should
-lists starts before G2, except the 3.0 items marked "now" (outdated lines, light recipe, data files, voice recording).
-Cut order (3.0, section 08) is implemented as feature flags in `src/config/features.ts`, so cutting = one `false`.
+G1 12:00 link live, tests pass, grey base at 30 fps on a phone → **G2 Sat 20:00 seven days in 3D on a phone,
+end to end** → G3 Sun 09:00 models decided, English complete, truth screen with the real curve → G4 11:00 freeze →
+G5 13:00 submitted. Before G2 forbidden: L2 effects, models, sound, map, modules, free camera.

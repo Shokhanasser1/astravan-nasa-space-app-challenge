@@ -28,3 +28,7 @@ scripts/data/.env
 
 # Concept PDFs stay with the team (not published in the repo)
 *.pdf
+
+# Local Draco decoder (scripts/copy-decoders.mjs) and scene screenshots
+public/draco/
+shots/

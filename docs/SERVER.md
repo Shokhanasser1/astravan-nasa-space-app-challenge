@@ -1,5 +1,9 @@
 # Server (VPS) and deployment
 
+> **The game itself needs no server.** The VPS only serves the static build (Caddy). PocketBase is optional and
+> switched off (`features.sendResults = false`): the pitch promises that nothing about children leaves the device.
+> Turn it on only if the whole team changes that answer.
+
 ```
 players ──HTTPS──► Caddy (VPS, :443, HTTP/2 + HTTP/3, zstd/gzip)
                      ├── /            static game from /srv/hb7/site/current  (atomic symlink switch)

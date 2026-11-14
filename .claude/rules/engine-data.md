@@ -1,15 +1,17 @@
 ---
 paths:
   - 'src/engine/**'
-  - 'src/data/**'
+  - 'src/state/**'
   - 'public/data/**'
   - 'scripts/data/**'
 ---
 
 # Engine and data
 
-- `src/engine/` is pure TypeScript: no imports from React, three, the DOM, the store or i18n. Deterministic with a seed.
-  `confirmDay` returns a new state; `previewDay` never changes anything.
+- `src/engine/` is pure TypeScript: no React, three, DOM, `Date.now` or unseeded `Math.random`.
+  Five functions, names identical to rules_engine.py: `newGame`, `dayInfo`, `preview` (calls step on a copy,
+  saves nothing), `confirm`, `result`. `rules.ts` is a stub until lane A replaces it with the port.
+- `weeks.json` and `sky.json` live in `src/engine/` and are imported (bundled, no fetch).
 - Golden tests first: Plans A, B, C on week 2021-10-25 must give Crew/Science 7/14, 3/19, 8/9 (concept v2 §10).
   A rule change that breaks them needs the whole team's agreement.
 - Levels (Cadet/Pilot/Commander) are settings of the same engine, not separate code paths.

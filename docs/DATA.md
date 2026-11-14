@@ -1,6 +1,7 @@
 # Data (owner Sarvar)
 
-All NASA data is fetched and checked at build time, trimmed, and shipped in `public/data/`. The game never calls
+All NASA data is fetched and checked at build time, trimmed, and shipped with the game (`src/engine/` for
+weeks and sky, `public/data/media/` for images). The game never calls
 a NASA server while it runs. Every on-screen number has one of four labels: **measured**, **computed**,
 **rule**, **story** (concept 3.0, section 05).
 
@@ -8,8 +9,8 @@ a NASA server while it runs. Every on-screen number has one of four labels: **me
 
 | File | What | Label |
 |---|---|---|
-| `public/data/weeks.json` | 14 real weeks (2012–2024): per day date, mean/max µGy/h, hours measured, ratio, level 0–4, alert, flares (DONKI FLR notifications), particles (DONKI SEP) | measured (levels: rule) |
-| `public/data/sky.json` | per week, per day: Sun azimuth, Earth elevation and lit fraction; site near Shackleton–de Gerlache ridge | computed |
+| `src/engine/weeks.json` (imported, bundled) | 14 real weeks (2012–2024): per day date, mean/max µGy/h, hours measured, ratio, level 0–4, alert, flares (DONKI FLR notifications), particles (DONKI SEP) | measured (levels: rule) |
+| `src/engine/sky.json` | per week, per day: Sun azimuth, Earth elevation and lit fraction; site near Shackleton–de Gerlache ridge | computed |
 | `public/data/media/<week>/sdo-<hhmm>.jpg` | SDO 131 Å browse image before the flare and at the peak (1024 px) | measured |
 | `public/data/media/<week>/earth-<date>.jpg` | GIBS true-colour Earth for each day, 2048×1024, wrapped on the globe | measured |
 | `public/data/facts.json` | every number in the game with its source link (fact sheet) | — |
@@ -24,7 +25,20 @@ Format of a day in `weeks.json` (concept v2, section 07, real values for 28 Oct 
 ```
 
 Optional `hourly_ratio` (24 numbers) per day drives the dosimeter hour by hour and the truth-screen curve.
-TypeScript shapes: `src/data/types.ts`. `npm run check` validates the files.
+TypeScript shapes: `src/engine/week.ts`. `npm run check` validates the files.
+
+## DONKI connection (checked 2026-11-14)
+
+`npm run donki -- 2021-10-25 2020-06-01` (or `-- --weeks` for every week in `weeks.json`) fetches flares, particle
+events, CMEs and notifications per week from the **CCMC DONKI API, no key needed**, saves raw JSON to
+`scripts/data/raw/donki/` (git-ignored) and prints a day-by-day summary to compare with `weeks.json`.
+
+- The `api.nasa.gov/DONKI/...` proxy currently returns **404** (it forwards to `/DONKI-API/get/FLR/` with a trailing
+  slash). The team key itself is valid (APOD answers, 10,000 requests/hour); keep it in `scripts/data/.env`
+  (`NASA_API_KEY=…`, git-ignored) for other api.nasa.gov services. Never commit or print it.
+- Check result: 2021-10-25 week → X1.0 flare peak 28 Oct 15:35 (matches the concept); particle events from 16:16
+  (DONKI has six SEP entries that day; the concept's 16:35 ">100 MeV" is one of them — confirm which channel the
+  engine uses). 2020-06-01 week → no flares, no particle events (matches "quiet").
 
 ## Sources and requests (build time only)
 

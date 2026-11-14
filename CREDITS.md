@@ -23,7 +23,6 @@ Solar images: "Courtesy of NASA/SDO and the AIA, EVE, and HMI science teams."
 | three.js 0.187.0 | MIT | https://github.com/mrdoob/three.js |
 | React Three Fiber 9.8.2, drei 10.7.9, @react-three/postprocessing 3.2.2 | MIT | https://github.com/pmndrs |
 | postprocessing 6.39.6 | Zlib | https://github.com/pmndrs/postprocessing |
-| Zustand 5.1.0 | MIT | https://github.com/pmndrs/zustand |
 | Tailwind CSS 4.3.5 (generated CSS) | MIT | https://github.com/tailwindlabs/tailwindcss |
 | Workbox via vite-plugin-pwa 2.0.0 (service worker) | MIT | https://github.com/vite-pwa/vite-plugin-pwa |
 
@@ -37,7 +36,8 @@ Solar images: "Courtesy of NASA/SDO and the AIA, EVE, and HMI science teams."
 
 | What | Licence | Link |
 |---|---|---|
-| Vite 8, Vitest 5, TypeScript 7, Playwright 1.65, gltf-transform 4.5, r3f-perf, leva | MIT / Apache-2.0 | npm |
+| Vite 8, Vitest 5, TypeScript 7, Playwright 1.65, gltf-transform 4.5, gltfjsx 6.5, r3f-perf, leva | MIT / Apache-2.0 | npm |
+| Draco decoder (copied from three.js into /draco/) | Apache-2.0 (Google) | https://github.com/google/draco |
 | PocketBase 0.40.6 | MIT | https://github.com/pocketbase/pocketbase |
 | Caddy 2 | Apache-2.0 | https://github.com/caddyserver/caddy |
 | Claude Code skills `systematic-debugging`, `verification-before-completion` | MIT (Jesse Vincent, superpowers) | https://github.com/obra/superpowers |

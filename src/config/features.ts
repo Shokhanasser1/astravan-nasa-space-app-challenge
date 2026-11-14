@@ -20,8 +20,11 @@ export const features = {
   moonwalkMap: true, // cut → Explore stays a button
   missionLog: true, // seven patches
   storyScenes: true, // cut → seven stills with captions
-  beforeAfter: true, // three questions before and after
+  beforeAfter: true, // three questions before and after, counted on the device
   hardMode: false,
+  // Pitch answer 5 (Sunday plan): "no account, no names, no date stored, nothing goes to a server".
+  // Keep false unless the whole team changes that answer. True = anonymous results go to our PocketBase.
+  sendResults: false,
 } as const;
 
 export type Feature = keyof typeof features;

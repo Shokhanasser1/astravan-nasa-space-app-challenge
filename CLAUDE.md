@@ -1,75 +1,64 @@
-# HOME BY SEVEN — Claude Code guide for Team Astrakarvan
+# HOME BY SEVEN: rules for every agent
 
-A browser game for ages 7–14 for NASA Space Apps Challenge 2026, challenge **Build a Junior Astronaut Mission
-Trainer**. A child lives one real week on a Moon base near the south pole; the Sun, the radiation storm and the
-Earth in the sky are that week's real records, revealed at the end. Target award: Best Use of Data.
+Game: a browser game for ages 7–14. Seven days on a Moon base near the south pole, driven by real NASA radiation
+data (DONKI + LRO CRaTER); the real week is revealed on the way home. NASA Space Apps Challenge 2026, challenge
+**Build a Junior Astronaut Mission Trainer**, Team Astrakarvan (Tashkent). Target award: Best Use of Data.
+Read `docs/ARCHITECTURE.md` first; design lives in the team's concept documents (v2, 3.0, scenario, developer guide).
+Stack: Vite + React + TypeScript, three + @react-three/fiber + drei + postprocessing. No physics engine. No server
+for the game.
 
-- Design: concept v2 (`HOME_BY_SEVEN_game_concept_v2.pdf`) and concept 3.0 (`HOME_BY_SEVEN_konsepsiya_3.0.pdf`).
-  When code and concept disagree, ask the teammate; do not invent game rules.
-- Code architecture, layers, owners: `docs/ARCHITECTURE.md`. Stack and why: `docs/STACK.md`.
-  Data: `docs/DATA.md`. Speed: `docs/PERFORMANCE.md`. Server: `docs/SERVER.md`.
+Answer in the language the teammate writes in (Uzbek, Russian or English). Code, comments, commits in English.
 
-Answer in the language the teammate writes in (Uzbek, Russian or English). Code, comments, commits and docs in English.
+## The team's rules (developer guide §08)
 
-## Deadlines (Tashkent time)
+1. `src/engine` is pure TypeScript: no React, no three, no `Date.now`, no unseeded `Math.random`.
+2. The scene never computes game rules. It renders a `View` and calls `onTap`. Every number comes from the engine.
+3. All visible text comes from `src/i18n/en.json` and `uz.json` (and `ru.json`). No text inside models, textures, images.
+4. One `<Canvas>`. HUD, labels and modals are DOM elements above it. Tap targets are at least 48 px.
+5. Phone budget: under 100k triangles, about 50 draw calls, models under 5 MB in total.
+   After any scene change, report renderer.info (calls, triangles): `./shot.sh` prints them.
+6. Never call the embedded data "live". Say "real", "measured" or "recorded".
+7. Stay inside your lane's folder. If another folder must change, stop and say so.
 
-G2 Sat 20:00 seven days playable on a phone with grey boxes → G3 Sun 09:00 content in → **G4 Sun 11:00 freeze** →
-**G5 Sun 13:00 submitted**. Before G2 nothing from the "should"/wow lists, except the 3.0 items marked "now".
-Prefer the smallest change that works; say when a request will not fit. Cut = a `false` in `src/config/features.ts`.
+Done means: `npm run verify` passes (check + typecheck + tests + build), and scene work comes with `./shot.sh` screenshots.
+
+## Lanes (developer guide §07) — one owner, one folder, no two agents on one file
+
+| Lane | Owner | Folder | Done when |
+|---|---|---|---|
+| A Engine | Samandar | `src/engine` | `rules.ts` = port of rules_engine.py; `plans.test.ts`: A 7/14, B 3/19, C 8/9; 14 weeks load |
+| B State and flow | Samandar | `src/state` | Reducer, phases, cards, alert, emergency day, express mission; Plan A through the reducer gives the same result |
+| C Scene | Shoxjahon aka | `src/scene` | Base, states, storm, camera, day change, launch; five state screenshots; 30 fps on a phone |
+| D Page layer | Shoxjahon aka | `src/ui` | Gauges, labels, four modals, truth screen, language; fits 360×640; Uzbek never overflows |
+| E Models and video | Aminjon, Asilbek | `public/models` | Six models ≤ 1 MB each; `CREDITS.md` complete |
+| F Text and data | Sarvar | `src/i18n`, `docs` | en/uz texts, Data page, facts; no key visible on screen; every number has a source |
+
+The only shared contract is the `View` type in `src/state/game.ts`; only Samandar changes it.
+`src/engine/rules.ts` is a STUB with the right signatures until lane A replaces it.
+
+## More rules (from the concepts and Space Apps)
+
+- **Do not write player-facing text.** Add the key to `en.json` with `""` and list keys for lane F.
+- **Never say** "according to NASA", "NASA confirmed", "live", "6.5-day orbit", "Gateway", "NRHO", "everything is real".
+  No NASA logo. AI-made images and video carry a visible mark. `npm run check` catches the common forms.
+- **No NASA calls at run time**; data is bundled. The NASA key never enters git or the bundle.
+- **No data about children leaves the device** (pitch answer: nothing goes to a server). `features.sendResults` stays false.
+- **Every borrowed file is credited** in `CREDITS.md` (`add-asset` skill); NASA images keep their NASA ID.
+- **A 7-year-old must not be scared**: no sirens, no red flashing; the sound button is always visible; nobody is hurt.
+- **Gates** (Tashkent): G2 Sat 20:00 seven days in 3D on a phone → G3 Sun 09:00 content → G4 11:00 freeze → G5 13:00
+  submitted. Before G2 forbidden: L2 effects, models instead of grey shapes, sound, map, modules, free camera.
+  Cutting a feature = `false` in `src/config/features.ts`.
+- **Log AI use** in `docs/AI-USE.md`.
 
 ## Commands
 
-- `npm run dev` (LAN: open the printed Network URL on a phone), `npm run dev` + `?perf` (FPS overlay), `?tune` (light sliders)
-- `npm test` (Vitest), `npm run typecheck`, `npm run check` (strings, forbidden phrases, data shape, assets)
-- `npm run verify` = check + typecheck + test + build. Run before every push; CI runs the same and deploys.
-- `npm run e2e` (Playwright, phone + laptop; first `npx playwright install chromium`)
-- `npm run db` local PocketBase (admin http://127.0.0.1:8090/_/), `npm run db:smoke`
-- `npm run glb -- in.glb public/models/x/out.glb --texture-compress webp` before adding any 3D model
+`npm run dev` (LAN URL for phones; `?perf` overlay, `?view={"plant":4}` scene override) · `npm run verify` ·
+`npm test` · `npm run e2e` · `./shot.sh '{"plant":0}' '{"plant":4}'` · `npm run glb -- in.glb out.glb` (meshopt, no
+decoder needed) · `npm run gltfjsx -- public/models/hab.glb --types` · `npm run db` (optional local PocketBase).
+Models: Draco decoder loads from `/draco/` (copied at dev/build), never from a CDN.
 
-## Hard rules
+## Skills (`.claude/skills/`)
 
-1. **Engine is sacred.** `src/engine/` is the tested L0 rules engine (owner Samandar): pure TypeScript, no React,
-   three or DOM. Screens and scene never compute game numbers; they call `startGame / previewDay / confirmDay`
-   through the store. Golden test: Plans A/B/C on 2021-10-25 → 7/14, 3/19, 8/9. Never change engine numbers
-   to make a screen easier.
-2. **Do not write player-facing text.** Every string a child sees or hears is written by the team (Aminjon: story,
-   Sarvar: facts and uz/ru). Use `t('key')`, add the key to `src/i18n/en.json` with `""`, and list the keys for the
-   teammate. Space Apps requires disclosing AI use; the team keeps game text human-written.
-3. **Never say:** "according to NASA", "NASA says/confirmed", "live data" (it is an archive), "6.5-day orbit",
-   "Gateway", "NRHO", "everything is real" (wall/shelter numbers are game rules). Say the instrument and date.
-   No NASA logo. AI-made images carry a visible mark. `npm run check` catches the common forms.
-4. **No NASA calls at run time.** Data is prepared by scripts and shipped in `public/data/`. The NASA API key lives
-   only in a local `.env` (git-ignored) on the machine that rebuilds `weeks.json`.
-5. **Every number on screen has a label** (`src/lib/labels.ts`): measured, computed, rule, story — and a source in
-   `public/data/facts.json`.
-6. **Every borrowed file is credited** in `CREDITS.md` with its licence (`add-asset` skill). NASA images keep their
-   NASA ID and credit. SDO: "Courtesy of NASA/SDO and the AIA, EVE, and HMI science teams."
-7. **No children's names, photos or voices** in code, data, commits, screenshots or video. Before/after answers are
-   counted on the device and sent anonymously.
-8. **Log AI use**: one line in `docs/AI-USE.md` per AI-generated module or substantial change.
-9. **A 7-year-old must not be scared**: no sirens, no red flashing; the sound button is always visible; nobody dies.
-
-## Phone first
-
-Tap targets ≥ 48 px; every drag has a tap alternative; ≤ 8 words per instruction; playable with sound off;
-landscape and portrait both usable; 60 fps target on a mid phone (see PERFORMANCE.md). Measure on a real phone
-before saying something is fast.
-
-## Working together
-
-Pull before you start; small commits; push often; `<type>: <description>` (feat, fix, refactor, docs, test, chore,
-perf). No force-push to `main`. Stay inside the files you own (ARCHITECTURE.md §10); shared files
-(`src/engine/types.ts`, `src/state/store.ts`, `src/i18n/*.json`) change in small, announced commits.
-
-## Project skills (`.claude/skills/`)
-
-| Skill | When |
-|---|---|
-| `add-asset` | Adding a model, texture, sound, font, icon, NASA image or npm package |
-| `submission-check` | Before 11:00 freeze and before submitting |
-| `react-performance`, `vite-patterns` | Slow screen, re-render storms, build/bundle questions |
-| `e2e-testing`, `webapp-testing` | Playwright tests; drive the game in a real browser |
-| `ui-demo` | Record the 30-second demo video with Playwright |
-| `i18n-sync` | Adding keys or syncing uz/ru with en (text itself stays human-written) |
-| `ux-heuristics` | Usability audit of a screen before freeze |
-| `systematic-debugging`, `verification-before-completion` | Find root causes; prove it works before saying so |
+`add-asset`, `submission-check`, `react-performance`, `vite-patterns`, `e2e-testing`, `webapp-testing`, `ui-demo`
+(30-second video), `i18n-sync`, `ux-heuristics`, `systematic-debugging`, `verification-before-completion`.
+Path rules in `.claude/rules/` load automatically for scene, engine/data, UI/text and server files.

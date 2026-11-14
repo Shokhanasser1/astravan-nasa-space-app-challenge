@@ -1,4 +1,4 @@
-import type { DataLabel } from '../data/types';
+import type { DataLabel } from '../engine/week';
 
 /**
  * Every number the player sees carries one of four labels (concept 3.0, section 05):

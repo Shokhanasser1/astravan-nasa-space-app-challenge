@@ -1,4 +1,5 @@
 import { load, save } from '../lib/storage';
+import { features } from '../config/features';
 
 /**
  * Fire-and-forget results to our PocketBase. The network never blocks the game: records go into an outbox
@@ -29,6 +30,7 @@ export function deviceId(): string {
 }
 
 export function send(collection: Collection, record: Record<string, unknown>) {
+  if (!features.sendResults) return; // off: the pitch promises nothing goes to a server
   const box = load<Item[]>(OUTBOX, []);
   box.push({ collection, record: { ...record, device: deviceId(), app: APP_VERSION } });
   save(OUTBOX, box.slice(-MAX_OUTBOX));
@@ -36,7 +38,7 @@ export function send(collection: Collection, record: Record<string, unknown>) {
 }
 
 export async function flush(fetchImpl: typeof fetch = globalThis.fetch) {
-  if (BASE === null || flushing || globalThis.navigator?.onLine === false) return;
+  if (!features.sendResults || BASE === null || flushing || globalThis.navigator?.onLine === false) return;
   flushing = true;
   try {
     let box = load<Item[]>(OUTBOX, []);

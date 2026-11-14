@@ -23,6 +23,8 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,woff2,png,webp,jpg,ktx2,glb,json,ogg,m4a}'],
+        // Draco decoder only matters for Draco models (prefer meshopt); it loads on demand instead of on first visit.
+        globIgnores: ['draco/**'],
         maximumFileSizeToCacheInBytes: 8 * 1024 * 1024,
         cleanupOutdatedCaches: true,
         navigateFallbackDenylist: [/^\/api\//, /^\/_\//],
