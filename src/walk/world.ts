@@ -3,7 +3,7 @@
  * from the same layout the scene draws from (src/scene/layout.ts), a little bigger than what you see. Never the
  * render meshes. Scene-only numbers.
  */
-import { BATTERY_BANK, BATTERY_R, LAYOUT, PARKED_ROVER, RADIUS, type XZ as Pair } from '../scene/layout';
+import { BATTERY_BANK, BATTERY_R, LAYOUT, PARKED_ROVER, RADIUS, TANKS, type XZ as Pair } from '../scene/layout';
 import type { Area, Solid } from './collide';
 import { rich } from '../scene/rich';
 
@@ -43,6 +43,7 @@ export const OUTSIDE: Area = {
     disc('dish', LAYOUT.dish, 1.1),
     wing,
     { name: 'rover', x: PARKED_ROVER.x, z: PARKED_ROVER.z, r: PARKED_ROVER.r },
+    { name: 'tanks', x: TANKS.x, z: TANKS.z, r: TANKS.r },
     // (the battery bank is drawn with the ASTRA look only: src/scene/rich.ts)
     ...(rich ? [{ name: 'battery', x: BATTERY_BANK[0], z: BATTERY_BANK[1], r: BATTERY_R }] : []),
   ],

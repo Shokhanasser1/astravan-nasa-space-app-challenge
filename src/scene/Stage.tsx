@@ -9,6 +9,7 @@ import { LOWER, TIERS, hasWebGL, initialTier, type Tier } from './quality';
 import { Light, sunAzimuth } from './Light';
 import { Earth } from './Earth';
 import { BaseScene } from './BaseScene';
+import { Tanks } from './parts/Tanks';
 import { Rig } from './Rig';
 import { WalkDebug } from './WalkDebug';
 import { freeWalk } from '../walk/enabled';
@@ -92,6 +93,8 @@ export function Stage({ view, onTap, onUndo }: { view: View; onTap: (k: Machine)
         {features.light ? <Light sunAzDeg={sunAzimuth(view)} shadowSize={q.shadow} /> : <ambientLight intensity={0.6} />}
         <Suspense fallback={null}>
           <BaseScene view={view} onTap={onTap} onUndo={onUndo} />
+          {/* (here, not in parts/Habitat.tsx: Habitat is not given view.res) */}
+          <Tanks res={view.res} />
           {!overview && <Rig view={view} />}
           {!overview && freeWalk && <WalkDebug />}
           <Preload all />

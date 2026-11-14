@@ -44,6 +44,23 @@ export const DOOR_AZ = Math.atan2(LAYOUT.hub[0] - LAYOUT.habitat[0], LAYOUT.hub[
 /** Distance of the habitat's door (its outer face) from the habitat centre: where the door marker belongs. */
 export const DOOR_R = RADIUS.habitat + 0.05;
 
+/**
+ * Life-support tanks (src/scene/parts/Tanks.tsx): a free-standing row 45° round from the door, across a 2 m walkway
+ * from the habitat's hitbox (touching it, the two would make a notch a walker gets stuck in), in view from the hub
+ * and the airlock. Their bands face the hub. r = their hitbox (the row is 2.3 m long).
+ */
+const TANKS_AZ = DOOR_AZ + Math.PI / 4;
+const TANKS_R = 1.25;
+const TANKS_D = RADIUS.habitat + 0.4 + 2.0 + TANKS_R + 0.1;
+const tanksX = LAYOUT.habitat[0] + Math.sin(TANKS_AZ) * TANKS_D;
+const tanksZ = LAYOUT.habitat[1] + Math.cos(TANKS_AZ) * TANKS_D;
+export const TANKS = {
+  x: tanksX,
+  z: tanksZ,
+  yaw: Math.atan2(LAYOUT.hub[0] - tanksX, LAYOUT.hub[1] - tanksZ),
+  r: TANKS_R,
+} as const;
+
 /** Point at distance r from the habitat centre in the door direction. */
 export function fromDoor(r: number): [number, number] {
   return [LAYOUT.habitat[0] + Math.sin(DOOR_AZ) * r, LAYOUT.habitat[1] + Math.cos(DOOR_AZ) * r];
