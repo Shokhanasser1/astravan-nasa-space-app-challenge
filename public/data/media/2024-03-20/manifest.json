@@ -1,0 +1,78 @@
+{
+  "week": "2024-03-20",
+  "downloaded": "2026-11-14",
+  "flare": {
+    "begin": "2024-03-23T00:58Z",
+    "peak": "2024-03-23T01:33Z",
+    "source": "DONKI FLR (CCMC)"
+  },
+  "credits": {
+    "sdo": "Courtesy of NASA/SDO and the AIA, EVE, and HMI science teams.",
+    "gibs": "NASA EOSDIS GIBS / Worldview"
+  },
+  "files": [
+    {
+      "file": "sdo-peak.webp",
+      "source": "https://sdo.gsfc.nasa.gov/assets/img/browse/2024/03/23/20240323_013556_1024_0131.jpg",
+      "original": "20240323_013556_1024_0131.jpg",
+      "credit": "sdo",
+      "label": "measured"
+    },
+    {
+      "file": "sdo-before.webp",
+      "source": "https://sdo.gsfc.nasa.gov/assets/img/browse/2024/03/22/20240322_235656_1024_0131.jpg",
+      "original": "20240322_235656_1024_0131.jpg",
+      "credit": "sdo",
+      "label": "measured"
+    },
+    {
+      "file": "earth-2024-03-20.webp",
+      "source": "https://gibs.earthdata.nasa.gov/wms/epsg4326/best/wms.cgi?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=VIIRS_SNPP_CorrectedReflectance_TrueColor&SRS=EPSG:4326&BBOX=-180,-90,180,90&WIDTH=2048&HEIGHT=1024&FORMAT=image/jpeg&TIME=2024-03-20",
+      "original": "VIIRS_SNPP_CorrectedReflectance_TrueColor 2024-03-20",
+      "credit": "gibs",
+      "label": "measured"
+    },
+    {
+      "file": "earth-2024-03-21.webp",
+      "source": "https://gibs.earthdata.nasa.gov/wms/epsg4326/best/wms.cgi?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=VIIRS_SNPP_CorrectedReflectance_TrueColor&SRS=EPSG:4326&BBOX=-180,-90,180,90&WIDTH=2048&HEIGHT=1024&FORMAT=image/jpeg&TIME=2024-03-21",
+      "original": "VIIRS_SNPP_CorrectedReflectance_TrueColor 2024-03-21",
+      "credit": "gibs",
+      "label": "measured"
+    },
+    {
+      "file": "earth-2024-03-22.webp",
+      "source": "https://gibs.earthdata.nasa.gov/wms/epsg4326/best/wms.cgi?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=VIIRS_SNPP_CorrectedReflectance_TrueColor&SRS=EPSG:4326&BBOX=-180,-90,180,90&WIDTH=2048&HEIGHT=1024&FORMAT=image/jpeg&TIME=2024-03-22",
+      "original": "VIIRS_SNPP_CorrectedReflectance_TrueColor 2024-03-22",
+      "credit": "gibs",
+      "label": "measured"
+    },
+    {
+      "file": "earth-2024-03-23.webp",
+      "source": "https://gibs.earthdata.nasa.gov/wms/epsg4326/best/wms.cgi?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=VIIRS_SNPP_CorrectedReflectance_TrueColor&SRS=EPSG:4326&BBOX=-180,-90,180,90&WIDTH=2048&HEIGHT=1024&FORMAT=image/jpeg&TIME=2024-03-23",
+      "original": "VIIRS_SNPP_CorrectedReflectance_TrueColor 2024-03-23",
+      "credit": "gibs",
+      "label": "measured"
+    },
+    {
+      "file": "earth-2024-03-24.webp",
+      "source": "https://gibs.earthdata.nasa.gov/wms/epsg4326/best/wms.cgi?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=VIIRS_SNPP_CorrectedReflectance_TrueColor&SRS=EPSG:4326&BBOX=-180,-90,180,90&WIDTH=2048&HEIGHT=1024&FORMAT=image/jpeg&TIME=2024-03-24",
+      "original": "VIIRS_SNPP_CorrectedReflectance_TrueColor 2024-03-24",
+      "credit": "gibs",
+      "label": "measured"
+    },
+    {
+      "file": "earth-2024-03-25.webp",
+      "source": "https://gibs.earthdata.nasa.gov/wms/epsg4326/best/wms.cgi?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=VIIRS_SNPP_CorrectedReflectance_TrueColor&SRS=EPSG:4326&BBOX=-180,-90,180,90&WIDTH=2048&HEIGHT=1024&FORMAT=image/jpeg&TIME=2024-03-25",
+      "original": "VIIRS_SNPP_CorrectedReflectance_TrueColor 2024-03-25",
+      "credit": "gibs",
+      "label": "measured"
+    },
+    {
+      "file": "earth-2024-03-26.webp",
+      "source": "https://gibs.earthdata.nasa.gov/wms/epsg4326/best/wms.cgi?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=VIIRS_SNPP_CorrectedReflectance_TrueColor&SRS=EPSG:4326&BBOX=-180,-90,180,90&WIDTH=2048&HEIGHT=1024&FORMAT=image/jpeg&TIME=2024-03-26",
+      "original": "VIIRS_SNPP_CorrectedReflectance_TrueColor 2024-03-26",
+      "credit": "gibs",
+      "label": "measured"
+    }
+  ]
+}

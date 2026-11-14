@@ -2,6 +2,8 @@
 
 Spec: docs/specs/2026-11-14-week1-media.md · Plan: docs/plans/2026-11-14-week1-media.md
 Usage: python -I scripts/data/fetch_media.py 2021-10-25 --flare-begin 2021-10-28T15:17Z --flare-peak 2021-10-28T15:35Z
+       python -I scripts/data/fetch_media.py 2018-08-06 --quiet          (a week without flares)
+All 14 weeks: python -I scripts/data/media_all.py
 """
 import argparse
 import io
@@ -14,11 +16,14 @@ from datetime import date as Date
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-from PIL import Image
+from PIL import Image, ImageStat
 
 UTC = timezone.utc
 SDO_BROWSE = 'https://sdo.gsfc.nasa.gov/assets/img/browse'
 GIBS_WMS = 'https://gibs.earthdata.nasa.gov/wms/epsg4326/best/wms.cgi'
+HELIOVIEWER = 'https://api.helioviewer.org/v2'
+AIA131_SOURCE = 9  # Helioviewer source id of SDO/AIA 131
+SDO_BROWSE_FROM = Date(2016, 1, 1)  # sdo.gsfc.nasa.gov/assets/img/browse/ lists 2016 onward (checked 2026-11-15)
 
 
 def parse_sdo_listing(html: str, day: str, channel: str = '0131', size: int = 1024) -> list[datetime]:
@@ -48,12 +53,28 @@ def gibs_layer(date: str) -> str:
     return 'VIIRS_SNPP_CorrectedReflectance_TrueColor' if date >= '2016-01-01' else 'MODIS_Terra_CorrectedReflectance_TrueColor'
 
 
-def gibs_url(date: str, width: int = 2048, height: int = 1024) -> str:
+def gibs_fill_layer(date: str) -> str | None:
+    """Before 2016 MODIS Terra leaves black gaps between orbits; MODIS Aqua flies 3 hours later and fills most of
+    them (VIIRS has no 2012-2015 data in GIBS: checked 2026-11-15, the image comes back black)."""
+    return 'MODIS_Aqua_CorrectedReflectance_TrueColor' if gibs_layer(date).startswith('MODIS') else None
+
+
+def gibs_url(date: str, width: int = 2048, height: int = 1024, layer: str | None = None) -> str:
     """WMS GetMap for the whole Earth on one day (equirectangular, EPSG:4326)."""
     return (
-        f'{GIBS_WMS}?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS={gibs_layer(date)}'
+        f'{GIBS_WMS}?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS={layer or gibs_layer(date)}'
         f'&SRS=EPSG:4326&BBOX=-180,-90,180,90&WIDTH={width}&HEIGHT={height}&FORMAT=image/jpeg&TIME={date}'
     )
+
+
+def fill_gaps(base: bytes, fill: bytes) -> bytes:
+    """PNG of `base` whose black (no-data) pixels are taken from `fill`; night stays black in both."""
+    with Image.open(io.BytesIO(base)) as b, Image.open(io.BytesIO(fill)) as f:
+        b, f = b.convert('RGB'), f.convert('RGB').resize(b.size)
+        gaps = b.convert('L').point(lambda v: 255 if v < 6 else 0)
+        buf = io.BytesIO()
+        Image.composite(f, b, gaps).save(buf, 'PNG')
+        return buf.getvalue()
 
 
 def looks_like_image(data: bytes) -> bool:
@@ -63,6 +84,8 @@ def looks_like_image(data: bytes) -> bool:
 
 SDO_CREDIT = 'Courtesy of NASA/SDO and the AIA, EVE, and HMI science teams.'
 GIBS_CREDIT = 'NASA EOSDIS GIBS / Worldview'
+HELIOVIEWER_CREDIT = SDO_CREDIT + ' Image rendered by Helioviewer.org.'
+CREDITS = {'sdo': SDO_CREDIT, 'helioviewer': HELIOVIEWER_CREDIT, 'gibs': GIBS_CREDIT}
 ROOT = Path(__file__).resolve().parents[2]
 # Phone budget (spec acceptance 1): week ≤ 1 MB = 7 Earth × 100 KB + 2 SDO × 150 KB.
 EARTH_MAX_BYTES = 100_000
@@ -112,48 +135,120 @@ def _utc(s: str) -> datetime:
     return datetime.strptime(s, '%Y-%m-%dT%H:%MZ').replace(tzinfo=UTC)
 
 
-def build_week(week: str, flare_begin: str, flare_peak: str, out_dir: Path, raw_dir: Path, fetch=fetch) -> dict:
+def sdo_url(frame: datetime) -> str:
+    return f'{SDO_BROWSE}/{frame:%Y/%m/%d}/{frame:%Y%m%d_%H%M%S}_1024_0131.jpg'
+
+
+def is_blinded(data: bytes) -> bool:
+    """True when the sky in both top corners is grey, not black: AIA's short exposures during a big flare,
+    stretched for the browse image, wash the whole frame out (2017-09-10 15:57 and 16:13 UTC: corners 39 and 65
+    of 255). A slightly noisy sky is fine (2021-10-28 15:35, the X1.0 peak: 12)."""
+    with Image.open(io.BytesIO(data)) as im:
+        g = im.convert('L')
+        w, h = g.size
+        k = max(1, w // 10)
+        return min(ImageStat.Stat(g.crop(box)).mean[0] for box in ((0, 0, k, k), (w - k, 0, w, k))) > 25
+
+
+def pick_clean_near(frames: list[datetime], target: datetime, fetch, window: timedelta,
+                    reach: timedelta = timedelta(minutes=30)) -> datetime | None:
+    """Nearest frame within `reach` that is not blinded; if all are, the nearest within `window`."""
+    for f in sorted((f for f in frames if abs(f - target) <= reach), key=lambda f: (abs(f - target), f)):
+        if not is_blinded(fetch(sdo_url(f))):
+            return f
+    return pick_nearest(frames, target, window)
+
+
+def helioviewer_frame(target: datetime, fetch=fetch) -> datetime:
+    """UTC time of the AIA 131 image nearest the target, from Helioviewer."""
+    url = f'{HELIOVIEWER}/getClosestImage/?date={target:%Y-%m-%dT%H:%M:%S}Z&sourceId={AIA131_SOURCE}'
+    data = json.loads(fetch(url).decode('utf-8'))
+    return datetime.strptime(data['date'], '%Y-%m-%d %H:%M:%S').replace(tzinfo=UTC)
+
+
+def helioviewer_url(frame: datetime) -> str:
+    """The full Sun in AIA 131 at that time, 1024 px, framed like the SDO browse images (2.4 arcsec per pixel)."""
+    return (f'{HELIOVIEWER}/takeScreenshot/?date={frame:%Y-%m-%dT%H:%M:%S}Z&imageScale=2.4'
+            f'&layers=[SDO,AIA,AIA,131,1,100]&x0=0&y0=0&width=1024&height=1024&display=true&watermark=false')
+
+
+def _sdo_frames(fetch, *days: datetime) -> list[datetime]:
+    """Frames listed in the SDO browse folders of the given days (each folder read once)."""
+    frames = []
+    for d in sorted({x.date() for x in days}):
+        listing_url = f'{SDO_BROWSE}/{d:%Y/%m/%d}/'
+        frames += parse_sdo_listing(fetch(listing_url).decode('utf-8', 'replace'), d.isoformat())
+    return sorted(frames)
+
+
+def build_week(week: str, flare_begin: str | None, flare_peak: str | None, out_dir: Path, raw_dir: Path,
+               fetch=fetch) -> dict:
     """Download, check and convert all media for a week. Nothing is written to out_dir unless every
-    source returned a real image and every frame was found (spec acceptance 3)."""
-    begin, peak = _utc(flare_begin), _utc(flare_peak)
-    day = peak.strftime('%Y-%m-%d')
-    listing_url = f'{SDO_BROWSE}/{peak:%Y/%m/%d}/'
-    frames = parse_sdo_listing(fetch(listing_url).decode('utf-8', 'replace'), day)
-    chosen = {
-        'sdo-peak': pick_nearest(frames, peak, timedelta(minutes=15)),
-        'sdo-before': pick_latest_before(frames, begin - timedelta(minutes=60)),
-    }
-    for name, frame in chosen.items():
-        if frame is None:
-            raise RuntimeError(f'{name}: no SDO frame in the window on {day} ({listing_url})')
+    source returned a real image and every frame was found (spec acceptance 3).
+    A week with a flare gets sdo-before (the last frame an hour before the flare begins) + sdo-peak; a quiet week
+    (no flare, both None) gets one sdo-day: the Sun nearest 12:00 UTC on day 4, within 3 hours, and
+    `flare: null` in the manifest. Before 2016 the SDO browse archive is empty, so the same AIA 131 data comes from
+    Helioviewer (credit 'helioviewer')."""
+    start = Date.fromisoformat(week)
+    if flare_peak is None:
+        target = datetime(start.year, start.month, start.day, 12, tzinfo=UTC) + timedelta(days=3)
+        wanted = {'sdo-day': (target, timedelta(hours=3))}
+    else:
+        begin, target = _utc(flare_begin), _utc(flare_peak)
+        wanted = {'sdo-peak': (target, timedelta(minutes=15)), 'sdo-before': (begin - timedelta(minutes=60), None)}
 
     jobs = []  # (file name, source url, original name, width, credit, max bytes)
-    for name, frame in chosen.items():
-        original = f'{frame:%Y%m%d_%H%M%S}_1024_0131.jpg'
-        jobs.append((f'{name}.webp', f'{SDO_BROWSE}/{frame:%Y/%m/%d}/{original}', original, 1024, 'sdo', SDO_MAX_BYTES))
-    start = Date.fromisoformat(week)
+    if target.date() < SDO_BROWSE_FROM:
+        for name, (when, window) in wanted.items():
+            frame = helioviewer_frame(when, fetch)
+            if abs(frame - when) > (window or timedelta(minutes=15)):
+                raise RuntimeError(f'{name}: Helioviewer has no AIA 131 frame near {when:%Y-%m-%d %H:%M} UTC')
+            jobs.append((f'{name}.webp', helioviewer_url(frame), f'helioviewer_AIA131_{frame:%Y%m%d_%H%M%S}.png',
+                         1024, 'helioviewer', SDO_MAX_BYTES))
+    else:
+        frames = _sdo_frames(fetch, *(when for when, _ in wanted.values()))
+        for name, (when, window) in wanted.items():
+            if name == 'sdo-peak':
+                frame = pick_clean_near(frames, when, fetch, window)
+            else:
+                frame = pick_nearest(frames, when, window) if window else pick_latest_before(frames, when)
+            if frame is None:
+                raise RuntimeError(f'{name}: no SDO frame in the window near {when:%Y-%m-%d %H:%M} UTC')
+            original = f'{frame:%Y%m%d_%H%M%S}_1024_0131.jpg'
+            jobs.append((f'{name}.webp', sdo_url(frame), original, 1024, 'sdo',
+                         SDO_MAX_BYTES))
     for i in range(7):
         d = (start + timedelta(days=i)).isoformat()
-        jobs.append((f'earth-{d}.webp', gibs_url(d), f'{gibs_layer(d)} {d}', 1024, 'gibs', EARTH_MAX_BYTES))
+        fill = gibs_fill_layer(d)
+        jobs.append((f'earth-{d}.webp', gibs_url(d), f'{gibs_layer(d)} {d}' + (f' + {fill}' if fill else ''), 1024,
+                     'gibs', EARTH_MAX_BYTES))
+    fills = {j[0]: gibs_url(j[0][6:16], layer=gibs_fill_layer(j[0][6:16])) for j in jobs
+             if j[4] == 'gibs' and gibs_fill_layer(j[0][6:16])}
 
     downloaded = []
     for file, url, original, width, credit, budget in jobs:
         data = fetch(url)
         if not looks_like_image(data):
             raise RuntimeError(f'{file}: source did not return an image ({url})')
+        if file in fills:
+            extra = fetch(fills[file])
+            if not looks_like_image(extra):
+                raise RuntimeError(f'{file}: source did not return an image ({fills[file]})')
+            data = fill_gaps(data, extra)
         downloaded.append((file, url, original, width, credit, budget, data))
 
     raw_dir.mkdir(parents=True, exist_ok=True)
     for file, url, original, width, credit, budget, data in downloaded:
-        (raw_dir / original.replace(' ', '_')).write_bytes(data)
+        (raw_dir / original.replace(' ', '_').replace('+', 'and')).write_bytes(data)
         to_webp(data, out_dir / file, width, max_bytes=budget, crop_bottom=SDO_DATE_STRIP if credit == 'sdo' else 0.0)
     manifest = {
         'week': week,
         'downloaded': datetime.now(UTC).strftime('%Y-%m-%d'),
-        'flare': {'begin': flare_begin, 'peak': flare_peak, 'source': 'DONKI FLR (CCMC)'},
-        'credits': {'sdo': SDO_CREDIT, 'gibs': GIBS_CREDIT},
+        'flare': None if flare_peak is None else {'begin': flare_begin, 'peak': flare_peak, 'source': 'DONKI FLR (CCMC)'},
+        'credits': {k: v for k, v in CREDITS.items() if any(j[4] == k for j in jobs)},
         'files': [
-            {'file': f, 'source': u, 'original': o, 'credit': c, 'label': 'measured'}
+            {'file': f, 'source': u, **({'fill': fills[f]} if f in fills else {}), 'original': o, 'credit': c,
+             'label': 'measured'}
             for f, u, o, _, c, _, _ in downloaded
         ],
     }
@@ -165,9 +260,12 @@ def main(argv: list[str]) -> int:
     sys.stdout.reconfigure(encoding='utf-8')  # Windows consoles default to cp1251; -I ignores PYTHONIOENCODING
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('week', help='first day of the week, YYYY-MM-DD')
-    p.add_argument('--flare-begin', required=True, help='YYYY-MM-DDTHH:MMZ (DONKI FLR beginTime)')
-    p.add_argument('--flare-peak', required=True, help='YYYY-MM-DDTHH:MMZ (DONKI FLR peakTime)')
+    p.add_argument('--flare-begin', help='YYYY-MM-DDTHH:MMZ (DONKI FLR beginTime)')
+    p.add_argument('--flare-peak', help='YYYY-MM-DDTHH:MMZ (DONKI FLR peakTime)')
+    p.add_argument('--quiet', action='store_true', help='week without flares: one calm Sun, 12:00 UTC on day 4')
     a = p.parse_args(argv)
+    if a.quiet == bool(a.flare_begin and a.flare_peak):
+        p.error('give --flare-begin and --flare-peak, or --quiet')
     out = ROOT / 'public' / 'data' / 'media' / a.week
     raw = ROOT / 'scripts' / 'data' / 'raw' / 'media' / a.week
     try:

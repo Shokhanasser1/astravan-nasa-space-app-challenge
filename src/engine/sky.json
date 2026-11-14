@@ -1,18 +1,135 @@
 {
- "about": "Sun and Earth seen from the base, one value per day at 12:00 UTC. Label: computed. Earth elevation and lit fraction: JPL Horizons, checked 2026-11-14 (observer on the Moon at the site below). Sun azimuth: concept 3.0 §05 table, 12° a day, measured from the Earth-facing meridian (lunar longitude 0) = Horizons local azimuth + site longitude, agrees within 0.6°. Sun elevation is a game rule (1.5°): Horizons gives −0.7° to −0.1° for the Sun's centre at zero altitude that week, so the low Sun is true to the week but the number is not measured.",
- "source": "https://ssd.jpl.nasa.gov/api/horizons.api?format=text&COMMAND='399'&EPHEM_TYPE='OBSERVER'&CENTER='coord@301'&COORD_TYPE='GEODETIC'&SITE_COORD='222.69,-89.45,0'&START_TIME='2021-10-25 12:00'&STOP_TIME='2021-10-31 12:00'&STEP_SIZE='1 d'&QUANTITIES='4,10' (Sun: COMMAND='10')",
+ "about": "Sun and Earth seen from the base, one value per day at 12:00 UTC. Label: computed. All values from JPL Horizons (observer on the Moon at the site below), built by scripts/data/sky.py on 2026-11-15; week 2021-10-25 keeps its checked values (Sun azimuth from the concept 3.0 table, within 0.6° of Horizons). Sun azimuth is measured from lunar longitude 0 (the way to Earth) = Horizons local azimuth + site longitude, whole degrees. sun_el_true_deg is the Horizons elevation of the Sun's centre; the game draws the Sun at sun_el_deg (1.5°), a game rule, so the low Sun is true to the place but the number is not measured. Earth elevation does not include the ridges around the site.",
+ "source": "https://ssd.jpl.nasa.gov/api/horizons.api?format=text&COMMAND='399'&EPHEM_TYPE='OBSERVER'&CENTER='coord@301'&COORD_TYPE='GEODETIC'&SITE_COORD='222.69,-89.45,0'&START_TIME='<week> 12:00'&STOP_TIME='<week + 6 d> 12:00'&STEP_SIZE='1 d'&QUANTITIES='4,10' (Sun: COMMAND='10')",
  "site": { "name": "Shackleton–de Gerlache ridge", "lat": -89.45, "lon": 222.69 },
  "sun_el_deg": 1.5,
  "label": "computed",
  "weeks": {
+  "2012-01-20": [
+   { "day": 1, "sun_az_deg": 219, "earth_el_deg": 0.6, "earth_phase": 0.9, "sun_el_true_deg": -0.6 },
+   { "day": 2, "sun_az_deg": 207, "earth_el_deg": 2.1, "earth_phase": 0.96, "sun_el_true_deg": -0.6 },
+   { "day": 3, "sun_az_deg": 195, "earth_el_deg": 3.5, "earth_phase": 0.99, "sun_el_true_deg": -0.7 },
+   { "day": 4, "sun_az_deg": 183, "earth_el_deg": 4.6, "earth_phase": 1.0, "sun_el_true_deg": -0.8 },
+   { "day": 5, "sun_az_deg": 170, "earth_el_deg": 5.4, "earth_phase": 0.98, "sun_el_true_deg": -0.9 },
+   { "day": 6, "sun_az_deg": 158, "earth_el_deg": 5.9, "earth_phase": 0.95, "sun_el_true_deg": -1.0 },
+   { "day": 7, "sun_az_deg": 146, "earth_el_deg": 6.0, "earth_phase": 0.89, "sun_el_true_deg": -1.1 }
+  ],
+  "2012-03-04": [
+   { "day": 1, "sun_az_deg": 44, "earth_el_deg": -5.2, "earth_phase": 0.18, "sun_el_true_deg": -2.1 },
+   { "day": 2, "sun_az_deg": 31, "earth_el_deg": -6.2, "earth_phase": 0.11, "sun_el_true_deg": -2.1 },
+   { "day": 3, "sun_az_deg": 19, "earth_el_deg": -6.8, "earth_phase": 0.05, "sun_el_true_deg": -2.0 },
+   { "day": 4, "sun_az_deg": 7, "earth_el_deg": -7.2, "earth_phase": 0.01, "sun_el_true_deg": -2.0 },
+   { "day": 5, "sun_az_deg": 355, "earth_el_deg": -7.1, "earth_phase": 0.0, "sun_el_true_deg": -1.9 },
+   { "day": 6, "sun_az_deg": 343, "earth_el_deg": -6.6, "earth_phase": 0.02, "sun_el_true_deg": -1.8 },
+   { "day": 7, "sun_az_deg": 331, "earth_el_deg": -5.6, "earth_phase": 0.06, "sun_el_true_deg": -1.7 }
+  ],
+  "2012-05-14": [
+   { "day": 1, "sun_az_deg": 258, "earth_el_deg": 6.1, "earth_phase": 0.66, "sun_el_true_deg": 0.2 },
+   { "day": 2, "sun_az_deg": 246, "earth_el_deg": 5.7, "earth_phase": 0.75, "sun_el_true_deg": 0.2 },
+   { "day": 3, "sun_az_deg": 234, "earth_el_deg": 5.1, "earth_phase": 0.83, "sun_el_true_deg": 0.3 },
+   { "day": 4, "sun_az_deg": 221, "earth_el_deg": 4.3, "earth_phase": 0.89, "sun_el_true_deg": 0.3 },
+   { "day": 5, "sun_az_deg": 209, "earth_el_deg": 3.2, "earth_phase": 0.95, "sun_el_true_deg": 0.3 },
+   { "day": 6, "sun_az_deg": 197, "earth_el_deg": 2.0, "earth_phase": 0.98, "sun_el_true_deg": 0.3 },
+   { "day": 7, "sun_az_deg": 185, "earth_el_deg": 0.6, "earth_phase": 1.0, "sun_el_true_deg": 0.3 }
+  ],
+  "2013-05-19": [
+   { "day": 1, "sun_az_deg": 67, "earth_el_deg": -6.7, "earth_phase": 0.37, "sun_el_true_deg": -0.2 },
+   { "day": 2, "sun_az_deg": 55, "earth_el_deg": -5.8, "earth_phase": 0.27, "sun_el_true_deg": -0.2 },
+   { "day": 3, "sun_az_deg": 43, "earth_el_deg": -4.7, "earth_phase": 0.18, "sun_el_true_deg": -0.2 },
+   { "day": 4, "sun_az_deg": 31, "earth_el_deg": -3.2, "earth_phase": 0.1, "sun_el_true_deg": -0.2 },
+   { "day": 5, "sun_az_deg": 18, "earth_el_deg": -1.6, "earth_phase": 0.04, "sun_el_true_deg": -0.1 },
+   { "day": 6, "sun_az_deg": 6, "earth_el_deg": 0.2, "earth_phase": 0.01, "sun_el_true_deg": -0.0 },
+   { "day": 7, "sun_az_deg": 354, "earth_el_deg": 1.9, "earth_phase": 0.0, "sun_el_true_deg": 0.1 }
+  ],
+  "2014-01-04": [
+   { "day": 1, "sun_az_deg": 142, "earth_el_deg": 5.4, "earth_phase": 0.87, "sun_el_true_deg": -1.3 },
+   { "day": 2, "sun_az_deg": 130, "earth_el_deg": 4.5, "earth_phase": 0.78, "sun_el_true_deg": -1.5 },
+   { "day": 3, "sun_az_deg": 118, "earth_el_deg": 3.4, "earth_phase": 0.68, "sun_el_true_deg": -1.6 },
+   { "day": 4, "sun_az_deg": 105, "earth_el_deg": 2.1, "earth_phase": 0.57, "sun_el_true_deg": -1.7 },
+   { "day": 5, "sun_az_deg": 93, "earth_el_deg": 0.7, "earth_phase": 0.46, "sun_el_true_deg": -1.8 },
+   { "day": 6, "sun_az_deg": 81, "earth_el_deg": -0.8, "earth_phase": 0.36, "sun_el_true_deg": -1.9 },
+   { "day": 7, "sun_az_deg": 69, "earth_el_deg": -2.2, "earth_phase": 0.27, "sun_el_true_deg": -2.0 }
+  ],
+  "2014-10-20": [
+   { "day": 1, "sun_az_deg": 217, "earth_el_deg": -4.2, "earth_phase": 0.89, "sun_el_true_deg": 0.3 },
+   { "day": 2, "sun_az_deg": 205, "earth_el_deg": -2.9, "earth_phase": 0.94, "sun_el_true_deg": 0.3 },
+   { "day": 3, "sun_az_deg": 193, "earth_el_deg": -1.4, "earth_phase": 0.98, "sun_el_true_deg": 0.2 },
+   { "day": 4, "sun_az_deg": 181, "earth_el_deg": 0.1, "earth_phase": 1.0, "sun_el_true_deg": 0.1 },
+   { "day": 5, "sun_az_deg": 168, "earth_el_deg": 1.5, "earth_phase": 1.0, "sun_el_true_deg": 0.0 },
+   { "day": 6, "sun_az_deg": 156, "earth_el_deg": 2.9, "earth_phase": 0.97, "sun_el_true_deg": -0.1 },
+   { "day": 7, "sun_az_deg": 144, "earth_el_deg": 4.2, "earth_phase": 0.93, "sun_el_true_deg": -0.2 }
+  ],
+  "2017-09-06": [
+   { "day": 1, "sun_az_deg": 353, "earth_el_deg": -3.2, "earth_phase": 0.0, "sun_el_true_deg": -0.9 },
+   { "day": 2, "sun_az_deg": 340, "earth_el_deg": -4.6, "earth_phase": 0.02, "sun_el_true_deg": -0.8 },
+   { "day": 3, "sun_az_deg": 328, "earth_el_deg": -5.8, "earth_phase": 0.06, "sun_el_true_deg": -0.7 },
+   { "day": 4, "sun_az_deg": 316, "earth_el_deg": -6.7, "earth_phase": 0.12, "sun_el_true_deg": -0.7 },
+   { "day": 5, "sun_az_deg": 304, "earth_el_deg": -7.2, "earth_phase": 0.2, "sun_el_true_deg": -0.6 },
+   { "day": 6, "sun_az_deg": 292, "earth_el_deg": -7.4, "earth_phase": 0.3, "sun_el_true_deg": -0.5 },
+   { "day": 7, "sun_az_deg": 280, "earth_el_deg": -7.1, "earth_phase": 0.41, "sun_el_true_deg": -0.4 }
+  ],
+  "2018-08-06": [
+   { "day": 1, "sun_az_deg": 242, "earth_el_deg": -6.5, "earth_phase": 0.69, "sun_el_true_deg": 0.3 },
+   { "day": 2, "sun_az_deg": 229, "earth_el_deg": -5.5, "earth_phase": 0.79, "sun_el_true_deg": 0.3 },
+   { "day": 3, "sun_az_deg": 217, "earth_el_deg": -4.2, "earth_phase": 0.88, "sun_el_true_deg": 0.3 },
+   { "day": 4, "sun_az_deg": 205, "earth_el_deg": -2.5, "earth_phase": 0.94, "sun_el_true_deg": 0.2 },
+   { "day": 5, "sun_az_deg": 193, "earth_el_deg": -0.8, "earth_phase": 0.99, "sun_el_true_deg": 0.1 },
+   { "day": 6, "sun_az_deg": 180, "earth_el_deg": 1.0, "earth_phase": 1.0, "sun_el_true_deg": 0.0 },
+   { "day": 7, "sun_az_deg": 168, "earth_el_deg": 2.6, "earth_phase": 0.98, "sun_el_true_deg": -0.1 }
+  ],
+  "2020-06-01": [
+   { "day": 1, "sun_az_deg": 57, "earth_el_deg": 5.9, "earth_phase": 0.24, "sun_el_true_deg": -0.0 },
+   { "day": 2, "sun_az_deg": 44, "earth_el_deg": 5.3, "earth_phase": 0.15, "sun_el_true_deg": -0.1 },
+   { "day": 3, "sun_az_deg": 32, "earth_el_deg": 4.3, "earth_phase": 0.07, "sun_el_true_deg": -0.1 },
+   { "day": 4, "sun_az_deg": 20, "earth_el_deg": 2.9, "earth_phase": 0.02, "sun_el_true_deg": -0.1 },
+   { "day": 5, "sun_az_deg": 8, "earth_el_deg": 1.4, "earth_phase": 0.0, "sun_el_true_deg": -0.1 },
+   { "day": 6, "sun_az_deg": 356, "earth_el_deg": -0.3, "earth_phase": 0.01, "sun_el_true_deg": -0.0 },
+   { "day": 7, "sun_az_deg": 343, "earth_el_deg": -1.9, "earth_phase": 0.04, "sun_el_true_deg": 0.0 }
+  ],
   "2021-10-25": [
-   { "day": 1, "sun_az_deg": 304, "earth_el_deg": 2.1, "earth_phase": 0.2 },
-   { "day": 2, "sun_az_deg": 292, "earth_el_deg": 3.3, "earth_phase": 0.28 },
-   { "day": 3, "sun_az_deg": 280, "earth_el_deg": 4.4, "earth_phase": 0.37 },
-   { "day": 4, "sun_az_deg": 268, "earth_el_deg": 5.2, "earth_phase": 0.47 },
-   { "day": 5, "sun_az_deg": 256, "earth_el_deg": 5.8, "earth_phase": 0.57 },
-   { "day": 6, "sun_az_deg": 244, "earth_el_deg": 6.2, "earth_phase": 0.67 },
-   { "day": 7, "sun_az_deg": 232, "earth_el_deg": 6.1, "earth_phase": 0.76 }
+   { "day": 1, "sun_az_deg": 304, "earth_el_deg": 2.1, "earth_phase": 0.2, "sun_el_true_deg": -0.7 },
+   { "day": 2, "sun_az_deg": 292, "earth_el_deg": 3.3, "earth_phase": 0.28, "sun_el_true_deg": -0.6 },
+   { "day": 3, "sun_az_deg": 280, "earth_el_deg": 4.4, "earth_phase": 0.37, "sun_el_true_deg": -0.5 },
+   { "day": 4, "sun_az_deg": 268, "earth_el_deg": 5.2, "earth_phase": 0.47, "sun_el_true_deg": -0.3 },
+   { "day": 5, "sun_az_deg": 256, "earth_el_deg": 5.8, "earth_phase": 0.57, "sun_el_true_deg": -0.2 },
+   { "day": 6, "sun_az_deg": 244, "earth_el_deg": 6.2, "earth_phase": 0.67, "sun_el_true_deg": -0.2 },
+   { "day": 7, "sun_az_deg": 232, "earth_el_deg": 6.1, "earth_phase": 0.76, "sun_el_true_deg": -0.1 }
+  ],
+  "2023-12-12": [
+   { "day": 1, "sun_az_deg": 181, "earth_el_deg": -5.8, "earth_phase": 1.0, "sun_el_true_deg": 1.7 },
+   { "day": 2, "sun_az_deg": 169, "earth_el_deg": -6.6, "earth_phase": 0.99, "sun_el_true_deg": 1.6 },
+   { "day": 3, "sun_az_deg": 157, "earth_el_deg": -7.1, "earth_phase": 0.97, "sun_el_true_deg": 1.5 },
+   { "day": 4, "sun_az_deg": 145, "earth_el_deg": -7.2, "earth_phase": 0.92, "sun_el_true_deg": 1.4 },
+   { "day": 5, "sun_az_deg": 132, "earth_el_deg": -6.9, "earth_phase": 0.84, "sun_el_true_deg": 1.3 },
+   { "day": 6, "sun_az_deg": 120, "earth_el_deg": -6.2, "earth_phase": 0.75, "sun_el_true_deg": 1.2 },
+   { "day": 7, "sun_az_deg": 108, "earth_el_deg": -5.2, "earth_phase": 0.64, "sun_el_true_deg": 1.1 }
+  ],
+  "2024-02-20": [
+   { "day": 1, "sun_az_deg": 50, "earth_el_deg": 6.0, "earth_phase": 0.14, "sun_el_true_deg": 0.6 },
+   { "day": 2, "sun_az_deg": 38, "earth_el_deg": 5.9, "earth_phase": 0.08, "sun_el_true_deg": 0.6 },
+   { "day": 3, "sun_az_deg": 25, "earth_el_deg": 5.4, "earth_phase": 0.04, "sun_el_true_deg": 0.6 },
+   { "day": 4, "sun_az_deg": 13, "earth_el_deg": 4.7, "earth_phase": 0.01, "sun_el_true_deg": 0.6 },
+   { "day": 5, "sun_az_deg": 1, "earth_el_deg": 3.8, "earth_phase": 0.0, "sun_el_true_deg": 0.7 },
+   { "day": 6, "sun_az_deg": 349, "earth_el_deg": 2.7, "earth_phase": 0.01, "sun_el_true_deg": 0.7 },
+   { "day": 7, "sun_az_deg": 337, "earth_el_deg": 1.4, "earth_phase": 0.03, "sun_el_true_deg": 0.8 }
+  ],
+  "2024-03-20": [
+   { "day": 1, "sun_az_deg": 57, "earth_el_deg": 5.6, "earth_phase": 0.19, "sun_el_true_deg": -0.1 },
+   { "day": 2, "sun_az_deg": 45, "earth_el_deg": 5.0, "earth_phase": 0.12, "sun_el_true_deg": -0.1 },
+   { "day": 3, "sun_az_deg": 32, "earth_el_deg": 4.1, "earth_phase": 0.07, "sun_el_true_deg": -0.1 },
+   { "day": 4, "sun_az_deg": 20, "earth_el_deg": 3.0, "earth_phase": 0.03, "sun_el_true_deg": -0.1 },
+   { "day": 5, "sun_az_deg": 8, "earth_el_deg": 1.7, "earth_phase": 0.01, "sun_el_true_deg": -0.1 },
+   { "day": 6, "sun_az_deg": 356, "earth_el_deg": 0.4, "earth_phase": 0.0, "sun_el_true_deg": -0.1 },
+   { "day": 7, "sun_az_deg": 344, "earth_el_deg": -1.1, "earth_phase": 0.01, "sun_el_true_deg": 0.0 }
+  ],
+  "2024-05-08": [
+   { "day": 1, "sun_az_deg": 179, "earth_el_deg": 3.5, "earth_phase": 1.0, "sun_el_true_deg": -0.5 },
+   { "day": 2, "sun_az_deg": 167, "earth_el_deg": 4.7, "earth_phase": 0.97, "sun_el_true_deg": -0.6 },
+   { "day": 3, "sun_az_deg": 155, "earth_el_deg": 5.5, "earth_phase": 0.93, "sun_el_true_deg": -0.7 },
+   { "day": 4, "sun_az_deg": 142, "earth_el_deg": 5.9, "earth_phase": 0.86, "sun_el_true_deg": -0.9 },
+   { "day": 5, "sun_az_deg": 130, "earth_el_deg": 6.0, "earth_phase": 0.78, "sun_el_true_deg": -1.0 },
+   { "day": 6, "sun_az_deg": 118, "earth_el_deg": 5.8, "earth_phase": 0.69, "sun_el_true_deg": -1.1 },
+   { "day": 7, "sun_az_deg": 106, "earth_el_deg": 5.3, "earth_phase": 0.6, "sun_el_true_deg": -1.3 }
   ]
  }
 }

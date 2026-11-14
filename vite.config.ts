@@ -24,7 +24,16 @@ export default defineConfig({
       workbox: {
         globPatterns: ['**/*.{js,css,html,woff2,png,webp,jpg,ktx2,glb,json,ogg,m4a}'],
         // Draco decoder only matters for Draco models (prefer meshopt); it loads on demand instead of on first visit.
-        globIgnores: ['draco/**', 'mediapipe/**'],
+        // Real media of the 14 weeks (~12 MB, public/data/media/) are not precached: a player sees one week, so its
+        // pictures are cached the first time they are shown (runtimeCaching below) and work offline after that.
+        globIgnores: ['draco/**', 'mediapipe/**', 'data/media/**'],
+        runtimeCaching: [
+          {
+            urlPattern: ({ url }) => url.pathname.includes('/data/media/'),
+            handler: 'CacheFirst',
+            options: { cacheName: 'week-media', expiration: { maxEntries: 60 } },
+          },
+        ],
         maximumFileSizeToCacheInBytes: 8 * 1024 * 1024,
         cleanupOutdatedCaches: true,
         navigateFallbackDenylist: [/^\/api\//, /^\/_\//],

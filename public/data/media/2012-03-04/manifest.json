@@ -1,0 +1,85 @@
+{
+  "week": "2012-03-04",
+  "downloaded": "2026-11-14",
+  "flare": {
+    "begin": "2012-03-07T00:02Z",
+    "peak": "2012-03-07T00:24Z",
+    "source": "DONKI FLR (CCMC)"
+  },
+  "credits": {
+    "helioviewer": "Courtesy of NASA/SDO and the AIA, EVE, and HMI science teams. Image rendered by Helioviewer.org.",
+    "gibs": "NASA EOSDIS GIBS / Worldview"
+  },
+  "files": [
+    {
+      "file": "sdo-peak.webp",
+      "source": "https://api.helioviewer.org/v2/takeScreenshot/?date=2012-03-07T00:23:58Z&imageScale=2.4&layers=[SDO,AIA,AIA,131,1,100]&x0=0&y0=0&width=1024&height=1024&display=true&watermark=false",
+      "original": "helioviewer_AIA131_20120307_002358.png",
+      "credit": "helioviewer",
+      "label": "measured"
+    },
+    {
+      "file": "sdo-before.webp",
+      "source": "https://api.helioviewer.org/v2/takeScreenshot/?date=2012-03-06T23:01:46Z&imageScale=2.4&layers=[SDO,AIA,AIA,131,1,100]&x0=0&y0=0&width=1024&height=1024&display=true&watermark=false",
+      "original": "helioviewer_AIA131_20120306_230146.png",
+      "credit": "helioviewer",
+      "label": "measured"
+    },
+    {
+      "file": "earth-2012-03-04.webp",
+      "source": "https://gibs.earthdata.nasa.gov/wms/epsg4326/best/wms.cgi?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=MODIS_Terra_CorrectedReflectance_TrueColor&SRS=EPSG:4326&BBOX=-180,-90,180,90&WIDTH=2048&HEIGHT=1024&FORMAT=image/jpeg&TIME=2012-03-04",
+      "fill": "https://gibs.earthdata.nasa.gov/wms/epsg4326/best/wms.cgi?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=MODIS_Aqua_CorrectedReflectance_TrueColor&SRS=EPSG:4326&BBOX=-180,-90,180,90&WIDTH=2048&HEIGHT=1024&FORMAT=image/jpeg&TIME=2012-03-04",
+      "original": "MODIS_Terra_CorrectedReflectance_TrueColor 2012-03-04 + MODIS_Aqua_CorrectedReflectance_TrueColor",
+      "credit": "gibs",
+      "label": "measured"
+    },
+    {
+      "file": "earth-2012-03-05.webp",
+      "source": "https://gibs.earthdata.nasa.gov/wms/epsg4326/best/wms.cgi?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=MODIS_Terra_CorrectedReflectance_TrueColor&SRS=EPSG:4326&BBOX=-180,-90,180,90&WIDTH=2048&HEIGHT=1024&FORMAT=image/jpeg&TIME=2012-03-05",
+      "fill": "https://gibs.earthdata.nasa.gov/wms/epsg4326/best/wms.cgi?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=MODIS_Aqua_CorrectedReflectance_TrueColor&SRS=EPSG:4326&BBOX=-180,-90,180,90&WIDTH=2048&HEIGHT=1024&FORMAT=image/jpeg&TIME=2012-03-05",
+      "original": "MODIS_Terra_CorrectedReflectance_TrueColor 2012-03-05 + MODIS_Aqua_CorrectedReflectance_TrueColor",
+      "credit": "gibs",
+      "label": "measured"
+    },
+    {
+      "file": "earth-2012-03-06.webp",
+      "source": "https://gibs.earthdata.nasa.gov/wms/epsg4326/best/wms.cgi?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=MODIS_Terra_CorrectedReflectance_TrueColor&SRS=EPSG:4326&BBOX=-180,-90,180,90&WIDTH=2048&HEIGHT=1024&FORMAT=image/jpeg&TIME=2012-03-06",
+      "fill": "https://gibs.earthdata.nasa.gov/wms/epsg4326/best/wms.cgi?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=MODIS_Aqua_CorrectedReflectance_TrueColor&SRS=EPSG:4326&BBOX=-180,-90,180,90&WIDTH=2048&HEIGHT=1024&FORMAT=image/jpeg&TIME=2012-03-06",
+      "original": "MODIS_Terra_CorrectedReflectance_TrueColor 2012-03-06 + MODIS_Aqua_CorrectedReflectance_TrueColor",
+      "credit": "gibs",
+      "label": "measured"
+    },
+    {
+      "file": "earth-2012-03-07.webp",
+      "source": "https://gibs.earthdata.nasa.gov/wms/epsg4326/best/wms.cgi?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=MODIS_Terra_CorrectedReflectance_TrueColor&SRS=EPSG:4326&BBOX=-180,-90,180,90&WIDTH=2048&HEIGHT=1024&FORMAT=image/jpeg&TIME=2012-03-07",
+      "fill": "https://gibs.earthdata.nasa.gov/wms/epsg4326/best/wms.cgi?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=MODIS_Aqua_CorrectedReflectance_TrueColor&SRS=EPSG:4326&BBOX=-180,-90,180,90&WIDTH=2048&HEIGHT=1024&FORMAT=image/jpeg&TIME=2012-03-07",
+      "original": "MODIS_Terra_CorrectedReflectance_TrueColor 2012-03-07 + MODIS_Aqua_CorrectedReflectance_TrueColor",
+      "credit": "gibs",
+      "label": "measured"
+    },
+    {
+      "file": "earth-2012-03-08.webp",
+      "source": "https://gibs.earthdata.nasa.gov/wms/epsg4326/best/wms.cgi?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=MODIS_Terra_CorrectedReflectance_TrueColor&SRS=EPSG:4326&BBOX=-180,-90,180,90&WIDTH=2048&HEIGHT=1024&FORMAT=image/jpeg&TIME=2012-03-08",
+      "fill": "https://gibs.earthdata.nasa.gov/wms/epsg4326/best/wms.cgi?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=MODIS_Aqua_CorrectedReflectance_TrueColor&SRS=EPSG:4326&BBOX=-180,-90,180,90&WIDTH=2048&HEIGHT=1024&FORMAT=image/jpeg&TIME=2012-03-08",
+      "original": "MODIS_Terra_CorrectedReflectance_TrueColor 2012-03-08 + MODIS_Aqua_CorrectedReflectance_TrueColor",
+      "credit": "gibs",
+      "label": "measured"
+    },
+    {
+      "file": "earth-2012-03-09.webp",
+      "source": "https://gibs.earthdata.nasa.gov/wms/epsg4326/best/wms.cgi?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=MODIS_Terra_CorrectedReflectance_TrueColor&SRS=EPSG:4326&BBOX=-180,-90,180,90&WIDTH=2048&HEIGHT=1024&FORMAT=image/jpeg&TIME=2012-03-09",
+      "fill": "https://gibs.earthdata.nasa.gov/wms/epsg4326/best/wms.cgi?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=MODIS_Aqua_CorrectedReflectance_TrueColor&SRS=EPSG:4326&BBOX=-180,-90,180,90&WIDTH=2048&HEIGHT=1024&FORMAT=image/jpeg&TIME=2012-03-09",
+      "original": "MODIS_Terra_CorrectedReflectance_TrueColor 2012-03-09 + MODIS_Aqua_CorrectedReflectance_TrueColor",
+      "credit": "gibs",
+      "label": "measured"
+    },
+    {
+      "file": "earth-2012-03-10.webp",
+      "source": "https://gibs.earthdata.nasa.gov/wms/epsg4326/best/wms.cgi?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=MODIS_Terra_CorrectedReflectance_TrueColor&SRS=EPSG:4326&BBOX=-180,-90,180,90&WIDTH=2048&HEIGHT=1024&FORMAT=image/jpeg&TIME=2012-03-10",
+      "fill": "https://gibs.earthdata.nasa.gov/wms/epsg4326/best/wms.cgi?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=MODIS_Aqua_CorrectedReflectance_TrueColor&SRS=EPSG:4326&BBOX=-180,-90,180,90&WIDTH=2048&HEIGHT=1024&FORMAT=image/jpeg&TIME=2012-03-10",
+      "original": "MODIS_Terra_CorrectedReflectance_TrueColor 2012-03-10 + MODIS_Aqua_CorrectedReflectance_TrueColor",
+      "credit": "gibs",
+      "label": "measured"
+    }
+  ]
+}

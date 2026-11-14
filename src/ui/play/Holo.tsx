@@ -172,6 +172,8 @@ export function useWeekMedia(weekId?: string): WeekMedia | null {
 }
 
 const mediaUrl = (week: string, file: string) => `${import.meta.env.BASE_URL}data/media/${week}/${file}`;
+/** Credit line of one file: its own `credit` key ('sdo', or 'helioviewer' for the 2012–2014 weeks). */
+const creditOf = (m: WeekMedia, file: string) => m.credits[m.files.find((f) => f.file === file)?.credit ?? 'sdo'] ?? m.credits.sdo;
 const utc = (iso: string) => iso.slice(11, 16);
 
 /** On the flare's own day: the Sun as SDO photographed it. Only the UTC time — the date stays secret until the end. */
@@ -187,7 +189,7 @@ export function SunToday({ weekId, date, tr }: { weekId?: string; date?: string;
           <Mark label="measured" tr={tr} />
         </div>
         <div className="text-xs opacity-80">{tr('ui.sun.by')}</div>
-        <div className="text-[0.65rem] opacity-60">{media.credits.sdo}</div>
+        <div className="text-[0.65rem] opacity-60">{creditOf(media, 'sdo-peak.webp')}</div>
       </div>
     </HoloPanel>
   );
@@ -213,7 +215,7 @@ export function SunTruth({ weekId, tr }: { weekId: string; tr: Tr }) {
           </figure>
         ))}
       </div>
-      <p className="text-center text-[0.65rem] opacity-60">{media.credits.sdo}</p>
+      <p className="text-center text-[0.65rem] opacity-60">{creditOf(media, 'sdo-peak.webp')}</p>
     </div>
   );
 }
