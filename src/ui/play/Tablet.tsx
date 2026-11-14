@@ -1,160 +1,79 @@
-import { type Dispatch } from "react";
-import { ChevronDown, Tablet as TabletIcon } from "lucide-react";
+import { type ComponentType, type Dispatch } from "react";
+import { BrickWall, ChevronDown, ClipboardList, FlaskConical, Radiation, Rocket, Sprout, Wind } from "lucide-react";
 import type { LogLine, Machine as EngineMachine } from "../../engine/rules";
-import type { Action, Board, Machine, Model } from "../../state/game";
+import type { Action, Board, Machine, Model, View } from "../../state/game";
 import { Btn, Delta, Panel, type Tr } from "./kit";
 import { Kbd } from "./Controls";
-import { features } from "../../config/features";
 
 /**
- * Wrist tablet (lane D placeholder): the day card with its prices, the shelter choice, the energy board and the
- * night log. Every price comes from `board.*.preview` (engine), shown before the button is pressed.
+ * The plan list (15 Nov: the wrist tablet left the default flow). It never opens by itself: a small "Plan list"
+ * button opens it for players who prefer a list to walking with batteries. One row per machine: icon, name,
+ * − count +, and a labelled effect from the engine's preview ("Air tonight 5 → 4"). The day card and the shelter
+ * choice live in their own dialog (Decision.tsx). Also: the night's "What happened" card.
  */
-const ROWS: { k: Machine; e: EngineMachine }[] = [
-  { k: "ls", e: "ls" },
-  { k: "gh", e: "gh" },
-  { k: "ws", e: "build" },
-  { k: "sc", e: "sc" },
-  { k: "launch", e: "launch" },
+type Icon = ComponentType<{ size?: number; className?: string; "aria-hidden"?: boolean | "true" }>;
+
+const ROWS: { k: Machine; e: EngineMachine; icon: Icon; tone: string }[] = [
+  { k: "ls", e: "ls", icon: Wind, tone: "text-measured" },
+  { k: "gh", e: "gh", icon: Sprout, tone: "text-good" },
+  { k: "ws", e: "build", icon: BrickWall, tone: "text-rule" },
+  { k: "sc", e: "sc", icon: FlaskConical, tone: "text-accent" },
+  { k: "launch", e: "launch", icon: Rocket, tone: "text-sun" },
 ];
 
-function CardChoice({
-  board,
-  model,
-  dispatch,
-  tr,
-}: {
-  board: Board;
-  model: Model;
-  dispatch: Dispatch<Action>;
-  tr: Tr;
-}) {
-  const g = model.game!;
-  if (!board.info.card) return null;
-  return (
-    <div className="flex flex-col gap-2" data-testid="card">
-      <p className="text-sm">{tr(`story.card.${board.info.card}.text`)}</p>
-      {board.cardOptions.length > 0 && (
-        <div className="grid grid-cols-2 gap-2">
-          {board.cardOptions.map(({ value, preview: p }, i) => (
-            <Btn
-              key={value}
-              data-testid={`card-${value.replace(":", "-")}`}
-              active={board.cardChoice === value}
-              onClick={() => dispatch({ type: "CHOOSE", card: value })}
-              className="flex flex-col items-start text-left text-sm"
-            >
-              <span>
-                {tr(`story.card.${value.replace(":", ".")}`)}
-                {features.controls && <Kbd k={String(i + 1)} />}
-              </span>
-              <span className="text-xs font-normal">
-                🔋 {p.left} · <Delta from={g.air} to={p.reserveAfter} /> · 🌱{" "}
-                <Delta from={g.plant} to={p.gardenAfter} />
-              </span>
-            </Btn>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-function ShelterChoice({
-  board,
-  dispatch,
-  tr,
-  hint,
-  onHint,
-}: {
-  board: Board;
-  dispatch: Dispatch<Action>;
-  tr: Tr;
-  /** Houston's hint is open (state in the HUD, so H and the 🎧 button open it too). */
-  hint: boolean;
-  onHint: () => void;
-}) {
-  if (!board.shelterOptions.length) return null;
-  return (
-    <div className="flex flex-col gap-2" data-testid="shelter">
-      <div className="grid grid-cols-3 gap-2">
-        {board.shelterOptions.map(({ value, preview: p }, i) => (
-          <Btn
-            key={value}
-            data-testid={`shelter-${value}`}
-            active={board.alloc.shelter === value}
-            onClick={() => dispatch({ type: "CHOOSE", shelter: value })}
-            className="flex flex-col text-sm"
-          >
-            <span>
-              {tr(`ui.shelter.${value}`)}
-              {features.controls && <Kbd k={String(board.cardOptions.length + i + 1)} />}
-            </span>
-            <span className="text-xs font-normal tabular-nums">
-              ☢ +{p.doseToday.toFixed(2)}
-            </span>
-          </Btn>
-        ))}
-      </div>
-      <Btn
-        data-testid="ask-houston"
-        onClick={onHint}
-        active={hint}
-        className="text-sm"
-      >
-        {tr("ui.shelter.askHouston")}
-        {features.controls && <Kbd k="H" />}
-      </Btn>
-      {hint && (
-        <p className="text-sm text-white/80">
-          {tr(
-            board.info.storm === "alert"
-              ? "story.houston.alert"
-              : "story.houston.storm",
-          )}
-        </p>
-      )}
-    </div>
-  );
-}
-
-function effect(k: Machine, board: Board, model: Model) {
+function effect(k: Machine, board: Board, model: Model, tr: Tr) {
   const g = model.game!;
   const p = board.preview;
   if (!p) return null;
-  if (k === "ls") return <Delta from={g.air} to={p.reserveAfter} />;
-  if (k === "gh") return <Delta from={g.plant} to={p.gardenAfter} />;
-  if (k === "ws") return <Delta from={g.wall} to={p.wallAfter} />;
-  if (k === "sc") return <span className="tabular-nums">+{p.sciToday}</span>;
-  return <span className="tabular-nums">{board.alloc.launch} / 4</span>;
+  const label = (key: string) => <span className="opacity-80">{tr(key)} </span>;
+  if (k === "ls") return <>{label("ui.plan.airTonight")}<Delta from={g.air} to={p.reserveAfter} /></>;
+  if (k === "gh") return <>{label("ui.plan.gardenTonight")}<Delta from={g.plant} to={p.gardenAfter} /></>;
+  if (k === "ws") return <>{label("ui.plan.wall")}<Delta from={g.wall} to={p.wallAfter} /></>;
+  if (k === "sc") return <>{label("ui.plan.finds")}<span className="tabular-nums text-measured">+{p.sciToday}</span></>;
+  return <>{label("ui.plan.launch")}<span className="tabular-nums">{board.alloc.launch} / 4</span></>;
 }
 
-function Machines({
+export function PlanTablet({
   board,
   model,
   dispatch,
   tr,
+  onFold,
 }: {
   board: Board;
   model: Model;
   dispatch: Dispatch<Action>;
   tr: Tr;
+  onFold: () => void;
 }) {
+  const warning = board.preview?.warning;
   const forced = board.info.forced;
   return (
-    <div className="flex flex-col gap-1" data-testid="machines">
-      {ROWS.filter((r) => r.k !== "launch" || board.limits.max.launch > 0).map(
-        ({ k, e }) => {
+    <Panel className="hud-tablet flex max-h-[46dvh] min-h-[7rem] !shrink flex-col gap-2 overflow-y-auto" data-testid="plan-tablet">
+      <div className="flex items-center justify-between gap-2">
+        <span className="eyebrow flex items-center gap-2 !text-[#c2cbec]">
+          <ClipboardList size={16} aria-hidden="true" />
+          {tr("ui.plan.title")}
+        </span>
+        <Btn data-testid="tablet-fold" aria-label={tr("ui.controls.close")} onClick={onFold} className="min-h-10 py-1 text-sm">
+          <ChevronDown size={18} aria-hidden="true" />
+          <Kbd k="Tab" />
+        </Btn>
+      </div>
+      {forced && <p className="text-sm text-alert">{tr("ui.board.forced")}</p>}
+      <div className="flex flex-col gap-1.5" data-testid="machines">
+        {ROWS.filter((r) => r.k !== "launch" || board.limits.max.launch > 0).map(({ k, e, icon: I, tone }) => {
           const count = board.alloc[e];
           const max = board.limits.max[e];
+          const closed = max === 0;
           return (
-            <div
-              key={k}
-              className="grid grid-cols-[minmax(0,1fr)_auto_1.75rem_auto_4rem] items-center gap-2"
-              data-machine={k}
-            >
-              <span className="text-sm leading-tight break-words">
-                {tr(`ui.machine.${k}`)}
+            <div key={k} className={`grid grid-cols-[minmax(0,1fr)_auto_2rem_auto] items-center gap-x-2 ${closed ? "opacity-50" : ""}`} data-machine={k}>
+              <span className="flex min-w-0 flex-col">
+                <span className="flex items-center gap-1.5 text-sm font-semibold leading-tight">
+                  <I size={16} aria-hidden="true" className={`shrink-0 ${tone}`} />
+                  <span className="break-words">{tr(`ui.machine.${k}`)}</span>
+                </span>
+                <span className="text-xs leading-tight">{closed ? tr("ui.plan.closed") : effect(k, board, model, tr)}</span>
               </span>
               <Btn
                 data-testid={`machine-${k}-remove`}
@@ -164,63 +83,19 @@ function Machines({
               >
                 −
               </Btn>
-              <span className="text-center text-lg font-bold tabular-nums">
-                {count}
-              </span>
+              <span className="text-center text-lg font-bold tabular-nums">{count}</span>
               <Btn
                 data-testid={`machine-${k}-add`}
                 aria-label={`${tr(`ui.machine.${k}`)} +`}
-                disabled={forced || max === 0 || count >= max}
+                disabled={forced || closed || count >= max}
                 onClick={() => dispatch({ type: "SET", k })}
               >
                 +
               </Btn>
-              <span className="text-right text-sm">
-                {effect(k, board, model)}
-              </span>
             </div>
           );
-        },
-      )}
-    </div>
-  );
-}
-
-export function PlanTablet({
-  board,
-  model,
-  dispatch,
-  tr,
-  houston,
-  onHouston,
-  onFold,
-}: {
-  board: Board;
-  model: Model;
-  dispatch: Dispatch<Action>;
-  tr: Tr;
-  houston: boolean;
-  onHouston: () => void;
-  /** Fold the tablet away (controls layer); without it the tablet has no header. */
-  onFold?: () => void;
-}) {
-  const warning = board.preview?.warning;
-  return (
-    <Panel className="hud-tablet flex max-h-[62vh] flex-col gap-3 overflow-y-auto" data-testid="plan-tablet">
-      {onFold && (
-        <div className="-mb-1 flex items-center justify-between gap-2">
-          <span className="eyebrow flex items-center gap-2"><TabletIcon size={16} aria-hidden="true" />{tr("ui.controls.tablet")}</span>
-          <Btn data-testid="tablet-fold" aria-label={tr("ui.controls.close")} onClick={onFold} className="min-h-10 py-1 text-sm">
-            <ChevronDown size={18} aria-hidden="true" /><Kbd k="Tab" />
-          </Btn>
-        </div>
-      )}
-      {board.info.forced && (
-        <p className="text-sm text-alert">{tr("ui.board.forced")}</p>
-      )}
-      <CardChoice board={board} model={model} dispatch={dispatch} tr={tr} />
-      <ShelterChoice board={board} dispatch={dispatch} tr={tr} hint={houston} onHint={onHouston} />
-      <Machines board={board} model={model} dispatch={dispatch} tr={tr} />
+        })}
+      </div>
       {warning && (
         <p className="text-sm text-alert" data-testid="warning">
           {tr(warning)}
@@ -237,21 +112,44 @@ function lineText(line: LogLine, tr: Tr): string {
   return `${line.key} ${Object.values(line.vars).join(" → ")}`;
 }
 
-export function NightTablet({ model, tr }: { model: Model; tr: Tr }) {
-  const log = model.game?.log ?? [];
+type Res = NonNullable<View["res"]>;
+const CHANGES: { k: string; icon: Icon; tone: string; v: (r: Res) => number; fmt?: (x: number) => string }[] = [
+  { k: "air", icon: Wind, tone: "text-measured", v: (r) => r.air },
+  { k: "garden", icon: Sprout, tone: "text-good", v: (r) => r.plant },
+  { k: "wall", icon: BrickWall, tone: "text-rule", v: (r) => r.wall },
+  { k: "sci", icon: FlaskConical, tone: "text-accent", v: (r) => r.sci },
+  { k: "dose", icon: Radiation, tone: "text-computed", v: (r) => r.dose, fmt: (x) => x.toFixed(2) },
+];
+
+/** Night: what happened today — the engine's log (≤ 3 lines) and the gauges that moved (before → after). */
+export function NightTablet({ model, before, after, tr }: { model: Model; before?: Res; after?: Res; tr: Tr }) {
+  const log = (model.game?.log ?? []).slice(0, 3);
+  const moved = before && after ? CHANGES.filter((c) => Math.abs(c.v(after) - c.v(before)) > 1e-9) : [];
   return (
-    <Panel className="flex flex-col gap-1" data-testid="night-log">
-      <span className="eyebrow">
-        {tr("ui.night.title")}
-      </span>
+    <Panel className="holo-in flex flex-col gap-1.5" data-testid="night-log">
+      <span className="eyebrow !text-[#c2cbec]">{tr("ui.night.title")}</span>
       {log.length ? (
         log.map((l) => (
-          <p key={l.key} className="text-sm">
+          <p key={l.key} className="text-base leading-snug">
             {lineText(l, tr)}
           </p>
         ))
       ) : (
-        <p className="text-sm">—</p>
+        <p className="text-base">{tr("ui.night.quiet")}</p>
+      )}
+      {moved.length > 0 && (
+        <div className="flex flex-wrap gap-2 pt-1 text-sm" data-testid="night-changes">
+          {moved.map(({ k, icon: I, tone, v, fmt }) => (
+            <span key={k} className="inline-flex items-center gap-1 rounded-full bg-white/8 px-2 py-0.5" aria-label={tr(`ui.res.${k}.name`)}>
+              <I size={14} aria-hidden="true" className={tone} />
+              {fmt ? (
+                <span className="tabular-nums">{fmt(v(before!))} → {fmt(v(after!))}</span>
+              ) : (
+                <Delta from={v(before!)} to={v(after!)} />
+              )}
+            </span>
+          ))}
+        </div>
       )}
     </Panel>
   );
