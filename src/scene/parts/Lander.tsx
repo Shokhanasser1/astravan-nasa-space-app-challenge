@@ -8,6 +8,7 @@ import { GLOW, MAT } from './materials';
 import type { TapHandler } from './tap';
 import { Shell, type NodeRef } from '../models/Shell';
 import { lift } from '../models/kit';
+import { AstraLander, astraLook, faceCentre } from '../AstraBase';
 
 const LEGS = [0, 1, 2, 3].map((i) => (i * Math.PI) / 2 + Math.PI / 4);
 const RISE_S = 3; // launch: ~3 s of lift-off, then it keeps climbing out of view
@@ -61,6 +62,9 @@ export function Lander({ on, phase, tap }: { on: boolean; phase: string; tap: Ta
   return (
     <group position={[x, 0, z]}>
       <group ref={body} onClick={tap}>
+        {astraLook ? (
+          <AstraLander turn={faceCentre(x, z)} />
+        ) : (
         <Shell
           name="lander"
           nodes={nodes}
@@ -90,6 +94,7 @@ export function Lander({ on, phase, tap }: { on: boolean; phase: string; tap: Ta
             </>
           }
         />
+        )}
         <mesh position={[0, 0.55, 0]} material={on || flying ? GLOW.cableOn : GLOW.dark}>
           <cylinderGeometry args={[0.45, 0.6, 0.12, 16]} />
         </mesh>

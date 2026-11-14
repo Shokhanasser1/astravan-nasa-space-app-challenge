@@ -8,6 +8,7 @@ import { GLOW, MAT } from './materials';
 import type { TapHandler } from './tap';
 import { Shell } from '../models/Shell';
 import { Sandbags } from './Sandbags';
+import { AstraHabitat, astraLook } from '../AstraBase';
 
 const R = 1.7; // shell radius; 3.6 m tall with the dome (docs/layout.md)
 const GAP = THREE.MathUtils.degToRad(70); // open side of the interior: the window towards the hub
@@ -19,6 +20,10 @@ export function Habitat({ on, wall, tap }: { on: boolean; wall: number; tap: Tap
   return (
     <group position={[x, 0, z]}>
       <group onClick={tap}>
+        {astraLook ? (
+          <AstraHabitat on={on} wall={wall} turn={DOOR_AZ} />
+        ) : (
+          <>
         <Shell
           name="hab"
           turn={DOOR_AZ}
@@ -45,9 +50,12 @@ export function Habitat({ on, wall, tap }: { on: boolean; wall: number; tap: Tap
             <Instance key={a} position={[Math.sin(a) * (R + 0.01), 1.9, Math.cos(a) * (R + 0.01)]} rotation={[0, a, 0]} />
           ))}
         </Instances>
+          </>
+        )}
       </group>
       <Interior />
-      <Sandbags wall={wall} radius={R} />
+      {/* ASTRA's habitat brings its own regolith shield (AstraHabitat); our sandbag rings stay for ?lite */}
+      {!astraLook && <Sandbags wall={wall} radius={R} />}
     </group>
   );
 }

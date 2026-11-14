@@ -20,5 +20,9 @@ function softwareGl(): boolean {
 }
 
 const q = typeof location !== 'undefined' ? new URLSearchParams(location.search) : new URLSearchParams();
-export const rich: boolean =
-  q.has('rich') || (!q.has('lite') && typeof window !== 'undefined' && initialTier() === 'pc' && !softwareGl());
+// 15 Nov ~04:00 (Shoxjahon aka: ASTRA's look for the whole game): the models are baked into a few meshes
+// (src/scene/astra/bake.ts), so every device gets them; `?lite` keeps the light shapes. The GPU test stays for the
+// record (softwareGl, initialTier).
+void initialTier;
+void softwareGl;
+export const rich: boolean = q.has('rich') || !q.has('lite');

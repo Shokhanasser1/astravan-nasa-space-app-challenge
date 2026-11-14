@@ -20,6 +20,17 @@ import { tapOnly } from './parts/tap';
 import { glowColor } from './parts/materials';
 import { features } from '../config/features';
 import { useAim } from '../controls/bus';
+import { AstraPads, astraLook, faceCentre } from './AstraBase';
+
+/** ASTRA's hexagonal pads under the outer buildings (width in metres, about the building's footprint). */
+const PADS = (
+  [
+    [LAYOUT.garden, 3.8],
+    [LAYOUT.workshop, 4.0],
+    [LAYOUT.lander, 4.8],
+    [LAYOUT.scout, 3.4],
+  ] as const
+).map(([[x, z], size]) => ({ x, z, size, turn: faceCentre(x, z) }));
 
 /**
  * Lane C (Shoxjahon aka). The 3D base: renders a View, reports taps. NEVER computes game numbers.
@@ -51,6 +62,7 @@ export function BaseScene({ view, onTap, onUndo }: { view: View; onTap: (k: Mach
     <group>
       <Terrain sunAzDeg={sunAzimuth(view)} />
       <Decor />
+      {astraLook && <AstraPads pads={PADS} />}
       <group onContextMenu={undo.ls}>
         <Habitat on={a.ls > 0} wall={view.wall} tap={tap.ls} />
       </group>

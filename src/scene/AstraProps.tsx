@@ -6,7 +6,9 @@ import { BATTERY_BANK, LAYOUT } from './layout';
 import { GLOW } from './parts/materials';
 import { ICE_CRATER, groundHeight } from './ground';
 import { sunAzimuth, sunDirection } from './Light';
-import { finalize, light } from '../vendor/astra/scene/kit';
+import { astraModule } from './AstraBase';
+import { bake } from './astra/bake';
+import { finalize } from '../vendor/astra/scene/kit';
 import type { ModuleView } from '../vendor/astra/scene/models/common';
 import { buildBattery, buildSolar } from '../vendor/astra/scene/models/power';
 import { buildIceDrill } from '../vendor/astra/scene/models/works';
@@ -19,17 +21,8 @@ import { buildScout, type ScoutView } from '../vendor/astra/scene/models/scout';
  * moves (arrays turn to the Sun, the drill's auger, the scout's mast, the battery's charge bars, the lamps).
  */
 
-function module(build: (v: ModuleView) => void): ModuleView {
-  const g = new THREE.Group();
-  const view: ModuleView = { group: g, status: light('#3ee39a'), glow: [], spin: [], blink: [], top: 2.5 };
-  build(view);
-  finalize(g);
-  g.traverse((o) => {
-    const m = o as THREE.Mesh;
-    if (m.isMesh) m.receiveShadow = true;
-  });
-  return view;
-}
+// Built and baked into a few meshes (src/scene/AstraBase.tsx, src/scene/astra/bake.ts).
+const module = astraModule;
 
 const sun = new THREE.Vector3();
 
@@ -90,7 +83,13 @@ export function IceDrill() {
 
 /** The science scout (rocker-bogie, mast camera, arm): its mast looks about while it has batteries. */
 export function ScoutRover({ on, scale }: { on: boolean; scale: number }) {
-  const v = useMemo<ScoutView>(() => buildScout(), []);
+  const v = useMemo<ScoutView>(() => {
+    const s = buildScout();
+    finalize(s.group);
+    // keep what moves: the mast (pan, tilt) and the wheels
+    bake(s.group, { keep: [s.pan, s.tilt, ...s.spin], live: [] });
+    return s;
+  }, []);
   v.group.name = 'astra_scout';
   // our glowing eye (lit when Explore has batteries) rides on the mast camera, so it turns with it
   const eye = useMemo(() => {

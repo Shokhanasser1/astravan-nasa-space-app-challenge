@@ -28,6 +28,17 @@ export function Astronaut({ body, visible }: { body: Body; visible: boolean }) {
       if ((o as THREE.Mesh).isMesh) {
         o.castShadow = true;
         o.frustumCulled = false; // a skinned mesh's bounds do not follow its bones
+        // ASTRA's brighter light (Light.tsx, exposure 1.32) burns the white suit out: our own copy of each
+        // material, a little darker, matte, less environment shine, so the folds and the pack read again.
+        const mesh = o as THREE.Mesh;
+        const src = mesh.material as THREE.MeshStandardMaterial;
+        if (src?.isMeshStandardMaterial) {
+          const m = src.clone();
+          m.color.multiplyScalar(0.8);
+          m.roughness = Math.max(m.roughness, 0.65);
+          m.envMapIntensity = 0.35;
+          mesh.material = m;
+        }
       }
     });
     return m;

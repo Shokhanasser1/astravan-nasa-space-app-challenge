@@ -3,6 +3,7 @@ import { MAT } from './materials';
 import type { TapHandler } from './tap';
 import { Shell } from '../models/Shell';
 import { Crops } from './Crops';
+import { AstraGreenhouse, astraLook, faceCentre } from '../AstraBase';
 
 const BASE = 0.25;
 
@@ -12,6 +13,10 @@ export function Garden({ on, plant, tap }: { on: boolean; plant: number; tap: Ta
   const p = Math.max(0, Math.min(4, Math.round(plant)));
   return (
     <group position={[x, 0, z]} onClick={tap}>
+      {astraLook ? (
+        <AstraGreenhouse on={on} turn={faceCentre(x, z)} />
+      ) : (
+        <>
       <Shell
         name="garden"
         grey={
@@ -26,6 +31,8 @@ export function Garden({ on, plant, tap }: { on: boolean; plant: number; tap: Ta
         }
       />
       <Crops plant={p} on={on} base={BASE} />
+        </>
+      )}
     </group>
   );
 }

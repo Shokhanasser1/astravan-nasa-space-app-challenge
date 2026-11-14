@@ -4,7 +4,7 @@
 import * as THREE from "three";
 import type { Planet } from "../../sim/types";
 import { addDetail, DETAIL } from "../surface";
-import { ball, bolts, box, canvasTexture, cyl, geo, light, metal, mesh, paint, panel, rbox, rubber, shared, strut } from "../kit";
+import { ball, bolts, box, canvasTexture, cyl, geo, light, metal, mesh, paint, panel, rbox, rubber, shared, strut, sg } from "../kit";
 
 /** Procedural, original models. Everything faces north (−z) at rotation 0; local +z faces the habitat. */
 export const C = {
@@ -247,7 +247,7 @@ export function sphereTank(g: THREE.Object3D, r: number, color: string, x: numbe
 /** A filled regolith sack (about 0.62 × 0.3 × 0.42 m): flattened, squared-off ends, a slight sag in the middle. */
 export function sandbagGeometry() {
   return geo("sandbag", () => {
-    const g = new THREE.SphereGeometry(1, 14, 8);
+    const g = new THREE.SphereGeometry(1, sg(14, 6), sg(8, 4)); // HB7: detail level (611 bags on the habitat)
     const p = g.attributes.position;
     for (let i = 0; i < p.count; i++) {
       const x = p.getX(i),

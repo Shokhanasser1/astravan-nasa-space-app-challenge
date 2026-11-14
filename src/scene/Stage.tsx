@@ -76,6 +76,7 @@ export function Stage({ view, onTap, onUndo }: { view: View; onTap: (k: Machine)
         gl={{ antialias: false, powerPreference: 'high-performance' }}
         onCreated={({ gl, camera }) => {
           gl.toneMapping = THREE.ACESFilmicToneMapping;
+          gl.toneMappingExposure = 1.32; // ASTRA's Moon exposure (Light.tsx)
           gl.outputColorSpace = THREE.SRGBColorSpace;
           if (overview) camera.lookAt(0, 1, 0);
         }}

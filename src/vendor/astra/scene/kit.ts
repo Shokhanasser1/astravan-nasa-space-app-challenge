@@ -67,6 +67,7 @@ export function visor(color = "#152238") {
 const geoCache = new Map<string, THREE.BufferGeometry>();
 /** A geometry made once and shared by every model that asks for the same key. */
 export function geo(key: string, make: () => THREE.BufferGeometry) {
+  key = `${key}@${LOD}`; // HB7: one cache per detail level
   let g = geoCache.get(key);
   if (!g) {
     g = make();
@@ -77,6 +78,14 @@ export function geo(key: string, make: () => THREE.BufferGeometry) {
 }
 
 type Mat = THREE.Material;
+// HB7: one detail level for every curved part (1 = ASTRA's own segment counts; phones build at 0.5).
+export let LOD = 1;
+export function setLod(v: number) {
+  LOD = v;
+}
+/** Segment count at the current detail level (never below `min`). */
+export const sg = (n: number, min = 6) => Math.max(min, Math.round(n * LOD));
+
 /** Add a mesh of any geometry to a parent at a position (casts and receives shadows). */
 export function mesh(g: THREE.BufferGeometry, m: Mat, parent: THREE.Object3D, x = 0, y = 0, z = 0) {
   const o = new THREE.Mesh(g, m);
@@ -90,22 +99,22 @@ export function mesh(g: THREE.BufferGeometry, m: Mat, parent: THREE.Object3D, x 
 export const box = (p: THREE.Object3D, w: number, h: number, d: number, m: Mat, x = 0, y = 0, z = 0) =>
   mesh(geo(`b${w},${h},${d}`, () => new THREE.BoxGeometry(w, h, d)), m, p, x, y, z);
 export const rbox = (p: THREE.Object3D, w: number, h: number, d: number, r: number, m: Mat, x = 0, y = 0, z = 0) =>
-  mesh(geo(`rb${w},${h},${d},${r}`, () => new RoundedBoxGeometry(w, h, d, 3, r)), m, p, x, y, z);
+  mesh(geo(`rb${w},${h},${d},${r}`, () => new RoundedBoxGeometry(w, h, d, sg(3, 1), r)), m, p, x, y, z);
 export const cyl = (p: THREE.Object3D, rt: number, rb: number, h: number, m: Mat, x = 0, y = 0, z = 0, seg = 28) =>
-  mesh(geo(`c${rt},${rb},${h},${seg}`, () => new THREE.CylinderGeometry(rt, rb, h, seg)), m, p, x, y, z);
+  mesh(geo(`c${rt},${rb},${h},${seg}`, () => new THREE.CylinderGeometry(rt, rb, h, sg(seg))), m, p, x, y, z);
 export const ball = (p: THREE.Object3D, r: number, m: Mat, x = 0, y = 0, z = 0, seg = 24) =>
-  mesh(geo(`s${r},${seg}`, () => new THREE.SphereGeometry(r, seg, Math.max(8, seg / 2))), m, p, x, y, z);
+  mesh(geo(`s${r},${seg}`, () => new THREE.SphereGeometry(r, sg(seg), sg(Math.max(8, seg / 2), 4))), m, p, x, y, z);
 export const dome = (p: THREE.Object3D, r: number, m: Mat, x = 0, y = 0, z = 0) =>
-  mesh(geo(`d${r}`, () => new THREE.SphereGeometry(r, 32, 14, 0, Math.PI * 2, 0, Math.PI / 2)), m, p, x, y, z);
+  mesh(geo(`d${r}`, () => new THREE.SphereGeometry(r, sg(32), sg(14, 4), 0, Math.PI * 2, 0, Math.PI / 2)), m, p, x, y, z);
 export const capsule = (p: THREE.Object3D, r: number, len: number, m: Mat, x = 0, y = 0, z = 0) =>
-  mesh(geo(`k${r},${len}`, () => new THREE.CapsuleGeometry(r, len, 6, 16)), m, p, x, y, z);
+  mesh(geo(`k${r},${len}`, () => new THREE.CapsuleGeometry(r, len, sg(6, 2), sg(16))), m, p, x, y, z);
 export const torus = (p: THREE.Object3D, r: number, tube: number, m: Mat, x = 0, y = 0, z = 0, arc = Math.PI * 2) =>
-  mesh(geo(`t${r},${tube},${arc}`, () => new THREE.TorusGeometry(r, tube, 10, 48, arc)), m, p, x, y, z);
+  mesh(geo(`t${r},${tube},${arc}`, () => new THREE.TorusGeometry(r, tube, sg(10, 4), sg(48), arc)), m, p, x, y, z);
 export const cone = (p: THREE.Object3D, r: number, h: number, m: Mat, x = 0, y = 0, z = 0, seg = 28, open = false) =>
-  mesh(geo(`n${r},${h},${seg},${open}`, () => new THREE.ConeGeometry(r, h, seg, 1, open)), m, p, x, y, z);
+  mesh(geo(`n${r},${h},${seg},${open}`, () => new THREE.ConeGeometry(r, h, sg(seg), 1, open)), m, p, x, y, z);
 /** A solid of revolution from a profile of [radius, height] points. */
 export const lathe = (p: THREE.Object3D, key: string, points: [number, number][], m: Mat, x = 0, y = 0, z = 0, seg = 48) =>
-  mesh(geo(`l${key}`, () => new THREE.LatheGeometry(points.map(([r, h]) => new THREE.Vector2(r, h)), seg)), m, p, x, y, z);
+  mesh(geo(`l${key}`, () => new THREE.LatheGeometry(points.map(([r, h]) => new THREE.Vector2(r, h)), sg(seg))), m, p, x, y, z);
 
 /** A rounded rectangle outline, centred on the origin. */
 export function roundRect(w: number, h: number, r: number): THREE.Shape;
@@ -136,8 +145,8 @@ export const panel = (p: THREE.Object3D, w: number, h: number, d: number, r: num
         bevelEnabled: true,
         bevelThickness: bevel,
         bevelSize: bevel,
-        bevelSegments: 3,
-        curveSegments: 6,
+        bevelSegments: sg(3, 1),
+        curveSegments: sg(6, 2),
       });
       g.translate(0, 0, -d / 2 + bevel);
       return g;
@@ -158,7 +167,7 @@ export function windowPane(p: THREE.Object3D, w: number, h: number, r: number, f
     geo(key, () => {
       const shape = roundRect(outerW, outerH, rr + inner);
       shape.holes.push(roundRect(outerW - inner * 2, outerH - inner * 2, rr, new THREE.Path()));
-      const e = new THREE.ExtrudeGeometry(shape, { depth, bevelEnabled: true, bevelThickness: 0.01, bevelSize: 0.01, bevelSegments: 2, curveSegments: 8 });
+      const e = new THREE.ExtrudeGeometry(shape, { depth, bevelEnabled: true, bevelThickness: 0.01, bevelSize: 0.01, bevelSegments: sg(2, 1), curveSegments: sg(8, 2) });
       e.translate(0, 0, -depth / 2);
       return e;
     });
