@@ -1,0 +1,10 @@
+lro.glb — Lunar Reconnaissance Orbiter (LRO)
+Source: NASA 3D Resources, model "Lunar Reconnaissance Orbiter" (id: lro) — https://github.com/nasa/NASA-3D-Resources , https://science.nasa.gov/3d-resources/
+Licence: NASA media usage guidelines (free to use with credit; no NASA insignia, no endorsement implied). No logos in the model.
+Changes (team, 2026-11-14): merged, centred on its bounding box, two foil "ramp" textures replaced by flat metallic gold/silver,
+optimized with `npm run glb -- … --flatten false` (meshopt + WebP 1024). Build script: oy-karvonsaroyi-3d/hb7/lro/build_lro.py
+Credit line: "3D model: NASA 3D Resources. Not endorsed by NASA."
+Model pages: https://github.com/nasa/NASA-3D-Resources/tree/master/3D%20Models (folders "Lunar Reconnaissance Orbiter (A)" / "(B)"); mission: https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=2009-031A
+Modified by Samandar (team) in Blender, 2026-11-14. NASA colours kept, no logos.
+Blender Python scripts written with Claude Code (Claude Opus 5.5); the model is NASA-derived, not AI-generated.
+Not endorsed by NASA.

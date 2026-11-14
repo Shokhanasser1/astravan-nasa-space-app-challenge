@@ -6,6 +6,8 @@ import { LAYOUT } from '../layout';
 import { launchState } from '../anim';
 import { GLOW, MAT } from './materials';
 import type { TapHandler } from './tap';
+import { Shell, type NodeRef } from '../models/Shell';
+import { lift } from '../models/kit';
 
 const LEGS = [0, 1, 2, 3].map((i) => (i * Math.PI) / 2 + Math.PI / 4);
 const RISE_S = 3; // launch: ~3 s of lift-off, then it keeps climbing out of view
@@ -17,6 +19,8 @@ export function Lander({ on, phase, tap }: { on: boolean; phase: string; tap: Ta
   const body = useRef<THREE.Group>(null);
   const dust = useRef<THREE.Mesh>(null);
   const t0 = useRef(-1);
+  const top = useRef<THREE.Object3D | null>(null); // NASA model: the ascent stage (lander_body); null = grey shapes
+  const nodes = useRef<Record<string, NodeRef>>({ lander_body: top }).current;
   const flying = phase === 'launch' || phase === 'truth';
 
   useFrame((state) => {
@@ -32,8 +36,17 @@ export function Lander({ on, phase, tap }: { on: boolean; phase: string; tap: Ta
     } else {
       t0.current = -1;
     }
-    g.position.y = h;
-    g.visible = h < 400;
+    const lm = top.current;
+    if (lm) {
+      // Model: only the ascent stage lifts off; the descent stage (lander_base) and the engine lamp stay.
+      lift(lm, h);
+      lm.visible = h < 400;
+      g.position.y = 0;
+      g.visible = true;
+    } else {
+      g.position.y = h;
+      g.visible = h < 400;
+    }
     launchState.h = h;
     const k = Math.min(1, t / DUST_S);
     d.visible = flying && k < 1;
@@ -48,27 +61,35 @@ export function Lander({ on, phase, tap }: { on: boolean; phase: string; tap: Ta
   return (
     <group position={[x, 0, z]}>
       <group ref={body} onClick={tap}>
-        <Instances limit={4} material={MAT.panel} frustumCulled={false}>
-          <cylinderGeometry args={[0.06, 0.06, 1.6, 6]} />
-          {LEGS.map((a) => (
-            <Instance key={a} position={[Math.sin(a) * 1.55, 0.7, Math.cos(a) * 1.55]} rotation={[-Math.cos(a) * 0.45, 0, Math.sin(a) * 0.45]} />
-          ))}
-        </Instances>
-        <mesh position={[0, 1.5, 0]} material={MAT.gold} castShadow receiveShadow>
-          <cylinderGeometry args={[1.2, 1.5, 1.6, 20]} />
-        </mesh>
-        <mesh position={[0, 2.9, 0]} material={MAT.panel} castShadow>
-          <cylinderGeometry args={[0.9, 1.15, 1.2, 20]} />
-        </mesh>
-        <mesh position={[0, 3.8, 0]} material={MAT.panel} castShadow>
-          <coneGeometry args={[0.9, 0.6, 20]} />
-        </mesh>
-        <mesh position={[0, 3.0, 1.06]} material={MAT.glass}>
-          <planeGeometry args={[0.6, 0.4]} />
-        </mesh>
-        <mesh position={[0, 1.1, 1.52]} material={MAT.glass}>
-          <boxGeometry args={[0.4, 1.8, 0.05]} />
-        </mesh>
+        <Shell
+          name="lander"
+          nodes={nodes}
+          grey={
+            <>
+              <Instances limit={4} material={MAT.panel} frustumCulled={false}>
+                <cylinderGeometry args={[0.06, 0.06, 1.6, 6]} />
+                {LEGS.map((a) => (
+                  <Instance key={a} position={[Math.sin(a) * 1.55, 0.7, Math.cos(a) * 1.55]} rotation={[-Math.cos(a) * 0.45, 0, Math.sin(a) * 0.45]} />
+                ))}
+              </Instances>
+              <mesh position={[0, 1.5, 0]} material={MAT.gold} castShadow receiveShadow>
+                <cylinderGeometry args={[1.2, 1.5, 1.6, 20]} />
+              </mesh>
+              <mesh position={[0, 2.9, 0]} material={MAT.panel} castShadow>
+                <cylinderGeometry args={[0.9, 1.15, 1.2, 20]} />
+              </mesh>
+              <mesh position={[0, 3.8, 0]} material={MAT.panel} castShadow>
+                <coneGeometry args={[0.9, 0.6, 20]} />
+              </mesh>
+              <mesh position={[0, 3.0, 1.06]} material={MAT.glass}>
+                <planeGeometry args={[0.6, 0.4]} />
+              </mesh>
+              <mesh position={[0, 1.1, 1.52]} material={MAT.glass}>
+                <boxGeometry args={[0.4, 1.8, 0.05]} />
+              </mesh>
+            </>
+          }
+        />
         <mesh position={[0, 0.55, 0]} material={on || flying ? GLOW.cableOn : GLOW.dark}>
           <cylinderGeometry args={[0.45, 0.6, 0.12, 16]} />
         </mesh>

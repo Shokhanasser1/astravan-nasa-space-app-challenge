@@ -2,6 +2,7 @@ import { Instance, Instances } from '@react-three/drei';
 import { LAYOUT } from '../layout';
 import { GLOW, MAT } from './materials';
 import type { TapHandler } from './tap';
+import { Shell } from '../models/Shell';
 
 // Plant look per garden health 0..4 (0 wilted and brown, 4 tall with fruit). Scene styling, not a game number.
 const HEIGHT = [0.12, 0.28, 0.45, 0.62, 0.78];
@@ -19,9 +20,19 @@ export function Garden({ on, plant, tap }: { on: boolean; plant: number; tap: Ta
   const h = HEIGHT[p];
   return (
     <group position={[x, 0, z]} onClick={tap}>
-      <mesh position={[0, BASE / 2, 0]} material={MAT.panel} castShadow receiveShadow>
-        <cylinderGeometry args={[1.3, 1.35, BASE, 32]} />
-      </mesh>
+      <Shell
+        name="garden"
+        grey={
+          <>
+            <mesh position={[0, BASE / 2, 0]} material={MAT.panel} castShadow receiveShadow>
+              <cylinderGeometry args={[1.3, 1.35, BASE, 32]} />
+            </mesh>
+            <mesh position={[0, BASE, 0]} material={MAT.dome}>
+              <sphereGeometry args={[1.2, 24, 12, 0, Math.PI * 2, 0, Math.PI / 2]} />
+            </mesh>
+          </>
+        }
+      />
       <Instances limit={SPOTS.length} frustumCulled={false}>
         <coneGeometry args={[0.09, 1, 6]} />
         <meshStandardMaterial roughness={0.8} />
@@ -44,9 +55,6 @@ export function Garden({ on, plant, tap }: { on: boolean; plant: number; tap: Ta
       )}
       <mesh position={[0, 1.15, 0]} rotation-x={-Math.PI / 2} material={on ? GLOW.grow : GLOW.dark}>
         <torusGeometry args={[0.45, 0.025, 6, 24]} />
-      </mesh>
-      <mesh position={[0, BASE, 0]} material={MAT.dome}>
-        <sphereGeometry args={[1.2, 24, 12, 0, Math.PI * 2, 0, Math.PI / 2]} />
       </mesh>
     </group>
   );

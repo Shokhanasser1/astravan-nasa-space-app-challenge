@@ -6,6 +6,7 @@ import { DOOR_AZ, LAYOUT } from '../layout';
 import { camState } from '../anim';
 import { GLOW, MAT } from './materials';
 import type { TapHandler } from './tap';
+import { Shell } from '../models/Shell';
 
 const R = 1.7; // shell radius; 3.6 m tall with the dome (docs/layout.md)
 const GAP = THREE.MathUtils.degToRad(70); // open side of the interior: the window towards the hub
@@ -17,18 +18,26 @@ export function Habitat({ on, wall, tap }: { on: boolean; wall: number; tap: Tap
   return (
     <group position={[x, 0, z]}>
       <group onClick={tap}>
-        <mesh position={[0, 1.4, 0]} material={MAT.panel} castShadow receiveShadow>
-          <cylinderGeometry args={[R, R, 2.4, 32, 1, true]} />
-        </mesh>
-        <mesh position={[0, 2.6, 0]} scale={[1, 0.6, 1]} material={MAT.panel} castShadow>
-          <sphereGeometry args={[R, 32, 10, 0, Math.PI * 2, 0, Math.PI / 2]} />
-        </mesh>
-        <mesh position={[0, 0.1, 0]} material={MAT.gold}>
-          <cylinderGeometry args={[R + 0.05, R + 0.05, 0.2, 32]} />
-        </mesh>
-        <mesh position={[Math.sin(DOOR_AZ) * (R + 0.01), 1.1, Math.cos(DOOR_AZ) * (R + 0.01)]} rotation-y={DOOR_AZ} material={MAT.glass}>
-          <planeGeometry args={[0.9, 1.8]} />
-        </mesh>
+        <Shell
+          name="hab"
+          turn={DOOR_AZ}
+          grey={
+            <>
+              <mesh position={[0, 1.4, 0]} material={MAT.panel} castShadow receiveShadow>
+                <cylinderGeometry args={[R, R, 2.4, 32, 1, true]} />
+              </mesh>
+              <mesh position={[0, 2.6, 0]} scale={[1, 0.6, 1]} material={MAT.panel} castShadow>
+                <sphereGeometry args={[R, 32, 10, 0, Math.PI * 2, 0, Math.PI / 2]} />
+              </mesh>
+              <mesh position={[0, 0.1, 0]} material={MAT.gold}>
+                <cylinderGeometry args={[R + 0.05, R + 0.05, 0.2, 32]} />
+              </mesh>
+              <mesh position={[Math.sin(DOOR_AZ) * (R + 0.01), 1.1, Math.cos(DOOR_AZ) * (R + 0.01)]} rotation-y={DOOR_AZ} material={MAT.glass}>
+                <planeGeometry args={[0.9, 1.8]} />
+              </mesh>
+            </>
+          }
+        />
         <Instances limit={2} material={on ? GLOW.window : GLOW.dark} frustumCulled={false}>
           <planeGeometry args={[0.55, 0.38]} />
           {WINDOW_AZ.map((a) => (
