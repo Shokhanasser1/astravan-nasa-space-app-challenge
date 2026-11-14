@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { command } from './keys';
-import { pickAim, type AimTarget } from './aim';
+import { AIM_REACH, pickAim, type AimTarget } from './aim';
 import { TRAVEL, choices, resolve, type Ctx } from './act';
 import { board, initialModel, reducer, type Model } from '../state/game';
 import { week as realWeek } from '../engine/golden';
@@ -44,8 +44,8 @@ describe('game keys', () => {
 
 describe('aim: the building in front', () => {
   const T: AimTarget[] = [
-    { k: 'ls', x: 0, z: -10, r: 2 }, // straight ahead (yaw 0 looks along −z)
-    { k: 'gh', x: 10, z: 0, r: 1.5 }, // to the right
+    { k: 'ls', x: 0, z: -3, r: 2 }, // straight ahead (yaw 0 looks along −z), edge 1 m away
+    { k: 'gh', x: 3, z: 0, r: 1.5 }, // to the right
   ];
 
   it('picks the building straight ahead', () => {
@@ -61,20 +61,31 @@ describe('aim: the building in front', () => {
     expect(pickAim(0, 50, 0, [{ k: 'ls', x: 0, z: 0, r: 2 }])).toBeNull();
   });
 
+  it('only next to it: within AIM_REACH of the edge, not from across the base', () => {
+    const at = (gap: number): AimTarget[] => [{ k: 'ws', x: 0, z: -(1.5 + gap), r: 1.5 }];
+    expect(pickAim(0, 0, 0, at(AIM_REACH - 0.1))).toBe('ws');
+    expect(pickAim(0, 0, 0, at(AIM_REACH + 0.1))).toBeNull();
+    expect(pickAim(0, 0, 0, at(10))).toBeNull(); // the old 30 m reach is gone
+  });
+
+  it('the power hub is a target too', () => {
+    expect(pickAim(0, 0, 0, [{ k: 'hub', x: 0, z: -2, r: 0.6 }])).toBe('hub');
+  });
+
   it('a building a little off the centre still counts; far off it does not', () => {
-    const ahead = (deg: number) => -Math.tan((deg * Math.PI) / 180) * 10; // x of a point `deg` to the right at 10 m
-    expect(pickAim(0, 0, 0, [{ k: 'ls', x: -ahead(20), z: -10, r: 2 }])).toBe('ls');
-    expect(pickAim(0, 0, 0, [{ k: 'ls', x: -ahead(40), z: -10, r: 2 }])).toBeNull();
+    const ahead = (deg: number) => -Math.tan((deg * Math.PI) / 180) * 3; // x of a point `deg` to the right at 3 m
+    expect(pickAim(0, 0, 0, [{ k: 'ls', x: -ahead(30), z: -3, r: 1 }])).toBe('ls');
+    expect(pickAim(0, 0, 0, [{ k: 'ls', x: -ahead(50), z: -3, r: 1 }])).toBeNull();
   });
 
   it('standing inside a building aims at it', () => {
-    expect(pickAim(0, -10, Math.PI, T)).toBe('ls');
+    expect(pickAim(0, -3, Math.PI, T)).toBe('ls');
   });
 
   it('of two in line, the one nearer the centre of the view wins', () => {
     const two: AimTarget[] = [
-      { k: 'ws', x: 1.5, z: -8, r: 1.5 },
-      { k: 'sc', x: 0, z: -16, r: 1 },
+      { k: 'ws', x: 1.2, z: -2.5, r: 1 },
+      { k: 'sc', x: 0, z: -3.5, r: 1 },
     ];
     expect(pickAim(0, 0, 0, two)).toBe('sc');
   });
