@@ -17,6 +17,10 @@ Space Apps: "all resources, even open source resources, must be cited", or NASA 
 | NASA 3D Resources, Astromaterials 3D (keep NASA ID + credit) | Sketchfab models without CC0/CC BY-compatible terms checked |
 | | Competitors' code or art; anything without a stated licence; AI-generated images, audio, video |
 
+No asset made with tools of Chinese-owned companies (Tripo/VAST, Hunyuan3D/Tencent): the Space Apps 2026 guide
+reviews activity with Chinese-owned entities. No AI image or video showing anyone under 18, no flags, NASA logos or
+mission identifiers; every AI image or video carries a visible "AI" mark (Project Submission Guide 2026).
+
 If the licence is unclear, stop and tell the teammate; do not add the file.
 
 ## 2. Place the files

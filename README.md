@@ -32,6 +32,18 @@ Pick a real week for a whole class: `/?week=2021-10-25`.
 - `CREDITS.md` — every third-party file and its licence
 - `CLAUDE.md`, `.claude/` — rules and skills for Claude Code
 
+## Use of Super Intelligence (SI)
+
+Following the Space Apps 2026 Project Submission Guide, SI use is acknowledged in text and metadata:
+- **Code:** parts of the code, tests and build scripts were written with Claude Code (Anthropic) and reviewed by the team.
+  Log: `docs/AI-USE.md`.
+- **Data:** NASA data files are downloaded and converted by scripts (some SI-assisted); the measurements themselves are
+  unchanged NASA records (LRO CRaTER via RadLab and iSWA, DONKI, SDO, GIBS).
+- **Audio:** English and Russian narration uses the device's text-to-speech (`speechSynthesis`); Uzbek lines are
+  recorded by adult team members.
+- **Images and video:** any SI-generated image or video carries a visible "AI" mark and contains no NASA logos,
+  flags or mission identifiers, and no likeness of anyone under 18.
+
 ## Licence
 
 MIT for our code (`LICENSE`); third-party components keep their own licences (`CREDITS.md`).

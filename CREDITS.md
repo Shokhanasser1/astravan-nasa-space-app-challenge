@@ -32,6 +32,14 @@ Solar images: "Courtesy of NASA/SDO and the AIA, EVE, and HMI science teams."
 |---|---|---|---|---|
 | | | | | |
 
+## SI (AI) use
+
+| What | Tool | Note |
+|---|---|---|
+| Code, tests, build and data scripts (parts) | Claude Code (Anthropic) | Reviewed by the team; log in `docs/AI-USE.md` |
+| English and Russian narration | Device text-to-speech (`speechSynthesis`) | Synthetic voice, acknowledged here and on the Data page |
+| SI images and video (if used) | listed per file in the tables above | Visible "AI" mark; no NASA logos, flags, mission identifiers; no likeness of minors |
+
 ## Development and server tools (not shipped)
 
 | What | Licence | Link |
