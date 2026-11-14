@@ -33,7 +33,12 @@
     ],
     "deny": [
       "Read(.env)",
+      "Read(**/.env)",
+      "Read(./.env)",
+      "Read(./scripts/data/.env)",
+      "Read(./server/.env)",
       "Read(.env.*)",
+      "Read(**/.env.*)",
       "Read(!.env.example)",
       "Bash(git push *--force*)",
       "Bash(git push *-f *)",
