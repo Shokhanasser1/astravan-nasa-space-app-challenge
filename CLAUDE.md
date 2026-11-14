@@ -24,14 +24,17 @@ Done means: `npm run verify` passes (check + typecheck + tests + build), and sce
 
 ## Lanes (developer guide §07) — one owner, one folder, no two agents on one file
 
+Roles as of 14 Nov, 14:00 (replaces the developer guide's table; full plan: `docs/PLAN.md`):
+
 | Lane | Owner | Folder | Done when |
 |---|---|---|---|
 | A Engine | Samandar | `src/engine` | `rules.ts` = port of rules_engine.py; `plans.test.ts`: A 7/14, B 3/19, C 8/9; 14 weeks load |
 | B State and flow | Samandar | `src/state` | Reducer, phases, cards, alert, emergency day, express mission; Plan A through the reducer gives the same result |
 | C Scene | Shoxjahon aka | `src/scene` | Base, states, storm, camera, day change, launch; five state screenshots; 30 fps on a phone |
-| D Page layer | Shoxjahon aka | `src/ui` | Gauges, labels, four modals, truth screen, language; fits 360×640; Uzbek never overflows |
-| E Models and video | Aminjon, Asilbek | `public/models` | Six models ≤ 1 MB each; `CREDITS.md` complete |
-| F Text and data | Sarvar | `src/i18n`, `docs` | en/uz texts, Data page, facts; no key visible on screen; every number has a source |
+| D Interface | Asilbek | `src/ui`, `src/index.css`, `public/art` | Design system, gauges, labels, modals, truth screen, language; fits 360×640; Uzbek never overflows |
+| E 3D models | Sarvar | `public/models` | Six models in one style, ≤ 1 MB each (`npm run glb`); `CREDITS.md` with AI marks |
+| F Speech and text | Aminjon | `src/i18n`, `public/audio`, `docs` | Pitch, voice lines, en/uz texts, project page, AI log; no key visible on screen |
+| Data | Claude (Samandar reviews) | `scripts/data`, `public/data` | DONKI/GIBS/SDO/Horizons files, facts with sources |
 
 The only shared contract is the `View` type in `src/state/game.ts`; only Samandar changes it.
 `src/engine/rules.ts` is a STUB with the right signatures until lane A replaces it.
