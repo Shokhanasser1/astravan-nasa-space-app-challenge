@@ -30,6 +30,7 @@ Helioviewer.org."). Each week's exact request URLs are in `public/data/media/<we
 | postprocessing 6.39.6 | Zlib | https://github.com/pmndrs/postprocessing |
 | Tailwind CSS 4.3.5 (generated CSS) | MIT | https://github.com/tailwindlabs/tailwindcss |
 | Workbox via vite-plugin-pwa 2.0.0 (service worker) | MIT | https://github.com/vite-pwa/vite-plugin-pwa |
+| ASTRA - Junior Astronaut Mission Trainer (procedural models: habitat with its regolith shield, greenhouse, lab, lander, hexagonal pads, equipment cabinet, sun-tracking solar arrays, battery bank, ice drill, science scout, their material kit and surface detail, and their Moon light recipe; `src/vendor/astra/`, commit 843d779), taken at the team lead's request, marked changes `HB7:` | MIT, (c) 2026 ASTRA contributors (`src/vendor/astra/LICENSE`) | https://github.com/HamzaAli0911/astra-mission-trainer |
 | MediaPipe Tasks Vision 1.2.0 (hand tracking, `?hands` only; WASM served from our host) and the Hand Landmarker model (float16, downloaded from Google's model store on first use) | Apache-2.0 | https://github.com/google-ai-edge/mediapipe |
 
 ## Models, textures, sounds, fonts (`public/models`, `public/textures`, `public/audio`)
@@ -61,3 +62,6 @@ Helioviewer.org."). Each week's exact request URLs are in `public/data/media/<we
 | Claude Code skill `webapp-testing` | Apache-2.0 (Anthropic) | https://github.com/anthropics/skills |
 | Claude Code skills `react-performance`, `vite-patterns`, `e2e-testing`, `ui-demo`, `i18n-sync` | MIT (Affaan Mustafa, ECC) | `.claude/skills/*/LICENSE` |
 | three.js guidelines in `.claude/rules/three.md` (adapted) | MIT (ui-ux-pro-max) | https://github.com/nextlevelbuilder/ui-ux-pro-max-skill |
+| Lexend variable font (`@fontsource-variable/lexend` 5.2.11) | OFL-1.1 | https://github.com/googlefonts/lexend |
+| Lucide icons (`lucide-react` 0.468.0) | ISC | https://lucide.dev |
+| Interface style (colours, type, panels, buttons, icon style) adapted from ASTRA by HamzaAli0911; no text, names or images taken | MIT | https://github.com/HamzaAli0911/astra-mission-trainer |

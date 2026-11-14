@@ -11,13 +11,26 @@ import { Garden } from './parts/Garden';
 import { Workshop } from './parts/Workshop';
 import { Scout } from './parts/Scout';
 import { Lander } from './parts/Lander';
+import { BatteryBank, IceDrill, SolarArrays } from './AstraProps';
 import { SolarWing } from './parts/SolarWing';
+import { rich } from './rich';
 import { Cables, Hub } from './parts/Hub';
 import { Dish } from './parts/Dish';
 import { tapOnly } from './parts/tap';
 import { glowColor } from './parts/materials';
 import { features } from '../config/features';
 import { useAim } from '../controls/bus';
+import { AstraMerge, AstraPads, astraLook, faceCentre } from './AstraBase';
+
+/** ASTRA's hexagonal pads under the outer buildings (width in metres, about the building's footprint). */
+const PADS = (
+  [
+    [LAYOUT.garden, 3.8],
+    [LAYOUT.workshop, 4.0],
+    [LAYOUT.lander, 4.8],
+    [LAYOUT.scout, 3.4],
+  ] as const
+).map(([[x, z], size]) => ({ x, z, size, turn: faceCentre(x, z) }));
 
 /**
  * Lane C (Shoxjahon aka). The 3D base: renders a View, reports taps. NEVER computes game numbers.
@@ -49,6 +62,8 @@ export function BaseScene({ view, onTap, onUndo }: { view: View; onTap: (k: Mach
     <group>
       <Terrain sunAzDeg={sunAzimuth(view)} />
       <Decor />
+      {astraLook && <AstraPads pads={PADS} />}
+      {astraLook && <AstraMerge />}
       <group onContextMenu={undo.ls}>
         <Habitat on={a.ls > 0} wall={view.wall} tap={tap.ls} />
       </group>
@@ -64,7 +79,9 @@ export function BaseScene({ view, onTap, onUndo }: { view: View; onTap: (k: Mach
       <group onContextMenu={undo.launch}>
         <Lander on={a.launch > 0} phase={view.phase} tap={tap.launch} />
       </group>
-      <SolarWing />
+      {rich ? <SolarArrays view={view} /> : <SolarWing />}
+      {rich && <BatteryBank view={view} />}
+      {rich && <IceDrill />}
       <Hub batteries={view.batteries} />
       <Cables alloc={a} />
       <Dish />

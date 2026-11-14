@@ -26,10 +26,12 @@ const overview = params.get('cam') === 'overview';
 /** Dev/shot only: exposes renderer.info (calls, triangles) for scripts/shot.mjs and agents. */
 function Probe() {
   const gl = useThree((s) => s.gl);
+  const scene = useThree((s) => s.scene);
   // Post effects render several passes per frame; count the whole frame, not only the last pass.
   gl.info.autoReset = false;
   useFrame(() => {
-    (window as unknown as { __hb7?: object }).__hb7 = { calls: gl.info.render.calls, triangles: gl.info.render.triangles };
+    // (scene: for cost checks per object by agents, dev and ?shot only)
+    (window as unknown as { __hb7?: object }).__hb7 = { calls: gl.info.render.calls, triangles: gl.info.render.triangles, scene };
     gl.info.reset();
   });
   return null;
@@ -74,6 +76,7 @@ export function Stage({ view, onTap, onUndo }: { view: View; onTap: (k: Machine)
         gl={{ antialias: false, powerPreference: 'high-performance' }}
         onCreated={({ gl, camera }) => {
           gl.toneMapping = THREE.ACESFilmicToneMapping;
+          gl.toneMappingExposure = 1.32; // ASTRA's Moon exposure (Light.tsx)
           gl.outputColorSpace = THREE.SRGBColorSpace;
           if (overview) camera.lookAt(0, 1, 0);
         }}

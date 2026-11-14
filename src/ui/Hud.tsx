@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState, type Dispatch } from 'react';
+import { ArrowRight, Check, Music, Tablet as TabletIcon, VolumeX } from 'lucide-react';
 import { board as selectBoard, truth as selectTruth, type Action, type Model, type View } from '../state/game';
 import type { Lang } from '../i18n/t';
 import { audio } from '../audio/audio';
@@ -60,7 +61,7 @@ function TopBar({ lang, setLang, sound, setSound, tr }: Pick<Props, 'lang' | 'se
         </Btn>
       ))}
       <Btn data-testid="sound" active={sound} onClick={() => setSound(!sound)} aria-label={tr('ui.hud.sound')}>
-        ♪
+        {sound ? <Music size={20} aria-hidden="true" /> : <VolumeX size={20} aria-hidden="true" />}
       </Btn>
     </div>
   );
@@ -148,8 +149,9 @@ export function Hud({ model, view, dispatch, lang, setLang, sound, setSound, onS
       {screen !== 'game' && !overlay && (
         <div className="pointer-events-auto flex flex-col items-center gap-4 self-center">
           <Briefing tr={tr} lang={lang} sound={sound} />
-          <Btn data-testid="start-mission" onClick={onStart}>
+          <Btn data-testid="start-mission" className="primary big" onClick={onStart}>
             {tr('ui.start.mission')}
+            <ArrowRight size={20} aria-hidden="true" />
           </Btn>
           {onContinue && (
             <Btn data-testid="continue" onClick={onContinue}>
@@ -199,8 +201,8 @@ export function Hud({ model, view, dispatch, lang, setLang, sound, setSound, onS
           )}
           {planning && features.controls && !tabletOpen && !touchUi && (
             // (Phones and tablets have the 📟 button of the action pad.) Dark: it often sits on a lit wall.
-            <Btn data-testid="tablet-open" className="pointer-events-auto self-center !bg-black/70 text-sm" onClick={() => setTabletOpen(true)}>
-              📟 {tr('ui.controls.tablet')}
+            <Btn data-testid="tablet-open" className="pointer-events-auto self-center text-sm" onClick={() => setTabletOpen(true)}>
+              <TabletIcon size={18} aria-hidden="true" /> {tr('ui.controls.tablet')}
               <Kbd k="Tab" />
             </Btn>
           )}
@@ -208,11 +210,12 @@ export function Hud({ model, view, dispatch, lang, setLang, sound, setSound, onS
           <Gauges model={model} board={phase === 'plan' ? board : null} tr={tr} />
           <Btn
             data-testid={phase === 'plan' ? 'confirm-day' : 'next'}
-            className="pointer-events-auto w-full text-lg"
+            className="primary big pointer-events-auto w-full"
             disabled={confirmBlocked}
             onClick={() => dispatch(primary.action)}
           >
             {primary.label}
+            {phase === 'plan' ? <Check size={20} aria-hidden="true" /> : <ArrowRight size={20} aria-hidden="true" />}
             {features.controls && <Kbd k="Enter" />}
           </Btn>
         </div>

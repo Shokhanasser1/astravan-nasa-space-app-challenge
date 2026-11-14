@@ -1,17 +1,140 @@
 @import 'tailwindcss';
+@import '@fontsource-variable/lexend';
 
-/* Design tokens: Asilbek replaces these with the interface kit (colours, type). */
+/* Design tokens: the interface follows ASTRA's visual language (navy glass, Lexend, orange primary, cyan focus). */
 @theme {
-  --color-space: #000000;
+  --color-space: #050816;
   --color-regolith: #8a8a8a;
   --color-sun: #fff1dc;
   --color-earth: #2a3f66;
-  --color-alert: #f2c94c;
-  --color-measured: #7fd1ff;
-  --color-computed: #b9a6ff;
-  --color-rule: #c7c7c7;
+  --color-alert: #ffc23d;
+  --color-measured: #5ee0ff;
+  --color-computed: #c48bff;
+  --color-rule: #c2cbec;
   --color-story: #ffd59e;
-  --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --color-navy: #0a1028;
+  --color-accent: #ff8a3d;
+  --color-good: #3ee39a;
+  --font-sans: 'Lexend Variable', 'Lexend', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+
+:root {
+  --bg-0: #050816;
+  --bg-1: #0a1028;
+  --bg-2: #121b3c;
+  --glass: linear-gradient(180deg, rgba(22, 32, 68, 0.88), rgba(12, 18, 42, 0.88));
+  --line: rgba(150, 175, 255, 0.16);
+  --line-strong: rgba(170, 195, 255, 0.3);
+  --text-2: #c2cbec;
+  --text-3: #8b96c0;
+  --accent: #ff8a3d;
+  --accent-hi: #ffa463;
+  --accent-ink: #2a1100;
+  --cyan: #5ee0ff;
+  --c-power: #ffc94a;
+  --c-o2: #5ee0ff;
+  --c-dose: #c48bff;
+  --shadow: 0 18px 44px rgba(0, 0, 0, 0.45);
+  --blur: blur(16px) saturate(140%);
+  color-scheme: dark;
+}
+
+body {
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  font-feature-settings: 'tnum' 1;
+}
+:focus-visible {
+  outline: 3px solid var(--cyan);
+  outline-offset: 2px;
+}
+
+/* Navy glass panel: rounded, a thin light border, soft shadow. */
+.glass {
+  background: var(--glass);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
+}
+/* Buttons: secondary (glass), on/primary (orange, with a hard lower edge). */
+.abtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 48px;
+  min-width: 48px;
+  padding: 0 16px;
+  border-radius: 14px;
+  font-weight: 600;
+  background: rgba(150, 175, 255, 0.12);
+  border: 1px solid var(--line-strong);
+  color: #f3f6ff;
+  transition: transform 0.12s, background 0.15s;
+}
+.abtn:hover:not(:disabled) {
+  background: rgba(150, 175, 255, 0.22);
+}
+.abtn:active:not(:disabled) {
+  transform: translateY(1px) scale(0.98);
+}
+.abtn:disabled {
+  opacity: 0.45;
+  filter: grayscale(0.4);
+}
+.abtn.primary,
+.abtn.on {
+  background: linear-gradient(180deg, var(--accent-hi), var(--accent));
+  border-color: transparent;
+  color: var(--accent-ink);
+  box-shadow: 0 4px 0 #b9541a, 0 10px 24px rgba(255, 138, 61, 0.28);
+}
+.abtn.primary:hover:not(:disabled),
+.abtn.on:hover:not(:disabled) {
+  background: linear-gradient(180deg, #ffb57c, #ff9550);
+}
+.abtn.primary:active:not(:disabled) {
+  box-shadow: 0 2px 0 #b9541a, 0 6px 14px rgba(255, 138, 61, 0.25);
+}
+.abtn.big {
+  min-height: 56px;
+  padding: 0 24px;
+  font-size: 1.06rem;
+  border-radius: 16px;
+}
+.eyebrow {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.kbd {
+  display: inline-grid;
+  place-items: center;
+  min-width: 1.4rem;
+  height: 1.4rem;
+  padding: 0 4px;
+  border-radius: 6px;
+  border: 1px solid var(--line-strong);
+  background: rgba(5, 8, 22, 0.55);
+  color: var(--text-2);
+  font-size: 0.68rem;
+  font-weight: 600;
+  line-height: 1;
+}
+.abtn.primary .kbd,
+.abtn.on .kbd {
+  background: rgba(42, 17, 0, 0.18);
+  border-color: rgba(42, 17, 0, 0.35);
+  color: var(--accent-ink);
+}
+.title-grad {
+  background: linear-gradient(90deg, #ffa463, #ff5470);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
 html,
@@ -177,23 +300,15 @@ body,
   }
 }
 
-/* Visor holograms (src/ui/play/Holo.tsx): cyan glow, faint scan lines, a soft fade-in. No flashing (≤ 3/s rule). */
+/* Visor holograms (src/ui/play/Holo.tsx): navy glass with a cyan hairline, a soft fade-in. No flashing (<= 3/s rule). */
 .holo {
   position: relative;
-  border: 1px solid rgb(127 209 255 / 0.55);
-  background: linear-gradient(180deg, rgb(18 58 88 / 0.62), rgb(4 18 32 / 0.7));
-  box-shadow: 0 0 18px rgb(127 209 255 / 0.22), inset 0 0 22px rgb(127 209 255 / 0.1);
-  color: #e3f7ff;
-  text-shadow: 0 0 6px rgb(127 209 255 / 0.45);
-  backdrop-filter: blur(3px);
-}
-.holo::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  border-radius: inherit;
-  background: repeating-linear-gradient(0deg, rgb(127 209 255 / 0.06) 0 1px, transparent 1px 3px);
+  border: 1px solid var(--line-strong);
+  background: var(--glass);
+  box-shadow: var(--shadow), inset 0 0 0 1px rgb(94 224 255 / 0.06);
+  color: #f3f6ff;
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
 }
 @keyframes holo-in {
   from { opacity: 0; transform: translateY(6px) scale(0.98); filter: blur(2px); }

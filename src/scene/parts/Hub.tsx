@@ -2,6 +2,21 @@ import { useMemo } from 'react';
 import { Instance, Instances } from '@react-three/drei';
 import { LAYOUT, RADIUS, type XZ } from '../layout';
 import { GLOW, MAT } from './materials';
+import * as THREE from 'three';
+import { astraLook } from '../AstraBase';
+import { bake } from '../astra/bake';
+import { finalize } from '../../vendor/astra/scene/kit';
+import { C, cabinet } from '../../vendor/astra/scene/models/common';
+
+/** ASTRA's equipment cabinet as the hub's body (door outline, hinges, handle), baked into a few meshes. */
+const cabinetBody = (() => {
+  const g = new THREE.Group();
+  if (!astraLook) return g;
+  cabinet(g, 1.0, 0.8, 0.8, C.off);
+  finalize(g);
+  bake(g, { keep: [], live: [] });
+  return g;
+})();
 
 /**
  * Power hub: one lamp per battery of the day (lit = still to place, dark = placed). At least six lamps;
@@ -18,9 +33,13 @@ export function Hub({ batteries }: { batteries?: { left: number; total: number }
   });
   return (
     <group position={[x, 0, z]} rotation-y={-Math.PI / 4}>
-      <mesh position={[0, 0.4, 0]} material={MAT.panel} receiveShadow>
-        <boxGeometry args={[1.0, 0.8, 0.8]} />
-      </mesh>
+      {astraLook ? (
+        <primitive object={cabinetBody} />
+      ) : (
+        <mesh position={[0, 0.4, 0]} material={MAT.panel} receiveShadow>
+          <boxGeometry args={[1.0, 0.8, 0.8]} />
+        </mesh>
+      )}
       <Instances limit={10} material={GLOW.cableOn} frustumCulled={false}>
         <cylinderGeometry args={[0.06, 0.06, 0.12, 10]} />
         {spots.slice(0, left).map((p, i) => (

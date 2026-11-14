@@ -6,6 +6,7 @@ import { GLOW, MAT } from './materials';
 import type { TapHandler } from './tap';
 import { Shell, type NodeRef } from '../models/Shell';
 import { yaw } from '../models/kit';
+import { AstraLab, astraLook, faceCentre } from '../AstraBase';
 
 /**
  * Workshop → Workshop (wall levels). The roof lamp glows when it has batteries. With the NASA model the robot `arm`
@@ -24,6 +25,10 @@ export function Workshop({ on, tap }: { on: boolean; tap: TapHandler }) {
   });
   return (
     <group position={[x, 0, z]} onClick={tap}>
+      {astraLook ? (
+        <AstraLab on={on} turn={faceCentre(x, z)} />
+      ) : (
+        <>
       {/* the model's front (+Z) turns to the door side (−X) */}
       <Shell
         name="workshop"
@@ -46,6 +51,8 @@ export function Workshop({ on, tap }: { on: boolean; tap: TapHandler }) {
       <mesh position={[-0.6, 2.02, 0.6]} material={on ? GLOW.cableOn : GLOW.dark}>
         <boxGeometry args={[0.3, 0.2, 0.3]} />
       </mesh>
+        </>
+      )}
     </group>
   );
 }

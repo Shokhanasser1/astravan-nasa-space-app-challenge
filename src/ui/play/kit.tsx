@@ -13,9 +13,7 @@ export function Btn(props: ButtonHTMLAttributes<HTMLButtonElement> & { active?: 
   return (
     <button
       {...rest}
-      className={`min-h-12 min-w-12 rounded-xl px-3 py-2 font-semibold transition active:scale-95 disabled:opacity-40 ${
-        active ? 'bg-white text-black' : 'bg-white/10 text-white'
-      } ${className}`}
+      className={`abtn ${active ? 'on' : ''} ${className}`}
     />
   );
 }
@@ -33,5 +31,5 @@ export function Delta({ from, to, unit = '' }: { from: number; to: number; unit?
 }
 
 export function Panel({ className = '', ...rest }: HTMLAttributes<HTMLDivElement>) {
-  return <div {...rest} className={`pointer-events-auto rounded-2xl bg-black/70 p-3 backdrop-blur ${className}`} />;
+  return <div {...rest} className={`pointer-events-auto glass rounded-[20px] p-3 ${className}`} />;
 }
