@@ -9,12 +9,14 @@ here (use the `add-asset` skill). This project is not an official NASA product a
 |---|---|---|---|
 | NASA LRO CRaTER via RadLab (OSDR) | 2009-06-26 → 2024-06-18, hourly | Dose level each day, dosimeter clicks, truth curve | https://visualization.osdr.nasa.gov/radlab/ |
 | NASA DONKI (FLR notifications, SEP) | per week | Flare alerts and particle arrival times | https://ccmc.gsfc.nasa.gov/tools/DONKI/ |
-| NASA SDO (AIA 131 Å browse) | per storm week | The real Sun photo on the tablet and in the truth sequence | https://sdo.gsfc.nasa.gov/ |
-| NASA EOSDIS GIBS (MODIS/VIIRS true colour) | per day | The Earth of that day on the globe | https://nasa-gibs.github.io/gibs-api-docs/ |
-| JPL Horizons (check) | per week | Sun direction, Earth position and phase (computed) | https://ssd.jpl.nasa.gov/horizons/ |
+| NASA SDO (AIA 131 Å browse, cropped and resized) | 2016–2024 weeks | The real Sun photo on the tablet and in the truth sequence | https://sdo.gsfc.nasa.gov/ |
+| NASA SDO AIA 131 Å rendered by Helioviewer.org (NASA/ESA Helioviewer Project) | 2012–2014 weeks (the SDO browse archive starts in 2016) | Same as above | https://api.helioviewer.org/docs/v2/ |
+| NASA EOSDIS GIBS (VIIRS SNPP true colour from 2016; MODIS Terra with gaps filled from MODIS Aqua before) | per day, all 14 weeks | The Earth of that day on the globe | https://nasa-gibs.github.io/gibs-api-docs/ |
+| JPL Horizons (NASA JPL Solar System Dynamics) | per day, all 14 weeks | Sun direction, Earth position and phase in `src/engine/sky.json` (computed, `scripts/data/sky.py`) | https://ssd.jpl.nasa.gov/horizons/ |
 | NASA LRO LOLA heights, NASA GSFC Planetary Geodesy Data Archive: Site01 "Connecting ridge" 5 m/px (Barker et al. 2021) and 80–90°S 20 m/px (Barker et al. 2023) | static | The real ground and skyline around the base in the 3D demo (`public/data/terrain/site.json`, `scripts/data/moon_terrain.py`) | https://pgda.gsfc.nasa.gov/products/78 · https://pgda.gsfc.nasa.gov/products/90 |
 
-Solar images: "Courtesy of NASA/SDO and the AIA, EVE, and HMI science teams."
+Solar images: "Courtesy of NASA/SDO and the AIA, EVE, and HMI science teams." (2012–2014 weeks: "… Image rendered by
+Helioviewer.org."). Each week's exact request URLs are in `public/data/media/<week>/manifest.json`.
 
 ## Code shipped in the game
 

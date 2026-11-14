@@ -145,3 +145,54 @@ terms are unclear, prefer Kenney/Quaternius (CC0), NASA 3D, or the grey code sha
 | https://vite-pwa-org.netlify.app/guide/service-worker-precache | What the offline cache includes |
 | https://vercel.com/docs/deployment-protection | Why not Vercel: judges may hit a login page |
 | https://developers.cloudflare.com/pages/configuration/preview-deployments/ | Frozen copy: each deployment keeps its own URL |
+
+## 9. Found 15 Nov: second pass over the team's links and NASA services
+
+Second pass over `havolalar.md` after the switch to a full 3D game (Claude Sonnet agents for code/art/data and for
+rules/pitch, Gemini for past challenges and NASA services; every claim below was re-checked, ✓ = opened on 15 Nov).
+Nothing in the collection covers character controllers, third-person cameras, joysticks or low-sun shadows — for those
+use context7 (drei, R3F) and the web.
+
+**NASA services (all keyless, build time only)**
+
+| Service | Request | What it gives us | |
+|---|---|---|---|
+| Helioviewer (SDO AIA from 2010) | `https://api.helioviewer.org/v2/getClosestImage/?date=…Z&sourceId=9`, then `takeScreenshot` | **In use**: Sun pictures of the 2012–2014 weeks (the SDO browse archive starts in 2016) | ✓ |
+| DSCOVR EPIC | `https://epic.gsfc.nasa.gov/api/natural/date/YYYY-MM-DD` → `https://epic.gsfc.nasa.gov/archive/natural/YYYY/MM/DD/png/<image>.png` | A real photo of the whole Earth that day, from 1.5 million km — for the truth screen. From mid-2015: 8 of our 14 weeks. Proposal, not fetched | ✓ |
+| SVS Dial-A-Moon | `https://svs.gsfc.nasa.gov/api/dialamoon/YYYY-MM-DDTHH:MM` | The Moon as Houston saw it that hour (phase, tilt) — "home looks back at you". Undocumented endpoint behind the SVS pages | ✓ |
+| NASA Image and Video Library | `https://images-api.nasa.gov/search?q=lunar%20south%20pole&media_type=image` | Photos with a NASA ID (LRO, Apollo, south pole) for the Data page; keep the ID in `CREDITS.md` | ✓ |
+| DONKI WSA-ENLIL runs (CCMC) | `https://ccmc.gsfc.nasa.gov/DONKI-API/get/WSAEnlilSimulations?startDate=…&endDate=…` | Model arrival times of the week's CMEs — "the cloud was expected at…" | ✓ |
+| Moon Trek tiles | API doc `https://trek.nasa.gov/tiles/apidoc/trekAPI.html`; LOLA colour hillshade `…/tiles/Moon/SP/LRO_LOLA_ClrShade_SPole75_30mp_v04/…`; sunlight % `…/tiles/Moon/SP/WAC_POLE_ILL_PCT_SOUTH_100M/…` (havolalar.md lines 1411, 1343) | A south-pole map for the base-map screen or ground tint; same LOLA data as our terrain. Find each layer's credit line first | ✓ (API doc, one tile) |
+
+Not true: "SDO browse images exist for all weeks from 2010" (Gemini) — the archive starts in 2016.
+
+**Sound and art (CC0 unless noted; through the `add-asset` skill)**
+
+| Link | Use | Who | |
+|---|---|---|---|
+| https://kenney.nl/assets/impact-sounds | Footsteps and suit thuds (check the files: the page does not name them) | Aminjon | ✓ |
+| https://kenney.nl/assets/sci-fi-sounds | Airlock doors, computer hum, thrusters — habitat sound | Aminjon | ✓ |
+| https://kenney.nl/assets/interface-sounds · https://kenney.nl/assets/digital-audio | Tap, confirm, error; radio beeps and the flare alert | Aminjon, Asilbek | |
+| https://github.com/KilledByAPixel/ZzFX | Sounds made in code, < 1 KB, MIT — dosimeter clicks, radio beeps. A new dependency: ask Shoxjahon aka | Aminjon | ✓ |
+| https://kenney.nl/assets/particle-pack | Smoke and spark sprites for dust puffs | Shoxjahon aka | ✓ |
+| https://quaternius.com/packs/ultimatespacekit.html | 92 animated glTF props, CC0; check sizes against the 1 MB limit | Sarvar | ✓ |
+
+**Phones**
+
+| Link | Point | Who |
+|---|---|---|
+| https://web.dev/blog/viewport-units | `100vh` ignores the phone's toolbars; `100dvh` keeps the joystick and HUD on screen | Asilbek |
+| https://developer.chrome.com/blog/300ms-tap-delay-gone-away | `touch-action: manipulation` on buttons removes the tap delay | Asilbek |
+| https://developer.chrome.com/docs/devtools/remote-debugging | FPS and console of a real Android phone over USB | Shoxjahon aka |
+
+**Submission and pitch (before 13:00)**
+
+| Link | Point | Who | |
+|---|---|---|---|
+| https://github.com/nasa/spaceapps/discussions/1813 | GO Team, 5 Nov 2026: "Working ahead of the hackathon can lead to disqualification"; before the start only "select a challenge…, review the resources, research the topic, and form your team". Our git history starts 14 Nov 12:20 (after the start); the concept PDFs were written earlier. Have one honest sentence ready and ask the Local Lead if unsure | Shoxjahon aka, Aminjon | ✓ |
+| https://github.com/nasa/spaceapps/discussions/1780 | Staff: AI tools are allowed; the submission "must include information on how you used these tools, known as Super Intelligence" — use that term for the AI field | Aminjon | ✓ (agent) |
+| https://github.com/nasa/spaceapps/discussions/1819 | Every member must be registered for the same Local Event (Tashkent) — check all five names | Shoxjahon aka | ✓ (agent) |
+| https://sa-2019.s3.amazonaws.com/media/documents/Space_Apps_2021_Project_Demo_Guide.pdf | The organizers' 30-second model: 0:00 name and team · 0:02 challenge · 0:05 title, problem, who gains · 0:10 how it works and which NASA data · 0:20 what it changes · 0:30 end; English subtitles; links without login | Aminjon | ✓ (agent) |
+| https://sdo.gsfc.nasa.gov/data/rules.php | Rule 4: browse images "are not intended for science analysis or publication"; rule 9: label a modified image as different from the original — caption "SDO AIA 131 Å browse image, cropped; false colour" | Asilbek, Aminjon | ✓ |
+| https://gov.uz/en/edu/news/view/216458 · https://gov.uz/en/uzspace/news/view/91090 | Local pitch facts: Uzbekistan PISA science 355 (2022) → 438 (2025); Space Apps Tashkent 2025: 200+ participants, 50+ teams | Aminjon | ✓ (agent) |
+| https://2021.spaceappschallenge.org/challenges/statements/the-trail-to-mars-can-you-keep-your-crew-alive/ | A past Space Apps challenge for a crew-survival game with radiation — precedent for the pitch | Aminjon | not checked |
