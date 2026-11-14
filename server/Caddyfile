@@ -1,0 +1,49 @@
+# Caddy: automatic HTTPS, compression, cache rules, reverse proxy to PocketBase.
+# DOMAIN and ACME_EMAIL come from server/.env (see docs/SERVER.md).
+{
+	email {$ACME_EMAIL}
+}
+
+{$DOMAIN} {
+	encode zstd gzip
+
+	# PocketBase API and admin UI
+	handle /api/* {
+		reverse_proxy pocketbase:8090
+	}
+	handle /_/* {
+		reverse_proxy pocketbase:8090
+	}
+
+	# The game: static build, switched atomically through the "current" symlink
+	handle {
+		root * /srv/site/current
+
+		# Hashed bundles never change: cache for a year
+		@bundle path /bundle/*
+		header @bundle Cache-Control "public, max-age=31536000, immutable"
+
+		# Art, sound, data: short cache (the service worker keeps its own copy)
+		@static path /assets/* /data/* /licenses/*
+		header @static Cache-Control "public, max-age=3600"
+
+		# Entry points must always be revalidated so a new deploy reaches players at once
+		@entry path / /index.html /sw.js /registerSW.js /manifest.webmanifest
+		header @entry Cache-Control "no-cache"
+
+		file_server
+	}
+
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		Permissions-Policy "camera=(), microphone=(), geolocation=()"
+		-Server
+	}
+
+	log {
+		output stdout
+		format json
+	}
+}

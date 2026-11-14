@@ -1,0 +1,30 @@
+node_modules/
+dist/
+*.log
+.DS_Store
+Thumbs.db
+.env
+.env.*
+!.env.example
+.claude/settings.local.json
+.vscode/*
+!.vscode/extensions.json
+
+# Playwright
+test-results/
+playwright-report/
+
+# Local PocketBase (npm run db)
+.pocketbase/
+
+# Server secrets and data
+server/.env
+server/pb_data/
+server/site/
+
+# Raw NASA downloads before trimming; commit only the files in public/data
+scripts/data/raw/
+scripts/data/.env
+
+# Concept PDFs stay with the team (not published in the repo)
+*.pdf

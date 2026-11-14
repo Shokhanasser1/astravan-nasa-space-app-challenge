@@ -1,0 +1,66 @@
+@import 'tailwindcss';
+
+/* Design tokens: Asilbek replaces these with the interface kit (colours, type). */
+@theme {
+  --color-space: #000000;
+  --color-regolith: #8a8a8a;
+  --color-sun: #fff1dc;
+  --color-earth: #2a3f66;
+  --color-alert: #f2c94c;
+  --color-measured: #7fd1ff;
+  --color-computed: #b9a6ff;
+  --color-rule: #c7c7c7;
+  --color-story: #ffd59e;
+  --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  background: var(--color-space);
+  color: #fff;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+/* Drag on the energy board must not scroll or zoom the page. */
+#root {
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+/* Cinematic letterbox (3.0): bars slide in during scenes, out when play starts. */
+.letterbox::before,
+.letterbox::after {
+  content: '';
+  position: fixed;
+  left: 0;
+  right: 0;
+  height: 11vh;
+  background: #000;
+  z-index: 20;
+  transition: transform 600ms ease;
+}
+.letterbox::before {
+  top: 0;
+}
+.letterbox::after {
+  bottom: 0;
+}
+.letterbox.off::before {
+  transform: translateY(-100%);
+}
+.letterbox.off::after {
+  transform: translateY(100%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .letterbox::before,
+  .letterbox::after {
+    transition: none;
+  }
+}

@@ -1,0 +1,46 @@
+# Credits and licences
+
+Space Apps rules: "all resources, even open source resources, must be cited". Every third-party file has a row
+here (use the `add-asset` skill). This project is not an official NASA product and is not endorsed by NASA.
+
+## NASA and agency data (`public/data/`)
+
+| Dataset | Dates | What it drives in the game | Link |
+|---|---|---|---|
+| NASA LRO CRaTER via RadLab (OSDR) | 2009-06-26 → 2024-06-18, hourly | Dose level each day, dosimeter clicks, truth curve | https://visualization.osdr.nasa.gov/radlab/ |
+| NASA DONKI (FLR notifications, SEP) | per week | Flare alerts and particle arrival times | https://ccmc.gsfc.nasa.gov/tools/DONKI/ |
+| NASA SDO (AIA 131 Å browse) | per storm week | The real Sun photo on the tablet and in the truth sequence | https://sdo.gsfc.nasa.gov/ |
+| NASA EOSDIS GIBS (MODIS/VIIRS true colour) | per day | The Earth of that day on the globe | https://nasa-gibs.github.io/gibs-api-docs/ |
+| JPL Horizons (check) | per week | Sun direction, Earth position and phase (computed) | https://ssd.jpl.nasa.gov/horizons/ |
+
+Solar images: "Courtesy of NASA/SDO and the AIA, EVE, and HMI science teams."
+
+## Code shipped in the game
+
+| What | Licence | Link |
+|---|---|---|
+| React 19.3.1, React DOM | MIT | https://github.com/facebook/react |
+| three.js 0.187.0 | MIT | https://github.com/mrdoob/three.js |
+| React Three Fiber 9.8.2, drei 10.7.9, @react-three/postprocessing 3.2.2 | MIT | https://github.com/pmndrs |
+| postprocessing 6.39.6 | Zlib | https://github.com/pmndrs/postprocessing |
+| Zustand 5.1.0 | MIT | https://github.com/pmndrs/zustand |
+| Tailwind CSS 4.3.5 (generated CSS) | MIT | https://github.com/tailwindlabs/tailwindcss |
+| Workbox via vite-plugin-pwa 2.0.0 (service worker) | MIT | https://github.com/vite-pwa/vite-plugin-pwa |
+
+## Models, textures, sounds, fonts (`public/models`, `public/textures`, `public/audio`)
+
+| Folder | What | Author | Licence | Link |
+|---|---|---|---|---|
+| | | | | |
+
+## Development and server tools (not shipped)
+
+| What | Licence | Link |
+|---|---|---|
+| Vite 8, Vitest 5, TypeScript 7, Playwright 1.65, gltf-transform 4.5, r3f-perf, leva | MIT / Apache-2.0 | npm |
+| PocketBase 0.40.6 | MIT | https://github.com/pocketbase/pocketbase |
+| Caddy 2 | Apache-2.0 | https://github.com/caddyserver/caddy |
+| Claude Code skills `systematic-debugging`, `verification-before-completion` | MIT (Jesse Vincent, superpowers) | https://github.com/obra/superpowers |
+| Claude Code skill `webapp-testing` | Apache-2.0 (Anthropic) | https://github.com/anthropics/skills |
+| Claude Code skills `react-performance`, `vite-patterns`, `e2e-testing`, `ui-demo`, `i18n-sync` | MIT (Affaan Mustafa, ECC) | `.claude/skills/*/LICENSE` |
+| three.js guidelines in `.claude/rules/three.md` (adapted) | MIT (ui-ux-pro-max) | https://github.com/nextlevelbuilder/ui-ux-pro-max-skill |

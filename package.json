@@ -1,0 +1,51 @@
+{
+  "name": "home-by-seven",
+  "version": "0.1.0",
+  "private": true,
+  "description": "HOME BY SEVEN: a real week on a Moon base. NASA Space Apps Challenge 2026, Build a Junior Astronaut Mission Trainer. Team Astrakarvan, Tashkent.",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host",
+    "build": "vite build",
+    "preview": "vite preview --host",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "e2e": "playwright test",
+    "check": "node scripts/check.mjs",
+    "verify": "npm run check && npm run typecheck && npm test && npm run build",
+    "db": "node scripts/pocketbase.mjs",
+    "db:smoke": "node scripts/db-smoke.mjs",
+    "glb": "gltf-transform optimize"
+  },
+  "engines": {
+    "node": ">=22.12"
+  },
+  "dependencies": {
+    "@react-three/drei": "10.7.9",
+    "@react-three/fiber": "9.8.2",
+    "@react-three/postprocessing": "3.2.2",
+    "postprocessing": "6.39.6",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "three": "0.187.0",
+    "zustand": "5.1.0"
+  },
+  "devDependencies": {
+    "@gltf-transform/cli": "4.5.1",
+    "@playwright/test": "1.65.1",
+    "@tailwindcss/vite": "4.3.5",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@types/three": "0.187.0",
+    "@vitejs/plugin-react": "6.3.0",
+    "leva": "0.10.1",
+    "r3f-perf": "7.2.3",
+    "tailwindcss": "4.3.5",
+    "typescript": "7.0.2",
+    "vite": "8.3.8",
+    "vite-plugin-pwa": "2.0.0",
+    "vitest": "5.1.0"
+  }
+}

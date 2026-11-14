@@ -1,0 +1,106 @@
+name: Build and deploy
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      VITE_API_URL: ${{ vars.API_URL }}
+      VITE_APP_VERSION: ${{ github.sha }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run verify
+      - uses: actions/upload-artifact@v4
+        if: github.event_name != 'pull_request'
+        with:
+          name: dist
+          path: dist
+          retention-days: 30
+      - uses: actions/upload-pages-artifact@v3
+        if: github.event_name != 'pull_request'
+        with:
+          path: dist
+
+  # Backup link for judges: GitHub Pages
+  pages:
+    if: github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
+
+  # Main link: our VPS (Caddy + PocketBase). Skipped until the SSH secrets exist (docs/SERVER.md).
+  vps:
+    if: github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-latest
+    env:
+      HAS_VPS: ${{ secrets.SSH_HOST != '' }}
+      SSH_HOST: ${{ secrets.SSH_HOST }}
+      SSH_USER: ${{ secrets.SSH_USER || 'deploy' }}
+      SSH_PORT: ${{ secrets.SSH_PORT || '22' }}
+    steps:
+      - uses: actions/checkout@v4
+        if: env.HAS_VPS == 'true'
+      - uses: actions/download-artifact@v4
+        if: env.HAS_VPS == 'true'
+        with:
+          name: dist
+          path: dist
+      - name: SSH key
+        if: env.HAS_VPS == 'true'
+        env:
+          SSH_KEY: ${{ secrets.SSH_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
+        run: |
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          if [ -n "$SSH_KNOWN_HOSTS" ]; then printf '%s\n' "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          else ssh-keyscan -p "$SSH_PORT" "$SSH_HOST" > ~/.ssh/known_hosts; fi
+      - name: Upload release and switch atomically
+        if: env.HAS_VPS == 'true'
+        run: |
+          R="releases/${GITHUB_SHA::12}"
+          SSH="ssh -p $SSH_PORT"
+          rsync -az --delete -e "$SSH" dist/ "$SSH_USER@$SSH_HOST:/srv/hb7/site/$R/"
+          rsync -az -e "$SSH" --exclude '.env' --exclude 'pb_data' --exclude 'setup.sh' server/ "$SSH_USER@$SSH_HOST:/srv/hb7/"
+          $SSH "$SSH_USER@$SSH_HOST" "set -e
+            cd /srv/hb7/site
+            ln -sfn '$R' current.new && mv -Tf current.new current
+            ls -1dt releases/* | tail -n +11 | xargs -r rm -rf
+            cd /srv/hb7 && docker compose up -d --build --remove-orphans"
+      - name: Health check
+        if: env.HAS_VPS == 'true'
+        env:
+          API_URL: ${{ vars.API_URL }}
+        run: |
+          [ -z "$API_URL" ] && exit 0
+          for i in $(seq 1 12); do
+            curl -fsS "$API_URL/api/health" && exit 0
+            sleep 5
+          done
+          echo "API did not become healthy" >&2; exit 1
