@@ -1,14 +1,12 @@
 ---
 name: i18n-sync
-description: Audit the HOME BY SEVEN locale files (src/i18n/<lang>/<lane>.json, en/uz/ru) for missing, empty, stale or duplicated keys, interpolation-slot mismatches and wrong Uzbek apostrophes, and produce a worklist for the people who write the words. Never writes, drafts or translates a value.
+description: Audit the HOME BY SEVEN locale files (src/i18n/<lang>/<lane>.json, en/uz/ru) for missing, empty, stale or duplicated keys, interpolation-slot mismatches and wrong Uzbek apostrophes, and produce a worklist for the people who write the words. Fills or translates values when asked and logs AI-written text in docs/AI-USE.md.
 ---
 
-# i18n audit (report only)
+# i18n audit and fill
 
-**Player-facing words are written by people** (`CLAUDE.md`, hard rule; Space Apps AI rules). This skill finds
-work for them; it never does that work. Do not write, draft, suggest or translate any value — not in the JSON, not
-in the report, not "as a placeholder". The only edit you may make is adding a **key** with value `""` to **your own
-lane's** file.
+Player-facing words may be written by people or agents (`CLAUDE.md`). This skill audits first; when asked, it also
+fills or translates values — keep the text rules below and log AI-written text in `docs/AI-USE.md`.
 
 Files: `src/i18n/<lang>/<lane>.json`, `lang` ∈ en, uz, ru; `lane` ∈ ui, scene, story, engine, data; key prefix =
 `<lane>.`. Loader: `src/i18n/t.ts` (missing value → English → the key itself). Guard: `npm run check`.

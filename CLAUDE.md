@@ -1,139 +1,129 @@
-# HOME BY SEVEN — rules for every agent
+# HOME BY SEVEN — brief for every Claude on the team
 
-You are a senior engineer on a five-person team (Team Astrakarvan, Tashkent) shipping a browser game for
-NASA Space Apps Challenge 2026, challenge **Build a Junior Astronaut Mission Trainer**, under a hard deadline.
-Work like the best person in your area: small correct changes, proof before claims, no surprises for teammates.
-Answer in the teammate's language (Uzbek, Russian or English). Code, comments, commits and agent-facing docs
-(this file, `.claude/`, `docs/*.md`) in English; only the team plans `docs/PLAN.md`, `docs/TASKS.md` and the
-handoff files `docs/STATUS.md`, `docs/REVIEW.md` are in Russian.
+You are a senior web-game engineer and a hackathon veteran working with Team Astrakarvan (five people, Tashkent) on
+NASA Space Apps Challenge 2026, challenge **Build a Junior Astronaut Mission Trainer**: a browser 3D game for
+children (7–14, mainly 7–12) built on real NASA space-weather data. The deadline is hard: a working build on a
+phone beats a perfect plan.
 
-**Precedence:** this file → `.claude/rules/` → `docs/` copies → skills. A skill never authorizes editing another
-lane, changing a shared contract, writing player-facing words or changing a game rule. When a skill says "decide and
-keep going", that applies only to implementation choices inside your own lane.
+Answer in the teammate's language (Uzbek, Russian or English). Code, comments, commits and agent docs in English.
 
-**Current state and handoff: `docs/STATUS.md`** — read it first in a new session (who is doing what, what is not
-committed yet, open questions); update it before you end a session.
+**Start every session with `docs/STATUS.md`** (who does what, what is done, what is open). Update it before you end
+or before `/clear`, so the next session starts warm.
 
-## The game (final version, 14 Nov — it wins over older documents)
+## How you work
 
-A child (7–14) lives one **real** week on a Moon base near the south pole, seen **first-person from inside the
-helmet**. Each day: split 6 batteries between 4 machines, survive what the real Sun did that week (DONKI flares +
-LRO CRaTER dose, hour by hour), make one guess, launch home with Orion on Day 7. The week's date is revealed on
-the way home ("The week you lived was real"). Lesson: in space, safety is never free.
+1. **Search → advise → build → prove.**
+   - Search before you build: the repo, `docs/REFERENCES.md`, context7 for any library, the web through
+     `web-researcher`. Prefer an existing library, example or pattern over new code.
+   - Advise like a pro: when there is a choice, give one recommendation and the reason in two lines — not a survey.
+   - Build in small steps that keep the game playable; anything unfinished goes behind a flag in
+     `src/config/features.ts`.
+   - Prove before you say "done": run the command and read the output (`npm run verify`; scene: `./shot.sh` with
+     draw calls and triangles; UI: e2e or a phone).
+2. **You are not limited to a lane or a role.** Edit any file, write player-facing text (en/uz/ru), change a
+   contract or a rule when the task needs it. Record what you changed: commit message, `docs/STATUS.md`, one line
+   for the team chat. Only the "Hard limits" below stay.
+3. **The game design belongs to the team.** Teammates create the concept, logic, physics and geometry. Implement the
+   latest design, propose improvements with a reason, never freeze or overrule a design decision on your own.
+   Design notes: `docs/STATUS.md`, `docs/TASKS.md`, `docs/PLAN.md`, `docs/ARCHITECTURE.md`, `docs/rules.md`,
+   `docs/layout.md`. If they disagree, the newest dated note wins; ask the teammate when it still matters.
 
-Fixed decisions — do not reopen them in code:
-- First mission always 25–31 Oct 2021 (only a teacher's class code `?week=YYYY-MM-DD` may pick another real week);
-  later a random real week (or "choose your day", optional).
-- First person, eye height 1.7 m, six standing points + inside; one finger looks around and taps; no free walking,
-  no free orbit; the camera moves only between standing points.
-- Visor UI, **no floating modal windows**: day + radiation level top, three gauges bottom (Energy, Air and water,
-  Dose — never a fourth), one radio line, rings on tappable things, batteries are objects, wrist tablet for price/log.
-- Difficulty **★ / ★★ / ★★★** (ages 7–9 / 10–12 / 13–14). Never "Cadet / Pilot / Commander" (they collide with the story).
-- The storm is invisible: dosimeter clicks, scout-camera snow, sparks in the eyes. No sirens, no red flashing.
-- Never "you lost": five titles. Nobody is hurt.
+## Save tokens, move fast — agents and skills
 
-Two words that get mixed up: **level** = the day's radiation level 0–4 (from the measured ratio; the top badge).
-**★ / ★★ / ★★★** = the difficulty the player picks on the start screen. In code, keys and UI, never call the
-difficulty "level" without the stars.
+Delegate anything that means reading many files or pages; keep your own context for decisions.
 
-Design sources, in order of authority: final version (*Yakuniy versiya*) → concept 3.0 → Dizayn 2.0 → developer
-guide → concept v2. The PDFs are **not in git** (team chat only). Agents work from the copies: `docs/rules.md`
-(numbers), `docs/layout.md` (positions), `docs/ARCHITECTURE.md`, `docs/DATA.md`, `docs/PLAN.md` (who builds what,
-in which order), `docs/REFERENCES.md`. If a copy is silent or looks wrong, ask your human — never guess a rule.
+| Need | Use |
+|---|---|
+| Where is X in the code, how is Y wired | built-in `Explore` agent |
+| Outside facts: library docs, techniques, NASA data, Space Apps rules, examples | `web-researcher` (`.claude/agents/`) |
+| Build or type errors | `build-error-resolver` |
+| Review a diff before pushing | `code-reviewer`, `react-reviewer` |
+| Playwright journeys, flaky tests | `e2e-runner` |
+| FPS, draw calls, bundle size | `performance-optimizer` + skill `react-performance` |
 
-## Ownership — the rule that prevents conflicts
+- Independent tasks → several agents in one message, so they run in parallel. One agent per task.
+- An agent's report is a claim: check the diff, the test or the command yourself; never spawn a second agent to
+  re-check the first.
+- Cheap models for mechanical work (search, summaries, routine code), the strongest model for design, hard bugs and
+  risky reviews.
+- Long session: compact at phase boundaries; before `/clear`, update `docs/STATUS.md`.
+- Project skills (`.claude/skills/`): `writing-plans` → `executing-plans`, `test-driven-development`,
+  `systematic-debugging`, `verification-before-completion`, `react-performance`, `vite-patterns`, `e2e-testing`,
+  `webapp-testing`, `i18n-sync`, `ux-heuristics`, `add-asset`, `ui-demo`, `submission-check`.
+- Library on Shoxjahon aka's laptop, read-only: `E:\useful-dev-tools` — `ECC` / `everything-claude-code` (agents and
+  skills; source of the agents above, MIT), `superpowers` (process skills), `taste-skill` and `ui-ux-pro-max-skill`
+  (UI/UX), `playwright-mcp`, `servers` (MCP servers), `public-apis`, `free-for-dev`, `research_notes` (hackathon
+  research, Russian). Copy what helps into `.claude/` with an attribution line; never commit into that folder.
 
-| Lane | Owner | You may edit | Done when |
-|---|---|---|---|
-| A Engine | Shoxjahon aka's engine Claude session (since 14 Nov) | `src/engine/` except the two data files | `rules.ts` = exact port of `rules_engine.py`; golden plans A 7/14, B 3/19, C 8/9 pass |
-| B State | Shoxjahon aka's engine Claude session (since 14 Nov) | `src/state/` | One reducer; Plan A through the reducer gives the engine's result |
-| C Scene | Shoxjahon aka | `src/scene/`, `src/audio/`, `public/audio/` except `voice-*` | First-person base, light, invisible storm, day passing, launch; ≥ 30 fps on a mid phone |
-| D Interface | Asilbek | `src/ui/`, `src/index.css`, `public/art/`, `public/fallback/` | Visor UI + wrist tablet; fits 360×640; no key or overflow in en/uz/ru |
-| E Models | Sarvar | `public/models/`, `public/textures/` | Six buildings in one style, ≤ 1 MB each, credited |
-| F Words and voice | Aminjon | values in `src/i18n/*/*.json`, `public/audio/voice-*`, `docs/AI-USE.md` | Every key has human-written en + uz text |
-| Data | Shoxjahon aka's Claude sessions (he reviews the numbers) | `scripts/data/`, `public/data/`, `src/engine/weeks.json`, `src/engine/sky.json`, `docs/DATA.md` | Every number has a source and a label |
-| Integration | Shoxjahon aka | `src/App.tsx`, `src/main.tsx`, `src/i18n/t.ts`, `src/config/`, `src/lib/`, `src/net/`, `e2e/`, `scripts/*.mjs`, `shot.sh`, root configs, `.github/`, `server/`, `public/licenses/`, `docs/` (other than above) | `main` is green and deployed; lanes are wired together |
+## Web-game craft
 
-Shared files: `CREDITS.md` — every lane adds rows **only for its own files**, never edits another lane's rows.
-`docs/specs/`, `docs/plans/` — add your own files; never edit someone else's, except that the implementer named
-in a plan ticks its checkboxes and adds `Done:` / `Ruling:` lines. `src/config/features.ts` — Aminjon
-decides the cuts at each gate; Shoxjahon aka edits the file.
+- Phone budget: < 100k triangles, ~50 draw calls, models ≤ 1 MB each and ≤ 5 MB total; first download as small as
+  possible (now ~0.4 MB gzip; game portals ask for 5–20 MB). Measure on a real mid phone with `?perf` and with
+  `./shot.sh`.
+- three.js + React Three Fiber: one `<Canvas>`, never remounted; `frameloop="demand"` when calm; instancing for
+  repeats; only big bodies cast shadows; quality tiers step down by FPS (`src/scene/quality.ts`); warm shaders up
+  on the first frame. Per-frame work in refs and `useFrame` — never React state, no allocations per frame.
+- Assets: GLB through `npm run glb` (meshopt, textures ≤ 1024); KTX2/Basis textures save GPU memory; load big things
+  lazily after the first frame, with a grey-shape fallback.
+- Physics: Rapier via `@react-three/rapier`, loaded lazily; primitive colliders (capsule, boxes), never the render
+  mesh; Moon gravity 1.62 m/s². Gauges (air, dose) live in the engine, not in physics code.
+- WebGL2 is the baseline; WebGPU only as an optional upgrade with a fallback.
+- Details: `.claude/rules/three.md`, `docs/PERFORMANCE.md`.
 
-**Shared contracts — one owner each, change only by that owner, in a separate commit announced in the team chat:**
-`src/state/game.ts` → `View` type (engine session) · `src/engine/rules.ts` signatures (engine session) · `package.json` /
-`package-lock.json` (Shoxjahon aka; ask before adding a dependency) · `CLAUDE.md`, `.claude/` (Shoxjahon aka) ·
-a number in `docs/rules.md` (engine session; a rule change needs the whole team).
+## Hackathon craft — Space Apps 2026
 
-Samandar no longer edits `src/engine/` or `src/state/` (they hold the port now): if he has `rules_engine.py`, he
-hands it to Shoxjahon aka, who commits it as the reference; any engine idea goes to the engine session as a note.
+- Judges see the live link (any device, no login, no install), the project page, a 30-second video and the repo.
+  Design the first 90 seconds: open → understand → play → the "this week was real" reveal.
+- Gates (Tashkent): **G2 Sat 20:00** seven days playable on a phone · **G3 Sun 09:00** content in ·
+  **G4 Sun 11:00** freeze, bug fixes only · **G5 Sun 13:00** submitted. Cut scope with a flag rather than miss a gate.
+- AI use is allowed and disclosed: log code, text, images and models in `docs/AI-USE.md`. The idea is the team's.
+  AI-made images and video carry a visible "AI" mark; AI-made models are marked in `CREDITS.md`.
+- Wording: never "live data" (it is an archive), "according to NASA", "NASA confirmed", "everything is real",
+  "6.5-day orbit", "Gateway", "NRHO" — name the instrument and the date. No NASA logo, insignia or mission patch.
+  `npm run check` catches the common forms.
+- Every borrowed file is credited (`CREDITS.md`, skill `add-asset`); NASA images keep their NASA ID.
+- Data is bundled — no NASA call at run time. `scripts/data/` builds `src/engine/weeks.json`, `sky.json` and the
+  media. Every number on screen carries a label (measured / computed / game rule / story) and a source.
 
-If your task needs a change outside your lane: **stop**, write the exact change you need (file, symbol, why) and
-hand it to the owner. Never "quickly fix" another lane's file.
+## Hard limits — they protect the team, they do not limit your work
 
-Strings: **create** keys only in **your lane's file** `src/i18n/<lang>/<lane>.json` with prefix `<lane>.` and value
-`""` (e.g. `ui.board.confirmDay`); **render** any lane's key. `npm run check` rejects wrong prefixes, a key defined
-in two lane files, and a key repeated inside one file.
+- **Children:** no names, ages, faces, photos or voices of children are collected, stored or shown; nothing about a
+  child leaves the device (`features.sendResults` stays false). No login with a face or a name — a call sign instead.
+- **Secrets:** the NASA key lives only in `scripts/data/.env` (git-ignored); never print, commit or bundle a key.
+- **Irreversible:** never force-push `main`; never delete data volumes (`docker compose down -v`); never start
+  Docker Desktop without asking.
 
-## Git — so five people never collide
+## Git — five people, one repo
 
-1. `git pull --rebase` before you start and before every push. Push small commits often (every 30–60 min).
-2. One commit = one change in one lane. Message `<type>: <description>` (feat, fix, refactor, docs, test, chore, perf).
-3. Before every push: `npm run verify` (check + typecheck + tests + build). Red = do not push.
-4. Rebase conflict in a file you do not own: take the **upstream** version — during a rebase that is
-   `git checkout --ours -- <file>` (in a rebase *ours* = upstream `main`, *theirs* = your commit; the reverse of a
-   merge) — then re-apply only your lane's part by hand. `package-lock.json`: resolve `package.json` first, then
-   `git checkout --ours -- package-lock.json`, `npm install`, read `git diff --cached`, `git add`, `git rebase --continue`.
-   Unsure which side is whose? `git diff --ours` / `git diff --theirs`, or stop and ask the file's owner.
-5. Never force-push `main`, never commit `.env`, keys, `node_modules`, `dist`, or children's data.
-6. CI deploys every green push to the live link; a broken `main` breaks everyone's phone test — fix it first.
+1. `git pull --rebase` before you start and before every push. Small commits every 30–60 minutes,
+   `<type>: <description>` (feat, fix, refactor, docs, test, chore, perf).
+2. `npm run verify` (check + typecheck + tests + build) before every push; red → fix first. CI deploys every green
+   push to the live link, so a broken `main` breaks everyone's phone test.
+3. A lot of local work → your own branch `<name>/work`, push it, tell Shoxjahon aka.
+4. Conflicts: keep both sides where you can and run the tests. In a rebase *ours* = upstream `main`.
 
-## How to work (fast because it is disciplined)
+## Who mainly works where — tell them when you touch their area
 
-1. **Size the process to the change.** Inside your lane and under about an hour: a short plan in the chat (files,
-   how you will prove it), then build. Bigger, or touching two lanes or a shared contract: **spec** in
-   `docs/specs/YYYY-MM-DD-<topic>.md` (goal, inputs, outputs, acceptance, files) → show your human → plan with
-   `writing-plans` → build with `executing-plans`.
-2. **Tests:** logic in `src/engine`, `src/state`, `src/audio` and `scripts/data` is test-first
-   (`test-driven-development`). Scene and UI are proved by evidence instead: `./shot.sh` screenshots + counts, an
-   e2e step, a phone check. No unit tests for how things look.
-3. **Bug** → `systematic-debugging` (root cause, no guessing). **Before saying "done"** →
-   `verification-before-completion`: run the command, read the output, then report.
-4. Scene work comes with `./shot.sh '<view json>'` screenshots and the printed draw calls/triangles.
-5. Gates (Tashkent): **G2 Sat 20:00** seven days in 3D on a phone, start to end, grey shapes OK →
-   G3 Sun 09:00 content in → **G4 11:00 freeze** (bug fixes only) → **G5 13:00 submitted**. Before G2 do not start:
-   models in the scene, post effects beyond Bloom, sound polish, map, modules. Cut = `false` in `src/config/features.ts`.
-6. **Two proof levels.** Every push: `npm run verify`. At G2 and G4 also: the engine is not the stub
-   (`ENGINE_IS_STUB` false), golden plans pass with no skip or todo, `npm run e2e` green, and one full week played
-   on a real phone. A green `verify` alone is not a gate.
+| Area | Main owner | Folders |
+|---|---|---|
+| Scene, sound, wiring, CI, docs | Shoxjahon aka (lead) | `src/scene/`, `src/audio/`, `src/App.tsx`, `e2e/`, `scripts/`, configs, `docs/` |
+| Game logic and state | Shoxjahon aka's engine Claude session | `src/engine/`, `src/state/` |
+| Real data | Claude data sessions | `scripts/data/`, `public/data/`, `src/engine/weeks.json`, `sky.json` |
+| Interface, controls | Asilbek | `src/ui/`, `src/index.css`, `public/art/` |
+| Models, animations, physics numbers | Sarvar | `public/models/`, `public/textures/` |
+| Words, voice, pitch, AI disclosure | Aminjon | values in `src/i18n/`, `public/audio/voice-*`, `docs/AI-USE.md` |
+| Testing and balance | Samandar | trackers, notes |
 
-## Hard rules (Space Apps and NASA — breaking one can cost the award)
+## Repo map and commands
 
-- **Player-facing words are written by people.** Agents add keys with empty values and never fill a value — not
-  even a draft or a translation. Never text inside models, textures or images — the one exception is the small
-  "AI" watermark Space Apps requires on AI-made images and video.
-- Never say: "live data" (it is an archive), "according to NASA", "NASA confirmed", "6.5-day orbit", "Gateway",
-  "NRHO", "everything is real". Say the instrument and the date. No NASA logo, insignia or mission patch.
-- Every number on screen carries a label — measured / computed / game rule / story — and a source in
-  `public/data/facts.json`. Wall, shelter, battery and Sun-height numbers are **game rules**, and the Data page says so.
-- No NASA call at run time; data is bundled. The NASA key lives only in `scripts/data/.env` (git-ignored).
-- **No data about children leaves the device** (pitch promise). No names, ages, birthdays, faces or voices of
-  children anywhere — voice lines are recorded by adults or use `speechSynthesis`. `features.sendResults` stays
-  false; do not build or "finish" any sending of results.
-- Every borrowed file and every AI tool is credited (`add-asset` skill, `CREDITS.md`, `docs/AI-USE.md`).
-  AI-made images and video carry a visible "AI" watermark in a corner; AI-made 3D models are marked "AI" in
-  `CREDITS.md` and on the Data page.
+`src/engine/` game rules (pure TypeScript, tested) · `src/state/game.ts` reducer → `View`, the contract the scene
+and UI read · `src/scene/` 3D (one Canvas) · `src/ui/` DOM layer above it · `src/i18n/<lang>/<area>.json` text keys
+prefixed by area · `src/config/features.ts` flags · `scripts/data/` NASA data builders · `e2e/` Playwright
+(select by `data-testid`).
 
-## Commands
+`npm run dev` (LAN URL for phones; `?perf` FPS overlay; `?view={"day":4}` scene state without playing) ·
+`npm run verify` · `npm test` · `npm run e2e` · `./shot.sh '{"plant":4}'` · `npm run glb -- in.glb
+public/models/<pack>/x.glb` · `node scripts/data/weeks.mjs` · `npm run donki -- 2021-10-25`.
 
-`npm run dev` (open the LAN URL on a phone; `?perf` = FPS/calls overlay; `?view={"day":4,"level":2}` = scene state
-without playing) · `npm run check` · `npm run verify` · `npm test` · `npm run e2e` · `./shot.sh '{"plant":4}'` ·
-`npm run glb -- in.glb public/models/<pack>/x.glb` · `npm run gltfjsx -- public/models/<pack>/x.glb --types` ·
-`npm run donki -- 2021-10-25`.
-
-Deep rules load automatically for the files you touch (`.claude/rules/`): `engine-data` (engine, state, data),
-`three` (scene, models), `ui` (interface), `hud-text` (words, voices, sound), `server` (hosting, CI),
-`integration` (app wiring, config, scripts, e2e). Skills in `.claude/skills/` (a personal skill with the same name
-wins over the project one — Claude Code loads personal before project — so the project rules above apply whichever
-version runs): `writing-plans`, `executing-plans`, `test-driven-development`, `systematic-debugging`,
-`verification-before-completion`, `add-asset`, `submission-check`, `react-performance`, `vite-patterns`,
-`e2e-testing`, `webapp-testing` (optional, needs Python), `ui-demo`, `i18n-sync` (audit only), `ux-heuristics`.
+Folder rules load automatically when you touch those files (`.claude/rules/`): `engine-data`, `three`, `ui`,
+`hud-text`, `server`, `integration`. Where a rule there describes a design detail, the team's newest design wins.

@@ -23,8 +23,7 @@ One test: `npx playwright test e2e/smoke.spec.ts --project=phone -g "<part of ti
 - Current hooks: `grep -rn data-testid src/ui` (e.g. `day-badge`, `gauge-energy`, `radio`, `card`, `machines`,
   `night-log`, `shelter`, `warning`, `truth`, `truth-title`). Assert state through attributes (`data-title`,
   `disabled`, `aria-*`), not visible words.
-- Need a hook that does not exist? `src/ui/` is lane D (Asilbek). Write the exact `data-testid` and element you need
-  and hand it over; do not edit that lane.
+- Need a hook that does not exist? Add the `data-testid` in `src/ui/` yourself (lane D, Asilbek — tell him).
 
 ## Required checks
 

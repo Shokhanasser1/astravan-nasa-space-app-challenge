@@ -10,15 +10,11 @@ straight to `main` under a hackathon deadline. Self-contained: needs no other sk
 
 ## Authority — read first
 
-`CLAUDE.md` and `.claude/rules/` outrank the plan and this skill. You decide implementation details **inside your
-lane** and keep going. You **stop and ask your human** when the next step would:
+`CLAUDE.md` and `.claude/rules/` outrank the plan and this skill. You decide and keep going — in any lane, contracts and
+words included (record what you changed). You **stop and ask your human** only when the next step would:
 
-1. edit a file outside your lane (write the exact change for its owner instead — `CLAUDE.md`, Ownership);
-2. change a shared contract (`View`, `rules.ts` signatures, `package.json`, `CLAUDE.md`, `.claude/`);
-3. write or change a player-facing word (agents add keys with `""` only);
-4. change a game rule or a golden number (report the mismatch; a rule change needs the whole team);
-5. be irreversible or outward-facing (force-push, deleting data, publishing, `docker compose down -v`);
-6. follow a plan that is wrong in a way that changes what gets built.
+1. be irreversible or outward-facing (force-push, deleting data, publishing, `docker compose down -v`);
+2. follow a plan that is wrong in a way that changes what gets built (say which way you would take).
 
 Anything else — an ambiguity, a small plan defect, a naming choice — decide, note it in the plan file under the
 task as `Ruling: <what> — <why>`, and continue.

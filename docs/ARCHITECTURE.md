@@ -1,5 +1,8 @@
 # HOME BY SEVEN — system architecture
 
+> **14 Nov, evening:** the team extends the game into a full 3D game (character, movement, physics). The
+> sections below describe the current playable build; the newest design notes win (`docs/STATUS.md`).
+
 Base: the team's **final version** (*Yakuniy versiya*, 14 Nov — wins on conflicts), Dizayn 2.0 (first person,
 visor UI), the developer guide and the work plan, and concept 3.0 (light, invisible storm, guesses, real Earth and Sun). This file adds the infrastructure
 around it: tests and CI, offline play, quality tiers, checks, hosting. Stack and versions: `docs/STACK.md`.

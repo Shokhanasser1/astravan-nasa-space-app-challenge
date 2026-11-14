@@ -19,8 +19,8 @@ paths:
 
 # Integration: app wiring, config, scripts, e2e (lane Integration — Shoxjahon aka)
 
-These files join the lanes. Everyone needs them; one person owns them. If you are not the owner, write the exact
-change (file, line, why) and hand it over — do not edit.
+These files join the lanes. Shoxjahon aka is the main owner; anyone may change them when the task needs it —
+keep the change small and say so in the commit message.
 
 ## Wiring (`src/App.tsx`, `src/main.tsx`)
 - `App.tsx` only connects: `reducer` (lane B) → `toView` → `<Stage view onTap>` (lane C) + `<Hud model view

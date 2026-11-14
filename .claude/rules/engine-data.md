@@ -17,14 +17,14 @@ paths:
   open choices are recorded in `docs/specs/2026-11-14-engine.md`.
 - **Authority, in this order:** `rules_engine.py` once it is in the repo (Samandar's Python reference) → until then `docs/rules.md` and the
   golden numbers in `plans.test.ts` → `rules.ts`. The TypeScript follows the reference, never the other way: do
-  not edit `docs/rules.md` or a golden number to match the code. A mismatch is reported to Shoxjahon aka (engine owner); changing a
-  rule or a golden number needs the whole team. Nobody claims "exact port" without the Python file side by side.
+  not edit `docs/rules.md` or a golden number to match the code. A mismatch is reported to Shoxjahon aka (engine owner); a rule may
+  change when the team asks — then `docs/rules.md`, the code and the golden tests change together. Nobody claims "exact port" without the Python file side by side.
 - Pure and deterministic: no React, three, DOM, `Date.now`, unseeded `Math.random`. Random card order uses a seeded
   PRNG (e.g. mulberry32) whose seed is in the state. Same week + level + seed + plans → identical result.
 - Floating point: keep Python's operation order; compare with `toBeCloseTo(x, 2)`; round only for display.
 - **Golden tests first** (`plans.test.ts`, week 2021-10-25, Shadow day 2, Ice day 3): Plan A day by day
   (reserve, wall, extra dose, science) and finals A 7/14 77 % "Balance Master", B 3/19, C 8/9. Never change a rule
-  to make a test pass — report the mismatch. A rule change needs the whole team.
+  just to make a test pass — fix the code or report the mismatch.
 - Levels ★/★★/★★★ are settings of the same engine (★: 7 batteries, 3 simple cards, two shelter buttons).
 
 ## State (lane B) — one reducer
@@ -43,7 +43,7 @@ paths:
 
 ## Data (lane Data — Shoxjahon aka's Claude sessions; he reviews the numbers)
 - `src/engine/weeks.json` and `src/engine/sky.json` belong to the Data lane although they sit in `src/engine/`
-  (imported, bundled); lane A never hand-edits them, Data never edits other files in `src/engine/`.
+  (imported, bundled); they are generated: change the script and rebuild them rather than hand-edit.
   Generators: `scripts/data/`. Media in `public/data/media/<week>/` with a `manifest.json`.
 - Ratio = day mean ÷ calm value of the 27 days before (**measured**). Level = a **game rule** applied to the ratio,
   half-open: 0 `< 2`, 1 `[2, 10)`, 2 `[10, 100)`, 3 `[100, 1000)`, 4 `≥ 1000`. The Data page shows both labels.

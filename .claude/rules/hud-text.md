@@ -9,15 +9,14 @@ paths:
 
 ## Words (lane F writes them; every lane adds keys)
 - One file per language and lane: `src/i18n/<lang>/<lane>.json`, keys prefixed `<lane>.` (ui, scene, story,
-  engine, data). Add a key with `""` in **your** lane file; never fill the value — the team writes every word
-  (Space Apps AI rules; NASA media guidelines). `npm run check` rejects wrong prefixes and duplicates.
+  engine, data). Keys go in the file that matches their prefix. Values are written by people or agents;
+  AI-written text is logged in `docs/AI-USE.md`. `npm run check` rejects wrong prefixes and duplicates.
 - Final-version text rules: ≤ 8 words a line; price first, then choice; nobody dies, nobody fights; real numbers
   marked "measured"; the date never shown during play.
 - Uzbek: Latin script; oʻ gʻ = U+02BB, tutuq belgisi = U+02BC (never ' ‘ ’ `). Russian: Cyrillic, same keys.
 - Interpolation slots `{name}` only for numbers and names the engine gives; never build sentences by concatenation.
-  (Not the same as "placeholder text": agents never write any value, not even a draft.)
 - Use `i18n-sync` to audit keys across en/uz/ru (missing, empty, stale, slot mismatch, wrong apostrophes). It
-  reports a worklist for Aminjon and never writes or translates a value.
+  reports a worklist and fills or translates values when asked (logged in `docs/AI-USE.md`).
 
 ## Voices
 - Characters: Houston (calm, honest, says "I don't know"), Pilot (energy, air, water; short), Scout (research and
