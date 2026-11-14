@@ -4,6 +4,7 @@ import { Instance, Instances } from '@react-three/drei';
 import type { Machine, View } from '../state/game';
 import { LAYOUT, RADIUS } from './layout';
 import { Terrain } from './Terrain';
+import { sunAzimuth } from './Light';
 import { Habitat } from './parts/Habitat';
 import { Garden } from './parts/Garden';
 import { Workshop } from './parts/Workshop';
@@ -45,7 +46,7 @@ export function BaseScene({ view, onTap, onUndo }: { view: View; onTap: (k: Mach
   const a = view.alloc;
   return (
     <group>
-      <Terrain />
+      <Terrain sunAzDeg={sunAzimuth(view)} />
       <group onContextMenu={undo.ls}>
         <Habitat on={a.ls > 0} wall={view.wall} tap={tap.ls} />
       </group>

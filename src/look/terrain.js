@@ -10,11 +10,28 @@ export const PAD = { x: 1, z: -6, rx: 22, rz: 21, blend: 14 };
 export const NEAR_R = 150;      // radius of the near ground disc, m
 export const PLAY = 100;        // half size of COL_ground = the demo's walking area (the old fallback plane)
 
-const REGOLITH = new THREE.Color('#8d8a84');   // mature lunar soil, slightly warm grey (sRGB)
+const REGOLITH = '#8d8a84';   // mature lunar soil, slightly warm grey (sRGB)
 
+/**
+ * site: public/data/terrain/site.json (or null: made-up ground). Options, all for the main game (the demo uses none):
+ *   pad     the flat graded area { x, z, rx, rz, blend } (default: the demo's base pad)
+ *   extra   (x, z) => metres added on top of the real ground (a game's own hill or crater)
+ *   frame   [a, b, c, d]: scene (x, z) -> the file's frame (a·x + b·z, c·x + d·z); default identity
+ *   color   soil colour (sRGB)
+ */
 export class Heights {
-  constructor(site, seed = 2026) {
+  /**
+   * @param {any} site
+   * @param {number} [seed]
+   * @param {{ pad?: { x: number, z: number, rx: number, rz: number, blend: number },
+   *   extra?: ((x: number, z: number) => number) | null, frame?: number[] | null, color?: string }} [opts]
+   */
+  constructor(site, seed = 2026, { pad = PAD, extra = null, frame = null, color = REGOLITH } = {}) {
     this.site = site;
+    this.pad = pad;
+    this.extra = extra;
+    this.frame = frame;
+    this.color = new THREE.Color(color);
     if (site) {
       const n = site.near, f = site.far;
       this.nn = n.n;
@@ -33,7 +50,7 @@ export class Heights {
       const R = 2 + 9 * Math.pow(r(), 2.4);
       const a = r() * Math.PI * 2, d = Math.sqrt(r()) * (NEAR_R + 6);
       const x = Math.cos(a) * d, z = Math.sin(a) * d;
-      if (this.padDist(x, z) < 1 + (R + 3) / PAD.rx) continue;
+      if (this.padDist(x, z) < 1 + (R + 3) / pad.rx) continue;
       const fresh = r();
       this.craters.push({ x, z, R, depth: R * (0.06 + 0.16 * fresh), fresh });
     }
@@ -52,15 +69,18 @@ export class Heights {
 
   /** Elliptic distance to the pad centre, 1 = pad edge. */
   padDist(x, z) {
-    return Math.hypot((x - PAD.x) / PAD.rx, (z - PAD.z) / PAD.rz);
+    const p = this.pad;
+    return Math.hypot((x - p.x) / p.rx, (z - p.z) / p.rz);
   }
   /** 1 on the pad, 0 outside its blend zone. */
   padWeight(x, z) {
-    return 1 - smoothstep(1, 1 + PAD.blend / PAD.rx, this.padDist(x, z));
+    return 1 - smoothstep(1, 1 + this.pad.blend / this.pad.rx, this.padDist(x, z));
   }
 
   /** Real heights (m, scene frame): the 5 m grid inside its square, the far rings outside. */
-  dem(x, z) {
+  dem(x0, z0) {
+    const f = this.frame;
+    const x = f ? f[0] * x0 + f[1] * z0 : x0, z = f ? f[2] * x0 + f[3] * z0 : z0;
     if (!this.site) return 2.5 * fbm(x / 140, z / 140, 3, 3) + 0.8 * fbm(x / 35, z / 35, 5, 3);
     const s = this.nstep, n = this.nn;
     const fx = (x + this.nhalf) / s, fz = (z + this.nhalf) / s;
@@ -105,7 +125,7 @@ export class Heights {
   height(x, z) {
     const w = this.padWeight(x, z);
     if (w >= 1) return 0;
-    return (this.dem(x, z) + this.detail(x, z)) * (1 - w);
+    return (this.dem(x, z) + this.detail(x, z) + (this.extra ? this.extra(x, z) : 0)) * (1 - w);
   }
 
   /** Albedo multiplier: fresh crater ejecta brighter, the trodden pad darker, broad patches. */
@@ -167,7 +187,7 @@ export function buildNear(H, { step, radius, sun }) {
       const nx = H.height(x - e, z) - H.height(x + e, z), nz = H.height(x, z - e) - H.height(x, z + e);
       const l = Math.hypot(nx, 2 * e, nz);
       nor.set([nx / l, (2 * e) / l, nz / l], k * 3);
-      c.copy(REGOLITH).multiplyScalar(H.tint(x, z));
+      c.copy(H.color).multiplyScalar(H.tint(x, z));
       col.set([c.r, c.g, c.b], k * 3);
       vis[k] = sunVisibility(H, x, z, y, sun, 3000, true);
       pad[k] = H.padWeight(x, z);
@@ -215,8 +235,17 @@ export function buildCollider(H, { step, half }) {
   return g;
 }
 
-/** Rings from the edge of the near disc to the real skyline (60 km), heights from LOLA. */
-export function buildFar(H, { azStep = 1, sun }) {
+/**
+ * Rings from the edge of the near disc to the real skyline (60 km), heights from LOLA.
+ * compress { from, to }: for a scene with one camera and a near far-plane (the R3F game), everything beyond `from`
+ * metres is pulled toward the origin into from…to, along the line of sight from the base: seen from the base the
+ * skyline keeps its exact angles. Normals and Sun visibility use the real positions (kept in userData.real).
+ */
+/**
+ * @param {Heights} H
+ * @param {{ azStep?: number, sun: THREE.Vector3, compress?: { from: number, to: number } | null }} opts
+ */
+export function buildFar(H, { azStep = 1, sun, compress = null }) {
   const radii = H.site ? H.radii : [NEAR_R, 300, 600, 1200, 2500, 5000];
   const azn = H.site ? H.azn : 128;
   const useAz = [];
@@ -235,7 +264,7 @@ export function buildFar(H, { azStep = 1, sun }) {
       const y = ri === 0 ? H.height(x, z) - 0.25 : H.dem(x, z);
       const k = ri * A + ai;
       pos.set([x, y, z], k * 3);
-      c.copy(REGOLITH).multiplyScalar(1 + 0.08 * fbm(x / 900, z / 900, 31, 3));
+      c.copy(H.color).multiplyScalar(1 + 0.08 * fbm(x / 900, z / 900, 31, 3));
       col.set([c.r, c.g, c.b], k * 3);
       vis[k] = sunVisibility(H, x, z, y, sun, 25000, false);
     }
@@ -252,8 +281,40 @@ export function buildFar(H, { azStep = 1, sun }) {
   g.setAttribute('sunVis', new THREE.BufferAttribute(vis, 1));
   g.setIndex(idx);
   g.computeVertexNormals();
+  if (compress) {
+    g.userData.real = pos.slice();
+    const { from, to } = compress, k = 15000;
+    for (let i = 0; i < pos.length; i += 3) {
+      const r = Math.hypot(pos[i], pos[i + 2]);
+      if (r <= from) continue;
+      const s = (from + (to - from) * (1 - Math.exp(-(r - from) / k))) / r;
+      pos[i] *= s;
+      pos[i + 1] *= s;
+      pos[i + 2] *= s;
+    }
+  }
   g.computeBoundingSphere();
   return g;
+}
+
+/**
+ * Bake the Sun visibility again for a new Sun direction (the game's Sun moves 12° a day), a slice at a time so a
+ * phone does not freeze. Returns false when cancelled (cancelled() true) before the end.
+ */
+export async function bakeSunVis(geo, H, sun, { maxDist, useDetail, slice = 1500, cancelled = () => false }) {
+  const p = geo.userData.real || geo.attributes.position.array;
+  const vis = geo.attributes.sunVis;
+  const out = new Float32Array(vis.count);
+  for (let i = 0; i < vis.count; i++) {
+    out[i] = sunVisibility(H, p[i * 3], p[i * 3 + 2], p[i * 3 + 1], sun, maxDist, useDetail);
+    if (i % slice === slice - 1) {
+      await new Promise((r) => setTimeout(r, 0));
+      if (cancelled()) return false;
+    }
+  }
+  vis.array.set(out);
+  vis.needsUpdate = true;
+  return true;
 }
 
 // ------------------------------------------------------------------------------------------- material
@@ -262,6 +323,7 @@ export function buildFar(H, { azStep = 1, sun }) {
  * (mountain shadows) on the sunlight only, and the opposition surge — the bright glow around your own
  * shadow that every Apollo photo shows.
  */
+/** @param {{ detail?: THREE.Texture | null, detailNormal?: THREE.Texture | null, surge?: number }} [opts] */
 export function regolithMaterial({ detail = null, detailNormal = null, surge = 0.5 } = {}) {
   const mat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 1, metalness: 0 });
   const uniforms = {

@@ -49,7 +49,7 @@ function pebbleGeometry() {
  * H: Heights. Returns { boulders, pebbles, colliders } — colliders are { x, y, z, sx, sy, sz, yaw } boxes
  * for rocks inside the walking area that are too tall to step over.
  */
-export function buildRocks(H, { big: bigCount = 60, boulders = 200, pebbles = 700, play = 100, seed = 4242 } = {}) {
+export function buildRocks(H, { big: bigCount = 60, boulders = 200, pebbles = 700, play = 100, bigMin = 14, seed = 4242 } = {}) {
   const r = rng(seed);
   const mat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.96, metalness: 0, flatShading: true });
   // the biggest blocks get the rounder 80-face shape; the rest (and the pebbles) 20 faces
@@ -94,7 +94,7 @@ export function buildRocks(H, { big: bigCount = 60, boulders = 200, pebbles = 70
   // the big blocks: few, mostly away from the base
   let b = 0;
   while (b < bigCount) {
-    const a = r() * Math.PI * 2, d = 14 + Math.sqrt(r()) * (NEAR_R - 16);
+    const a = r() * Math.PI * 2, d = bigMin + Math.sqrt(r()) * (NEAR_R - bigMin - 2);
     const x = Math.cos(a) * d, z = Math.sin(a) * d;
     if (!offPad(x, z, 0.2)) continue;
     place(big, b++, x, z, 0.6 + 1.6 * Math.pow(r(), 2.5), 0.3);

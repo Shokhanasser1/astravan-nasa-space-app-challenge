@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { useThree } from '@react-three/fiber';
 import * as THREE from 'three';
+import type { View } from '../state/game';
 
 /**
  * Light recipe from concept 3.0, section 03 (newer than the skeleton values in the developer guide §04).
@@ -9,17 +10,23 @@ import * as THREE from 'three';
  * Check: a greyscale screenshot shows three tones only — black sky/shadows, grey ground, white Sun and edges.
  * Skeleton values for comparison: Sun ~11°, intensity 4.2 #FFF4E0, ambient 0.035, ground bounce 0.09, Earth fill 0.32.
  */
-const SUN_EL_DEG = 1.5;
+export const SUN_EL_DEG = 1.5;
+
+/** Sun azimuth of the day: sky.json, or ~12° a day when the week has no entry (developer guide §03). */
+export const sunAzimuth = (view: View): number => view.sunAzDeg ?? 268 + 12 * (view.day - 1);
+
+/** Unit vector toward the Sun: azimuth from +Z (lunar longitude 0, toward Earth) through +X, elevation 1.5°. */
+export function sunDirection(azDeg: number, out: THREE.Vector3): THREE.Vector3 {
+  const az = THREE.MathUtils.degToRad(azDeg);
+  const el = THREE.MathUtils.degToRad(SUN_EL_DEG);
+  return out.set(Math.sin(az) * Math.cos(el), Math.sin(el), Math.cos(az) * Math.cos(el));
+}
 
 export function Light({ sunAzDeg = 268, shadowSize }: { sunAzDeg?: number; shadowSize: number }) {
   const sun = useRef<THREE.DirectionalLight>(null);
   const gl = useThree((s) => s.gl);
 
-  const position = useMemo(() => {
-    const az = THREE.MathUtils.degToRad(sunAzDeg);
-    const el = THREE.MathUtils.degToRad(SUN_EL_DEG);
-    return new THREE.Vector3(Math.sin(az) * Math.cos(el), Math.sin(el), Math.cos(az) * Math.cos(el)).multiplyScalar(400);
-  }, [sunAzDeg]);
+  const position = useMemo(() => sunDirection(sunAzDeg, new THREE.Vector3()).multiplyScalar(400), [sunAzDeg]);
 
   useEffect(() => {
     gl.shadowMap.enabled = shadowSize > 0;

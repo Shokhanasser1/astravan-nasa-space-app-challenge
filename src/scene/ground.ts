@@ -1,44 +1,42 @@
 /**
- * Ground height by formula (developer guide §04): flat for 11 m around the base, craters beyond, a hill with a view
- * over the base (standing point 5), a ridge on the horizon at 130–240 m away from the Sun's side.
- * Pure function: the rig uses it to put the eye 1.7 m above the ground.
+ * Ground height (developer guide §04, now on the real ground): NASA LRO LOLA heights of the Shackleton–de Gerlache
+ * ridge (public/data/terrain/site.json, scripts/data/moon_terrain.py) + small craters (src/look/terrain.js) + the
+ * team's own relief on top: the hill with a view over the base (standing point 5) and the dark crater of the Ice
+ * card. Flat for 11 m around the base. Pure function: the rig uses it to put the eye 1.7 m above the ground.
  */
-const FLAT_R = 11;
+import site from '../../public/data/terrain/site.json';
+import { Heights } from '../look/terrain.js';
 
-const CRATERS = [
-  { x: 42, z: -34, r: 14, d: 2.4 },
-  { x: -48, z: 38, r: 18, d: 2.8 },
-  { x: 72, z: 58, r: 10, d: 1.6 },
-  { x: -34, z: -84, r: 26, d: 5 }, // the dark crater of the Ice card
-  { x: 112, z: -16, r: 18, d: 3 },
-  { x: -116, z: -58, r: 30, d: 4.5 },
-  { x: 26, z: 96, r: 12, d: 2 },
-  { x: -84, z: 112, r: 16, d: 2.4 },
-  { x: 150, z: 90, r: 24, d: 3.5 },
-] as const;
+const FLAT_R = 11;
 
 export const ICE_CRATER = { x: -34, z: -84 } as const;
 export const HILL = { x: 17, z: 21, r: 8, h: 3.2 } as const;
+const ICE = { r: 26, d: 5 };
 
-function smooth(a: number, b: number, x: number): number {
-  const t = Math.min(1, Math.max(0, (x - a) / (b - a)));
-  return t * t * (3 - 2 * t);
+/** The team's relief (metres) added on top of the real ground. */
+function teamRelief(x: number, z: number): number {
+  const d = Math.hypot(x - ICE_CRATER.x, z - ICE_CRATER.z) / ICE.r;
+  let h = d < 1 ? -ICE.d * (1 - d * d) : 0;
+  h += 0.3 * ICE.d * Math.exp(-(((d - 1) / 0.3) ** 2));
+  h += HILL.h * Math.exp(-((x - HILL.x) ** 2 + (z - HILL.z) ** 2) / (HILL.r * HILL.r));
+  return h;
 }
 
+/**
+ * The game's frame: Sun azimuth a (src/engine/sky.json, measured from lunar longitude 0, the way to Earth) points
+ * to (sin a, cos a) in x, z — the polar map's own axes (x = ρ sin λ, y = ρ cos λ). site.json is stored turned for
+ * the 3D demo's sky (frame.rotation_deg), so a game point (x, z) = map (x, y) is turned the same way to look it up.
+ */
+const phi = (site.frame.rotation_deg * Math.PI) / 180;
+const FRAME: [number, number, number, number] = [Math.cos(phi), -Math.sin(phi), -Math.sin(phi), -Math.cos(phi)];
+
+export const GROUND = new Heights(site, 2026, {
+  pad: { x: 0, z: 0, rx: FLAT_R, rz: FLAT_R, blend: 12 },
+  extra: teamRelief,
+  frame: FRAME,
+  color: '#a3a5ad',
+});
+
 export function groundHeight(x: number, z: number): number {
-  const r = Math.hypot(x, z);
-  const k = smooth(FLAT_R, FLAT_R + 12, r);
-  if (k === 0) return 0;
-  let h = 0.35 * Math.sin(x * 0.061 + 1.3) * Math.cos(z * 0.047 - 0.4) + 0.2 * Math.sin((x + z) * 0.13);
-  for (const c of CRATERS) {
-    const d = Math.hypot(x - c.x, z - c.z) / c.r;
-    if (d < 1) h -= c.d * (1 - d * d);
-    h += 0.3 * c.d * Math.exp(-(((d - 1) / 0.3) ** 2));
-  }
-  h += HILL.h * Math.exp(-((x - HILL.x) ** 2 + (z - HILL.z) ** 2) / (HILL.r * HILL.r));
-  // Ridge: east to north (azimuth 70°–250°), away from the low Sun of the first week (268°–340°).
-  const az = ((Math.atan2(x, z) * 180) / Math.PI + 360) % 360;
-  const side = smooth(70, 110, az) * (1 - smooth(215, 250, az));
-  h += side * (22 + 6 * Math.sin(az * 0.11)) * Math.exp(-(((r - 185) / 38) ** 2));
-  return h * k;
+  return GROUND.height(x, z);
 }

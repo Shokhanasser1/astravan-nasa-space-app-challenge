@@ -6,7 +6,7 @@ import * as THREE from 'three';
 import type { Machine, View } from '../state/game';
 import { features } from '../config/features';
 import { LOWER, TIERS, hasWebGL, initialTier, type Tier } from './quality';
-import { Light } from './Light';
+import { Light, sunAzimuth } from './Light';
 import { BaseScene } from './BaseScene';
 import { Rig } from './Rig';
 import { WalkDebug } from './WalkDebug';
@@ -21,8 +21,6 @@ const params = new URLSearchParams(location.search);
 const showPerf = params.has('perf');
 // Fallback camera (developer guide view from outside): ?cam=overview. Default is first person (Rig).
 const overview = params.get('cam') === 'overview';
-// Visual fallback when sky.json has no entry for the week: the Sun circles ~12° a day (developer guide §03).
-const sunFallback = (day: number) => 268 + 12 * (day - 1);
 
 /** Dev/shot only: exposes renderer.info (calls, triangles) for scripts/shot.mjs and agents. */
 function Probe() {
@@ -70,7 +68,8 @@ export function Stage({ view, onTap, onUndo }: { view: View; onTap: (k: Machine)
         // 'percentage' = PCFShadowMap; `true` would ask for PCFSoftShadowMap, removed in three 0.187.
         shadows={q.shadow > 0 ? 'percentage' : false}
         frameloop={animating ? 'always' : 'demand'}
-        camera={{ fov: 50, near: 0.1, far: 2000, position: [8, 5, 14] }}
+        // far 3000: the real skyline is drawn at 1.5–1.95 km (Terrain.tsx), the stars behind it at 2.4 km
+        camera={{ fov: 50, near: 0.1, far: 3000, position: [8, 5, 14] }}
         gl={{ antialias: false, powerPreference: 'high-performance' }}
         onCreated={({ gl, camera }) => {
           gl.toneMapping = THREE.ACESFilmicToneMapping;
@@ -84,8 +83,8 @@ export function Stage({ view, onTap, onUndo }: { view: View; onTap: (k: Machine)
       >
         <PerformanceMonitor onDecline={() => setTier((t) => LOWER[t])} flipflops={2} />
         {/* Stars do not twinkle: no air. Replace with the Yale Bright Star catalogue when ready. */}
-        <Stars radius={900} depth={50} count={2500} factor={4} fade={false} speed={0} />
-        {features.light ? <Light sunAzDeg={view.sunAzDeg ?? sunFallback(view.day)} shadowSize={q.shadow} /> : <ambientLight intensity={0.6} />}
+        <Stars radius={2400} depth={50} count={2500} factor={4} fade={false} speed={0} />
+        {features.light ? <Light sunAzDeg={sunAzimuth(view)} shadowSize={q.shadow} /> : <ambientLight intensity={0.6} />}
         <Suspense fallback={null}>
           <BaseScene view={view} onTap={onTap} onUndo={onUndo} />
           {!overview && <Rig view={view} />}
