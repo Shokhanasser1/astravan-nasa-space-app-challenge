@@ -1,0 +1,3144 @@
+{
+  "apollo-11-site": {
+    "file": "models/apollo-11-site.glb",
+    "file_bytes": 193648,
+    "import_ok": true,
+    "gltf_extensions": [
+      "KHR_draco_mesh_compression"
+    ],
+    "gltf_animations": 0,
+    "object_count": 1,
+    "object_types": {
+      "MESH": 1
+    },
+    "mesh_object_count": 1,
+    "mesh_data_count": 1,
+    "triangles": 142768,
+    "vertices": 71386,
+    "bbox_min": [
+      -127.75,
+      -127.75,
+      1.1201
+    ],
+    "bbox_max": [
+      127.75,
+      127.75,
+      19.8502
+    ],
+    "size_xyz": [
+      255.5,
+      255.5,
+      18.7301
+    ],
+    "longest_axis": "X",
+    "orientation_note": "Blender Z-up after glTF Y-up conversion; longest axis X",
+    "materials": [
+      "Apollo11Site_mat"
+    ],
+    "material_count": 1,
+    "images": [],
+    "material_images": {},
+    "gltf_image_types": [],
+    "logo_suspects": [],
+    "import_seconds": 0.16,
+    "title": "Apollo 11 landing site (terrain print)",
+    "artifact_flag": null,
+    "visual_logo_findings": []
+  },
+  "apollo-lm": {
+    "file": "models/apollo-lm.glb",
+    "file_bytes": 716840,
+    "import_ok": true,
+    "gltf_extensions": [
+      "KHR_draco_mesh_compression",
+      "KHR_materials_specular",
+      "EXT_texture_webp"
+    ],
+    "gltf_animations": 135,
+    "object_count": 135,
+    "object_types": {
+      "EMPTY": 1,
+      "MESH": 134
+    },
+    "mesh_object_count": 134,
+    "mesh_data_count": 134,
+    "triangles": 97588,
+    "vertices": 64787,
+    "bbox_min": [
+      -3.2145,
+      -3.2109,
+      0.1026
+    ],
+    "bbox_max": [
+      3.2129,
+      3.2157,
+      5.1154
+    ],
+    "size_xyz": [
+      6.4274,
+      6.4266,
+      5.0128
+    ],
+    "longest_axis": "X",
+    "orientation_note": "Blender Z-up after glTF Y-up conversion; longest axis X",
+    "materials": [
+      "blinn10SG.001",
+      "blinn12SG.001",
+      "blinn1SG.002",
+      "blinn2SG.002",
+      "blinn3SG.001",
+      "blinn4SG.002",
+      "blinn5SG.002",
+      "blinn6SG.001",
+      "blinn7SG.002",
+      "blinn8SG.001",
+      "blinn9SG.001",
+      "initialShadingGr.001"
+    ],
+    "material_count": 12,
+    "images": [
+      {
+        "name": "BOOSTER3",
+        "width": 400,
+        "height": 400,
+        "packed": true,
+        "filepath": ""
+      },
+      {
+        "name": "TEXTURE_",
+        "width": 900,
+        "height": 900,
+        "packed": true,
+        "filepath": ""
+      },
+      {
+        "name": "TEXTUREA",
+        "width": 900,
+        "height": 900,
+        "packed": true,
+        "filepath": ""
+      }
+    ],
+    "material_images": {
+      "blinn12SG.001": [
+        "TEXTURE_"
+      ],
+      "blinn5SG.002": [
+        "BOOSTER3"
+      ],
+      "blinn8SG.001": [
+        "TEXTUREA"
+      ]
+    },
+    "gltf_image_types": [
+      "image/png",
+      "image/webp"
+    ],
+    "logo_suspects": [],
+    "import_seconds": 0.25,
+    "title": "Apollo Lunar Module",
+    "artifact_flag": null,
+    "visual_logo_findings": [
+      "TEXTURE_ (mat blinn12SG.001): US flag",
+      "TEXTUREA (mat blinn8SG.001): 'UNITED STATES' lettering"
+    ]
+  },
+  "astronaut": {
+    "file": "models/astronaut.glb",
+    "file_bytes": 762988,
+    "import_ok": true,
+    "gltf_extensions": [
+      "KHR_draco_mesh_compression",
+      "EXT_texture_webp"
+    ],
+    "gltf_animations": 0,
+    "object_count": 2,
+    "object_types": {
+      "EMPTY": 1,
+      "MESH": 1
+    },
+    "mesh_object_count": 1,
+    "mesh_data_count": 1,
+    "triangles": 6381,
+    "vertices": 19143,
+    "bbox_min": [
+      -34.4546,
+      -13.8006,
+      -37.1314
+    ],
+    "bbox_max": [
+      34.4547,
+      13.8003,
+      37.1313
+    ],
+    "size_xyz": [
+      68.9093,
+      27.6009,
+      74.2627
+    ],
+    "longest_axis": "Z",
+    "orientation_note": "Blender Z-up after glTF Y-up conversion; longest axis Z",
+    "materials": [
+      "astnt1_1",
+      "astnt1_2"
+    ],
+    "material_count": 2,
+    "images": [
+      {
+        "name": "astnt1_1",
+        "width": 1024,
+        "height": 1024,
+        "packed": true,
+        "filepath": ""
+      },
+      {
+        "name": "astnt1_2",
+        "width": 128,
+        "height": 128,
+        "packed": true,
+        "filepath": ""
+      }
+    ],
+    "material_images": {
+      "astnt1_1": [
+        "astnt1_1"
+      ],
+      "astnt1_2": [
+        "astnt1_2"
+      ]
+    },
+    "gltf_image_types": [
+      "image/png",
+      "image/webp"
+    ],
+    "logo_suspects": [],
+    "import_seconds": 0.06,
+    "title": "Astronaut",
+    "artifact_flag": "artifact: painted flags/logos in texture",
+    "visual_logo_findings": [
+      "astnt1_1 (mat astnt1_1): US flags + NASA meatball on suit"
+    ]
+  },
+  "crew-lock-bag": {
+    "file": "models/crew-lock-bag.glb",
+    "file_bytes": 609256,
+    "import_ok": true,
+    "gltf_extensions": [
+      "EXT_texture_webp"
+    ],
+    "gltf_animations": 0,
+    "object_count": 2,
+    "object_types": {
+      "EMPTY": 1,
+      "MESH": 1
+    },
+    "mesh_object_count": 1,
+    "mesh_data_count": 1,
+    "triangles": 514,
+    "vertices": 1542,
+    "bbox_min": [
+      -7.025,
+      -2.7056,
+      -7.7317
+    ],
+    "bbox_max": [
+      7.025,
+      2.7056,
+      7.7317
+    ],
+    "size_xyz": [
+      14.05,
+      5.4112,
+      15.4634
+    ],
+    "longest_axis": "Z",
+    "orientation_note": "Blender Z-up after glTF Y-up conversion; longest axis Z",
+    "materials": [
+      "crwlckbg1_1"
+    ],
+    "material_count": 1,
+    "images": [
+      {
+        "name": "crwlckbg",
+        "width": 1024,
+        "height": 512,
+        "packed": true,
+        "filepath": ""
+      }
+    ],
+    "material_images": {
+      "crwlckbg1_1": [
+        "crwlckbg"
+      ]
+    },
+    "gltf_image_types": [
+      "image/png",
+      "image/webp"
+    ],
+    "logo_suspects": [],
+    "import_seconds": 0.03,
+    "title": "Crew Lock Bag (ISS EVA)",
+    "artifact_flag": null,
+    "visual_logo_findings": []
+  },
+  "curiosity": {
+    "file": "models/curiosity.glb",
+    "file_bytes": 11860016,
+    "import_ok": true,
+    "gltf_extensions": [],
+    "gltf_animations": 0,
+    "object_count": 1,
+    "object_types": {
+      "MESH": 1
+    },
+    "mesh_object_count": 1,
+    "mesh_data_count": 1,
+    "triangles": 51305,
+    "vertices": 63516,
+    "bbox_min": [
+      -1.3868,
+      -2.2854,
+      0.0076
+    ],
+    "bbox_max": [
+      1.395,
+      1.6592,
+      2.2228
+    ],
+    "size_xyz": [
+      2.7818,
+      3.9447,
+      2.2152
+    ],
+    "longest_axis": "Y",
+    "orientation_note": "Blender Z-up after glTF Y-up conversion; longest axis Y",
+    "materials": [
+      "internals",
+      "parts_AO",
+      "tex_01",
+      "tex_02",
+      "tex_03",
+      "tex_03a",
+      "tex_04",
+      "tex_05",
+      "wheels"
+    ],
+    "material_count": 9,
+    "images": [
+      {
+        "name": "parts_AO.jpg",
+        "width": 1024,
+        "height": 1024,
+        "packed": true,
+        "filepath": ""
+      },
+      {
+        "name": "tex_01.jpg",
+        "width": 1024,
+        "height": 1024,
+        "packed": true,
+        "filepath": ""
+      },
+      {
+        "name": "tex_02.jpg",
+        "width": 1024,
+        "height": 1024,
+        "packed": true,
+        "filepath": ""
+      },
+      {
+        "name": "tex_03.png",
+        "width": 1024,
+        "height": 1024,
+        "packed": true,
+        "filepath": ""
+      },
+      {
+        "name": "tex_03.png.001",
+        "width": 1024,
+        "height": 1024,
+        "packed": true,
+        "filepath": ""
+      },
+      {
+        "name": "tex_03.png.002",
+        "width": 1024,
+        "height": 1024,
+        "packed": true,
+        "filepath": ""
+      },
+      {
+        "name": "tex_03_n.jpg",
+        "width": 1024,
+        "height": 1024,
+        "packed": true,
+        "filepath": ""
+      },
+      {
+        "name": "tex_04.jpg",
+        "width": 1024,
+        "height": 1024,
+        "packed": true,
+        "filepath": ""
+      },
+      {
+        "name": "tex_05.jpg",
+        "width": 512,
+        "height": 512,
+        "packed": true,
+        "filepath": ""
+      }
+    ],
+    "material_images": {
+      "parts_AO": [
+        "parts_AO.jpg"
+      ],
+      "tex_01": [
+        "tex_01.jpg"
+      ],
+      "tex_02": [
+        "tex_02.jpg"
+      ],
+      "tex_03": [
+        "tex_03.png.001"
+      ],
+      "tex_03a": [
+        "tex_03.png.002"
+      ],
+      "tex_04": [
+        "tex_04.jpg"
+      ],
+      "tex_05": [
+        "tex_05.jpg"
+      ],
+      "wheels": [
+        "tex_03.png",
+        "tex_03_n.jpg"
+      ]
+    },
+    "gltf_image_types": [
+      "image/png"
+    ],
+    "logo_suspects": [],
+    "import_seconds": 0.18,
+    "title": "Curiosity rover (MSL)",
+    "artifact_flag": null,
+    "visual_logo_findings": [
+      "tex_05.jpg (mat tex_05): 'CURIOSITY' lettering, NASA meatball and flag-style medallions"
+    ]
+  },
+  "dsn-34m": {
+    "file": "models/dsn-34m.glb",
+    "file_bytes": 2903116,
+    "import_ok": true,
+    "gltf_extensions": [
+      "KHR_draco_mesh_compression",
+      "EXT_texture_webp"
+    ],
+    "gltf_animations": 0,
+    "object_count": 8,
+    "object_types": {
+      "MESH": 8
+    },
+    "mesh_object_count": 8,
+    "mesh_data_count": 8,
+    "triangles": 31842,
+    "vertices": 55637,
+    "bbox_min": [
+      -16.9009,
+      -16.865,
+      -0.9822
+    ],
+    "bbox_max": [
+      17.1239,
+      17.1045,
+      35.8099
+    ],
+    "size_xyz": [
+      34.0248,
+      33.9695,
+      36.7921
+    ],
+    "longest_axis": "Z",
+    "orientation_note": "Blender Z-up after glTF Y-up conversion; longest axis Z",
+    "materials": [
+      "base_AO",
+      "frame_AO",
+      "stairs_plt_AO",
+      "tex_01",
+      "tex_02",
+      "tex_02.003",
+      "truss_2",
+      "truss_dish_AO",
+      "wheels_AO"
+    ],
+    "material_count": 9,
+    "images": [
+      {
+        "name": "base_AO",
+        "width": 1024,
+        "height": 1024,
+        "packed": true,
+        "filepath": ""
+      },
+      {
+        "name": "frame_AO",
+        "width": 1024,
+        "height": 1024,
+        "packed": true,
+        "filepath": ""
+      },
+      {
+        "name": "tex_01.psd",
+        "width": 1024,
+        "height": 1024,
+        "packed": true,
+        "filepath": ""
+      },
+      {
+        "name": "tex_02",
+        "width": 512,
+        "height": 512,
+        "packed": true,
+        "filepath": ""
+      },
+      {
+        "name": "truss_dish_AO",
+        "width": 1024,
+        "height": 1024,
+        "packed": true,
+        "filepath": ""
+      }
+    ],
+    "material_images": {
+      "base_AO": [
+        "base_AO"
+      ],
+      "frame_AO": [
+        "frame_AO"
+      ],
+      "tex_01": [
+        "tex_01.psd"
+      ],
+      "tex_02": [
+        "tex_02"
+      ],
+      "tex_02.003": [
+        "tex_02"
+      ],
+      "truss_dish_AO": [
+        "truss_dish_AO"
+      ]
+    },
+    "gltf_image_types": [
+      "image/jpeg",
+      "image/png",
+      "image/webp"
+    ],
+    "logo_suspects": [],
+    "import_seconds": 0.13,
+    "title": "Deep Space Network 34 m antenna",
+    "artifact_flag": null,
+    "visual_logo_findings": []
+  },
+  "earth-globe": {
+    "file": "models/earth-globe.glb",
+    "file_bytes": 602776,
+    "import_ok": true,
+    "gltf_extensions": [],
+    "gltf_animations": 0,
+    "object_count": 1,
+    "object_types": {
+      "MESH": 1
+    },
+    "mesh_object_count": 1,
+    "mesh_data_count": 1,
+    "triangles": 9024,
+    "vertices": 4751,
+    "bbox_min": [
+      -1.0,
+      -1.0,
+      -1.0
+    ],
+    "bbox_max": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "size_xyz": [
+      2.0,
+      2.0,
+      2.0
+    ],
+    "longest_axis": "X",
+    "orientation_note": "Blender Z-up after glTF Y-up conversion; longest axis X",
+    "materials": [
+      "Earth_mat"
+    ],
+    "material_count": 1,
+    "images": [
+      {
+        "name": "Image_0",
+        "width": 2048,
+        "height": 1024,
+        "packed": true,
+        "filepath": ""
+      }
+    ],
+    "material_images": {
+      "Earth_mat": [
+        "Image_0"
+      ]
+    },
+    "gltf_image_types": [
+      "image/jpeg"
+    ],
+    "logo_suspects": [],
+    "import_seconds": 0.03,
+    "title": "Earth globe",
+    "artifact_flag": null,
+    "visual_logo_findings": []
+  },
+  "emu": {
+    "file": "models/emu.glb",
+    "file_bytes": 3448904,
+    "import_ok": true,
+    "gltf_extensions": [
+      "KHR_draco_mesh_compression",
+      "KHR_materials_transmission",
+      "KHR_materials_specular",
+      "KHR_materials_ior",
+      "EXT_texture_webp"
+    ],
+    "gltf_animations": 0,
+    "object_count": 1,
+    "object_types": {
+      "MESH": 1
+    },
+    "mesh_object_count": 1,
+    "mesh_data_count": 1,
+    "triangles": 343455,
+    "vertices": 442172,
+    "bbox_min": [
+      -0.5702,
+      -0.9289,
+      0.0478
+    ],
+    "bbox_max": [
+      0.5647,
+      0.4845,
+      2.0506
+    ],
+    "size_xyz": [
+      1.1349,
+      1.4134,
+      2.0028
+    ],
+    "longest_axis": "Z",
+    "orientation_note": "Blender Z-up after glTF Y-up conversion; longest axis Z",
+    "materials": [
+      "EMU:emusuit21_blinn12SG",
+      "EMU:emusuit21_blinn1SG",
+      "EMU:emusuit21_blinn2SG",
+      "EMU:emusuit21_blinn3SG",
+      "EMU:emusuit21_body_lambert2SG",
+      "EMU:emusuit21_emusuit4_justbody_blinn3SG",
+      "EMU:emusuit21_emusuit4_justbody_lambert2SG",
+      "EMU:emusuit21_emusuit5_blinn1SG",
+      "EMU:emusuit21_emusuit5_blinn2SG",
+      "EMU:emusuit21_emusuit5_blinn3SG",
+      "EMU:emusuit21_emusuit5_jetpack2SG",
+      "EMU:emusuit21_emusuit5_lambert2SG",
+      "EMU:emusuit21_emusuit5_lambert3SG",
+      "EMU:emusuit21_emusuit5_lambert5SG",
+      "EMU:emusuit21_jetpack2SG",
+      "EMU:emusuit21_lambert10SG",
+      "EMU:emusuit21_lambert11SG",
+      "EMU:emusuit21_lambert2SG",
+      "EMU:emusuit21_lambert3SG",
+      "EMU:emusuit21_lambert4SG",
+      "EMU:emusuit21_lambert5SG",
+      "EMU:emusuit21_lambert7SG",
+      "EMU:emusuit21_lambert8SG",
+      "EMU:emusuit21_lambert9SG",
+      "EMU:initialShadingGroup"
+    ],
+    "material_count": 25,
+    "images": [
+      {
+        "name": "emusuitbox4",
+        "width": 1000,
+        "height": 1032,
+        "packed": true,
+        "filepath": ""
+      },
+      {
+        "name": "emusuitFLAGpatch",
+        "width": 582,
+        "height": 564,
+        "packed": true,
+        "filepath": ""
+      },
+      {
+        "name": "emusuitvitruvianpatch",
+        "width": 582,
+        "height": 564,
+        "packed": true,
+        "filepath": ""
+      }
+    ],
+    "material_images": {
+      "EMU:emusuit21_emusuit5_jetpack2SG": [
+        "emusuitFLAGpatch"
+      ],
+      "EMU:emusuit21_lambert7SG": [
+        "emusuitbox4"
+      ],
+      "EMU:emusuit21_lambert8SG": [
+        "emusuitvitruvianpatch"
+      ],
+      "EMU:emusuit21_lambert9SG": [
+        "emusuitFLAGpatch"
+      ]
+    },
+    "gltf_image_types": [
+      "image/png",
+      "image/webp"
+    ],
+    "logo_suspects": [
+      {
+        "kind": "image",
+        "name": "emusuitFLAGpatch",
+        "match": "flag"
+      },
+      {
+        "kind": "image",
+        "name": "emusuitvitruvianpatch",
+        "match": "vitruvian"
+      },
+      {
+        "kind": "gltf_image",
+        "name": "emusuitFLAGpatch",
+        "match": "flag"
+      },
+      {
+        "kind": "gltf_image",
+        "name": "emusuitvitruvianpatch",
+        "match": "vitruvian"
+      }
+    ],
+    "import_seconds": 0.62,
+    "title": "EMU spacesuit",
+    "artifact_flag": "artifact: hides emusuitFLAGpatch, emusuitvitruvianpatch, emusuitbox4",
+    "visual_logo_findings": [
+      "emusuitFLAGpatch (mats emusuit5_jetpack2SG, lambert9SG): US flag",
+      "emusuitvitruvianpatch (mat lambert8SG): mission-style patch",
+      "emusuitbox4 (mat lambert7SG): small control-box lettering"
+    ]
+  },
+  "gateway": {
+    "file": "models/gateway.glb",
+    "file_bytes": 9255740,
+    "import_ok": true,
+    "gltf_extensions": [
+      "KHR_draco_mesh_compression",
+      "KHR_materials_ior",
+      "KHR_materials_specular"
+    ],
+    "gltf_animations": 0,
+    "object_count": 9,
+    "object_types": {
+      "MESH": 9
+    },
+    "mesh_object_count": 9,
+    "mesh_data_count": 9,
+    "triangles": 97764,
+    "vertices": 128287,
+    "bbox_min": [
+      -6.8507,
+      -17.7121,
+      -18.2894
+    ],
+    "bbox_max": [
+      11.032,
+      12.3576,
+      20.6814
+    ],
+    "size_xyz": [
+      17.8828,
+      30.0697,
+      38.9708
+    ],
+    "longest_axis": "Z",
+    "orientation_note": "Blender Z-up after glTF Y-up conversion; longest axis Z",
+    "materials": [
+      "ALM_aux",
+      "ALM_main",
+      "DSXR",
+      "Default",
+      "ERMXL_aux",
+      "ERMXL_main",
+      "HALO_aux",
+      "HALO_main",
+      "NDS_ports",
+      "NDS_ports.002",
+      "PPE_aux",
+      "PPE_main",
+      "iHab_aux",
+      "iHab_main"
+    ],
+    "material_count": 14,
+    "images": [
+      {
+        "name": "ALM_aux_BaseColor.png-ALM_aux_Alpha",
+        "width": 1024,
+        "height": 1024,
+        "packed": true,
+        "filepath": ""
+      },
+      {
+        "name": "ALM_aux_Metallic.png-ALM_aux_Roughness",
+        "width": 1024,
+        "height": 1024,
+        "packed": true,
+        "filepath": ""
+      },
+      {
+        "name": "ALM_aux_Normal",
+        "width": 1024,
+        "height": 1024,
+        "packed": true,
+        "filepath": ""
+      },
+      {
+        "name": "ALM_main_BaseColor.png-ALM_main_Alpha",
+        "width": 1024,
+        "height": 1024,
+        "packed": true,
+        "filepath": ""
+      },
+      {
+        "name": "ALM_main_Metallic.png-ALM_main_Roughness",
+        "width": 1024,
+        "height": 1024,
+        "packed": true,
+        "filepath": ""
+      },
+      {
+        "name": "ALM_main_Normal",
+        "width": 1024,
+        "height": 1024,
+        "packed": true,
+        "filepath": ""
+      },
+      {
+        "name": "DSXR_BaseColor",
+        "width": 1024,
+        "height": 1024,
+        "packed": true,
+        "filepath": ""
+      },
+      {
+        "name": "DSXR_Emission",
+        "width": 1024,
+        "height": 1024,
+        "packed": true,
+        "filepath": ""
+      },
+      {
+        "name": "DSXR_Metallic.png-DSXR_Roughness",
+        "width": 1024,
+        "height": 1024,
+        "packed": true,
+        "filepath": ""
+      },
+      {
+        "name": "DSXR_Normal",
+        "width": 1024,
+        "height": 1024,
+        "packed": true,
+        "filepath": ""
+      },
+      {
+        "name": "ERMXL_aux_BaseColor.png-ERMXL_aux_Alpha",
+        "width": 1024,
+        "height": 1024,
+        "packed": true,
+        "filepath": ""
+      },
+      {
+        "name": "ERMXL_aux_Metallic.png-ERMXL_aux_Roughness",
+        "width": 1024,
+        "height": 1024,
+        "packed": true,
+        "filepath": ""
+      },
+      {
+        "name": "ERMXL_aux_Normal",
+        "width": 1024,
+        "height": 1024,
+        "packed": true,
+        "filepath": ""
+      },
+      {
+        "name": "ERMXL_main_BaseColor.png-ERMXL_main_Alpha",
+        "width": 1024,
+        "height": 1024,
+        "packed": true,
+        "filepath": ""
+      },
+      {
+        "name": "ERMXL_main_Metallic.png-ERMXL_main_Roughness",
+        "width": 1024,
+        "height": 1024,
+        "packed": true,
+        "filepath": ""
+      },
+      {
+        "name": "ERMXL_main_Normal",
+        "width": 1024,
+        "height": 1024,
+        "packed": true,
+        "filepath": ""
+      },
+      {
+        "name": "HALO_aux_BaseColor.png-HALO_aux_Alpha",
+        "width": 1024,
+        "height": 1024,
+        "packed": true,
+        "filepath": ""
+      },
+      {
+        "name": "HALO_aux_Metallic.png-HALO_aux_Roughness",
+        "width": 1024,
+        "height": 1024,
+        "packed": true,
+        "filepath": ""
+      },
+      {
+        "name": "HALO_aux_Normal",
+        "width": 1024,
+        "height": 1024,
+        "packed": true,
+        "filepath": ""
+      },
+      {
+        "name": "HALO_main_BaseColor.png-HALO_main_Alpha",
+        "width": 1024,
+        "height": 1024,
+        "packed": true,
+        "filepath": ""
+      },
+      {
+        "name": "HALO_main_Metallic.png-HALO_main_Roughness",
+        "width": 1024,
+        "height": 1024,
+        "packed": true,
+        "filepath": ""
+      },
+      {
+        "name": "HALO_main_Normal",
+        "width": 1024,
+        "height": 1024,
+        "packed": true,
+        "filepath": ""
+      },
+      {
+        "name": "iHAB_aux_BaseColor.png-iHAB_aux_Alpha",
+        "width": 1024,
+        "height": 1024,
+        "packed": true,
+        "filepath": ""
+      },
+      {
+        "name": "iHAB_aux_Metallic.png-iHAB_aux_Roughness",
+        "width": 1024,
+        "height": 1024,
+        "packed": true,
+        "filepath": ""
+      },
+      {
+        "name": "iHAB_aux_Normal",
+        "width": 1024,
+        "height": 1024,
+        "packed": true,
+        "filepath": ""
+      },
+      {
+        "name": "iHAB_main_BaseColor.png-iHAB_main_Alpha",
+        "width": 1024,
+        "height": 1024,
+        "packed": true,
+        "filepath": ""
+      },
+      {
+        "name": "iHAB_main_Metallic.png-iHAB_main_Roughness",
+        "width": 1024,
+        "height": 1024,
+        "packed": true,
+        "filepath": ""
+      },
+      {
+        "name": "iHAB_main_Normal",
+        "width": 1024,
+        "height": 1024,
+        "packed": true,
+        "filepath": ""
+      },
+      {
+        "name": "NDS_ports_BaseColor.png-NDS_ports_Alpha",
+        "width": 1024,
+        "height": 1024,
+        "packed": true,
+        "filepath": ""
+      },
+      {
+        "name": "NDS_ports_Metallic.png-NDS_ports_Roughness",
+        "width": 1024,
+        "height": 1024,
+        "packed": true,
+        "filepath": ""
+      },
+      {
+        "name": "NDS_ports_Normal",
+        "width": 1024,
+        "height": 1024,
+        "packed": true,
+        "filepath": ""
+      },
+      {
+        "name": "PPE_array_BaseColor",
+        "width": 1024,
+        "height": 1024,
+        "packed": true,
+        "filepath": ""
+      },
+      {
+        "name": "PPE_array_Metallic.png-PPE_array_Roughness",
+        "width": 1024,
+        "height": 1024,
+        "packed": true,
+        "filepath": ""
+      },
+      {
+        "name": "PPE_array_Normal",
+        "width": 1024,
+        "height": 1024,
+        "packed": true,
+        "filepath": ""
+      },
+      {
+        "name": "PPE_main_BaseColor",
+        "width": 1024,
+        "height": 1024,
+        "packed": true,
+        "filepath": ""
+      },
+      {
+        "name": "PPE_main_Metallic.png-PPE_main_Roughness",
+        "width": 1024,
+        "height": 1024,
+        "packed": true,
+        "filepath": ""
+      },
+      {
+        "name": "PPE_main_Normal",
+        "width": 1024,
+        "height": 1024,
+        "packed": true,
+        "filepath": ""
+      }
+    ],
+    "material_images": {
+      "ALM_aux": [
+        "ALM_aux_BaseColor.png-ALM_aux_Alpha",
+        "ALM_aux_Metallic.png-ALM_aux_Roughness",
+        "ALM_aux_Normal"
+      ],
+      "ALM_main": [
+        "ALM_main_BaseColor.png-ALM_main_Alpha",
+        "ALM_main_Metallic.png-ALM_main_Roughness",
+        "ALM_main_Normal"
+      ],
+      "DSXR": [
+        "DSXR_BaseColor",
+        "DSXR_Emission",
+        "DSXR_Metallic.png-DSXR_Roughness",
+        "DSXR_Normal"
+      ],
+      "ERMXL_aux": [
+        "ERMXL_aux_BaseColor.png-ERMXL_aux_Alpha",
+        "ERMXL_aux_Metallic.png-ERMXL_aux_Roughness",
+        "ERMXL_aux_Normal"
+      ],
+      "ERMXL_main": [
+        "ERMXL_main_BaseColor.png-ERMXL_main_Alpha",
+        "ERMXL_main_Metallic.png-ERMXL_main_Roughness",
+        "ERMXL_main_Normal"
+      ],
+      "HALO_aux": [
+        "HALO_aux_BaseColor.png-HALO_aux_Alpha",
+        "HALO_aux_Metallic.png-HALO_aux_Roughness",
+        "HALO_aux_Normal"
+      ],
+      "HALO_main": [
+        "HALO_main_BaseColor.png-HALO_main_Alpha",
+        "HALO_main_Metallic.png-HALO_main_Roughness",
+        "HALO_main_Normal"
+      ],
+      "iHab_aux": [
+        "iHAB_aux_BaseColor.png-iHAB_aux_Alpha",
+        "iHAB_aux_Metallic.png-iHAB_aux_Roughness",
+        "iHAB_aux_Normal"
+      ],
+      "iHab_main": [
+        "iHAB_main_BaseColor.png-iHAB_main_Alpha",
+        "iHAB_main_Metallic.png-iHAB_main_Roughness",
+        "iHAB_main_Normal"
+      ],
+      "NDS_ports": [
+        "NDS_ports_BaseColor.png-NDS_ports_Alpha",
+        "NDS_ports_Metallic.png-NDS_ports_Roughness",
+        "NDS_ports_Normal"
+      ],
+      "NDS_ports.002": [
+        "NDS_ports_BaseColor.png-NDS_ports_Alpha",
+        "NDS_ports_Metallic.png-NDS_ports_Roughness"
+      ],
+      "PPE_aux": [
+        "PPE_array_BaseColor",
+        "PPE_array_Metallic.png-PPE_array_Roughness",
+        "PPE_array_Normal"
+      ],
+      "PPE_main": [
+        "PPE_main_BaseColor",
+        "PPE_main_Metallic.png-PPE_main_Roughness",
+        "PPE_main_Normal"
+      ]
+    },
+    "gltf_image_types": [
+      "image/jpeg",
+      "image/png"
+    ],
+    "logo_suspects": [],
+    "import_seconds": 0.33,
+    "title": "Lunar Gateway",
+    "artifact_flag": null,
+    "visual_logo_findings": [
+      "DSXR_BaseColor (mat DSXR): 'Canada' wordmark"
+    ]
+  },
+  "goes": {
+    "file": "models/goes.glb",
+    "file_bytes": 335620,
+    "import_ok": true,
+    "gltf_extensions": [
+      "KHR_draco_mesh_compression"
+    ],
+    "gltf_animations": 0,
+    "object_count": 2,
+    "object_types": {
+      "EMPTY": 1,
+      "MESH": 1
+    },
+    "mesh_object_count": 1,
+    "mesh_data_count": 1,
+    "triangles": 40935,
+    "vertices": 122805,
+    "bbox_min": [
+      -0.0973,
+      -0.026,
+      -0.0843
+    ],
+    "bbox_max": [
+      0.0372,
+      0.0853,
+      0.0376
+    ],
+    "size_xyz": [
+      0.1344,
+      0.1114,
+      0.122
+    ],
+    "longest_axis": "X",
+    "orientation_note": "Blender Z-up after glTF Y-up conversion; longest axis X",
+    "materials": [
+      "Goes2-main-MagBoom-sm",
+      "Goes2-main-black-Foil",
+      "Goes2-main-black-diskk",
+      "Goes2-main-black-fl",
+      "Goes2-main-black-sm",
+      "Goes2-main-bronze-fl",
+      "Goes2-main-bronze-sm",
+      "Goes2-main-brown-fl",
+      "Goes2-main-brown-sm",
+      "Goes2-main-gold-fl",
+      "Goes2-main-gold-sm",
+      "Goes2-main-grey-fl",
+      "Goes2-main-grey-sm",
+      "Goes2-main-silver-fl",
+      "Goes2-main-silver-sm",
+      "Goes2-main-white-fl",
+      "Goes2-main-white-sm",
+      "Goes2-solarpanel-faces",
+      "Parasol-Solar1",
+      "Parasol-Solar2",
+      "Parasol-Solar3",
+      "Parasol-Solar4",
+      "Parasol-Solar5",
+      "SEA-Silver-sm"
+    ],
+    "material_count": 24,
+    "images": [],
+    "material_images": {},
+    "gltf_image_types": [],
+    "logo_suspects": [],
+    "import_seconds": 0.16,
+    "title": "GOES weather satellite",
+    "artifact_flag": null,
+    "visual_logo_findings": []
+  },
+  "hammer": {
+    "file": "models/hammer.glb",
+    "file_bytes": 10912,
+    "import_ok": true,
+    "gltf_extensions": [
+      "KHR_draco_mesh_compression",
+      "KHR_materials_specular"
+    ],
+    "gltf_animations": 1,
+    "object_count": 1,
+    "object_types": {
+      "MESH": 1
+    },
+    "mesh_object_count": 1,
+    "mesh_data_count": 1,
+    "triangles": 692,
+    "vertices": 1092,
+    "bbox_min": [
+      -0.0779,
+      -0.1782,
+      -0.0346
+    ],
+    "bbox_max": [
+      0.0779,
+      0.1782,
+      0.0346
+    ],
+    "size_xyz": [
+      0.1558,
+      0.3564,
+      0.0692
+    ],
+    "longest_axis": "Y",
+    "orientation_note": "Blender Z-up after glTF Y-up conversion; longest axis Y",
+    "materials": [
+      "HAMMER",
+      "HAMMER-HEAD",
+      "grip"
+    ],
+    "material_count": 3,
+    "images": [],
+    "material_images": {},
+    "gltf_image_types": [],
+    "logo_suspects": [],
+    "import_seconds": 0.02,
+    "title": "EVA hammer",
+    "artifact_flag": null,
+    "visual_logo_findings": []
+  },
+  "hdu-1": {
+    "file": "models/hdu-1.glb",
+    "file_bytes": 516748,
+    "import_ok": true,
+    "gltf_extensions": [
+      "KHR_draco_mesh_compression",
+      "KHR_materials_transmission",
+      "KHR_materials_specular",
+      "KHR_materials_ior",
+      "EXT_texture_webp"
+    ],
+    "gltf_animations": 0,
+    "object_count": 1,
+    "object_types": {
+      "MESH": 1
+    },
+    "mesh_object_count": 1,
+    "mesh_data_count": 1,
+    "triangles": 2264,
+    "vertices": 1922,
+    "bbox_min": [
+      -142.2571,
+      -82.9596,
+      11.525
+    ],
+    "bbox_max": [
+      237.941,
+      82.9695,
+      228.9502
+    ],
+    "size_xyz": [
+      380.1981,
+      165.9291,
+      217.4252
+    ],
+    "longest_axis": "X",
+    "orientation_note": "Blender Z-up after glTF Y-up conversion; longest axis X",
+    "materials": [
+      "lambert2SG"
+    ],
+    "material_count": 1,
+    "images": [
+      {
+        "name": "HDU_01",
+        "width": 1024,
+        "height": 1024,
+        "packed": true,
+        "filepath": ""
+      }
+    ],
+    "material_images": {
+      "lambert2SG": [
+        "HDU_01"
+      ]
+    },
+    "gltf_image_types": [
+      "image/jpeg",
+      "image/webp"
+    ],
+    "logo_suspects": [],
+    "import_seconds": 0.03,
+    "title": "Habitat Demonstration Unit (1)",
+    "artifact_flag": "artifact: painted flags/logos in texture",
+    "visual_logo_findings": [
+      "HDU_01 (mat lambert2SG): US flags, NASA meatballs, 'AIRLOCK' lettering"
+    ]
+  },
+  "hdu-2": {
+    "file": "models/hdu-2.glb",
+    "file_bytes": 710988,
+    "import_ok": true,
+    "gltf_extensions": [
+      "KHR_draco_mesh_compression",
+      "KHR_materials_transmission",
+      "KHR_materials_specular",
+      "KHR_materials_ior",
+      "EXT_texture_webp"
+    ],
+    "gltf_animations": 0,
+    "object_count": 1,
+    "object_types": {
+      "MESH": 1
+    },
+    "mesh_object_count": 1,
+    "mesh_data_count": 1,
+    "triangles": 4320,
+    "vertices": 5099,
+    "bbox_min": [
+      -300.137,
+      -254.322,
+      -0.6879
+    ],
+    "bbox_max": [
+      356.2795,
+      204.204,
+      225.7304
+    ],
+    "size_xyz": [
+      656.4165,
+      458.526,
+      226.4183
+    ],
+    "longest_axis": "X",
+    "orientation_note": "Blender Z-up after glTF Y-up conversion; longest axis X",
+    "materials": [
+      "lambert3SG"
+    ],
+    "material_count": 1,
+    "images": [
+      {
+        "name": "HDU_02",
+        "width": 1024,
+        "height": 1024,
+        "packed": true,
+        "filepath": ""
+      }
+    ],
+    "material_images": {
+      "lambert3SG": [
+        "HDU_02"
+      ]
+    },
+    "gltf_image_types": [
+      "image/jpeg",
+      "image/webp"
+    ],
+    "logo_suspects": [],
+    "import_seconds": 0.03,
+    "title": "Habitat Demonstration Unit (2)",
+    "artifact_flag": "artifact: painted flags/logos in texture",
+    "visual_logo_findings": [
+      "HDU_02 (mat lambert3SG): no flag/logo visible at full res, only hazard-stripe decals"
+    ]
+  },
+  "helmet": {
+    "file": "models/helmet.glb",
+    "file_bytes": 232496,
+    "import_ok": true,
+    "gltf_extensions": [
+      "KHR_draco_mesh_compression",
+      "KHR_materials_specular"
+    ],
+    "gltf_animations": 1,
+    "object_count": 6,
+    "object_types": {
+      "MESH": 6
+    },
+    "mesh_object_count": 6,
+    "mesh_data_count": 6,
+    "triangles": 64664,
+    "vertices": 39843,
+    "bbox_min": [
+      -7.0332,
+      -7.0521,
+      -6.8626
+    ],
+    "bbox_max": [
+      7.0332,
+      7.0212,
+      6.8681
+    ],
+    "size_xyz": [
+      14.0664,
+      14.0732,
+      13.7307
+    ],
+    "longest_axis": "Y",
+    "orientation_note": "Blender Z-up after glTF Y-up conversion; longest axis Y",
+    "materials": [
+      "Tree",
+      "White",
+      "helmet",
+      "visor"
+    ],
+    "material_count": 4,
+    "images": [],
+    "material_images": {},
+    "gltf_image_types": [],
+    "logo_suspects": [],
+    "import_seconds": 0.08,
+    "title": "EVA helmet",
+    "artifact_flag": null,
+    "visual_logo_findings": []
+  },
+  "iss": {
+    "file": "models/iss.glb",
+    "file_bytes": 476992,
+    "import_ok": true,
+    "gltf_extensions": [
+      "KHR_draco_mesh_compression",
+      "KHR_materials_specular"
+    ],
+    "gltf_animations": 11,
+    "object_count": 11,
+    "object_types": {
+      "EMPTY": 1,
+      "MESH": 10
+    },
+    "mesh_object_count": 10,
+    "mesh_data_count": 10,
+    "triangles": 174440,
+    "vertices": 103071,
+    "bbox_min": [
+      -11.1297,
+      -22.6797,
+      -4.1685
+    ],
+    "bbox_max": [
+      3.2879,
+      22.8646,
+      41.264
+    ],
+    "size_xyz": [
+      14.4177,
+      45.5444,
+      45.4325
+    ],
+    "longest_axis": "Y",
+    "orientation_note": "Blender Z-up after glTF Y-up conversion; longest axis Y",
+    "materials": [
+      "anisotropic1SG.001",
+      "apollohorns_blin.001",
+      "bendedtruss_bli1.001",
+      "bendedtruss_blin.001",
+      "blinn1SG.001",
+      "blinn3SG.001",
+      "blinn4SG.001",
+      "blinn5SG.001",
+      "blinn6SG.001",
+      "blinn7SG.001",
+      "initialShadingGr.001",
+      "lambert2SG.001",
+      "lambert3SG.001",
+      "lambert4SG.001",
+      "lambert6SG.001",
+      "lambert7SG.001",
+      "soyuz_blinn2SG.001",
+      "soyuz_blinn3SG.001",
+      "soyuz_blinn4SG.001"
+    ],
+    "material_count": 19,
+    "images": [],
+    "material_images": {},
+    "gltf_image_types": [],
+    "logo_suspects": [],
+    "import_seconds": 0.18,
+    "title": "International Space Station",
+    "artifact_flag": null,
+    "visual_logo_findings": []
+  },
+  "lro": {
+    "file": "models/lro.glb",
+    "file_bytes": 2902744,
+    "import_ok": true,
+    "gltf_extensions": [
+      "KHR_draco_mesh_compression",
+      "EXT_texture_webp"
+    ],
+    "gltf_animations": 0,
+    "object_count": 8,
+    "object_types": {
+      "EMPTY": 1,
+      "MESH": 7
+    },
+    "mesh_object_count": 7,
+    "mesh_data_count": 7,
+    "triangles": 8142,
+    "vertices": 7492,
+    "bbox_min": [
+      -1.3022,
+      -2.1242,
+      -1.5828
+    ],
+    "bbox_max": [
+      4.1438,
+      3.381,
+      2.0801
+    ],
+    "size_xyz": [
+      5.446,
+      5.5052,
+      3.6629
+    ],
+    "longest_axis": "Y",
+    "orientation_note": "Blender Z-up after glTF Y-up conversion; longest axis Y",
+    "materials": [
+      "foil_gold",
+      "foil_silver",
+      "foil_silver_dish",
+      "shiny_panel",
+      "tex_01",
+      "tex_02",
+      "tex_03"
+    ],
+    "material_count": 7,
+    "images": [
+      {
+        "name": "foil_gold_ramp",
+        "width": 256,
+        "height": 256,
+        "packed": true,
+        "filepath": ""
+      },
+      {
+        "name": "foil_silver_ramp",
+        "width": 256,
+        "height": 256,
+        "packed": true,
+        "filepath": ""
+      },
+      {
+        "name": "tex_01.psd",
+        "width": 1024,
+        "height": 1024,
+        "packed": true,
+        "filepath": ""
+      },
+      {
+        "name": "tex_02",
+        "width": 1024,
+        "height": 1024,
+        "packed": true,
+        "filepath": ""
+      },
+      {
+        "name": "tex_03",
+        "width": 1024,
+        "height": 1024,
+        "packed": true,
+        "filepath": ""
+      }
+    ],
+    "material_images": {
+      "foil_gold": [
+        "foil_gold_ramp"
+      ],
+      "foil_silver": [
+        "foil_silver_ramp"
+      ],
+      "foil_silver_dish": [
+        "foil_silver_ramp"
+      ],
+      "shiny_panel": [
+        "tex_01.psd"
+      ],
+      "tex_01": [
+        "tex_01.psd"
+      ],
+      "tex_02": [
+        "tex_02"
+      ],
+      "tex_03": [
+        "tex_03"
+      ]
+    },
+    "gltf_image_types": [
+      "image/png",
+      "image/webp"
+    ],
+    "logo_suspects": [],
+    "import_seconds": 0.07,
+    "title": "Lunar Reconnaissance Orbiter",
+    "artifact_flag": null,
+    "visual_logo_findings": []
+  },
+  "mark-3": {
+    "file": "models/mark-3.glb",
+    "file_bytes": 894092,
+    "import_ok": true,
+    "gltf_extensions": [
+      "KHR_draco_mesh_compression",
+      "KHR_materials_transmission",
+      "KHR_materials_specular",
+      "KHR_materials_ior",
+      "EXT_texture_webp"
+    ],
+    "gltf_animations": 0,
+    "object_count": 1,
+    "object_types": {
+      "MESH": 1
+    },
+    "mesh_object_count": 1,
+    "mesh_data_count": 1,
+    "triangles": 69202,
+    "vertices": 101935,
+    "bbox_min": [
+      -0.522,
+      0.0129,
+      0.2936
+    ],
+    "bbox_max": [
+      0.5912,
+      1.1435,
+      2.2833
+    ],
+    "size_xyz": [
+      1.1132,
+      1.1306,
+      1.9897
+    ],
+    "longest_axis": "Z",
+    "orientation_note": "Blender Z-up after glTF Y-up conversion; longest axis Z",
+    "materials": [
+      "MKIII:MarkIII_8sizedwithoutskeleton_blinn1SG",
+      "MKIII:MarkIII_8sizedwithoutskeleton_blinn2SG",
+      "MKIII:MarkIII_8sizedwithoutskeleton_bluesteelSG",
+      "MKIII:MarkIII_8sizedwithoutskeleton_hand_lambert2SG",
+      "MKIII:MarkIII_8sizedwithoutskeleton_lambert2SG",
+      "MKIII:MarkIII_8sizedwithoutskeleton_lambert3SG",
+      "MKIII:MarkIII_8sizedwithoutskeleton_lambert4SG",
+      "MKIII:MarkIII_8sizedwithoutskeleton_lambert5SG",
+      "MKIII:MarkIII_8sizedwithoutskeleton_lambert6SG",
+      "MKIII:MarkIII_8sizedwithoutskeleton_markiiitorso_lambert2SG",
+      "MKIII:MarkIII_8sizedwithoutskeleton_steel2SG",
+      "MKIII:MarkIII_8sizedwithoutskeleton_suitcolormappedlegsSG",
+      "MKIII:bodyrings_blinn2SG",
+      "MKIII:bodyrings_steelholesSG"
+    ],
+    "material_count": 14,
+    "images": [
+      {
+        "name": "texturelogo",
+        "width": 700,
+        "height": 700,
+        "packed": true,
+        "filepath": ""
+      }
+    ],
+    "material_images": {
+      "MKIII:MarkIII_8sizedwithoutskeleton_lambert5SG": [
+        "texturelogo"
+      ]
+    },
+    "gltf_image_types": [
+      "image/png",
+      "image/webp"
+    ],
+    "logo_suspects": [
+      {
+        "kind": "image",
+        "name": "texturelogo",
+        "match": "logo"
+      },
+      {
+        "kind": "gltf_image",
+        "name": "texturelogo",
+        "match": "logo"
+      }
+    ],
+    "import_seconds": 0.16,
+    "title": "Mark III suit",
+    "artifact_flag": "artifact: hides texturelogo",
+    "visual_logo_findings": [
+      "texturelogo (mat lambert5SG): NASA meatball"
+    ]
+  },
+  "mars-globe": {
+    "file": "models/mars-globe.glb",
+    "file_bytes": 447208,
+    "import_ok": true,
+    "gltf_extensions": [],
+    "gltf_animations": 0,
+    "object_count": 1,
+    "object_types": {
+      "MESH": 1
+    },
+    "mesh_object_count": 1,
+    "mesh_data_count": 1,
+    "triangles": 9024,
+    "vertices": 4751,
+    "bbox_min": [
+      -1.0,
+      -1.0,
+      -1.0
+    ],
+    "bbox_max": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "size_xyz": [
+      2.0,
+      2.0,
+      2.0
+    ],
+    "longest_axis": "X",
+    "orientation_note": "Blender Z-up after glTF Y-up conversion; longest axis X",
+    "materials": [
+      "Mars_mat"
+    ],
+    "material_count": 1,
+    "images": [
+      {
+        "name": "Image_0",
+        "width": 1440,
+        "height": 720,
+        "packed": true,
+        "filepath": ""
+      }
+    ],
+    "material_images": {
+      "Mars_mat": [
+        "Image_0"
+      ]
+    },
+    "gltf_image_types": [
+      "image/jpeg"
+    ],
+    "logo_suspects": [],
+    "import_seconds": 0.03,
+    "title": "Mars globe",
+    "artifact_flag": null,
+    "visual_logo_findings": []
+  },
+  "mission-control": {
+    "file": "models/mission-control.glb",
+    "file_bytes": 185220,
+    "import_ok": true,
+    "gltf_extensions": [
+      "KHR_draco_mesh_compression"
+    ],
+    "gltf_animations": 0,
+    "object_count": 3,
+    "object_types": {
+      "EMPTY": 2,
+      "MESH": 1
+    },
+    "mesh_object_count": 1,
+    "mesh_data_count": 1,
+    "triangles": 11130,
+    "vertices": 33390,
+    "bbox_min": [
+      -9.6832,
+      -14.9112,
+      -0.0
+    ],
+    "bbox_max": [
+      4.8262,
+      9.6444,
+      5.8873
+    ],
+    "size_xyz": [
+      14.5094,
+      24.5556,
+      5.8873
+    ],
+    "longest_axis": "Y",
+    "orientation_note": "Blender Z-up after glTF Y-up conversion; longest axis Y",
+    "materials": [
+      "Keyboards",
+      "cabnet",
+      "ceiling",
+      "console_back",
+      "console_body",
+      "console_desk",
+      "console_face",
+      "console_namepl10",
+      "console_namepl11",
+      "console_namepl12",
+      "console_namepl13",
+      "console_namepl14",
+      "console_namepl15",
+      "console_namepla1",
+      "console_namepla2",
+      "console_namepla3",
+      "console_namepla4",
+      "console_namepla5",
+      "console_namepla6",
+      "console_namepla7",
+      "console_namepla8",
+      "console_namepla9",
+      "console_nameplat",
+      "crstation_1",
+      "crstation_2",
+      "edge",
+      "far_right",
+      "floor",
+      "keyboard_special",
+      "lights",
+      "mid",
+      "midle",
+      "picture1",
+      "picture2",
+      "picture3",
+      "picture4",
+      "picture5",
+      "picture6",
+      "projector1",
+      "right",
+      "screen",
+      "screens",
+      "wall",
+      "wall_screen",
+      "wall_top"
+    ],
+    "material_count": 45,
+    "images": [],
+    "material_images": {},
+    "gltf_image_types": [],
+    "logo_suspects": [],
+    "import_seconds": 0.07,
+    "title": "Mission Control",
+    "artifact_flag": null,
+    "visual_logo_findings": []
+  },
+  "mobile-launcher": {
+    "file": "models/mobile-launcher.glb",
+    "file_bytes": 198480,
+    "import_ok": true,
+    "gltf_extensions": [
+      "KHR_draco_mesh_compression",
+      "KHR_materials_specular",
+      "EXT_texture_webp"
+    ],
+    "gltf_animations": 1,
+    "object_count": 1,
+    "object_types": {
+      "MESH": 1
+    },
+    "mesh_object_count": 1,
+    "mesh_data_count": 1,
+    "triangles": 19296,
+    "vertices": 30277,
+    "bbox_min": [
+      -0.3209,
+      -0.4336,
+      0.0
+    ],
+    "bbox_max": [
+      0.6985,
+      0.4336,
+      2.4643
+    ],
+    "size_xyz": [
+      1.0194,
+      0.8672,
+      2.4643
+    ],
+    "longest_axis": "Z",
+    "orientation_note": "Blender Z-up after glTF Y-up conversion; longest axis Z",
+    "materials": [
+      "mobilelauncher_mat",
+      "mobilelauncher_railings_mat"
+    ],
+    "material_count": 2,
+    "images": [
+      {
+        "name": "mobilelauncher_d",
+        "width": 512,
+        "height": 512,
+        "packed": true,
+        "filepath": ""
+      },
+      {
+        "name": "mobilelauncher_railings_d_o",
+        "width": 512,
+        "height": 512,
+        "packed": true,
+        "filepath": ""
+      }
+    ],
+    "material_images": {
+      "mobilelauncher_mat": [
+        "mobilelauncher_d"
+      ],
+      "mobilelauncher_railings_mat": [
+        "mobilelauncher_railings_d_o"
+      ]
+    },
+    "gltf_image_types": [
+      "image/jpeg",
+      "image/png",
+      "image/webp"
+    ],
+    "logo_suspects": [],
+    "import_seconds": 0.06,
+    "title": "Mobile Launcher",
+    "artifact_flag": null,
+    "visual_logo_findings": []
+  },
+  "moon-globe": {
+    "file": "models/moon-globe.glb",
+    "file_bytes": 660600,
+    "import_ok": true,
+    "gltf_extensions": [],
+    "gltf_animations": 0,
+    "object_count": 1,
+    "object_types": {
+      "MESH": 1
+    },
+    "mesh_object_count": 1,
+    "mesh_data_count": 1,
+    "triangles": 9024,
+    "vertices": 4751,
+    "bbox_min": [
+      -1.0,
+      -1.0,
+      -1.0
+    ],
+    "bbox_max": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "size_xyz": [
+      2.0,
+      2.0,
+      2.0
+    ],
+    "longest_axis": "X",
+    "orientation_note": "Blender Z-up after glTF Y-up conversion; longest axis X",
+    "materials": [
+      "Moon_mat"
+    ],
+    "material_count": 1,
+    "images": [
+      {
+        "name": "Image_0",
+        "width": 2048,
+        "height": 1024,
+        "packed": true,
+        "filepath": ""
+      }
+    ],
+    "material_images": {
+      "Moon_mat": [
+        "Image_0"
+      ]
+    },
+    "gltf_image_types": [
+      "image/jpeg"
+    ],
+    "logo_suspects": [],
+    "import_seconds": 0.03,
+    "title": "Moon globe",
+    "artifact_flag": null,
+    "visual_logo_findings": []
+  },
+  "moon-near-side": {
+    "file": "models/moon-near-side.glb",
+    "file_bytes": 390180,
+    "import_ok": true,
+    "gltf_extensions": [
+      "KHR_draco_mesh_compression"
+    ],
+    "gltf_animations": 0,
+    "object_count": 1,
+    "object_types": {
+      "MESH": 1
+    },
+    "mesh_object_count": 1,
+    "mesh_data_count": 1,
+    "triangles": 200000,
+    "vertices": 100002,
+    "bbox_min": [
+      -39.2079,
+      -39.2079,
+      -0.0
+    ],
+    "bbox_max": [
+      39.2078,
+      39.2078,
+      3.6472
+    ],
+    "size_xyz": [
+      78.4157,
+      78.4157,
+      3.6472
+    ],
+    "longest_axis": "X",
+    "orientation_note": "Blender Z-up after glTF Y-up conversion; longest axis X",
+    "materials": [
+      "MoonNearSide_mat"
+    ],
+    "material_count": 1,
+    "images": [],
+    "material_images": {},
+    "gltf_image_types": [],
+    "logo_suspects": [],
+    "import_seconds": 0.17,
+    "title": "Moon near side (relief print)",
+    "artifact_flag": null,
+    "visual_logo_findings": []
+  },
+  "mount-hadley": {
+    "file": "models/mount-hadley.glb",
+    "file_bytes": 463864,
+    "import_ok": true,
+    "gltf_extensions": [
+      "KHR_draco_mesh_compression"
+    ],
+    "gltf_animations": 0,
+    "object_count": 1,
+    "object_types": {
+      "MESH": 1
+    },
+    "mesh_object_count": 1,
+    "mesh_data_count": 1,
+    "triangles": 200000,
+    "vertices": 100002,
+    "bbox_min": [
+      -152.0001,
+      -152.0006,
+      -28.484
+    ],
+    "bbox_max": [
+      152.0005,
+      152.0,
+      28.4825
+    ],
+    "size_xyz": [
+      304.0006,
+      304.0006,
+      56.9665
+    ],
+    "longest_axis": "X",
+    "orientation_note": "Blender Z-up after glTF Y-up conversion; longest axis X",
+    "materials": [
+      "MountHadley_mat"
+    ],
+    "material_count": 1,
+    "images": [],
+    "material_images": {},
+    "gltf_image_types": [],
+    "logo_suspects": [],
+    "import_seconds": 0.18,
+    "title": "Mount Hadley (terrain print)",
+    "artifact_flag": null,
+    "visual_logo_findings": []
+  },
+  "orion": {
+    "file": "models/orion.glb",
+    "file_bytes": 74824,
+    "import_ok": true,
+    "gltf_extensions": [
+      "KHR_draco_mesh_compression"
+    ],
+    "gltf_animations": 0,
+    "object_count": 1,
+    "object_types": {
+      "MESH": 1
+    },
+    "mesh_object_count": 1,
+    "mesh_data_count": 1,
+    "triangles": 51736,
+    "vertices": 25860,
+    "bbox_min": [
+      -8.1547,
+      -8.1521,
+      -2.6
+    ],
+    "bbox_max": [
+      8.1547,
+      8.1523,
+      8.034
+    ],
+    "size_xyz": [
+      16.3094,
+      16.3044,
+      10.634
+    ],
+    "longest_axis": "X",
+    "orientation_note": "Blender Z-up after glTF Y-up conversion; longest axis X",
+    "materials": [
+      "Orion_mat"
+    ],
+    "material_count": 1,
+    "images": [],
+    "material_images": {},
+    "gltf_image_types": [],
+    "logo_suspects": [],
+    "import_seconds": 0.03,
+    "title": "Orion capsule",
+    "artifact_flag": null,
+    "visual_logo_findings": []
+  },
+  "oru": {
+    "file": "models/oru.glb",
+    "file_bytes": 585684,
+    "import_ok": true,
+    "gltf_extensions": [
+      "KHR_draco_mesh_compression",
+      "KHR_materials_specular",
+      "EXT_texture_webp"
+    ],
+    "gltf_animations": 0,
+    "object_count": 1,
+    "object_types": {
+      "MESH": 1
+    },
+    "mesh_object_count": 1,
+    "mesh_data_count": 1,
+    "triangles": 2776,
+    "vertices": 5238,
+    "bbox_min": [
+      -94.208,
+      -88.0063,
+      -70.4624
+    ],
+    "bbox_max": [
+      79.299,
+      62.9919,
+      70.9859
+    ],
+    "size_xyz": [
+      173.5071,
+      150.9982,
+      141.4483
+    ],
+    "longest_axis": "X",
+    "orientation_note": "Blender Z-up after glTF Y-up conversion; longest axis X",
+    "materials": [
+      "naming",
+      "spstob_eal_1",
+      "spstob_slic_1a",
+      "spstob_slic_2"
+    ],
+    "material_count": 4,
+    "images": [
+      {
+        "name": "naming_d-naming_d.tga",
+        "width": 512,
+        "height": 1024,
+        "packed": true,
+        "filepath": ""
+      },
+      {
+        "name": "spstob_1",
+        "width": 128,
+        "height": 64,
+        "packed": true,
+        "filepath": ""
+      },
+      {
+        "name": "spstob_e",
+        "width": 128,
+        "height": 128,
+        "packed": true,
+        "filepath": ""
+      },
+      {
+        "name": "spstob_s",
+        "width": 512,
+        "height": 512,
+        "packed": true,
+        "filepath": ""
+      }
+    ],
+    "material_images": {
+      "naming": [
+        "naming_d-naming_d.tga"
+      ],
+      "spstob_eal_1": [
+        "spstob_e"
+      ],
+      "spstob_slic_1a": [
+        "spstob_s"
+      ],
+      "spstob_slic_2": [
+        "spstob_1"
+      ]
+    },
+    "gltf_image_types": [
+      "image/png",
+      "image/webp"
+    ],
+    "logo_suspects": [],
+    "import_seconds": 0.03,
+    "title": "Orbital Replacement Unit",
+    "artifact_flag": null,
+    "visual_logo_findings": []
+  },
+  "perseverance": {
+    "file": "models/perseverance.glb",
+    "file_bytes": 4987176,
+    "import_ok": true,
+    "gltf_extensions": [
+      "KHR_draco_mesh_compression",
+      "KHR_materials_clearcoat",
+      "KHR_materials_transmission",
+      "KHR_materials_specular",
+      "KHR_materials_ior",
+      "EXT_texture_webp"
+    ],
+    "gltf_animations": 23,
+    "object_count": 74,
+    "object_types": {
+      "MESH": 69,
+      "EMPTY": 4,
+      "ARMATURE": 1
+    },
+    "mesh_object_count": 69,
+    "mesh_data_count": 69,
+    "triangles": 199601,
+    "vertices": 138825,
+    "bbox_min": [
+      -1.3523,
+      -1.372,
+      -1.0
+    ],
+    "bbox_max": [
+      1.3523,
+      1.7363,
+      1.8463
+    ],
+    "size_xyz": [
+      2.7046,
+      3.1083,
+      2.8463
+    ],
+    "longest_axis": "Y",
+    "orientation_note": "Blender Z-up after glTF Y-up conversion; longest axis Y",
+    "materials": [
+      "Material",
+      "aluminum",
+      "aluminum.001",
+      "aluminum.003",
+      "aluminum_black",
+      "aluminum_black.001",
+      "arm_graphics",
+      "array gold trim",
+      "black_krinkle",
+      "blades",
+      "brass",
+      "bronze",
+      "copper",
+      "foil_orange",
+      "glass lens",
+      "glass_2",
+      "glass_trans",
+      "gold",
+      "gray_krinkle",
+      "grey_brushed",
+      "gunmetal",
+      "gunmetal_dark",
+      "hub",
+      "iron",
+      "mars_2020_01",
+      "mars_2020_01_n",
+      "mars_2020_02",
+      "mars_2020_02_n",
+      "mars_2020_03",
+      "mars_2020_03.002",
+      "mars_2020_04",
+      "mars_2020_04.001",
+      "mars_2020_04_aluminum_r",
+      "mars_2020_05",
+      "mars_2020_05_aluminum",
+      "mars_2020_05_brass",
+      "mars_2020_05_cooling_lines",
+      "mars_2020_05_gunmetal",
+      "mars_2020_06",
+      "mars_2020_06_brass",
+      "mars_2020_06_n",
+      "mars_2020_07",
+      "mars_2020_gunmetal_dark",
+      "paint_white_base",
+      "sample_handling_door",
+      "spring",
+      "transparent"
+    ],
+    "material_count": 47,
+    "images": [
+      {
+        "name": "arm_graphics",
+        "width": 512,
+        "height": 512,
+        "packed": true,
+        "filepath": ""
+      },
+      {
+        "name": "blade",
+        "width": 1024,
+        "height": 512,
+        "packed": true,
+        "filepath": ""
+      },
+      {
+        "name": "clear.png",
+        "width": 64,
+        "height": 64,
+        "packed": true,
+        "filepath": ""
+      },
+      {
+        "name": "foil_n",
+        "width": 512,
+        "height": 512,
+        "packed": true,
+        "filepath": ""
+      },
+      {
+        "name": "foil_n.jpg",
+        "width": 512,
+        "height": 512,
+        "packed": true,
+        "filepath": ""
+      },
+      {
+        "name": "glass",
+        "width": 128,
+        "height": 128,
+        "packed": true,
+        "filepath": ""
+      },
+      {
+        "name": "mars_2020_01",
+        "width": 1024,
+        "height": 1024,
+        "packed": true,
+        "filepath": ""
+      },
+      {
+        "name": "mars_2020_01_n",
+        "width": 1024,
+        "height": 1024,
+        "packed": true,
+        "filepath": ""
+      },
+      {
+        "name": "mars_2020_02",
+        "width": 1024,
+        "height": 1024,
+        "packed": true,
+        "filepath": ""
+      },
+      {
+        "name": "mars_2020_02_n",
+        "width": 1024,
+        "height": 1024,
+        "packed": true,
+        "filepath": ""
+      },
+      {
+        "name": "mars_2020_03",
+        "width": 1024,
+        "height": 1024,
+        "packed": true,
+        "filepath": ""
+      },
+      {
+        "name": "mars_2020_04",
+        "width": 1024,
+        "height": 1024,
+        "packed": true,
+        "filepath": ""
+      },
+      {
+        "name": "mars_2020_05",
+        "width": 1024,
+        "height": 1024,
+        "packed": true,
+        "filepath": ""
+      },
+      {
+        "name": "mars_2020_05_n",
+        "width": 1024,
+        "height": 1024,
+        "packed": true,
+        "filepath": ""
+      },
+      {
+        "name": "mars_2020_05_r",
+        "width": 1024,
+        "height": 1024,
+        "packed": true,
+        "filepath": ""
+      },
+      {
+        "name": "mars_2020_06",
+        "width": 1024,
+        "height": 1024,
+        "packed": true,
+        "filepath": ""
+      },
+      {
+        "name": "mars_2020_06_n",
+        "width": 1024,
+        "height": 1024,
+        "packed": true,
+        "filepath": ""
+      },
+      {
+        "name": "mars_2020_07",
+        "width": 512,
+        "height": 512,
+        "packed": true,
+        "filepath": ""
+      },
+      {
+        "name": "mars_2020_hub",
+        "width": 256,
+        "height": 256,
+        "packed": true,
+        "filepath": ""
+      },
+      {
+        "name": "mars_2020_hub_n",
+        "width": 256,
+        "height": 256,
+        "packed": true,
+        "filepath": ""
+      },
+      {
+        "name": "mars_2020_spring_n",
+        "width": 256,
+        "height": 256,
+        "packed": true,
+        "filepath": ""
+      },
+      {
+        "name": "sample_handling_door",
+        "width": 512,
+        "height": 512,
+        "packed": true,
+        "filepath": ""
+      }
+    ],
+    "material_images": {
+      "arm_graphics": [
+        "arm_graphics"
+      ],
+      "black_krinkle": [
+        "foil_n"
+      ],
+      "blades": [
+        "blade"
+      ],
+      "foil_orange": [
+        "foil_n.jpg"
+      ],
+      "glass_2": [
+        "glass"
+      ],
+      "glass_trans": [
+        "glass"
+      ],
+      "gray_krinkle": [
+        "foil_n.jpg"
+      ],
+      "hub": [
+        "mars_2020_hub",
+        "mars_2020_hub_n"
+      ],
+      "mars_2020_01": [
+        "mars_2020_01"
+      ],
+      "mars_2020_01_n": [
+        "mars_2020_01",
+        "mars_2020_01_n"
+      ],
+      "mars_2020_02": [
+        "mars_2020_02"
+      ],
+      "mars_2020_02_n": [
+        "mars_2020_02",
+        "mars_2020_02_n"
+      ],
+      "mars_2020_03": [
+        "mars_2020_03"
+      ],
+      "mars_2020_03.002": [
+        "mars_2020_03"
+      ],
+      "mars_2020_04": [
+        "mars_2020_04"
+      ],
+      "mars_2020_04.001": [
+        "mars_2020_04"
+      ],
+      "mars_2020_04_aluminum_r": [
+        "mars_2020_04"
+      ],
+      "mars_2020_05": [
+        "mars_2020_05"
+      ],
+      "mars_2020_05_aluminum": [
+        "mars_2020_05"
+      ],
+      "mars_2020_05_brass": [
+        "mars_2020_05",
+        "mars_2020_05_n"
+      ],
+      "mars_2020_05_cooling_lines": [
+        "mars_2020_05",
+        "mars_2020_05_r"
+      ],
+      "mars_2020_05_gunmetal": [
+        "mars_2020_05",
+        "mars_2020_05_n"
+      ],
+      "mars_2020_06": [
+        "mars_2020_06"
+      ],
+      "mars_2020_06_brass": [
+        "mars_2020_06",
+        "mars_2020_06_n"
+      ],
+      "mars_2020_06_n": [
+        "mars_2020_06",
+        "mars_2020_06_n"
+      ],
+      "mars_2020_07": [
+        "mars_2020_07"
+      ],
+      "mars_2020_gunmetal_dark": [
+        "mars_2020_05"
+      ],
+      "sample_handling_door": [
+        "sample_handling_door"
+      ],
+      "spring": [
+        "mars_2020_spring_n"
+      ],
+      "transparent": [
+        "clear.png"
+      ]
+    },
+    "gltf_image_types": [
+      "image/jpeg",
+      "image/png",
+      "image/webp"
+    ],
+    "logo_suspects": [],
+    "import_seconds": 0.43,
+    "title": "Perseverance rover (Mars 2020)",
+    "artifact_flag": null,
+    "visual_logo_findings": [
+      "arm_graphics (mat arm_graphics): NASA meatball, JPL logo, 'MARS 2020'/'PERSEVERANCE' lettering",
+      "blade (mat blades): JPL logo, US flag, NASA meatball"
+    ]
+  },
+  "rassor": {
+    "file": "models/rassor.glb",
+    "file_bytes": 4291476,
+    "import_ok": true,
+    "gltf_extensions": [
+      "KHR_draco_mesh_compression"
+    ],
+    "gltf_animations": 0,
+    "object_count": 1,
+    "object_types": {
+      "MESH": 1
+    },
+    "mesh_object_count": 1,
+    "mesh_data_count": 1,
+    "triangles": 1994682,
+    "vertices": 1579390,
+    "bbox_min": [
+      -0.4241,
+      -0.9317,
+      -0.7029
+    ],
+    "bbox_max": [
+      0.4241,
+      0.7254,
+      0.2353
+    ],
+    "size_xyz": [
+      0.8482,
+      1.6571,
+      0.9382
+    ],
+    "longest_axis": "Y",
+    "orientation_note": "Blender Z-up after glTF Y-up conversion; longest axis Y",
+    "materials": [
+      "mat_0"
+    ],
+    "material_count": 1,
+    "images": [],
+    "material_images": {},
+    "gltf_image_types": [],
+    "logo_suspects": [],
+    "import_seconds": 2.32,
+    "title": "RASSOR excavator robot",
+    "artifact_flag": null,
+    "visual_logo_findings": []
+  },
+  "robonaut-2": {
+    "file": "models/robonaut-2.glb",
+    "file_bytes": 1066836,
+    "import_ok": true,
+    "gltf_extensions": [
+      "KHR_draco_mesh_compression",
+      "KHR_materials_specular"
+    ],
+    "gltf_animations": 0,
+    "object_count": 47,
+    "object_types": {
+      "MESH": 47
+    },
+    "mesh_object_count": 47,
+    "mesh_data_count": 47,
+    "triangles": 213244,
+    "vertices": 153270,
+    "bbox_min": [
+      -1.1693,
+      -0.3328,
+      -0.1928
+    ],
+    "bbox_max": [
+      1.1693,
+      0.3485,
+      2.4169
+    ],
+    "size_xyz": [
+      2.3386,
+      0.6813,
+      2.6097
+    ],
+    "longest_axis": "Z",
+    "orientation_note": "Blender Z-up after glTF Y-up conversion; longest axis Z",
+    "materials": [
+      "BlackMetal",
+      "BlueLights",
+      "Chrome.Rough",
+      "GreyMetal",
+      "R2.Backpack",
+      "R2.ChestCover",
+      "R2.GoldMetal",
+      "R2.GoldMetal.Head",
+      "R2.WhiteCloth.Arm",
+      "R2.WhiteCloth.Generic",
+      "R2.WhiteCloth.Generic.001",
+      "Visor.001",
+      "WhitePlastic"
+    ],
+    "material_count": 13,
+    "images": [],
+    "material_images": {},
+    "gltf_image_types": [],
+    "logo_suspects": [],
+    "import_seconds": 0.31,
+    "title": "Robonaut 2",
+    "artifact_flag": null,
+    "visual_logo_findings": []
+  },
+  "sample-tube": {
+    "file": "models/sample-tube.glb",
+    "file_bytes": 55200,
+    "import_ok": true,
+    "gltf_extensions": [
+      "KHR_draco_mesh_compression"
+    ],
+    "gltf_animations": 0,
+    "object_count": 1,
+    "object_types": {
+      "MESH": 1
+    },
+    "mesh_object_count": 1,
+    "mesh_data_count": 1,
+    "triangles": 42416,
+    "vertices": 21210,
+    "bbox_min": [
+      0.0048,
+      -0.0268,
+      0.0
+    ],
+    "bbox_max": [
+      0.9104,
+      0.9413,
+      5.6004
+    ],
+    "size_xyz": [
+      0.9055,
+      0.9681,
+      5.6004
+    ],
+    "longest_axis": "Z",
+    "orientation_note": "Blender Z-up after glTF Y-up conversion; longest axis Z",
+    "materials": [
+      "SampleTube_mat"
+    ],
+    "material_count": 1,
+    "images": [],
+    "material_images": {},
+    "gltf_image_types": [],
+    "logo_suspects": [],
+    "import_seconds": 0.04,
+    "title": "Mars 2020 sample tube",
+    "artifact_flag": null,
+    "visual_logo_findings": []
+  },
+  "saturn-v": {
+    "file": "models/saturn-v.glb",
+    "file_bytes": 927212,
+    "import_ok": true,
+    "gltf_extensions": [
+      "KHR_materials_specular",
+      "EXT_texture_webp"
+    ],
+    "gltf_animations": 23,
+    "object_count": 23,
+    "object_types": {
+      "EMPTY": 1,
+      "MESH": 22
+    },
+    "mesh_object_count": 22,
+    "mesh_data_count": 22,
+    "triangles": 34814,
+    "vertices": 22416,
+    "bbox_min": [
+      -1.0194,
+      -1.7502,
+      -0.1409
+    ],
+    "bbox_max": [
+      0.9949,
+      0.2641,
+      12.8459
+    ],
+    "size_xyz": [
+      2.0143,
+      2.0143,
+      12.9868
+    ],
+    "longest_axis": "Z",
+    "orientation_note": "Blender Z-up after glTF Y-up conversion; longest axis Z",
+    "materials": [
+      "blinn10SG",
+      "blinn11SG",
+      "blinn1SG",
+      "blinn2SG",
+      "blinn3SG",
+      "blinn4SG",
+      "blinn5SG",
+      "blinn6SG",
+      "blinn8SG",
+      "blinn9SG",
+      "fin_blinn1SG",
+      "fin_blinn2SG",
+      "initialShadingGr"
+    ],
+    "material_count": 13,
+    "images": [
+      {
+        "name": "SATURNVA",
+        "width": 1000,
+        "height": 1000,
+        "packed": true,
+        "filepath": ""
+      },
+      {
+        "name": "SATURNVT",
+        "width": 1000,
+        "height": 1000,
+        "packed": true,
+        "filepath": ""
+      },
+      {
+        "name": "SATURNVU",
+        "width": 1000,
+        "height": 1000,
+        "packed": true,
+        "filepath": ""
+      },
+      {
+        "name": "SATURNVW",
+        "width": 1000,
+        "height": 1000,
+        "packed": true,
+        "filepath": ""
+      }
+    ],
+    "material_images": {
+      "blinn10SG": [
+        "SATURNVU"
+      ],
+      "blinn11SG": [
+        "SATURNVW"
+      ],
+      "blinn8SG": [
+        "SATURNVT"
+      ],
+      "blinn9SG": [
+        "SATURNVA"
+      ]
+    },
+    "gltf_image_types": [
+      "image/png",
+      "image/webp"
+    ],
+    "logo_suspects": [],
+    "import_seconds": 0.08,
+    "title": "Saturn V",
+    "artifact_flag": "artifact: painted flags/logos in texture",
+    "visual_logo_findings": [
+      "SATURNVA/T/U (mats blinn9SG/8SG/10SG): red 'UNITED STATES'/USA lettering"
+    ]
+  },
+  "sdo": {
+    "file": "models/sdo.glb",
+    "file_bytes": 497844,
+    "import_ok": true,
+    "gltf_extensions": [
+      "KHR_draco_mesh_compression"
+    ],
+    "gltf_animations": 0,
+    "object_count": 1,
+    "object_types": {
+      "MESH": 1
+    },
+    "mesh_object_count": 1,
+    "mesh_data_count": 1,
+    "triangles": 272770,
+    "vertices": 152489,
+    "bbox_min": [
+      -18.5084,
+      -18.5674,
+      -14.1268
+    ],
+    "bbox_max": [
+      18.5084,
+      18.4672,
+      16.6206
+    ],
+    "size_xyz": [
+      37.0167,
+      37.0347,
+      30.7474
+    ],
+    "longest_axis": "Y",
+    "orientation_note": "Blender Z-up after glTF Y-up conversion; longest axis Y",
+    "materials": [
+      "Calipso-solar-1",
+      "Calipso-solar-2",
+      "Calipso-solar-3",
+      "Calipso-solar-4",
+      "Calipso-solar-5",
+      "Calipso-solar-6",
+      "Calipso-solar-7",
+      "SDO-SolarBack",
+      "SDO-Tubes-gold-sm",
+      "SDO-black-fl",
+      "SDO-black-sm",
+      "SDO-bronze-fl",
+      "SDO-bronze-sm",
+      "SDO-dish",
+      "SDO-grey-doors-fl",
+      "SDO-grey-fl",
+      "SDO-grey-sm",
+      "SDO-instr-img1",
+      "SDO-instr-img2",
+      "SDO-instr-img3",
+      "SDO-instr-img4",
+      "SDO-instr-img5",
+      "SDO-mainbody-fl",
+      "SDO-mainbody-sm",
+      "SDO-mainbody2-sm2",
+      "SDO-mainbodyTop-sm",
+      "SDO-silver-fl",
+      "SDO-silver-sm",
+      "SDO-white-fl",
+      "SDO-white-sm",
+      "SDO_blinn4"
+    ],
+    "material_count": 31,
+    "images": [],
+    "material_images": {},
+    "gltf_image_types": [],
+    "logo_suspects": [],
+    "import_seconds": 0.26,
+    "title": "Solar Dynamics Observatory",
+    "artifact_flag": null,
+    "visual_logo_findings": []
+  },
+  "sev": {
+    "file": "models/sev.glb",
+    "file_bytes": 5255828,
+    "import_ok": true,
+    "gltf_extensions": [
+      "EXT_texture_webp",
+      "KHR_draco_mesh_compression",
+      "KHR_materials_specular"
+    ],
+    "gltf_animations": 0,
+    "object_count": 1,
+    "object_types": {
+      "MESH": 1
+    },
+    "mesh_object_count": 1,
+    "mesh_data_count": 1,
+    "triangles": 412999,
+    "vertices": 354415,
+    "bbox_min": [
+      -2.0192,
+      -2.5551,
+      -2.2421
+    ],
+    "bbox_max": [
+      2.0193,
+      3.3549,
+      1.7264
+    ],
+    "size_xyz": [
+      4.0385,
+      5.91,
+      3.9685
+    ],
+    "longest_axis": "Y",
+    "orientation_note": "Blender Z-up after glTF Y-up conversion; longest axis Y",
+    "materials": [
+      "MMSEV"
+    ],
+    "material_count": 1,
+    "images": [
+      {
+        "name": "MMSEV_Bump_v1s",
+        "width": 2048,
+        "height": 2048,
+        "packed": true,
+        "filepath": ""
+      },
+      {
+        "name": "MMSEV_Color_v2s",
+        "width": 2048,
+        "height": 2048,
+        "packed": true,
+        "filepath": ""
+      },
+      {
+        "name": "MMSEV_spec_color_v1s",
+        "width": 2048,
+        "height": 2048,
+        "packed": true,
+        "filepath": ""
+      }
+    ],
+    "material_images": {
+      "MMSEV": [
+        "MMSEV_Bump_v1s",
+        "MMSEV_Color_v2s",
+        "MMSEV_spec_color_v1s"
+      ]
+    },
+    "gltf_image_types": [
+      "image/png"
+    ],
+    "logo_suspects": [],
+    "import_seconds": 0.58,
+    "title": "Space Exploration Vehicle",
+    "artifact_flag": null,
+    "visual_logo_findings": []
+  },
+  "sls": {
+    "file": "models/sls.glb",
+    "file_bytes": 216208,
+    "import_ok": true,
+    "gltf_extensions": [
+      "KHR_draco_mesh_compression"
+    ],
+    "gltf_animations": 0,
+    "object_count": 1,
+    "object_types": {
+      "MESH": 1
+    },
+    "mesh_object_count": 1,
+    "mesh_data_count": 1,
+    "triangles": 199979,
+    "vertices": 100116,
+    "bbox_min": [
+      -22.7652,
+      -11.4892,
+      -0.0
+    ],
+    "bbox_max": [
+      22.5317,
+      11.4868,
+      198.7409
+    ],
+    "size_xyz": [
+      45.2969,
+      22.976,
+      198.7409
+    ],
+    "longest_axis": "Z",
+    "orientation_note": "Blender Z-up after glTF Y-up conversion; longest axis Z",
+    "materials": [
+      "SLSBlock1_mat"
+    ],
+    "material_count": 1,
+    "images": [],
+    "material_images": {},
+    "gltf_image_types": [],
+    "logo_suspects": [],
+    "import_seconds": 0.07,
+    "title": "Space Launch System",
+    "artifact_flag": null,
+    "visual_logo_findings": []
+  },
+  "solar-wing": {
+    "file": "models/solar-wing.glb",
+    "file_bytes": 4860,
+    "import_ok": true,
+    "gltf_extensions": [
+      "KHR_draco_mesh_compression",
+      "KHR_materials_specular"
+    ],
+    "gltf_animations": 0,
+    "object_count": 9,
+    "object_types": {
+      "EMPTY": 7,
+      "MESH": 2
+    },
+    "mesh_object_count": 2,
+    "mesh_data_count": 2,
+    "triangles": 216,
+    "vertices": 192,
+    "bbox_min": [
+      -0.045,
+      -0.0495,
+      -0.001
+    ],
+    "bbox_max": [
+      0.045,
+      0.0495,
+      0.001
+    ],
+    "size_xyz": [
+      0.09,
+      0.099,
+      0.002
+    ],
+    "longest_axis": "Y",
+    "orientation_note": "Blender Z-up after glTF Y-up conversion; longest axis Y",
+    "materials": [
+      "SolarPanels1",
+      "lambert1.002"
+    ],
+    "material_count": 2,
+    "images": [],
+    "material_images": {},
+    "gltf_image_types": [],
+    "logo_suspects": [],
+    "import_seconds": 0.02,
+    "title": "Satellite solar wing",
+    "artifact_flag": null,
+    "visual_logo_findings": []
+  },
+  "viking": {
+    "file": "models/viking.glb",
+    "file_bytes": 1849384,
+    "import_ok": true,
+    "gltf_extensions": [
+      "KHR_materials_specular"
+    ],
+    "gltf_animations": 2,
+    "object_count": 3,
+    "object_types": {
+      "EMPTY": 1,
+      "MESH": 2
+    },
+    "mesh_object_count": 2,
+    "mesh_data_count": 2,
+    "triangles": 99526,
+    "vertices": 51694,
+    "bbox_min": [
+      -5.9736,
+      -5.458,
+      0.2074
+    ],
+    "bbox_max": [
+      10.7659,
+      7.0935,
+      9.1796
+    ],
+    "size_xyz": [
+      16.7394,
+      12.5515,
+      8.9722
+    ],
+    "longest_axis": "X",
+    "orientation_note": "Blender Z-up after glTF Y-up conversion; longest axis X",
+    "materials": [
+      "blinn10SG",
+      "blinn11SG",
+      "blinn12SG",
+      "blinn2SG",
+      "blinn4SG",
+      "blinn6SG",
+      "blinn8SG",
+      "blinn9SG",
+      "initialShadingGr"
+    ],
+    "material_count": 9,
+    "images": [],
+    "material_images": {},
+    "gltf_image_types": [],
+    "logo_suspects": [],
+    "import_seconds": 0.1,
+    "title": "Viking lander",
+    "artifact_flag": null,
+    "visual_logo_findings": []
+  }
+}

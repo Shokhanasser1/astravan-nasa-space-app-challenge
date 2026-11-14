@@ -1,0 +1,69 @@
+{
+  "yer_dusk": {
+    "4k_bytes": 266310,
+    "2k_bytes": 78832,
+    "edge_mean_difference_255": 0.432,
+    "edge_p99_difference_255": 3.0,
+    "sun_expected_pixel": [
+      2731,
+      978
+    ],
+    "sun_patch_max_255": 255
+  },
+  "xks_orbit": {
+    "4k_bytes": 258627,
+    "2k_bytes": 79160,
+    "edge_mean_difference_255": 0.523,
+    "edge_p99_difference_255": 3.0,
+    "sun_expected_pixel": [
+      2446,
+      626
+    ],
+    "sun_patch_max_255": 255
+  },
+  "oy_sky": {
+    "4k_bytes": 144943,
+    "2k_bytes": 39565,
+    "edge_mean_difference_255": 0.2,
+    "edge_p99_difference_255": 1.0,
+    "sun_expected_pixel": [
+      3391,
+      905
+    ],
+    "sun_patch_max_255": 255
+  },
+  "mars_day": {
+    "4k_bytes": 168120,
+    "2k_bytes": 45569,
+    "edge_mean_difference_255": 0.114,
+    "edge_p99_difference_255": 1.0,
+    "sun_expected_pixel": [
+      2560,
+      660
+    ],
+    "sun_patch_max_255": 255
+  },
+  "mars_sunset": {
+    "4k_bytes": 171911,
+    "2k_bytes": 43670,
+    "edge_mean_difference_255": 0.034,
+    "edge_p99_difference_255": 1.0,
+    "sun_expected_pixel": [
+      2731,
+      1001
+    ],
+    "sun_patch_max_255": 255
+  },
+  "koinot_space": {
+    "4k_bytes": 193214,
+    "2k_bytes": 52751,
+    "edge_mean_difference_255": 0.184,
+    "edge_p99_difference_255": 2.0,
+    "sun_expected_pixel": [
+      2446,
+      626
+    ],
+    "sun_patch_max_255": 255
+  },
+  "total_bytes": 1704229
+}
