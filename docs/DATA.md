@@ -16,13 +16,13 @@ a NASA server while it runs. Every on-screen number has one of four labels: **me
 | `public/data/media/<week>/manifest.json` | the list of files above with request URL, download date and label — **look files up here**, do not build names by hand | — |
 | `public/data/facts.json` | every number in the game with its source link (fact sheet) | — |
 
-Format of a day in `weeks.json` (concept v2, section 07, real values for 28 Oct 2021):
+Format of a day in `weeks.json` (values as built for 28 Oct 2021; that day also has two M-class flares):
 
 ```json
-{ "day": 4, "date": "2021-10-28", "mean_uGy_h": 114, "max_uGy_h": 567, "hours": 23,
-  "ratio": 9.17, "level": 1, "alert": true, "r_label": "measured",
-  "flares": [{ "peak_utc": "15:35", "cls": "X1.0", "source": "DONKI notifications FLR" }],
-  "particles": [{ "first_seen_utc": "16:35", "channel": ">100 MeV", "source": "DONKI SEP" }] }
+{ "day": 4, "date": "2021-10-28", "mean_uGy_h": 114.2, "max_uGy_h": 567.3, "hours": 23,
+  "ratio": 9.19, "level": 1, "alert": true, "watch": false, "r_label": "measured",
+  "flares": [{ "peak_utc": "15:35", "cls": "X1.0", "source": "DONKI FLR" }],
+  "particles": [{ "first_seen_utc": "16:16", "channel": "SEP", "source": "DONKI SEP" }] }
 ```
 
 Optional `hourly` (24 ratios, `null` = no reading that hour) per day drives the dosimeter hour by hour and the
@@ -53,8 +53,17 @@ events, CMEs and notifications per week from the **CCMC DONKI API, no key needed
 | JPL Horizons | `https://ssd.jpl.nasa.gov/api/horizons.api?format=text&COMMAND='10'&EPHEM_TYPE='OBSERVER'&CENTER='coord@301'&COORD_TYPE='GEODETIC'&SITE_COORD='222.69,-89.45,0'&START_TIME=…&STOP_TIME=…&STEP_SIZE='1 d'&QUANTITIES='4'` | Check `sky.json` (PyEphem). Earth: `COMMAND='399'`, `QUANTITIES='4,10'` |
 | SOHO LASCO | `soho.nascom.nasa.gov/hotshots/2000_07_14` | One hand-picked "snow" image for the Data page |
 
-Concept 3.0 notes these three requests were written from NASA docs and **not yet run**; run each once (Sarvar)
-and cut the moment if a source fails. Do not use the Mars Rover Photos API (archived).
+All requests above except SOHO LASCO have been run (2026-11-14). JPL Horizons check of `sky.json`, week 2021-10-25:
+Earth lit fraction matched; Earth elevation was 0.6° too high (computed for the pole, not the site) and is now the
+Horizons value; Sun azimuth agrees within 0.6° once the site longitude is added (the file measures it from the
+Earth-facing meridian); the Sun's centre was 0.1–0.7° below the zero-altitude horizon that week, so the 1.5° Sun
+elevation stays labelled a game rule. Do not use the Mars Rover Photos API (archived).
+
+Known limits (14 Nov): `sky.json` and the media exist for week 2021-10-25 only — the other 13 weeks fall back to
+12° a day for the Sun and have no Earth data or photos; no week after June 2024 (RadLab ends; iSWA HAPI has CRaTER
+to October 2026); the storm starts on day 4 in 8 of 14 weeks; CRaTER measures in lunar orbit behind thin
+shielding, so the game shows the ratio to the calm value, never a dose "at the base"; the SDO 131 Å picture is
+extreme ultraviolet in false colour; `public/data/facts.json` and the Data page are not built yet.
 
 ## Rules
 

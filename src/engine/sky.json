@@ -1,17 +1,18 @@
 {
- "about": "Sun and Earth seen from the base, one value per day at 12:00 UTC. Label: computed. Source: concept 3.0 §05 table (team's PyEphem computation, observer at the lunar south pole); to be checked against JPL Horizons. Sun elevation is a game rule (1.5°).",
+ "about": "Sun and Earth seen from the base, one value per day at 12:00 UTC. Label: computed. Earth elevation and lit fraction: JPL Horizons, checked 2026-11-14 (observer on the Moon at the site below). Sun azimuth: concept 3.0 §05 table, 12° a day, measured from the Earth-facing meridian (lunar longitude 0) = Horizons local azimuth + site longitude, agrees within 0.6°. Sun elevation is a game rule (1.5°): Horizons gives −0.7° to −0.1° for the Sun's centre at zero altitude that week, so the low Sun is true to the week but the number is not measured.",
+ "source": "https://ssd.jpl.nasa.gov/api/horizons.api?format=text&COMMAND='399'&EPHEM_TYPE='OBSERVER'&CENTER='coord@301'&COORD_TYPE='GEODETIC'&SITE_COORD='222.69,-89.45,0'&START_TIME='2021-10-25 12:00'&STOP_TIME='2021-10-31 12:00'&STEP_SIZE='1 d'&QUANTITIES='4,10' (Sun: COMMAND='10')",
  "site": { "name": "Shackleton–de Gerlache ridge", "lat": -89.45, "lon": 222.69 },
  "sun_el_deg": 1.5,
  "label": "computed",
  "weeks": {
   "2021-10-25": [
-   { "day": 1, "sun_az_deg": 304, "earth_el_deg": 2.7, "earth_phase": 0.2 },
-   { "day": 2, "sun_az_deg": 292, "earth_el_deg": 3.9, "earth_phase": 0.28 },
-   { "day": 3, "sun_az_deg": 280, "earth_el_deg": 5.0, "earth_phase": 0.37 },
-   { "day": 4, "sun_az_deg": 268, "earth_el_deg": 5.8, "earth_phase": 0.47 },
-   { "day": 5, "sun_az_deg": 256, "earth_el_deg": 6.4, "earth_phase": 0.56 },
-   { "day": 6, "sun_az_deg": 244, "earth_el_deg": 6.8, "earth_phase": 0.66 },
-   { "day": 7, "sun_az_deg": 232, "earth_el_deg": 6.7, "earth_phase": 0.76 }
+   { "day": 1, "sun_az_deg": 304, "earth_el_deg": 2.1, "earth_phase": 0.2 },
+   { "day": 2, "sun_az_deg": 292, "earth_el_deg": 3.3, "earth_phase": 0.28 },
+   { "day": 3, "sun_az_deg": 280, "earth_el_deg": 4.4, "earth_phase": 0.37 },
+   { "day": 4, "sun_az_deg": 268, "earth_el_deg": 5.2, "earth_phase": 0.47 },
+   { "day": 5, "sun_az_deg": 256, "earth_el_deg": 5.8, "earth_phase": 0.57 },
+   { "day": 6, "sun_az_deg": 244, "earth_el_deg": 6.2, "earth_phase": 0.67 },
+   { "day": 7, "sun_az_deg": 232, "earth_el_deg": 6.1, "earth_phase": 0.76 }
   ]
  }
 }

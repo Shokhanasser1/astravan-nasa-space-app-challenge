@@ -25,7 +25,7 @@ describe('reducer flow', () => {
   });
 
   it('gives the scene the real sky of the first mission week (sky.json)', () => {
-    expect(toView(start(), SKY)).toMatchObject({ day: 1, sunAzDeg: 304, earthElDeg: 2.7, earthPhase: 0.2 });
+    expect(toView(start(), SKY)).toMatchObject({ day: 1, sunAzDeg: 304, earthElDeg: 2.1, earthPhase: 0.2 });
   });
 
   it('taps add batteries only while planning, never past the batteries left', () => {
