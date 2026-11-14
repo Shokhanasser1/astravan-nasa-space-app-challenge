@@ -111,17 +111,22 @@ describe('resolve', () => {
   const cardDay = until((m) => m.phase === 'plan' && board(m)!.cardOptions.length > 0);
   const stormDay = until((m) => m.phase === 'plan' && board(m)!.shelterOptions.length > 0);
 
-  it('E and Q put a battery on, and take it back from, the building in front — only while planning', () => {
-    expect(resolve({ kind: 'use' }, ctx(plan1, { aim: 'ls' }))).toEqual({ action: { type: 'SET', k: 'ls' } });
-    expect(resolve({ kind: 'undo' }, ctx(plan1, { aim: 'gh' }))).toEqual({ action: { type: 'SET', k: 'gh', delta: -1 } });
+  it('E takes a battery at the hub and puts it into the building in front; Q takes it back — only while planning', () => {
+    expect(resolve({ kind: 'use' }, ctx(plan1, { aim: 'hub' }))).toEqual({ action: { type: 'TAKE' } });
+    expect(resolve({ kind: 'undo' }, ctx(plan1, { aim: 'hub' }))).toEqual({ action: { type: 'DROP' } });
+    expect(resolve({ kind: 'use' }, ctx(plan1, { aim: 'ls', hands: 1 }))).toEqual({ action: { type: 'PUT', k: 'ls' } });
+    expect(resolve({ kind: 'use' }, ctx(plan1, { aim: 'ls', hands: 0 }))).toBeNull(); // empty hands
+    expect(resolve({ kind: 'use' }, ctx(plan1, { aim: 'ws', hands: 1 }))).toBeNull(); // the workshop needs two
+    expect(resolve({ kind: 'undo' }, ctx(plan1, { aim: 'gh' }))).toEqual({ action: { type: 'BACK', k: 'gh' } });
     expect(resolve({ kind: 'use' }, ctx(plan1))).toBeNull(); // looking at nothing
     const morning = until((m) => m.phase === 'morning');
-    expect(resolve({ kind: 'use' }, ctx(morning, { aim: 'ls' }))).toBeNull();
+    expect(resolve({ kind: 'use' }, ctx(morning, { aim: 'ls', hands: 1 }))).toBeNull();
   });
 
   it('E through the reducer adds exactly what a tap on the building adds', () => {
-    const e = resolve({ kind: 'use' }, ctx(plan1, { aim: 'ls' }));
-    const byKey = reducer(plan1, (e as { action: never }).action);
+    const carrying = reducer(plan1, { type: 'TAKE' });
+    const e = resolve({ kind: 'use' }, ctx(carrying, { aim: 'ls', hands: carrying.hands }));
+    const byKey = reducer(carrying, (e as { action: never }).action);
     expect(byKey.alloc).toEqual(reducer(plan1, { type: 'SET', k: 'ls' }).alloc);
   });
 

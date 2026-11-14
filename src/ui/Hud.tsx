@@ -101,7 +101,7 @@ export function Hud({ model, view, dispatch, lang, setLang, sound, setSound, onS
       }),
     [dispatch],
   );
-  useGameKeys({ screen, phase, board, aim, overlay }, features.controls ? apply : () => {});
+  useGameKeys({ screen, phase, board, aim, overlay, hands: view.hands }, features.controls ? apply : () => {});
 
   // The day runs by itself and the lander lifts off by itself; the main button skips.
   useEffect(() => {
@@ -183,7 +183,7 @@ export function Hud({ model, view, dispatch, lang, setLang, sound, setSound, onS
 
       {freeWalk && sides && <WalkStick />}
       {freeWalk && sides && features.character && <JumpButton />}
-      {features.controls && touchUi && sides && planning && <ActionPad board={board} aim={aim} apply={apply} tr={tr} />}
+      {features.controls && touchUi && sides && planning && <ActionPad board={board} aim={aim === 'hub' ? null : aim} apply={apply} tr={tr} />}
 
       {playing && !overlay && (
         <div className="hud-center flex flex-col gap-2" data-phase={phase}>

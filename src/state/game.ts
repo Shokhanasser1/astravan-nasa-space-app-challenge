@@ -33,6 +33,26 @@ export type View = {
   // (earth-<mediaDate>.webp, sdo-*.webp, manifest.json). File paths only: the date is never shown during play.
   weekId?: string;
   mediaDate?: string;
+  // 15 Nov ~05:00 (Shoxjahon aka: "make it a game" — batteries are carried, resources always visible):
+  hands?: number; // batteries the astronaut carries now (plan phase), 0..HANDS_MAX
+  res?: Resources; // every gauge of the base, from the engine (see Resources)
+};
+
+/**
+ * Every gauge of the base, for the HUD and the scene. Numbers come straight from the engine state; `crew` is the
+ * engine's own result() if the week ended now. `after` = tonight if the plan stays as it is (plan phase only).
+ */
+export type Resources = {
+  air: number; // air and water reserve, days (game rule), 0..airMax
+  airMax: number;
+  plant: number; // garden health 0..4 (game rule)
+  wall: number; // regolith wall levels 0..3 (game rule)
+  dose: number; // extra dose so far (computed, same unit as the truth screen)
+  crew: number; // crew who stay to the end if the week ended now (computed by result())
+  crewMax: number;
+  sci: number; // science points so far (game rule)
+  stored: number; // batteries saved for tomorrow (game rule), 0..2
+  after?: { air: number; plant: number; wall: number; sciToday: number; doseToday: number };
 };
 
 export type Machine = 'ls' | 'gh' | 'ws' | 'sc' | 'launch';
@@ -48,11 +68,17 @@ export interface Model {
   screen: 'start' | 'game' | 'end';
   seed: number;
   firstMission: boolean;
+  /** Batteries in the astronaut's hands (plan phase); they are not on any machine yet. Old saves lack it → 0. */
+  hands?: number;
 }
 
 export type Action =
   | { type: 'START'; week: Week; seed?: number; firstMission?: boolean }
   | { type: 'SET'; k: Machine; delta?: 1 | -1 } // tap on a building: +1 battery (−1 = undo)
+  | { type: 'TAKE' } // at the power hub: one free battery into the hands
+  | { type: 'PUT'; k: Machine } // at a machine: batteries from the hands into it (its step: workshop 2, launch 4)
+  | { type: 'BACK'; k: Machine } // at a machine: its batteries back into the hands (overflow goes to the hub)
+  | { type: 'DROP' } // at the power hub: everything in the hands goes back
   | { type: 'CHOOSE'; shelter?: Shelter; card?: string } // card = 'shadow:heat'
   | { type: 'CONFIRM' }
   | { type: 'NEXT' }
@@ -64,7 +90,10 @@ export const FIRST_CARDS: CardId[] = ['shadow', 'ice'];
 
 const EMPTY: Alloc = { ls: 0, gh: 0, build: 0, sc: 0, launch: 0, shelter: 'none' };
 const KEY: Record<Machine, keyof Omit<Alloc, 'shelter'>> = { ls: 'ls', gh: 'gh', ws: 'build', sc: 'sc', launch: 'launch' };
-const STEP: Record<Machine, number> = { ls: 1, gh: 1, ws: 2, sc: 1, launch: 4 };
+export const STEP: Record<Machine, number> = { ls: 1, gh: 1, ws: 2, sc: 1, launch: 4 };
+/** How many batteries the astronaut can carry at once (game rule: enough for the launch step). */
+export const HANDS_MAX = 4;
+const AIR_MAX = 8;
 
 export const initialModel: Model = {
   week: null, game: null, alloc: EMPTY, preview: null, phase: 'morning', screen: 'start', seed: 1, firstMission: true,
@@ -78,7 +107,32 @@ function withPreview(m: Model): Model {
 function openBoard(m: Model): Model {
   if (!m.game || !m.week) return m;
   const base: Alloc = { ...EMPTY, launch: m.game.day === 7 ? 4 : 0 };
-  return withPreview({ ...m, alloc: playable(m.game, m.week, base), cardChoice: undefined, phase: 'plan' });
+  return withPreview({ ...m, alloc: playable(m.game, m.week, base), cardChoice: undefined, phase: 'plan', hands: 0 });
+}
+
+/** Free batteries at the hub: not on a machine and not in the hands. */
+export function atHub(m: Model): number {
+  return Math.max(0, (m.preview?.left ?? 0) - (m.hands ?? 0));
+}
+
+function take(m: Model): Model {
+  if (m.phase !== 'plan' || !m.game || m.game.forced) return m;
+  const hands = m.hands ?? 0;
+  if (hands >= HANDS_MAX || atHub(m) < 1) return m;
+  return { ...m, hands: hands + 1 };
+}
+
+function put(m: Model, k: Machine): Model {
+  const hands = m.hands ?? 0;
+  if (hands < STEP[k]) return m;
+  const placed = set(m, k, 1);
+  return placed === m ? m : { ...placed, hands: hands - STEP[k] };
+}
+
+function back(m: Model, k: Machine): Model {
+  const removed = set(m, k, -1);
+  if (removed === m) return m;
+  return { ...removed, hands: Math.min(HANDS_MAX, (m.hands ?? 0) + STEP[k]) }; // overflow goes back to the hub
 }
 
 function set(m: Model, k: Machine, delta: 1 | -1): Model {
@@ -129,12 +183,21 @@ export function reducer(m: Model, a: Action): Model {
     }
     case 'SET':
       return set(m, a.k, a.delta ?? 1);
+    case 'TAKE':
+      return take(m);
+    case 'PUT':
+      return put(m, a.k);
+    case 'BACK':
+      return back(m, a.k);
+    case 'DROP':
+      return m.phase === 'plan' ? { ...m, hands: 0 } : m;
     case 'CHOOSE':
       return choose(m, a);
     case 'CONFIRM': {
       if (!m.game || !m.week || m.phase !== 'plan') return m;
       if (m.preview?.warning === 'engine.warn.chooseCard') return m; // the card needs an answer first
-      return { ...m, game: confirm(m.game, m.week, m.alloc, m.cardChoice), phase: 'run', preview: null };
+      // batteries still in the hands go back to the hub: they were never on a machine
+      return { ...m, game: confirm(m.game, m.week, m.alloc, m.cardChoice), phase: 'run', preview: null, hands: 0 };
     }
     case 'NEXT':
       return next(m);
@@ -236,5 +299,21 @@ export function toView(m: Model, sky?: Record<string, SkyDay[]>): View {
     weekId: m.week?.id,
     mediaDate: today?.date,
     batteries: lim && m.phase === 'plan' ? { left: m.preview?.left ?? lim.available, total: lim.available } : undefined,
+    hands: m.phase === 'plan' ? (m.hands ?? 0) : 0,
+    res: g && m.week ? resources(m, g, m.week) : undefined,
   };
 }
+
+/** The gauges (Resources). `after` only while a plan is on the board. */
+function resources(m: Model, g: State, week: Week): Resources {
+  const p = m.phase === 'plan' ? m.preview : null;
+  const r = result(g, week);
+  return {
+    air: g.air, airMax: AIR_MAX, plant: g.plant, wall: g.wall, dose: g.extra,
+    crew: r.crew, crewMax: CREW_MAX, sci: g.sci, stored: g.bat,
+    after: p ? { air: p.reserveAfter, plant: p.gardenAfter, wall: p.wallAfter, sciToday: p.sciToday, doseToday: p.doseToday } : undefined,
+  };
+}
+
+/** Crew at the start (engine P.startCrew = 7). */
+const CREW_MAX = 7;

@@ -7,10 +7,13 @@ import type { PointId } from '../scene/points';
  * - aim: the building in front of the astronaut, written by the rig only when it changes;
  * - travel: the base map asks the rig to float to a standing point.
  */
-let aim: Machine | null = null;
+/** What the astronaut faces: a machine, or the power hub where batteries are taken and returned. */
+export type AimId = Machine | 'hub';
+
+let aim: AimId | null = null;
 const aimSubs = new Set<() => void>();
 
-export function setAim(k: Machine | null): void {
+export function setAim(k: AimId | null): void {
   if (k === aim) return;
   aim = k;
   for (const f of aimSubs) f();
@@ -26,7 +29,7 @@ function subscribeAim(f: () => void) {
 }
 
 /** React: the aimed building; re-renders only when it changes (never per frame). */
-export function useAim(): Machine | null {
+export function useAim(): AimId | null {
   return useSyncExternalStore(subscribeAim, getAim, getAim);
 }
 

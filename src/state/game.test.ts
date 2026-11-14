@@ -44,6 +44,44 @@ describe('reducer flow', () => {
     expect(m.alloc.gh).toBe(0); // undo is free until confirm
   });
 
+  it('batteries are carried: take at the hub, put into a machine, take back, drop, never more than exist', () => {
+    let m = reducer(start(), { type: 'TAKE' });
+    expect(m.hands ?? 0).toBe(0); // morning: nothing to take
+    m = run(m, [{ type: 'NEXT' }, { type: 'TAKE' }, { type: 'TAKE' }]);
+    expect(m.hands).toBe(2);
+    expect(toView(m)).toMatchObject({ hands: 2, batteries: { left: 7, total: 7 } }); // still free until put
+    m = reducer(m, { type: 'PUT', k: 'ls' });
+    expect(m.alloc.ls).toBe(1);
+    expect(m.hands).toBe(1);
+    expect(reducer(m, { type: 'PUT', k: 'ws' })).toBe(m); // the workshop takes two at once (and is shut on day 1)
+    m = reducer(m, { type: 'PUT', k: 'gh' });
+    expect(m.alloc.gh).toBe(1);
+    expect(m.hands).toBe(0);
+    expect(reducer(m, { type: 'PUT', k: 'gh' })).toBe(m); // empty hands
+    m = reducer(m, { type: 'BACK', k: 'gh' });
+    expect(m.alloc.gh).toBe(0);
+    expect(m.hands).toBe(1);
+    m = run(m, [{ type: 'TAKE' }, { type: 'TAKE' }, { type: 'TAKE' }, { type: 'TAKE' }]);
+    expect(m.hands).toBe(4); // HANDS_MAX
+    m = reducer(m, { type: 'DROP' });
+    expect(m.hands).toBe(0);
+    m = run(m, Array.from({ length: 10 }, () => ({ type: 'TAKE' }) as Action));
+    expect(m.hands).toBe(4);
+    m = run(m, [{ type: 'PUT', k: 'sc' }, { type: 'PUT', k: 'sc' }, { type: 'PUT', k: 'sc' }, { type: 'PUT', k: 'gh' }]);
+    m = run(m, Array.from({ length: 10 }, () => ({ type: 'TAKE' }) as Action));
+    expect(m.hands).toBe(2); // 7 − 1 (ls) − 4 placed = 2 left at the hub
+    m = reducer(m, { type: 'CONFIRM' });
+    expect(m.hands).toBe(0); // carried batteries go back at the end of the day
+  });
+
+  it('the view carries every gauge from the engine, and tonight while planning', () => {
+    let m = start();
+    expect(toView(m).res).toMatchObject({ air: 5, airMax: 8, plant: 3, wall: 0, dose: 0, crew: 7, crewMax: 7, sci: 0, stored: 1 });
+    expect(toView(m).res?.after).toBeUndefined();
+    m = reducer(m, { type: 'NEXT' });
+    expect(toView(m).res?.after).toMatchObject({ air: m.preview?.reserveAfter, plant: m.preview?.gardenAfter });
+  });
+
   it('a card must be answered before the day can be confirmed', () => {
     let m = run(start(), [{ type: 'NEXT' }, ...dayActions(PLAN_A[0].alloc), { type: 'CONFIRM' }, { type: 'NEXT' }, { type: 'NEXT' }, { type: 'NEXT' }]);
     expect(board(m)?.info.card).toBe('shadow');

@@ -1,4 +1,5 @@
-import type { Action, Board, Machine, Model } from '../state/game';
+import { STEP, type Action, type Board, type Model } from '../state/game';
+import type { AimId } from './bus';
 import type { PointId } from '../scene/points';
 import type { Command } from './keys';
 
@@ -15,8 +16,10 @@ export interface Ctx {
   phase: Model['phase'];
   board: Board | null;
   /** The building in front of the astronaut (src/controls/bus.ts), or null. */
-  aim: Machine | null;
+  aim: AimId | null;
   overlay: Overlay;
+  /** Batteries in the astronaut's hands (View.hands). */
+  hands?: number;
 }
 
 export type Effect = { action: Action } | { ui: UiOp } | { travel: PointId };
@@ -51,10 +54,14 @@ export function resolve(cmd: Command, c: Ctx): Effect | null {
 
   const plan = c.phase === 'plan' && c.board !== null;
   switch (cmd.kind) {
+    // Batteries are carried (15 Nov): take at the hub, put into the machine in front, take back with undo.
     case 'use':
-      return plan && c.aim ? { action: { type: 'SET', k: c.aim } } : null;
+      if (!plan || !c.aim) return null;
+      if (c.aim === 'hub') return { action: { type: 'TAKE' } };
+      return (c.hands ?? 0) >= STEP[c.aim] ? { action: { type: 'PUT', k: c.aim } } : null;
     case 'undo':
-      return plan && c.aim ? { action: { type: 'SET', k: c.aim, delta: -1 } } : null;
+      if (!plan || !c.aim) return null;
+      return c.aim === 'hub' ? { action: { type: 'DROP' } } : { action: { type: 'BACK', k: c.aim } };
     case 'pick': {
       const list = plan ? choices(c.board) : [];
       return cmd.n <= list.length ? { action: list[cmd.n - 1] } : null;
