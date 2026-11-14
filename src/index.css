@@ -176,3 +176,35 @@ body,
     max-width: min(36rem, calc(100vw - 2 * (var(--pad-use) + var(--pad-small) + 3rem)));
   }
 }
+
+/* Visor holograms (src/ui/play/Holo.tsx): cyan glow, faint scan lines, a soft fade-in. No flashing (≤ 3/s rule). */
+.holo {
+  position: relative;
+  border: 1px solid rgb(127 209 255 / 0.55);
+  background: linear-gradient(180deg, rgb(18 58 88 / 0.62), rgb(4 18 32 / 0.7));
+  box-shadow: 0 0 18px rgb(127 209 255 / 0.22), inset 0 0 22px rgb(127 209 255 / 0.1);
+  color: #e3f7ff;
+  text-shadow: 0 0 6px rgb(127 209 255 / 0.45);
+  backdrop-filter: blur(3px);
+}
+.holo::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  background: repeating-linear-gradient(0deg, rgb(127 209 255 / 0.06) 0 1px, transparent 1px 3px);
+}
+@keyframes holo-in {
+  from { opacity: 0; transform: translateY(6px) scale(0.98); filter: blur(2px); }
+  to { opacity: 1; transform: none; filter: none; }
+}
+.holo-in { animation: holo-in 0.35s ease-out; }
+@keyframes holo-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
+}
+.holo-pulse { animation: holo-pulse 1.4s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .holo-in, .holo-pulse { animation: none; }
+}

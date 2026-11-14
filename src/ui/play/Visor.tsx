@@ -1,8 +1,10 @@
 import type { Board, Model, View } from '../../state/game';
 import type { Tr } from './kit';
+import { Mark } from './Holo';
 
 /**
- * Visor layer (lane D placeholder): day + level top centre, radio line, three gauges at the bottom.
+ * Visor layer (lane D placeholder): day + level top centre, three gauges at the bottom (the radio line is the
+ * mission-control hologram in ./Holo.tsx).
  * Numbers come from the model and the engine selectors only.
  */
 export function DayBadge({ view, board, tr }: { view: View; board: Board | null; tr: Tr }) {
@@ -18,6 +20,7 @@ export function DayBadge({ view, board, tr }: { view: View; board: Board | null;
         {known ? `${level} · ${tr(`ui.level.${level}`)}` : `? · ${tr('ui.level.unknown')}`}
         {known && view.ratio !== undefined && level > 0 ? ` · ${view.ratio}×` : ''}
       </span>
+      {known && view.ratio !== undefined && level > 0 && <Mark label="measured" tr={tr} />}
     </div>
   );
 }
@@ -37,15 +40,6 @@ export function radioKey(model: Model, board: Board | null): string | null {
   return 'story.radio.quiet';
 }
 
-export function RadioLine({ textKey, tr }: { textKey: string | null; tr: Tr }) {
-  if (!textKey) return null;
-  return (
-    <p className="pointer-events-none mx-auto max-w-md rounded-xl bg-black/60 px-3 py-2 text-center text-base leading-snug" data-testid="radio">
-      {tr(textKey)}
-    </p>
-  );
-}
-
 export function Gauges({ model, board, tr }: { model: Model; board: Board | null; tr: Tr }) {
   const g = model.game;
   if (!g) return null;
@@ -54,19 +48,28 @@ export function Gauges({ model, board, tr }: { model: Model; board: Board | null
   return (
     <div className="pointer-events-none grid grid-cols-3 gap-2 text-center text-sm" data-testid="gauges">
       <div className="rounded-xl bg-black/60 px-2 py-1">
-        <div className="text-white/70">{tr('ui.gauge.energy')}</div>
+        <div className="text-white/70">
+          {tr('ui.gauge.energy')}
+          <Mark label="rule" tr={tr} />
+        </div>
         <div className="text-lg font-bold tabular-nums" data-testid="gauge-energy">
           {p ? `${p.left} / ${total}` : total || '—'}
         </div>
       </div>
       <div className="rounded-xl bg-black/60 px-2 py-1">
-        <div className="text-white/70">{tr('ui.gauge.air')}</div>
+        <div className="text-white/70">
+          {tr('ui.gauge.air')}
+          <Mark label="rule" tr={tr} />
+        </div>
         <div className="text-lg font-bold tabular-nums" data-testid="gauge-air">
           {g.air} / 8{p && p.reserveAfter !== g.air ? ` → ${p.reserveAfter}` : ''}
         </div>
       </div>
       <div className="rounded-xl bg-black/60 px-2 py-1">
-        <div className="text-white/70">{tr('ui.gauge.dose')}</div>
+        <div className="text-white/70">
+          {tr('ui.gauge.dose')}
+          <Mark label="computed" tr={tr} />
+        </div>
         <div className="text-lg font-bold tabular-nums" data-testid="gauge-dose">
           {g.extra.toFixed(2)}
           {p && p.doseToday > 0 ? ` +${p.doseToday.toFixed(2)}` : ''}

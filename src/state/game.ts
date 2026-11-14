@@ -29,6 +29,10 @@ export type View = {
   earthPhase?: number;
   ratio?: number; // today's (or this hour's) dose / normal, measured → dosimeter clicks, scout-cam snow
   batteries?: { left: number; total: number }; // power hub lights: total today, left = not placed yet
+  // 15 Nov (engine owner Shoxjahon aka): where this day's real media lives — public/data/media/<weekId>/
+  // (earth-<mediaDate>.webp, sdo-*.webp, manifest.json). File paths only: the date is never shown during play.
+  weekId?: string;
+  mediaDate?: string;
 };
 
 export type Machine = 'ls' | 'gh' | 'ws' | 'sc' | 'launch';
@@ -229,6 +233,8 @@ export function toView(m: Model, sky?: Record<string, SkyDay[]>): View {
     earthElDeg: skyDay?.earth_el_deg,
     earthPhase: skyDay?.earth_phase,
     ratio: today?.ratio,
+    weekId: m.week?.id,
+    mediaDate: today?.date,
     batteries: lim && m.phase === 'plan' ? { left: m.preview?.left ?? lim.available, total: lim.available } : undefined,
   };
 }

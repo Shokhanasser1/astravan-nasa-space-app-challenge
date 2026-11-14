@@ -3,7 +3,8 @@ import { board as selectBoard, truth as selectTruth, type Action, type Model, ty
 import type { Lang } from '../i18n/t';
 import { audio } from '../audio/audio';
 import { Btn, makeTr } from './play/kit';
-import { DayBadge, Gauges, RadioLine, radioKey } from './play/Visor';
+import { DayBadge, Gauges, radioKey } from './play/Visor';
+import { Briefing, CapcomHolo, PhysicsHolo, SunToday } from './play/Holo';
 import { NightTablet, PlanTablet } from './play/Tablet';
 import { TruthScreen } from './play/TruthScreen';
 import { JumpButton, WalkStick } from './play/WalkStick';
@@ -145,6 +146,7 @@ export function Hud({ model, view, dispatch, lang, setLang, sound, setSound, onS
 
       {screen !== 'game' && !overlay && (
         <div className="pointer-events-auto flex flex-col items-center gap-4 self-center">
+          <Briefing tr={tr} lang={lang} sound={sound} />
           <Btn data-testid="start-mission" onClick={onStart}>
             {tr('ui.start.mission')}
           </Btn>
@@ -158,13 +160,20 @@ export function Hud({ model, view, dispatch, lang, setLang, sound, setSound, onS
 
       {screen === 'game' && phase === 'truth' && truth && <TruthScreen truth={truth} dispatch={dispatch} tr={tr} />}
 
+      {playing && features.character && (
+        <div className="pointer-events-none absolute right-4 top-20 flex flex-col">
+          <PhysicsHolo tr={tr} />
+        </div>
+      )}
+
       {freeWalk && sides && <WalkStick />}
       {freeWalk && sides && features.character && <JumpButton />}
       {features.controls && touchUi && sides && planning && <ActionPad board={board} aim={aim} apply={apply} tr={tr} />}
 
       {playing && !overlay && (
         <div className="hud-center flex flex-col gap-2" data-phase={phase}>
-          {(phase === 'morning' || phase === 'plan') && <RadioLine textKey={radioKey(model, board)} tr={tr} />}
+          {(phase === 'morning' || phase === 'plan') && <SunToday weekId={view.weekId} date={view.mediaDate} tr={tr} />}
+          {(phase === 'morning' || phase === 'plan') && <CapcomHolo textKey={radioKey(model, board)} tr={tr} lang={lang} sound={sound} />}
           {showTablet && (
             <PlanTablet
               board={board}

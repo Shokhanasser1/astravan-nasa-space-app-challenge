@@ -19,6 +19,7 @@ import { features } from '../config/features';
 import { pickAim, type AimTarget } from '../controls/aim';
 import { onTravel, setAim } from '../controls/bus';
 import { STEP, createBody, stepBody } from '../character/body';
+import { telemetry } from '../character/telemetry';
 import { Astronaut } from './Astronaut';
 
 /**
@@ -80,7 +81,7 @@ export function Rig({ view }: { view: View }) {
   const [roaming, setRoaming] = useState(false);
   const walker = useMemo(() => (freeWalk && !character ? createWalker() : null), []);
   const body = useMemo(() => createBody(POINTS.hub.pos[0], POINTS.hub.pos[2], ground), []);
-  const c = useRef({ acc: 0, quiet: 0, shadowT: 0, ax: { ahead: 0, side: 0, turn: 0 } as Axes, wish: { x: 0, z: 0 } as XZ }).current;
+  const c = useRef({ acc: 0, quiet: 0, shadowT: 0, takeoff: NaN, peak: 0, ax: { ahead: 0, side: 0, turn: 0 } as Axes, wish: { x: 0, z: 0 } as XZ }).current;
   const s = useRef({
     from: new THREE.Vector3(),
     to: new THREE.Vector3(),
@@ -296,8 +297,19 @@ export function Rig({ view }: { view: View }) {
       c.acc = Math.min(c.acc + dt, 0.1);
       while (c.acc >= STEP) {
         c.acc -= STEP;
+        const air = !body.onGround;
         active = stepBody(body, { x: c.wish.x, z: c.wish.z, run: running(), jump: walkInput.jump }, OUTSIDE, ground) || active;
         walkInput.jump = false;
+        // measure the jump for the visor hologram: from take-off to the top, reported on landing
+        if (!air && !body.onGround) {
+          c.takeoff = body.y;
+          c.peak = body.y;
+        }
+        if (!body.onGround) c.peak = Math.max(c.peak, body.y);
+        if (air && body.onGround && Number.isFinite(c.takeoff)) {
+          telemetry.landed(c.peak - c.takeoff);
+          c.takeoff = NaN;
+        }
       }
       s.to.set(body.x, body.y + EYE, body.z);
       if (!roaming && Math.hypot(body.x - POINTS[point].pos[0], body.z - POINTS[point].pos[2]) > 1.2) setRoaming(true);

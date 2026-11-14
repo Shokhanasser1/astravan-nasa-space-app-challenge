@@ -7,6 +7,7 @@ import type { Machine, View } from '../state/game';
 import { features } from '../config/features';
 import { LOWER, TIERS, hasWebGL, initialTier, type Tier } from './quality';
 import { Light, sunAzimuth } from './Light';
+import { Earth } from './Earth';
 import { BaseScene } from './BaseScene';
 import { Rig } from './Rig';
 import { WalkDebug } from './WalkDebug';
@@ -84,6 +85,7 @@ export function Stage({ view, onTap, onUndo }: { view: View; onTap: (k: Machine)
         <PerformanceMonitor onDecline={() => setTier((t) => LOWER[t])} flipflops={2} />
         {/* Stars do not twinkle: no air. Replace with the Yale Bright Star catalogue when ready. */}
         <Stars radius={2400} depth={50} count={2500} factor={4} fade={false} speed={0} />
+        <Earth view={view} />
         {features.light ? <Light sunAzDeg={sunAzimuth(view)} shadowSize={q.shadow} /> : <ambientLight intensity={0.6} />}
         <Suspense fallback={null}>
           <BaseScene view={view} onTap={onTap} onUndo={onUndo} />

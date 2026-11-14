@@ -1,6 +1,7 @@
 import type { Dispatch } from 'react';
 import type { Action, Truth } from '../../state/game';
 import { Btn, Panel, type Tr } from './kit';
+import { Mark, SunTruth } from './Holo';
 
 /**
  * Truth screen (lane D placeholder for G2; the 25-second sequence and the hourly curve come after G2).
@@ -28,7 +29,11 @@ export function TruthScreen({ truth, dispatch, tr }: { truth: Truth; dispatch: D
           </div>
         ))}
       </div>
-      <p className="text-center text-xs text-measured">{tr('ui.truth.source')}</p>
+      <p className="text-center text-xs text-measured">
+        {tr('ui.truth.source')}
+        <Mark label="measured" tr={tr} />
+      </p>
+      <SunTruth weekId={truth.weekId} tr={tr} />
       <div className="grid grid-cols-3 gap-2 text-center">
         <div>
           <div className="text-xs text-white/70">{tr('ui.truth.crew')}</div>
