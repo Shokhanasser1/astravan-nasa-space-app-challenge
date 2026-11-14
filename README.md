@@ -21,8 +21,6 @@ npm run db         # local PocketBase for playtest results (optional)
 
 Pick a real week for a whole class: `/?week=2021-10-25`.
 
-The live link opens the third-person Moon demo (`/oy/demo/`); the board game is at `/?classic`.
-
 ## Docs
 
 - `docs/ARCHITECTURE.md` — layers, data flow, engine contract, owners, gates
