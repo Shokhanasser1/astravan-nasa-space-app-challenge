@@ -35,8 +35,8 @@ export const OUTSIDE: Area = {
     disc('lander', LAYOUT.lander, RADIUS.lander),
     disc('scout', LAYOUT.scout, RADIUS.scout),
     disc('hub', LAYOUT.hub, RADIUS.hub),
-    // (Its mast is thin, but the dish hangs at head height.)
-    disc('dish', LAYOUT.dish, 0.9),
+    // (Its mast is thin, but the dish hangs at head height. 1.1: the NASA dish model's reflector reaches 1.17 m.)
+    disc('dish', LAYOUT.dish, 1.1),
     wing,
   ],
   bounds: { name: 'edge', x: 0, z: 0, r: EDGE },
