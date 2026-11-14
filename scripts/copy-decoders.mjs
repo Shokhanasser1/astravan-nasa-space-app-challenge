@@ -14,3 +14,12 @@ if (!existsSync(from)) {
   mkdirSync(to, { recursive: true });
   cpSync(from, to, { recursive: true });
 }
+
+// MediaPipe hand tracking (?hands, src/hand/): its WASM from our own server, never a CDN. Only the SIMD build
+// (14 MB; every current browser has SIMD). Loaded only when the child turns the camera on; not precached.
+const mpFrom = join(root, 'node_modules/@mediapipe/tasks-vision/wasm');
+const mpTo = join(root, 'public/mediapipe');
+if (existsSync(mpFrom)) {
+  mkdirSync(mpTo, { recursive: true });
+  for (const f of ['vision_wasm_internal.js', 'vision_wasm_internal.wasm']) cpSync(join(mpFrom, f), join(mpTo, f));
+}

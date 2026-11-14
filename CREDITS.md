@@ -26,6 +26,7 @@ Solar images: "Courtesy of NASA/SDO and the AIA, EVE, and HMI science teams."
 | postprocessing 6.39.6 | Zlib | https://github.com/pmndrs/postprocessing |
 | Tailwind CSS 4.3.5 (generated CSS) | MIT | https://github.com/tailwindlabs/tailwindcss |
 | Workbox via vite-plugin-pwa 2.0.0 (service worker) | MIT | https://github.com/vite-pwa/vite-plugin-pwa |
+| MediaPipe Tasks Vision 1.2.0 (hand tracking, `?hands` only; WASM served from our host) and the Hand Landmarker model (float16, downloaded from Google's model store on first use) | Apache-2.0 | https://github.com/google-ai-edge/mediapipe |
 
 ## Models, textures, sounds, fonts (`public/models`, `public/textures`, `public/audio`)
 

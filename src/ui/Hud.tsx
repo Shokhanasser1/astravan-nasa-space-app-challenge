@@ -5,6 +5,7 @@ import { audio } from '../audio/audio';
 import { Btn, makeTr } from './play/kit';
 import { DayBadge, Gauges, radioKey } from './play/Visor';
 import { Briefing, CapcomHolo, PhysicsHolo, SunToday } from './play/Holo';
+import { HandControl, handsOn } from './play/HandControl';
 import { NightTablet, PlanTablet } from './play/Tablet';
 import { TruthScreen } from './play/TruthScreen';
 import { JumpButton, WalkStick } from './play/WalkStick';
@@ -169,6 +170,12 @@ export function Hud({ model, view, dispatch, lang, setLang, sound, setSound, onS
       {playing && !overlay && (phase === 'morning' || phase === 'plan') && (
         <div className="pointer-events-none absolute left-4 top-36 flex flex-col">
           <SunToday weekId={view.weekId} date={view.mediaDate} tr={tr} />
+        </div>
+      )}
+
+      {handsOn && !overlay && (
+        <div className="pointer-events-none absolute left-4 top-1/2">
+          <HandControl tr={tr} />
         </div>
       )}
 

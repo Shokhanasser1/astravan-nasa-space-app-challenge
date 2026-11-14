@@ -37,3 +37,5 @@ shots/
 # Plan workspaces (executing-plans ledger)
 .superpowers/
 __pycache__/
+# MediaPipe WASM, copied from node_modules by scripts/copy-decoders.mjs
+public/mediapipe/
