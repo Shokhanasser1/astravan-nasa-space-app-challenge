@@ -69,6 +69,7 @@ export function App() {
     save('lang', l);
   };
   const onTap = (k: Machine) => dispatch({ type: 'SET', k });
+  const onUndo = (k: Machine) => dispatch({ type: 'SET', k, delta: -1 });
   const onStart = () => {
     const week = chooseWeek();
     if (!week) return;
@@ -80,7 +81,7 @@ export function App() {
 
   return (
     <>
-      <Stage view={view} onTap={onTap} />
+      <Stage view={view} onTap={onTap} onUndo={features.controls ? onUndo : undefined} />
       <Hud
         model={model}
         view={view}

@@ -1,7 +1,9 @@
-import { useState, type Dispatch } from "react";
+import { type Dispatch } from "react";
 import type { LogLine, Machine as EngineMachine } from "../../engine/rules";
 import type { Action, Board, Machine, Model } from "../../state/game";
 import { Btn, Delta, Panel, type Tr } from "./kit";
+import { Kbd } from "./Controls";
+import { features } from "../../config/features";
 
 /**
  * Wrist tablet (lane D placeholder): the day card with its prices, the shelter choice, the energy board and the
@@ -33,7 +35,7 @@ function CardChoice({
       <p className="text-sm">{tr(`story.card.${board.info.card}.text`)}</p>
       {board.cardOptions.length > 0 && (
         <div className="grid grid-cols-2 gap-2">
-          {board.cardOptions.map(({ value, preview: p }) => (
+          {board.cardOptions.map(({ value, preview: p }, i) => (
             <Btn
               key={value}
               data-testid={`card-${value.replace(":", "-")}`}
@@ -41,7 +43,10 @@ function CardChoice({
               onClick={() => dispatch({ type: "CHOOSE", card: value })}
               className="flex flex-col items-start text-left text-sm"
             >
-              <span>{tr(`story.card.${value.replace(":", ".")}`)}</span>
+              <span>
+                {tr(`story.card.${value.replace(":", ".")}`)}
+                {features.controls && <Kbd k={String(i + 1)} />}
+              </span>
               <span className="text-xs font-normal">
                 🔋 {p.left} · <Delta from={g.air} to={p.reserveAfter} /> · 🌱{" "}
                 <Delta from={g.plant} to={p.gardenAfter} />
@@ -58,17 +63,21 @@ function ShelterChoice({
   board,
   dispatch,
   tr,
+  hint,
+  onHint,
 }: {
   board: Board;
   dispatch: Dispatch<Action>;
   tr: Tr;
+  /** Houston's hint is open (state in the HUD, so H and the 🎧 button open it too). */
+  hint: boolean;
+  onHint: () => void;
 }) {
-  const [hint, setHint] = useState(false);
   if (!board.shelterOptions.length) return null;
   return (
     <div className="flex flex-col gap-2" data-testid="shelter">
       <div className="grid grid-cols-3 gap-2">
-        {board.shelterOptions.map(({ value, preview: p }) => (
+        {board.shelterOptions.map(({ value, preview: p }, i) => (
           <Btn
             key={value}
             data-testid={`shelter-${value}`}
@@ -76,7 +85,10 @@ function ShelterChoice({
             onClick={() => dispatch({ type: "CHOOSE", shelter: value })}
             className="flex flex-col text-sm"
           >
-            <span>{tr(`ui.shelter.${value}`)}</span>
+            <span>
+              {tr(`ui.shelter.${value}`)}
+              {features.controls && <Kbd k={String(board.cardOptions.length + i + 1)} />}
+            </span>
             <span className="text-xs font-normal tabular-nums">
               ☢ +{p.doseToday.toFixed(2)}
             </span>
@@ -85,11 +97,12 @@ function ShelterChoice({
       </div>
       <Btn
         data-testid="ask-houston"
-        onClick={() => setHint(!hint)}
+        onClick={onHint}
         active={hint}
         className="text-sm"
       >
         {tr("ui.shelter.askHouston")}
+        {features.controls && <Kbd k="H" />}
       </Btn>
       {hint && (
         <p className="text-sm text-white/80">
@@ -177,20 +190,35 @@ export function PlanTablet({
   model,
   dispatch,
   tr,
+  houston,
+  onHouston,
+  onFold,
 }: {
   board: Board;
   model: Model;
   dispatch: Dispatch<Action>;
   tr: Tr;
+  houston: boolean;
+  onHouston: () => void;
+  /** Fold the tablet away (controls layer); without it the tablet has no header. */
+  onFold?: () => void;
 }) {
   const warning = board.preview?.warning;
   return (
-    <Panel className="flex max-h-[62vh] flex-col gap-3 overflow-y-auto">
+    <Panel className="hud-tablet flex max-h-[62vh] flex-col gap-3 overflow-y-auto" data-testid="plan-tablet">
+      {onFold && (
+        <div className="-mb-1 flex items-center justify-between gap-2">
+          <span className="text-xs uppercase tracking-widest text-white/60">📟 {tr("ui.controls.tablet")}</span>
+          <Btn data-testid="tablet-fold" aria-label={tr("ui.controls.close")} onClick={onFold} className="min-h-10 py-1 text-sm">
+            ▾<Kbd k="Tab" />
+          </Btn>
+        </div>
+      )}
       {board.info.forced && (
         <p className="text-sm text-alert">{tr("ui.board.forced")}</p>
       )}
       <CardChoice board={board} model={model} dispatch={dispatch} tr={tr} />
-      <ShelterChoice board={board} dispatch={dispatch} tr={tr} />
+      <ShelterChoice board={board} dispatch={dispatch} tr={tr} hint={houston} onHint={onHouston} />
       <Machines board={board} model={model} dispatch={dispatch} tr={tr} />
       {warning && (
         <p className="text-sm text-alert" data-testid="warning">

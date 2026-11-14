@@ -53,7 +53,7 @@ function Fallback() {
 }
 
 /** One <Canvas> for the whole game. Lane C. */
-export function Stage({ view, onTap }: { view: View; onTap: (k: Machine) => void }) {
+export function Stage({ view, onTap, onUndo }: { view: View; onTap: (k: Machine) => void; onUndo?: (k: Machine) => void }) {
   const [tier, setTier] = useState<Tier>(initialTier);
   const [webgl] = useState(hasWebGL);
   const q = TIERS[tier];
@@ -77,6 +77,8 @@ export function Stage({ view, onTap }: { view: View; onTap: (k: Machine) => void
           gl.outputColorSpace = THREE.SRGBColorSpace;
           if (overview) camera.lookAt(0, 1, 0);
         }}
+        // (Right click on a building takes a battery back; the browser menu would cover the game.)
+        onContextMenu={(e) => e.preventDefault()}
         role="img"
         aria-label="Moon base"
       >
@@ -85,7 +87,7 @@ export function Stage({ view, onTap }: { view: View; onTap: (k: Machine) => void
         <Stars radius={900} depth={50} count={2500} factor={4} fade={false} speed={0} />
         {features.light ? <Light sunAzDeg={view.sunAzDeg ?? sunFallback(view.day)} shadowSize={q.shadow} /> : <ambientLight intensity={0.6} />}
         <Suspense fallback={null}>
-          <BaseScene view={view} onTap={onTap} />
+          <BaseScene view={view} onTap={onTap} onUndo={onUndo} />
           {!overview && <Rig view={view} />}
           {!overview && freeWalk && <WalkDebug />}
           <Preload all />

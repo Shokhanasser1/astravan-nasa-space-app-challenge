@@ -64,3 +64,115 @@ body,
     transition: none;
   }
 }
+
+/*
+ * Controls layer placement (docs/specs/2026-11-14-controls-guide.html). Phones: the walk stick left and the action
+ * pad right, at thumb height above the bottom panel; folded away while the wrist tablet is open in portrait (there
+ * the tablet needs the width). Landscape phones: both in the bottom corners, the panel narrowed between them.
+ * Tablets: bigger, at the middle of the sides, where thumbs reach when two hands hold the tablet.
+ * Sizes: ≥ 48 px everywhere, ~2 cm on a tablet; ≥ 16 px from the edges and the notch.
+ */
+:root {
+  --stick: 112px;
+  --pad-use: 88px;
+  --pad-small: 56px;
+  --hud-edge: max(1rem, env(safe-area-inset-left));
+  --hud-edge-r: max(1rem, env(safe-area-inset-right));
+}
+
+.hud-stick {
+  position: fixed;
+  z-index: 5;
+  width: var(--stick);
+  height: var(--stick);
+  left: var(--hud-edge);
+  top: 40%;
+}
+.hud-pad {
+  position: fixed;
+  z-index: 5;
+  right: var(--hud-edge-r);
+  /* bottom edge level with the stick's bottom edge */
+  top: calc(40% + var(--stick));
+  transform: translateY(-100%);
+}
+.pad-use {
+  width: var(--pad-use);
+  height: var(--pad-use);
+}
+.pad-small {
+  width: var(--pad-small);
+  height: var(--pad-small);
+}
+.hud-center {
+  width: 100%;
+  max-width: 36rem;
+  margin-inline: auto;
+}
+
+/* Portrait: the open wrist tablet takes the screen's width; the stick and the pad step aside (📟 or Tab brings them back). */
+@media (orientation: portrait) {
+  [data-tablet='open'] .hud-side {
+    display: none;
+  }
+}
+
+/* Landscape phone: thumbs in the bottom corners; the panel sits between them and never covers them. */
+@media (orientation: landscape) and (max-height: 540px) {
+  .hud-stick {
+    top: auto;
+    bottom: max(1.25rem, env(safe-area-inset-bottom));
+  }
+  .hud-pad {
+    top: auto;
+    bottom: max(1.25rem, env(safe-area-inset-bottom));
+    transform: none;
+  }
+  /* the panel fits between the stick and the pad (the pad is the wider of the two) */
+  .hud-center {
+    max-width: min(36rem, calc(100vw - 2 * (var(--pad-use) + var(--pad-small) + 2.5rem)));
+    min-height: 0;
+  }
+  /* 360 px of height: the wrist tablet shrinks and scrolls; the radio line and the gauges get compact */
+  .hud-tablet {
+    min-height: 5rem;
+    max-height: none !important;
+    flex-shrink: 1;
+  }
+  .hud-center [data-testid='radio'] {
+    font-size: 0.875rem;
+    padding-block: 0.25rem;
+  }
+  .hud-center [data-testid='gauges'] > div {
+    padding-block: 0;
+  }
+  .hud-center [data-testid='gauges'] .text-lg {
+    font-size: 1rem;
+    line-height: 1.25rem;
+  }
+  .hud-corner {
+    flex-direction: row;
+  }
+}
+
+/* Tablet (and a big phone held sideways is not one: it fails the height test). */
+@media (min-width: 744px) and (min-height: 600px) {
+  :root {
+    --stick: 168px;
+    --pad-use: 128px;
+    --pad-small: 80px;
+  }
+  .hud-stick {
+    left: max(1.5rem, env(safe-area-inset-left));
+    top: 48%;
+  }
+  .hud-pad {
+    right: max(1.5rem, env(safe-area-inset-right));
+    top: calc(48% + var(--stick));
+  }
+}
+@media (min-width: 744px) and (min-height: 600px) and (orientation: landscape) {
+  .hud-center {
+    max-width: min(36rem, calc(100vw - 2 * (var(--pad-use) + var(--pad-small) + 3rem)));
+  }
+}

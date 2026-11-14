@@ -13,6 +13,9 @@ export const features = {
   // First-person free walking with hitboxes (src/walk/): W A S D, arrows or the touch stick, on top of the six
   // standing points. No physics engine, no new dependency. Try it on any build with ?walk in the address.
   freeWalk: false,
+  // Game keys (E Q Enter Tab M H 1–9 Esc F1), the touch action buttons (✋ ↩ 📟 🎧), the base map and the controls
+  // list (src/controls/, docs/specs/2026-11-14-controls-guide.html). Cut → the HUD as before (tap and buttons only).
+  controls: true,
   light: true, // 2 · one Sun, long shadows, tone mapping
   sound: true, // 3 · breath, Quindar, inside/outside (cut → breath + radio tone only)
   invisibleStorm: true, // 4 · dosimeter, scout-cam snow, sparks (cut → dosimeter only)

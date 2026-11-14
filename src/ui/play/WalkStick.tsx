@@ -1,17 +1,17 @@
-import { useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
+import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
 import { invalidate } from '@react-three/fiber';
 import { walkInput } from '../../walk/input';
+import { touchUi } from './Controls';
 
 /**
  * The touch stick of the free walk (handoff "first-person walk", section 4): push it the way you want to walk,
  * further for faster; looking around stays a drag anywhere on the scene. Touch screens only (W A S D and the arrows
- * do the same on a keyboard). No words on it.
+ * do the same on a keyboard). No words on it. Its place and size per device are CSS (`.hud-stick` in src/index.css:
+ * 112 px on a phone, bigger on a tablet), so the reach is measured, not fixed.
  */
-const SIZE = 112; // px, a thumb's reach
-const REACH = SIZE / 2 - 22;
+const KNOB = 0.4; // knob diameter, share of the stick
 
 export function WalkStick() {
-  const touch = useMemo(() => typeof matchMedia !== 'undefined' && matchMedia('(hover: none) and (pointer: coarse)').matches, []);
   const base = useRef<HTMLDivElement>(null);
   const [knob, setKnob] = useState({ x: 0, y: 0 });
 
@@ -24,10 +24,11 @@ export function WalkStick() {
   // (Never leave the stick pushed when it goes away: a new phase, the end of the game.)
   useEffect(() => end, []);
 
-  if (!touch) return null;
+  if (!touchUi) return null;
 
   const move = (e: ReactPointerEvent) => {
     const r = base.current!.getBoundingClientRect();
+    const REACH = (r.width * (1 - KNOB)) / 2;
     let x = e.clientX - (r.left + r.width / 2);
     let y = e.clientY - (r.top + r.height / 2);
     const d = Math.hypot(x, y);
@@ -46,8 +47,7 @@ export function WalkStick() {
       ref={base}
       data-testid="walk-stick"
       aria-hidden="true"
-      className="pointer-events-auto fixed left-4 top-[42%] grid touch-none select-none place-items-center rounded-full border border-white/30 bg-white/10"
-      style={{ width: SIZE, height: SIZE }}
+      className="hud-side hud-stick pointer-events-auto grid touch-none select-none place-items-center rounded-full border-2 border-[#4fb3ff]/70 bg-[#4fb3ff]/10"
       onPointerDown={(e) => {
         e.currentTarget.setPointerCapture(e.pointerId);
         move(e);
@@ -59,7 +59,7 @@ export function WalkStick() {
       onPointerCancel={end}
       onLostPointerCapture={end}
     >
-      <span className="block h-11 w-11 rounded-full bg-white/70" style={{ transform: `translate(${knob.x}px, ${knob.y}px)` }} />
+      <span className="block rounded-full bg-white/70" style={{ width: `${KNOB * 100}%`, height: `${KNOB * 100}%`, transform: `translate(${knob.x}px, ${knob.y}px)` }} />
     </div>
   );
 }

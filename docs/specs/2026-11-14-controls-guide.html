@@ -1,0 +1,463 @@
+<!doctype html>
+<html lang="uz">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Boshqaruv qoʻllanmasi</title>
+<style>
+  :root {
+    --bg: #05070d;
+    --panel: #0e1320;
+    --panel2: #151c2e;
+    --line: #26304a;
+    --text: #e9edf6;
+    --muted: #9aa6c0;
+    --gold: #f0b43c;
+    --walk: #4fb3ff;
+    --act: #f0b43c;
+    --ui: #9f7bff;
+    --future: #6b7690;
+    --ok: #4fd18b;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  main { max-width: 1100px; margin: 0 auto; padding: 24px 16px 64px; }
+  h1 { font-size: 28px; margin: 0 0 4px; }
+  h2 { font-size: 22px; margin: 48px 0 8px; padding-top: 8px; border-top: 1px solid var(--line); }
+  h3 { font-size: 17px; margin: 24px 0 8px; }
+  p.lead { color: var(--muted); margin: 0 0 16px; }
+  .note { color: var(--muted); font-size: 14px; }
+  table { width: 100%; border-collapse: collapse; margin: 8px 0 16px; font-size: 15px; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; font-size: 13px; text-transform: uppercase; letter-spacing: .04em; }
+  .tablewrap { overflow-x: auto; }
+  kbd {
+    display: inline-block; min-width: 28px; padding: 2px 8px; border-radius: 6px; text-align: center;
+    background: var(--panel2); border: 1px solid var(--line); border-bottom-width: 3px;
+    font: 600 14px/1.4 ui-monospace, Menlo, monospace; color: var(--text); white-space: nowrap;
+  }
+  .tag { display: inline-block; font-size: 12px; font-weight: 700; padding: 1px 8px; border-radius: 99px; white-space: nowrap; }
+  .t-now { background: #123524; color: var(--ok); }
+  .t-new { background: #3a2a0c; color: var(--gold); }
+  .t-fut { background: #20263a; color: var(--muted); }
+  .legend { display: flex; flex-wrap: wrap; gap: 8px 16px; margin: 8px 0 16px; font-size: 14px; color: var(--muted); }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .dot { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+
+  /* keyboard */
+  .kb { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 14px; overflow-x: auto; }
+  .kbrow { display: flex; gap: 6px; margin-bottom: 6px; min-width: 760px; }
+  .k {
+    flex: 0 0 48px; height: 48px; border-radius: 8px; background: #111726; border: 1px solid #1d2539;
+    color: #56607a; font: 600 13px/1 ui-monospace, Menlo, monospace; display: flex; align-items: center; justify-content: center;
+    position: relative;
+  }
+  .k.w2 { flex-basis: 76px; } .k.w3 { flex-basis: 100px; } .k.w4 { flex-basis: 120px; } .k.sp { flex-basis: 300px; }
+  .k.g-walk { background: #0f2a40; border-color: var(--walk); color: #fff; }
+  .k.g-act { background: #3a2a0c; border-color: var(--act); color: #fff; }
+  .k.g-ui { background: #241a40; border-color: var(--ui); color: #fff; }
+  .k.g-fut { background: #1a2030; border: 1px dashed var(--future); color: #c9d1e3; }
+  .k small { position: absolute; bottom: 3px; left: 0; right: 0; font: 500 9px/1 system-ui, sans-serif; color: #cfd6e6; text-align: center; }
+
+  /* device mockups */
+  .devices { display: flex; flex-wrap: wrap; gap: 28px; align-items: flex-start; }
+  .dev { display: flex; flex-direction: column; gap: 8px; }
+  .dev .cap { font-weight: 700; }
+  .screen {
+    position: relative; overflow: hidden; border-radius: 22px; border: 8px solid #222a3d;
+    background:
+      radial-gradient(ellipse at 50% 120%, #3b3f4a 0 35%, transparent 36%),
+      linear-gradient(#020308 0 55%, #2a2d35 55% 100%);
+    box-shadow: 0 10px 40px rgba(0,0,0,.5);
+  }
+  .phone-p { width: 288px; height: 512px; }     /* 360x640 at 0.8 */
+  .phone-l { width: 512px; height: 288px; }     /* 640x360 at 0.8 */
+  .tablet  { width: 614px; height: 461px; border-radius: 26px; border-width: 12px; } /* 1024x768 at 0.6 */
+  .el {
+    position: absolute; display: flex; align-items: center; justify-content: center; text-align: center;
+    font-size: 11px; line-height: 1.15; font-weight: 600; color: #fff; padding: 2px 4px;
+  }
+  .el.top { background: rgba(14,19,32,.85); border: 1px solid var(--ui); border-radius: 10px; }
+  .el.btn { background: rgba(36,26,64,.9); border: 2px solid var(--ui); border-radius: 12px; }
+  .el.radio { background: rgba(0,0,0,.6); border-radius: 10px; color: #dfe6f5; font-weight: 500; }
+  .el.gauge { background: rgba(14,19,32,.85); border: 1px solid #3a4562; border-radius: 10px; font-weight: 500; }
+  .el.main { background: var(--gold); color: #1a1205; border-radius: 14px; font-size: 13px; font-weight: 800; }
+  .el.stick { border-radius: 50%; background: rgba(79,179,255,.15); border: 2px solid var(--walk); }
+  .el.stick::after { content: ""; position: absolute; width: 40%; height: 40%; border-radius: 50%; background: rgba(79,179,255,.6); }
+  .el.stick span { position: absolute; bottom: -18px; white-space: nowrap; color: var(--walk); }
+  .el.use { border-radius: 50%; background: rgba(240,180,60,.25); border: 3px solid var(--act); font-size: 12px; }
+  .el.round { border-radius: 50%; background: rgba(240,180,60,.12); border: 2px solid var(--act); }
+  .el.fut { border-radius: 50%; border: 2px dashed var(--future); color: #c9d1e3; background: rgba(30,36,52,.6); }
+  .el.look { border: 2px dashed rgba(255,255,255,.25); border-radius: 14px; color: rgba(255,255,255,.55); font-weight: 500; }
+  .el.panel { border: 2px dashed var(--ui); border-radius: 14px; color: #cbbcff; background: rgba(36,26,64,.35); font-weight: 500; }
+  .el.ring { border-radius: 50%; border: 2px solid rgba(159,211,255,.8); box-shadow: 0 0 10px rgba(159,211,255,.6); }
+  .zone { position: absolute; border-radius: 50%; background: radial-gradient(circle, rgba(79,209,139,.18), transparent 70%); pointer-events: none; }
+
+  .grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; }
+  .card ul { margin: 6px 0 0; padding-left: 20px; }
+  .card li { margin: 4px 0; }
+  /* Mockups keep their drawn proportions; on narrow screens they shrink as a whole. */
+  @media (max-width: 680px) {
+    .phone-l { zoom: .62; }
+    .tablet { zoom: .52; }
+  }
+</style>
+</head>
+<body>
+<main>
+
+<h1>HOME BY SEVEN — boshqaruv qoʻllanmasi</h1>
+<p class="lead">
+  Noutbuk, telefon va planshet uchun tugmalar. Dunyodagi koʻp oʻyinlardagi odatiy tugmalarga asoslangan, shunda
+  bola oʻzi bilgan tugmalarni bosadi. Sana: 14.11.2026. Muallif: Asilbek (qoʻllanma), Claude (tadqiqot va chizma).
+</p>
+
+<div class="legend">
+  <span><span class="tag t-now">hozir bor</span> oʻyinda ishlaydi</span>
+    <span><span class="tag t-fut">kelajak</span> personaj va fizika kelganda (<code>features.character</code>)</span>
+</div>
+
+<!-- ============================================================ -->
+<h2>1. Dunyo boʻyicha odatiy tugmalar</h2>
+<p class="note">
+  Kompyuter oʻyinlarining koʻpida (Minecraft, Fortnite, Roblox, Genshin Impact va boshqa birinchi va uchinchi
+  shaxs oʻyinlari) shu tugmalar bir xil maʼnoda ishlatiladi. Shuning uchun bizda ham shular.
+</p>
+<div class="tablewrap">
+<table>
+  <tr><th>Tugma</th><th>Koʻp oʻyinlarda nima qiladi</th><th>Bizning oʻyinda</th></tr>
+  <tr><td><kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd></td><td>Oldinga, chapga, orqaga, oʻngga yurish</td><td>Xuddi shunday</td></tr>
+  <tr><td><kbd>↑</kbd> <kbd>↓</kbd> <kbd>←</kbd> <kbd>→</kbd></td><td>Yurish (WASD oʻrniga)</td><td>↑ ↓ yurish, ← → burilish</td></tr>
+  <tr><td>Sichqoncha</td><td>Atrofga qarash; chap tugma — bosish, ishlatish</td><td>Xuddi shunday</td></tr>
+  <tr><td><kbd>Shift</kbd></td><td>Yugurish</td><td>Oyda sakrab yugurish</td></tr>
+  <tr><td><kbd>Space</kbd></td><td>Sakrash</td><td>Oyda sakrash (tortishish 1.62 m/s²)</td></tr>
+  <tr><td><kbd>E</kbd></td><td>Ishlatish, olish, eshik ochish</td><td>Binoga batareya qoʻyish, eshik</td></tr>
+  <tr><td><kbd>Q</kbd></td><td>Tashlash yoki ikkinchi harakat</td><td>Batareyani qaytarib olish</td></tr>
+  <tr><td><kbd>Tab</kbd></td><td>Sumka, inventar, maʼlumot oynasi</td><td>Qoʻldagi planshet</td></tr>
+  <tr><td><kbd>M</kbd></td><td>Xarita</td><td>Baza xaritasi (turish joylari)</td></tr>
+  <tr><td><kbd>1</kbd>–<kbd>9</kbd></td><td>Tez tanlash (qurol, buyum)</td><td>Variantni tanlash (karta, boshpana)</td></tr>
+  <tr><td><kbd>Enter</kbd></td><td>Tasdiqlash</td><td>Kunni tasdiqlash yoki Keyingi</td></tr>
+  <tr><td><kbd>Esc</kbd></td><td>Pauza, menyu, oynani yopish</td><td>Oynani yopish</td></tr>
+  <tr><td><kbd>F1</kbd> yoki <kbd>?</kbd></td><td>Yordam</td><td>Shu qoʻllanma (tugmalar roʻyxati)</td></tr>
+</table>
+</div>
+
+<!-- ============================================================ -->
+<h2>2. Noutbuk (klaviatura va sichqoncha)</h2>
+
+<div class="legend">
+  <span><span class="dot" style="background:var(--walk)"></span> yurish va qarash</span>
+  <span><span class="dot" style="background:var(--act)"></span> astronavt harakatlari</span>
+  <span><span class="dot" style="background:var(--ui)"></span> ekran va menyu</span>
+  <span><span class="dot" style="border:1px dashed var(--future)"></span> kelajak</span>
+</div>
+
+<div class="kb" aria-label="Klaviatura xaritasi">
+  <div class="kbrow">
+    <div class="k g-ui">Esc<small>yopish</small></div>
+    <div class="k g-ui">F1<small>yordam</small></div><div class="k">F2</div><div class="k">F3</div>
+    <div class="k">F4</div><div class="k">F5</div><div class="k">F6</div><div class="k">F7</div><div class="k">F8</div>
+  </div>
+  <div class="kbrow">
+    <div class="k">`</div>
+    <div class="k g-act">1<small>tanlash</small></div><div class="k g-act">2<small>tanlash</small></div><div class="k g-act">3<small>tanlash</small></div>
+    <div class="k">4</div><div class="k">5</div><div class="k">6</div><div class="k">7</div><div class="k">8</div><div class="k">9</div><div class="k">0</div>
+  </div>
+  <div class="kbrow">
+    <div class="k w2 g-ui">Tab<small>planshet</small></div>
+    <div class="k g-act">Q<small>qaytarish</small></div>
+    <div class="k g-walk">W<small>oldinga</small></div>
+    <div class="k g-act">E<small>ishlatish</small></div>
+    <div class="k">R</div><div class="k">T</div><div class="k">Y</div><div class="k">U</div><div class="k">I</div><div class="k">O</div><div class="k">P</div>
+  </div>
+  <div class="kbrow">
+    <div class="k w3">Caps</div>
+    <div class="k g-walk">A<small>chapga</small></div>
+    <div class="k g-walk">S<small>orqaga</small></div>
+    <div class="k g-walk">D<small>oʻngga</small></div>
+    <div class="k">F</div><div class="k">G</div>
+    <div class="k g-act">H<small>Houston</small></div>
+    <div class="k">J</div><div class="k">K</div><div class="k">L</div>
+    <div class="k w4 g-act">Enter<small>tasdiqlash</small></div>
+  </div>
+  <div class="kbrow">
+    <div class="k w4 g-fut">Shift<small>yugurish</small></div>
+    <div class="k">Z</div><div class="k">X</div><div class="k">C</div><div class="k">V</div><div class="k">B</div><div class="k">N</div>
+    <div class="k g-ui">M<small>xarita</small></div>
+    <div class="k">,</div><div class="k">.</div><div class="k g-ui">?<small>yordam</small></div>
+    <div class="k" style="flex-basis:48px;margin-left:12px"></div>
+    <div class="k g-walk">↑<small>oldinga</small></div>
+    <div class="k" style="flex-basis:48px"></div>
+  </div>
+  <div class="kbrow">
+    <div class="k w2">Ctrl</div><div class="k">Alt</div>
+    <div class="k sp g-fut">Space<small>sakrash</small></div>
+    <div class="k">Alt</div><div class="k w2">Ctrl</div>
+    <div class="k g-walk" style="margin-left:12px">←<small>burilish</small></div>
+    <div class="k g-walk">↓<small>orqaga</small></div>
+    <div class="k g-walk">→<small>burilish</small></div>
+  </div>
+</div>
+
+<h3>Har bir tugma nima qiladi</h3>
+<div class="tablewrap">
+<table>
+  <tr><th>Tugma</th><th>Astronavt nima qiladi</th><th>Qachon</th><th>Holat</th></tr>
+  <tr><td><kbd>W</kbd> / <kbd>↑</kbd></td><td>Oldinga yuradi</td><td>Oʻyin davomida</td><td><span class="tag t-now">hozir bor</span> <code>?walk</code></td></tr>
+  <tr><td><kbd>S</kbd> / <kbd>↓</kbd></td><td>Orqaga yuradi</td><td>Oʻyin davomida</td><td><span class="tag t-now">hozir bor</span> <code>?walk</code></td></tr>
+  <tr><td><kbd>A</kbd></td><td>Chapga yuradi (yon tomonga)</td><td>Oʻyin davomida</td><td><span class="tag t-now">hozir bor</span> <code>?walk</code></td></tr>
+  <tr><td><kbd>D</kbd></td><td>Oʻngga yuradi (yon tomonga)</td><td>Oʻyin davomida</td><td><span class="tag t-now">hozir bor</span> <code>?walk</code></td></tr>
+  <tr><td><kbd>←</kbd> <kbd>→</kbd></td><td>Joyida chapga yoki oʻngga buriladi</td><td>Oʻyin davomida</td><td><span class="tag t-now">hozir bor</span> <code>?walk</code></td></tr>
+  <tr><td>Sichqoncha bilan sudrash</td><td>Atrofga qaraydi</td><td>Doim</td><td><span class="tag t-now">hozir bor</span></td></tr>
+  <tr><td>Chap tugma (bosish)</td><td>Binoga batareya qoʻyadi, halqaga boradi, tugmani bosadi</td><td>Doim</td><td><span class="tag t-now">hozir bor</span></td></tr>
+  <tr><td>Oʻng tugma</td><td>Binodan batareyani qaytarib oladi</td><td>Reja paytida</td><td><span class="tag t-now">hozir bor</span></td></tr>
+  <tr><td><kbd>E</kbd></td><td>Qarab turgan binoni ishlatadi: batareya qoʻyadi, eshikni ochadi</td><td>Reja paytida</td><td><span class="tag t-now">hozir bor</span></td></tr>
+  <tr><td><kbd>Q</kbd></td><td>Qarab turgan binodan batareyani qaytarib oladi</td><td>Reja paytida</td><td><span class="tag t-now">hozir bor</span></td></tr>
+  <tr><td><kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd></td><td>Karta yoki boshpana variantini tanlaydi</td><td>Karta yoki boʻron chiqqanda</td><td><span class="tag t-now">hozir bor</span></td></tr>
+  <tr><td><kbd>H</kbd></td><td>Houstondan maslahat soʻraydi</td><td>Karta chiqqanda</td><td><span class="tag t-now">hozir bor</span></td></tr>
+  <tr><td><kbd>Enter</kbd></td><td>Kunni tasdiqlaydi yoki keyingisiga oʻtadi (katta tugma)</td><td>Doim</td><td><span class="tag t-now">hozir bor</span></td></tr>
+  <tr><td><kbd>Tab</kbd></td><td>Qoʻldagi planshetni ochadi va yopadi</td><td>Doim</td><td><span class="tag t-now">hozir bor</span></td></tr>
+  <tr><td><kbd>M</kbd></td><td>Baza xaritasi: 6 ta turish joyi + ichkari, raqam bilan tanlanadi</td><td>Doim</td><td><span class="tag t-now">hozir bor</span></td></tr>
+  <tr><td><kbd>Esc</kbd></td><td>Ochiq oynani (xarita, roʻyxat) yopadi</td><td>Doim</td><td><span class="tag t-now">hozir bor</span></td></tr>
+  <tr><td><kbd>F1</kbd> / <kbd>?</kbd></td><td>Tugmalar roʻyxatini koʻrsatadi</td><td>Doim</td><td><span class="tag t-now">hozir bor</span></td></tr>
+  <tr><td><kbd>Shift</kbd></td><td>Sakrab yuguradi</td><td>Tashqarida</td><td><span class="tag t-fut">kelajak</span></td></tr>
+  <tr><td><kbd>Space</kbd></td><td>Sakraydi (Oy tortishishi)</td><td>Tashqarida</td><td><span class="tag t-fut">kelajak</span></td></tr>
+  <tr><td><kbd>F3</kbd></td><td>Toʻsiqlar va tezlikni koʻrsatadi (faqat dasturchilar uchun)</td><td><code>?walk</code></td><td><span class="tag t-now">hozir bor</span></td></tr>
+</table>
+</div>
+<p class="note">
+  Klaviatura tugmalari klaviatura tilidan qatʼi nazar ishlaydi (rus yoki oʻzbek tartibida ham <kbd>W</kbd> joyidagi
+  tugma oldinga yuradi). Har bir tugmaning ekranda tugmasi ham bor — klaviatura shart emas.
+</p>
+
+<!-- ============================================================ -->
+<h2>3. Telefon</h2>
+<p class="note">
+  Dunyodagi mobil oʻyinlarda (Roblox, Minecraft, Fortnite, PUBG Mobile, Genshin Impact) bir xil tartib bor:
+  <b>chap pastda joystik</b> (yurish), <b>oʻng pastda harakat tugmalari</b>, <b>ekranning boʻsh joyini sudrash</b> —
+  atrofga qarash, tepada menyu va xarita. Bizda ham shunday. Bosh barmoqlar yetadigan joylar
+  <span style="color:var(--ok)">yashil</span> bilan koʻrsatilgan.
+</p>
+
+<div class="devices">
+  <!-- phone portrait 360x640 @0.8 -->
+  <div class="dev">
+    <div class="cap">Telefon, tik (360 × 640)</div>
+    <div class="screen phone-p" role="img" aria-label="Tik telefondagi tugmalar joylashuvi">
+      <div class="zone" style="left:-40px;top:300px;width:200px;height:200px"></div>
+      <div class="zone" style="right:-40px;top:300px;width:200px;height:200px"></div>
+
+      <div class="el top" style="left:13px;top:13px;width:40px;height:40px">🗺</div>
+      <div class="el top" style="left:13px;top:59px;width:40px;height:40px">?</div>
+      <div class="el top" style="left:76px;top:13px;width:136px;height:40px">4-kun · 7 dan<br>☢ 2 · Boʻron</div>
+      <div class="el top" style="right:13px;top:13px;width:40px;height:40px">EN ♪</div>
+      <div class="el radio" style="left:64px;top:62px;width:160px;height:36px">📻 Houston: bir gap</div>
+      <div class="el ring" style="left:120px;top:250px;width:48px;height:16px"></div>
+      <div class="el look" style="left:62px;top:116px;width:196px;height:104px">boʻsh joyni sudrang<br>→ atrofga qarash</div>
+
+      <div class="el stick" style="left:16px;top:290px;width:90px;height:90px"><span>yurish</span></div>
+
+      <div class="el use" style="right:16px;top:308px;width:72px;height:72px">✋<br>Ishlatish</div>
+      <div class="el round" style="right:92px;top:334px;width:46px;height:46px">↩</div>
+      <div class="el round" style="right:24px;top:252px;width:46px;height:46px">🎧</div>
+      <div class="el round" style="right:92px;top:282px;width:46px;height:46px">📟</div>
+      <div class="el fut" style="right:150px;top:232px;width:40px;height:40px">⤒</div>
+
+      <div class="el gauge" style="left:12px;top:404px;width:80px;height:34px">⚡ Energiya</div>
+      <div class="el gauge" style="left:98px;top:404px;width:80px;height:34px">💧 Havo</div>
+      <div class="el gauge" style="left:184px;top:404px;width:80px;height:34px">☢ Doza</div>
+      <div class="el main" style="left:12px;top:444px;width:252px;height:40px">KUNNI TASDIQLASH</div>
+    </div>
+  </div>
+
+  <!-- phone landscape 640x360 @0.8 -->
+  <div class="dev">
+    <div class="cap">Telefon, yotiq (640 × 360)</div>
+    <div class="screen phone-l" role="img" aria-label="Yotiq telefondagi tugmalar joylashuvi">
+      <div class="zone" style="left:-50px;top:140px;width:200px;height:200px"></div>
+      <div class="zone" style="right:-50px;top:140px;width:200px;height:200px"></div>
+
+      <div class="el top" style="left:13px;top:13px;width:36px;height:36px">🗺</div>
+      <div class="el top" style="left:55px;top:13px;width:36px;height:36px">?</div>
+      <div class="el top" style="left:186px;top:13px;width:140px;height:36px">4-kun · 7 dan · ☢ 2</div>
+      <div class="el top" style="right:13px;top:13px;width:36px;height:36px">EN ♪</div>
+      <div class="el radio" style="left:156px;top:56px;width:200px;height:28px">📻 Houston: bir gap</div>
+      <div class="el look" style="left:150px;top:92px;width:212px;height:100px">sudrang → qarash</div>
+
+      <div class="el stick" style="left:20px;top:160px;width:88px;height:88px"><span>yurish</span></div>
+
+      <div class="el use" style="right:20px;top:176px;width:68px;height:68px">✋<br>Ishlatish</div>
+      <div class="el round" style="right:96px;top:200px;width:42px;height:42px">↩</div>
+      <div class="el round" style="right:30px;top:124px;width:42px;height:42px">🎧</div>
+      <div class="el round" style="right:86px;top:148px;width:42px;height:42px">📟</div>
+
+      <div class="el gauge" style="left:150px;top:194px;width:68px;height:28px">⚡</div>
+      <div class="el gauge" style="left:222px;top:194px;width:68px;height:28px">💧</div>
+      <div class="el gauge" style="left:294px;top:194px;width:68px;height:28px">☢</div>
+      <div class="el main" style="left:150px;top:228px;width:212px;height:34px">KUNNI TASDIQLASH</div>
+    </div>
+  </div>
+</div>
+
+<h3>Telefondagi tugmalar</h3>
+<div class="tablewrap">
+<table>
+  <tr><th>Tugma</th><th>Joyi</th><th>Nima qiladi</th><th>Noutbukda</th><th>Holat</th></tr>
+  <tr><td>Joystik (koʻk doira)</td><td>Chap, pastroqda</td><td>Barmoq qayerga sursa, oʻsha tomonga yuradi</td><td><kbd>W A S D</kbd></td><td><span class="tag t-now">hozir bor</span> <code>?walk</code></td></tr>
+  <tr><td>Boʻsh joyni sudrash</td><td>Ekran oʻrtasi</td><td>Atrofga qarash</td><td>Sichqoncha</td><td><span class="tag t-now">hozir bor</span></td></tr>
+  <tr><td>Binoni yoki halqani bosish</td><td>Sahnada</td><td>Batareya qoʻyish, joyga borish</td><td>Chap tugma</td><td><span class="tag t-now">hozir bor</span></td></tr>
+  <tr><td>✋ Ishlatish (eng katta)</td><td>Oʻng, pastroqda</td><td>Qarab turgan binoni ishlatadi</td><td><kbd>E</kbd></td><td><span class="tag t-now">hozir bor</span></td></tr>
+  <tr><td>↩ Qaytarish</td><td>Ishlatish yonida</td><td>Batareyani qaytarib oladi</td><td><kbd>Q</kbd></td><td><span class="tag t-now">hozir bor</span></td></tr>
+  <tr><td>📟 Planshet</td><td>Ishlatish ustida</td><td>Qoʻldagi planshetni ochadi</td><td><kbd>Tab</kbd></td><td><span class="tag t-now">hozir bor</span></td></tr>
+  <tr><td>🎧 Houston</td><td>Eng yuqorida, oʻngda</td><td>Maslahat soʻraydi</td><td><kbd>H</kbd></td><td><span class="tag t-now">hozir bor</span></td></tr>
+  <tr><td>⤒ Sakrash (uzuq chiziq)</td><td>Ishlatish chapida</td><td>Oyda sakrash</td><td><kbd>Space</kbd></td><td><span class="tag t-fut">kelajak</span></td></tr>
+  <tr><td>Katta oltin tugma</td><td>Eng pastda, butun eni</td><td>Kunni tasdiqlash yoki Keyingi</td><td><kbd>Enter</kbd></td><td><span class="tag t-now">hozir bor</span></td></tr>
+  <tr><td>? Yordam</td><td>Xarita ostida</td><td>Tugmalar roʻyxati</td><td><kbd>F1</kbd> / <kbd>?</kbd></td><td><span class="tag t-now">hozir bor</span></td></tr>
+  <tr><td>🗺 Xarita</td><td>Chap tepada</td><td>Turish joylariga tez borish</td><td><kbd>M</kbd></td><td><span class="tag t-now">hozir bor</span></td></tr>
+  <tr><td>EN va ♪</td><td>Oʻng tepada</td><td>Til (har bosganda EN → UZ → RU) va ovoz</td><td>—</td><td><span class="tag t-now">hozir bor</span></td></tr>
+</table>
+</div>
+
+<!-- ============================================================ -->
+<h2>4. Planshet</h2>
+<p class="note">
+  Planshetni ikki qoʻl bilan yon tomonidan ushlashadi. Bosh barmoqlar <b>pastki burchakka emas, yon tomonning
+  oʻrtasiga</b> yetadi. Shuning uchun joystik va harakat tugmalari telefondagidan balandroq, ekran balandligining
+  ~60 % ida turadi. Oʻrtadagi joy sahna va planshet oynasi uchun boʻsh qoladi. Tugmalar telefondagidan kattaroq.
+</p>
+
+<div class="devices">
+  <div class="dev">
+    <div class="cap">Planshet, yotiq (1024 × 768)</div>
+    <div class="screen tablet" role="img" aria-label="Planshetdagi tugmalar joylashuvi">
+      <div class="zone" style="left:-70px;top:170px;width:260px;height:260px"></div>
+      <div class="zone" style="right:-70px;top:170px;width:260px;height:260px"></div>
+
+      <div class="el top" style="left:14px;top:14px;width:44px;height:44px">🗺</div>
+      <div class="el top" style="left:66px;top:14px;width:44px;height:44px">?</div>
+      <div class="el top" style="left:217px;top:14px;width:156px;height:44px">4-kun · 7 dan<br>☢ 2 · Boʻron</div>
+      <div class="el top" style="right:14px;top:14px;width:44px;height:44px">EN ♪</div>
+      <div class="el radio" style="left:175px;top:66px;width:240px;height:32px">📻 Houston: bir gap</div>
+
+      <div class="el panel" style="left:180px;top:110px;width:230px;height:170px">📟 Qoʻldagi planshet<br>(reja paytida ochiladi)<br>binolar, narx, + / −</div>
+      <div class="el ring" style="left:250px;top:300px;width:70px;height:22px"></div>
+
+      <div class="el stick" style="left:28px;top:230px;width:110px;height:110px"><span>yurish</span></div>
+
+      <div class="el use" style="right:28px;top:250px;width:88px;height:88px">✋<br>Ishlatish</div>
+      <div class="el round" style="right:126px;top:280px;width:56px;height:56px">↩</div>
+      <div class="el round" style="right:116px;top:206px;width:56px;height:56px">📟</div>
+      <div class="el round" style="right:40px;top:170px;width:56px;height:56px">🎧</div>
+      <div class="el fut" style="right:200px;top:294px;width:50px;height:50px">⤒</div>
+
+      <div class="el gauge" style="left:160px;top:350px;width:86px;height:34px">⚡ Energiya</div>
+      <div class="el gauge" style="left:252px;top:350px;width:86px;height:34px">💧 Havo</div>
+      <div class="el gauge" style="left:344px;top:350px;width:86px;height:34px">☢ Doza</div>
+      <div class="el main" style="left:160px;top:390px;width:270px;height:44px">KUNNI TASDIQLASH</div>
+    </div>
+  </div>
+</div>
+
+<h3>Telefon va planshet farqi</h3>
+<div class="grid2">
+  <div class="card">
+    <b>Telefon</b>
+    <ul>
+      <li>Joystik va tugmalar <b>pastki burchaklarda</b></li>
+      <li>Joystik ~112 px, Ishlatish ~88 px, kichik tugmalar ~56 px</li>
+      <li>Planshet oynasi butun pastki qismni egallaydi</li>
+    </ul>
+  </div>
+  <div class="card">
+    <b>Planshet</b>
+    <ul>
+      <li>Joystik va tugmalar <b>yon tomonlarning oʻrtasida</b> (balandlikning ~60 %)</li>
+      <li>Joystik ~180 px, Ishlatish ~140 px, kichik tugmalar ~90 px (bolalar uchun ~2 sm)</li>
+      <li>Planshet oynasi oʻrtada, sahna yon tomonlarda koʻrinib turadi</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<h2>5. Hamma qurilmalar uchun qoidalar</h2>
+<div class="grid2">
+  <div class="card">
+    <b>Bolalar uchun</b>
+    <ul>
+      <li>Har bir tugma kamida 48 px, kichik bolalar uchun ~96 px (~2 sm), oraligʻi kamida 8 px</li>
+      <li>Ekran chetidan va kamera kesigidan kamida 16 px ichkarida (<code>safe-area-inset</code>)</li>
+      <li>Tugmada belgi + soʻz, faqat rang emas</li>
+      <li>Joystik barmoq tekkan joyda paydo boʻladi (chap yarmida istalgan joyda)</li>
+    </ul>
+  </div>
+  <div class="card">
+    <b>Bitta harakat — hamma joyda bitta maʼno</b>
+    <ul>
+      <li>✋ Ishlatish = <kbd>E</kbd> = sichqoncha chap tugmasi = binoni bosish</li>
+      <li>↩ Qaytarish = <kbd>Q</kbd> = sichqoncha oʻng tugmasi</li>
+      <li>Katta oltin tugma = <kbd>Enter</kbd></li>
+      <li>Tugma faqat ishlatsa boʻladigan paytda koʻrinadi (masalan Houston faqat karta chiqqanda)</li>
+    </ul>
+  </div>
+  <div class="card">
+    <b>Qachon nima koʻrinadi</b>
+    <ul>
+      <li><b>Ertalab:</b> joystik, qarash, Keyingi</li>
+      <li><b>Reja:</b> + Ishlatish, Qaytarish, Planshet, Kunni tasdiqlash</li>
+      <li><b>Karta yoki boʻron:</b> + Houston, 1 / 2 / 3 variantlar</li>
+      <li><b>Uchish va natija ekrani:</b> joystik va harakat tugmalari yashiriladi</li>
+    </ul>
+  </div>
+  <div class="card">
+    <b>Oʻyin pulti (gamepad) — keyinroq</b>
+    <ul>
+      <li>Chap stik — yurish, oʻng stik — qarash</li>
+      <li>A — Ishlatish, B — orqaga yoki Qaytarish</li>
+      <li>Y — Houston, X — Planshet</li>
+      <li>Start — pauza, Select — xarita</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<h2>6. Oʻyinga qoʻshildi (14.11.2026)</h2>
+<div class="grid2">
+  <div class="card">
+    <b>Qanday sinash</b>
+    <ul>
+      <li>Noutbuk: <code>http://localhost:5173/?walk</code> — E, Q, Enter, Tab, M, H, 1–9, Esc, F1 / ?</li>
+      <li>Telefon yoki planshet: ✋ ↩ 📟 🎧 tugmalari oʻzi chiqadi; noutbukda koʻrish uchun <code>?walk&amp;touch</code></li>
+      <li>Hammasi <code>features.controls</code> flagi ortida; <code>false</code> qilinsa, oʻyin avvalgidek</li>
+    </ul>
+  </div>
+  <div class="card">
+    <b>Telefon va planshetda qoʻshimcha</b>
+    <ul>
+      <li>Tik telefonda planshet oynasi ochiq boʻlsa, joystik va tugmalar yashirinadi (▾ yoki 📟 bilan qaytadi)</li>
+      <li>Yotiq telefonda panel joystik va tugmalar orasiga sigʻadi, planshet kichrayib aylantiriladi</li>
+      <li>Qarab turgan binoda issiq rangli halqa yonadi — ✋ shu binoga ishlaydi</li>
+    </ul>
+  </div>
+  <div class="card">
+    <b>Hali yoʻq</b>
+    <ul>
+      <li>Pauza (☰) — oʻyinda pauza tushunchasi yoʻq, Esc faqat oynalarni yopadi</li>
+      <li>Shift (yugurish), Space (sakrash) — personaj va fizika bilan</li>
+      <li>Oʻyin pulti (gamepad)</li>
+      <li>Oʻzbek va rus matnlari yangi kalitlar uchun (hozir inglizcha)</li>
+    </ul>
+  </div>
+</div>
+
+<p class="note" style="margin-top:24px">
+  Ekrandagi soʻzlar (Ishlatish, Houston, Kunni tasdiqlash...) bu yerda faqat tushuntirish uchun. Oʻyinda ular
+  kalitlar orqali chiqadi (<code>ui.*</code>) va matnni jamoa yozadi. Raqamlar va kun misoli ham faqat chizma uchun.
+</p>
+
+</main>
+</body>
+</html>

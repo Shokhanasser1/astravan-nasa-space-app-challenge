@@ -4,7 +4,7 @@ import { Instance, Instances } from '@react-three/drei';
 import * as THREE from 'three';
 import type { View } from '../state/game';
 import { camState, gesture, launchState } from './anim';
-import { DOOR_AZ, LAYOUT } from './layout';
+import { DOOR_AZ, LAYOUT, RADIUS } from './layout';
 import { EYE, FOCUS, MARKERS, POINTS, phasePoint, type PointId, type Vec3 } from './points';
 import { GLOW } from './parts/materials';
 import { TAP_PX, tapOnly } from './parts/tap';
@@ -13,6 +13,9 @@ import { freeWalk } from '../walk/enabled';
 import { listenKeys, walkInput } from '../walk/input';
 import { createWalker, walkDebug } from '../walk/walker';
 import { INSIDE, OUTSIDE } from '../walk/world';
+import { features } from '../config/features';
+import { pickAim, type AimTarget } from '../controls/aim';
+import { onTravel, setAim } from '../controls/bus';
 
 /**
  * First-person rig (final version, Dizayn 2.0). Eye 1.7 m; six standing points + inside; one-finger drag looks
@@ -30,6 +33,15 @@ const FLOAT_S = reduced ? 1.4 : 1.0;
 const DRAG_RAD_PER_PX = 0.0045;
 
 const lander: Vec3 = [LAYOUT.lander[0], 3, LAYOUT.lander[1]];
+
+/** Buildings E (or the ✋ button) can put a battery on: the tappable ones, at their footprint (src/controls/aim.ts). */
+const AIM: AimTarget[] = [
+  { k: 'ls', x: LAYOUT.habitat[0], z: LAYOUT.habitat[1], r: RADIUS.habitat },
+  { k: 'gh', x: LAYOUT.garden[0], z: LAYOUT.garden[1], r: RADIUS.garden },
+  { k: 'ws', x: LAYOUT.workshop[0], z: LAYOUT.workshop[1], r: RADIUS.workshop },
+  { k: 'sc', x: LAYOUT.scout[0], z: LAYOUT.scout[1], r: RADIUS.scout },
+  { k: 'launch', x: LAYOUT.lander[0], z: LAYOUT.lander[1], r: RADIUS.lander },
+];
 const wrap = (a: number) => Math.atan2(Math.sin(a), Math.cos(a));
 const ease = (t: number) => (t < 0.5 ? 2 * t * t : 1 - (-2 * t + 2) ** 2 / 2);
 const clampAbs = (v: number, m: number) => Math.max(-m, Math.min(m, v));
@@ -83,6 +95,18 @@ export function Rig({ view }: { view: View }) {
     // No walking while the lander lifts off or the truth sequence plays.
     walkInput.phaseOk = view.phase !== 'launch' && view.phase !== 'truth';
   }, [view.phase, walker]);
+
+  // The base map (M or 🗺) floats to a standing point, exactly like tapping its glowing marker.
+  useEffect(
+    () =>
+      onTravel((p) => {
+        setPoint(p);
+        setHop((h) => h + 1);
+      }),
+    [],
+  );
+  // (The building in front means nothing once the rig is gone.)
+  useEffect(() => () => setAim(null), []);
 
   // Free walk: the keys. (The scene draws on demand, so every key press asks for a frame.)
   useEffect(() => (walker ? listenKeys(invalidate) : undefined), [walker, invalidate]);
@@ -206,6 +230,8 @@ export function Rig({ view }: { view: View }) {
 
     const [hx, hz] = LAYOUT.habitat;
     camState.inside = Math.hypot(camera.position.x - hx, camera.position.z - hz) < 1.6 && camera.position.y < 3;
+    // E / ✋: which building is in front (stored only when it changes; nothing while floating or lifting off).
+    if (features.controls) setAim(s.t < 1 || launching ? null : pickAim(camera.position.x, camera.position.z, s.yaw, AIM));
     if (s.t < 1 || Math.abs(dy) > 1e-3 || Math.abs(dp) > 1e-3 || launching || walking) invalidate();
   });
 
