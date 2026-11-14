@@ -1,14 +1,15 @@
-import { useMemo } from 'react';
-import { useFrame } from '@react-three/fiber';
+import { useEffect, useMemo } from 'react';
+import { useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import { finalize, light, setLod } from '../vendor/astra/scene/kit';
 import { initialTier } from './quality';
+import { softwareGl } from './rich';
 import type { ModuleView } from '../vendor/astra/scene/models/common';
 import { buildHabitat } from '../vendor/astra/scene/models/habitat';
 import { buildGreenhouse } from '../vendor/astra/scene/models/life';
 import { buildLander, buildPad } from '../vendor/astra/scene/models/site';
 import { buildLab } from '../vendor/astra/scene/models/works';
-import { bake } from './astra/bake';
+import { bake, mergeWorld } from './astra/bake';
 
 /**
  * The base in ASTRA's look (15 Nov, Shoxjahon aka: the best of ASTRA + the best of ours). ASTRA's procedural models
@@ -22,7 +23,9 @@ export const ASTRA_SCALE = { habitat: 0.34, greenhouse: 0.45, lab: 0.6, lander: 
 
 // Phones build every curved part with half the segments (src/vendor/astra/scene/kit.ts sg): the base stays inside
 // the phone budget (< 100k triangles). Computers keep ASTRA's own detail.
-setLod(initialTier() === 'pc' ? 1 : 0.5);
+// A computer that draws in software (no GPU: SwiftShader, llvmpipe — also the e2e and shot.sh browsers) builds like a
+// phone too, or a whole week of play crawls.
+setLod(initialTier() === 'pc' && !softwareGl() ? 1 : 0.5);
 
 /** `?lite` keeps the old shapes (comparison, or a very weak phone). */
 export const astraLook = typeof location === 'undefined' || !new URLSearchParams(location.search).has('lite');
@@ -42,6 +45,7 @@ export function astraModule(build: (v: ModuleView) => void): ModuleView {
   // What moves stays its own part, but its own pieces merge too (a solar wing, a fan); the shield is revealed
   // bag by bag, so it is left as it is.
   for (const k of keep) if (k !== view.shield) bake(k, { keep: keep.filter((o) => o !== k), live });
+  for (const k of keep) k.userData.moves = true; // AstraMerge leaves these alone
   return view;
 }
 
@@ -127,4 +131,31 @@ export function AstraPads({ pads }: { pads: { x: number; z: number; size: number
     return root;
   }, [pads]);
   return <primitive object={all} />;
+}
+
+/**
+ * One step further for phones: after the base is on screen, the plain paints of every ASTRA building (already
+ * baked per building) merge across buildings into one mesh per finish. The originals stay in their buildings,
+ * hidden: taps still hit them (three's raycaster does not skip hidden meshes), so each building keeps its own
+ * tap. Left alone: what moves (lander, scout, solar wings, fans, the habitat's shield) and live materials.
+ */
+export function AstraMerge() {
+  const scene = useThree((s) => s.scene);
+  const invalidate = useThree((s) => s.invalidate);
+  useEffect(() => {
+    const roots: THREE.Object3D[] = [];
+    scene.traverse((o) => {
+      if (o.name.startsWith('astra_') && o.name !== 'astra_lander' && o.name !== 'astra_scout' && o.name !== 'astra_merged') roots.push(o);
+    });
+    const merged = mergeWorld(roots);
+    merged.name = 'astra_merged';
+    scene.add(merged);
+    invalidate();
+    return () => {
+      merged.removeFromParent();
+      merged.traverse((o) => (o as THREE.Mesh).geometry?.dispose());
+      for (const r of roots) r.traverse((o) => o.userData.mergedAway && ((o.visible = true), (o.userData.mergedAway = false)));
+    };
+  }, [scene, invalidate]);
+  return null;
 }

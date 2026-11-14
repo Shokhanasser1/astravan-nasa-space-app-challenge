@@ -6,7 +6,7 @@ import { initialTier } from './quality';
  * computer that draws in software (SwiftShader, llvmpipe: no GPU, also the e2e and shot.sh browsers) slows down.
  * Phones and those keep the light shapes. `?rich` forces it on (try it on a phone), `?lite` forces it off.
  */
-function softwareGl(): boolean {
+export function softwareGl(): boolean {
   try {
     const gl = document.createElement('canvas').getContext('webgl2') ?? document.createElement('canvas').getContext('webgl');
     if (!gl) return true;
@@ -24,5 +24,4 @@ const q = typeof location !== 'undefined' ? new URLSearchParams(location.search)
 // (src/scene/astra/bake.ts), so every device gets them; `?lite` keeps the light shapes. The GPU test stays for the
 // record (softwareGl, initialTier).
 void initialTier;
-void softwareGl;
 export const rich: boolean = q.has('rich') || !q.has('lite');

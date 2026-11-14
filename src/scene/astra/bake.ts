@@ -93,3 +93,42 @@ function clean(src: THREE.BufferGeometry, color: THREE.Color | null): THREE.Buff
   g.clearGroups();
   return g;
 }
+
+/**
+ * Merge the vertex-coloured paints (made by `bake`) of several already-placed models into one mesh per finish,
+ * in world space; the originals are hidden (`userData.mergedAway`), not removed. Parts marked `userData.moves`
+ * (and everything under them) are left alone.
+ */
+export function mergeWorld(roots: THREE.Object3D[]): THREE.Group {
+  const out = new THREE.Group();
+  const groups = new Map<string, { mat: THREE.Material; geos: THREE.BufferGeometry[]; shadow: boolean }>();
+  for (const root of roots) {
+    root.updateWorldMatrix(true, true);
+    const visit = (o: THREE.Object3D) => {
+      if (o.userData.moves || !o.visible) return;
+      const mesh = o as THREE.Mesh;
+      const mat = mesh.material as THREE.MeshStandardMaterial | undefined;
+      if (mesh.isMesh && mat && !Array.isArray(mat) && mat.vertexColors && !(o as THREE.InstancedMesh).isInstancedMesh) {
+        const key = `${mat.roughness}|${mat.metalness}|${mat.side}|${mat.flatShading ? 1 : 0}|${mat.userData.detail ? JSON.stringify(mat.userData.detail) : ''}`;
+        let g = groups.get(key);
+        if (!g) groups.set(key, (g = { mat, geos: [], shadow: false }));
+        g.geos.push(mesh.geometry.clone().applyMatrix4(mesh.matrixWorld));
+        g.shadow ||= mesh.castShadow;
+        mesh.visible = false;
+        mesh.userData.mergedAway = true;
+      }
+      for (const c of o.children) visit(c);
+    };
+    visit(root);
+  }
+  for (const g of groups.values()) {
+    const merged = mergeGeometries(g.geos, false);
+    g.geos.forEach((x) => x.dispose());
+    if (!merged) continue;
+    const m = new THREE.Mesh(merged, g.mat);
+    m.castShadow = g.shadow;
+    m.receiveShadow = true;
+    out.add(m);
+  }
+  return out;
+}

@@ -20,7 +20,7 @@ import { tapOnly } from './parts/tap';
 import { glowColor } from './parts/materials';
 import { features } from '../config/features';
 import { useAim } from '../controls/bus';
-import { AstraPads, astraLook, faceCentre } from './AstraBase';
+import { AstraMerge, AstraPads, astraLook, faceCentre } from './AstraBase';
 
 /** ASTRA's hexagonal pads under the outer buildings (width in metres, about the building's footprint). */
 const PADS = (
@@ -63,6 +63,7 @@ export function BaseScene({ view, onTap, onUndo }: { view: View; onTap: (k: Mach
       <Terrain sunAzDeg={sunAzimuth(view)} />
       <Decor />
       {astraLook && <AstraPads pads={PADS} />}
+      {astraLook && <AstraMerge />}
       <group onContextMenu={undo.ls}>
         <Habitat on={a.ls > 0} wall={view.wall} tap={tap.ls} />
       </group>

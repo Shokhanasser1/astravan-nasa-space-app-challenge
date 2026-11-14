@@ -47,6 +47,11 @@ ui-ux-pro-max three.js guidelines (MIT). Positions: `docs/layout.md`.
 - Fallback (if first person is late): the same scene, camera rises to the developer-guide overview. Same View.
 
 ## Light (concept 3.0 recipe — 80 % of the look)
+- **Superseded 15 Nov ~04:00 (Shoxjahon aka: the whole game in ASTRA's look, the best of ASTRA + ours):** the light
+  is ASTRA's Moon recipe in `src/scene/Light.tsx` — Sun 12° (a game rule; `?sunel=1.5` shows the real pole),
+  #fff4e2 × 3, sky hemisphere #b9c6ff/#2a2a30 × 0.4, cool fill × 0.25, a code-made environment × 0.42, ACES exposure
+  1.32 — and the base models are ASTRA's (`src/scene/AstraBase.tsx`, baked by `src/scene/astra/bake.ts`; `?lite` =
+  the old shapes). The concept recipe below is kept for `?sunel=1.5` and the record.
 - One directional Sun at **1.5°** elevation, azimuth from `sky.json` (~12°/day); colour #fff1dc, intensity ~6;
   hemisphere ≤ 0.06 (earthshine); background #020308; ACES tone mapping; sRGB output.
 - Shadows: only the Sun; only big bodies cast; map 1024 phone / 2048 pc; shadow camera ±150 m (shadows are

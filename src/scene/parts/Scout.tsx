@@ -4,7 +4,7 @@ import { GLOW, MAT } from './materials';
 import type { TapHandler } from './tap';
 import { Shell } from '../models/Shell';
 import { ScoutRover } from '../AstraProps';
-import { rich } from '../rich';
+import { rich, softwareGl } from '../rich';
 import { initialTier } from '../quality';
 
 const WHEELS: [number, number][] = [
@@ -51,7 +51,7 @@ function KitScout({ on, tap }: { on: boolean; tap: TapHandler }) {
 /** Scout rover → Explore. On computers the rocker-bogie science scout (ASTRA); on phones the light one. Faces the base. */
 export function Scout({ on, tap }: { on: boolean; tap: TapHandler }) {
   // ASTRA's scout has ~74k triangles (tyre treads): computers only; phones keep the light kit scout.
-  if (!rich || initialTier() !== 'pc') return <KitScout on={on} tap={tap} />;
+  if (!rich || initialTier() !== 'pc' || softwareGl()) return <KitScout on={on} tap={tap} />;
   const [x, z] = LAYOUT.scout;
   return (
     <group position={[x, 0, z]} onClick={tap}>

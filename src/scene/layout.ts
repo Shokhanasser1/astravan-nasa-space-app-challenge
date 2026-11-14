@@ -15,8 +15,9 @@ export const LAYOUT = {
   dish: [10.5, -2.5],
 } as const satisfies Record<string, XZ>;
 
-/** Battery bank (ASTRA model, src/scene/AstraProps.tsx) beside the power hub, to the left of the hub point's view (the habitat stays in sight). */
-export const BATTERY_BANK = [-5.0, 3.2] as const;
+/** Battery bank (ASTRA model, src/scene/AstraProps.tsx) in the power yard by the solar arrays: out of the walk between the
+ * hub and the habitat (walk tests) and out of the way of the camera behind the astronaut at the hub. */
+export const BATTERY_BANK = [-9.6, -3.2] as const;
 
 /** The crew rover (NASA SEV, decor, src/scene/Decor.tsx) parked on the flat pad, nose to the base; r = its hitbox. */
 export const PARKED_ROVER = { x: 10.5, z: 8.2, yaw: -2.3, r: 2.4 } as const;

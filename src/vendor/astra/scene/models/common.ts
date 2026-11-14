@@ -4,7 +4,7 @@
 import * as THREE from "three";
 import type { Planet } from "../../sim/types";
 import { addDetail, DETAIL } from "../surface";
-import { ball, bolts, box, canvasTexture, cyl, geo, light, metal, mesh, paint, panel, rbox, rubber, shared, strut, sg } from "../kit";
+import { ball, bolts, box, canvasTexture, cyl, geo, light, metal, mesh, paint, panel, rbox, rubber, shared, strut, sg, LOD } from "../kit";
 
 /** Procedural, original models. Everything faces north (−z) at rotation 0; local +z faces the habitat. */
 export const C = {
@@ -228,6 +228,9 @@ export function label(p: THREE.Object3D, text: string, w: number, x: number, y: 
   }
   const o = mesh(new THREE.PlaneGeometry(w, w / 4), m, p, x, y, z);
   o.castShadow = false;
+  // HB7: below full detail (phones) the small stencilled labels are not drawn: each would cost a draw call and
+  // none can be read on a phone screen.
+  if (LOD < 1) o.visible = false;
   return o;
 }
 

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import * as THREE from 'three';
-import { bake } from './bake';
+import { bake, mergeWorld } from './bake';
 import { addDetail, DETAIL } from '../../vendor/astra/scene/surface';
 
 const box = (mat: THREE.Material, x = 0) => {
@@ -63,5 +63,27 @@ describe('bake: static parts of a procedural model become a few meshes', () => {
     const out = meshes(g);
     expect(out).toHaveLength(1);
     expect((out[0].material as THREE.Material).userData.detail).toBe(DETAIL.paint);
+  });
+
+  it('mergeWorld joins the paints of several placed models, hides the originals, leaves moving parts alone', () => {
+    const paint = (c: string) => new THREE.MeshStandardMaterial({ color: c, roughness: 0.5 });
+    const a = new THREE.Group();
+    a.add(box(paint('#ff0000'), 0));
+    a.position.x = 10;
+    const b = new THREE.Group();
+    const wing = new THREE.Group();
+    wing.add(box(paint('#00ff00'), 0));
+    b.add(box(paint('#0000ff'), 0), wing);
+    bake(a, { keep: [], live: [] });
+    bake(b, { keep: [wing], live: [] });
+    bake(wing, { keep: [], live: [] });
+    wing.userData.moves = true;
+    const merged = mergeWorld([a, b]);
+    const out = meshes(merged);
+    expect(out).toHaveLength(1);
+    out[0].geometry.computeBoundingBox();
+    expect(out[0].geometry.boundingBox!.max.x).toBeCloseTo(10.5); // world space: model a stood at x = 10
+    expect(meshes(a).every((m) => !m.visible)).toBe(true);
+    expect(meshes(wing).every((m) => m.visible)).toBe(true);
   });
 });

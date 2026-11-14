@@ -3,6 +3,9 @@ import { expect, test } from '@playwright/test';
 // G2 gate in code: the first mission loads without errors and seven days can be played to the truth screen,
 // driven only through the DOM layer (works without WebGL). Selectors are data-testid only — never words or keys.
 test('loads, starts and plays the first mission to the truth screen', async ({ page }) => {
+  // A whole week with the 3D scene drawn in software (SwiftShader, no GPU): ~55 s at laptop size before ASTRA's
+  // base (15 Nov), more with it. Real phones and laptops draw on the GPU; their speed is checked with ?perf.
+  test.setTimeout(120_000);
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
 
@@ -29,7 +32,7 @@ test('loads, starts and plays the first mission to the truth screen', async ({ p
   await expect(page.getByTestId('truth-title')).toHaveAttribute('data-title', /.+/);
   // The real Earth (EPIC) and Moon (SVS Dial-A-Moon) of the storm day: public/data/media/2021-10-25/manifest.json.
   await expect(page.getByTestId('home-truth')).toBeVisible();
-  await page.getByTestId('truth').screenshot({ path: test.info().outputPath('truth.png') });
+  await page.screenshot({ path: test.info().outputPath('truth.png'), animations: 'disabled' });
   // 360×640: the reveal is taller than the screen, so the panel stays inside it and scrolls (Play again reachable).
   await page.setViewportSize({ width: 360, height: 640 });
   const box = await truth.boundingBox();
