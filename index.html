@@ -7,6 +7,16 @@
     <!-- Asilbek replaces with the game icon -->
     <link rel="icon" href="data:," />
     <title>HOME BY SEVEN</title>
+    <script>
+      // The main entry is the third-person Moon demo in public/oy (Samandar's decision, 14 Nov ~23:50).
+      // The team's board game stays here: add ?classic (or ?week= / ?view= / ?models / ?walk / ?perf).
+      // Automated browsers (Playwright: navigator.webdriver) are not redirected, so e2e keeps testing this app.
+      (function () {
+        var q = new URLSearchParams(location.search);
+        var keep = ['classic', 'week', 'view', 'models', 'walk', 'perf', 'debug'].some(function (k) { return q.has(k); });
+        if (!keep && !navigator.webdriver) location.replace('./oy/demo/' + location.hash);
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>
