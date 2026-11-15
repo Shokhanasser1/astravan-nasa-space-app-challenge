@@ -3,6 +3,8 @@ import type { Machine, View } from '../state/game';
 import { LAYOUT, RADIUS } from './layout';
 import { Terrain } from './Terrain';
 import { Decor } from './Decor';
+import { Outpost } from './Outpost';
+import { OUTPOST_ON } from './outpostSite';
 import { sunAzimuth } from './Light';
 import { Habitat } from './parts/Habitat';
 import { Garden } from './parts/Garden';
@@ -59,6 +61,7 @@ export function BaseScene({ view }: { view: View; onTap?: (k: Machine) => void; 
     <group>
       <Terrain sunAzDeg={sunAzimuth(view)} />
       <Decor />
+      {OUTPOST_ON && <Outpost />}
       {astraLook && <AstraPads pads={PADS} />}
       {astraLook && <AstraMerge />}
       <Habitat on={a.ls > 0} wall={view.wall} tap={TAP.ls} />

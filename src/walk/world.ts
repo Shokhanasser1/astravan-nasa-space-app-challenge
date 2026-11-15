@@ -10,6 +10,7 @@ import { features } from '../config/features';
 import { STEP_FOOT, STEP_WHEEL, rockSolids } from './rocks';
 import { ICE_CRATER } from '../scene/ground';
 import { initialTier } from '../scene/quality';
+import { OUTPOST_ON, outpostSolids } from '../scene/outpostSite';
 
 /** Every hitbox is its visual footprint plus this much (metres). */
 const MARGIN = 0.1;
@@ -60,6 +61,8 @@ export const OUTSIDE: Area = {
     disc('dish', LAYOUT.dish, 1.1),
     wing,
     ROVER_DISC,
+    // the HDU outpost's modules, side modules and tunnels, while it is on (src/scene/outpostSite.ts)
+    ...(OUTPOST_ON ? outpostSolids() : []),
     { name: 'tanks', x: TANKS.x, z: TANKS.z, r: TANKS.r },
     // (the battery bank is drawn with the ASTRA look only: src/scene/rich.ts)
     ...(rich ? [{ name: 'battery', x: BATTERY_BANK[0], z: BATTERY_BANK[1], r: BATTERY_R }] : []),
