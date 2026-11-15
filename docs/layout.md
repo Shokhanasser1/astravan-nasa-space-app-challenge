@@ -42,6 +42,12 @@ racks stand right of each door (module frame (1.9, 3.9)). The HDU outpost 50 m n
 | Parked crew rover | −14.55 | 7.52 |
 | Life-support tanks | 0.47 | 7.17 |
 
+**15 Nov — home story T2 (`features.homeStoryCrash`):** Day 1 of a first mission opens at the crash site, the same
+spot on both plans (`src/scene/crash.ts`, code wins; tests `src/scene/crash.test.ts`): the astronaut at (−22, −50),
+~55 m from the habitat door on the ice-crater side, facing the base light at the door; 14 m ahead and 4.2 m left of
+the path the base's lander tipped 35° (hitbox: a bar along its lean, r 2.5), 10 m ahead and 3 m right a scout rover
+upside down (r 1.2). Holding the stick toward the light reaches the base on both plans (HDU: round its battery bank).
+
 Rules (developer guide §03–§06):
 - No free orbit and no free walking: the child looks around with one finger from a standing point (final version);
   the camera moves only by floating ~1 s to another standing point, and turns to the event by itself (`view.focus`).

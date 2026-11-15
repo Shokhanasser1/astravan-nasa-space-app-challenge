@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { features } from '../src/config/features';
 
 /**
  * The mission quiz (features.quiz): answers are tried in order until one is right (a wrong one shows why and
@@ -45,8 +46,11 @@ test('loads, starts and plays the first mission to the truth screen', async ({ p
   await page.getByTestId('start-mission').click();
 
   const truth = page.getByTestId('truth');
-  // The first mission opens with the Day 1 tutorial: its task line is on screen, and it never blocks a button.
-  await expect(page.getByTestId('task')).toHaveAttribute('data-step', 'next');
+  // The first mission opens with the Day 1 tutorial: its task line is on screen, and it never blocks a button. With
+  // the home story's crash start its first step is the walk to the base light (`reach`); Next skips the walk, so the
+  // week below plays without walking, through the "IMPACT" intro (it never takes a pointer).
+  const crash = features.homeStory && features.homeStoryCrash;
+  await expect(page.getByTestId('task')).toHaveAttribute('data-step', crash ? 'reach' : 'next');
   // CAPCOM's first line travels from Earth first (the 1.3 s radio delay), then shows its words.
   await expect(page.getByTestId('radio')).toBeVisible();
   await expect(page.getByTestId('radio-delay')).toBeHidden({ timeout: 5000 });
