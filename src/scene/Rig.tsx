@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useFrame, useThree } from '@react-three/fiber';
+import { useFrame, useThree, type ThreeEvent } from '@react-three/fiber';
 import { Instance, Instances } from '@react-three/drei';
 import * as THREE from 'three';
 import type { View } from '../state/game';
 import { camState, gesture, launchState } from './anim';
-import { DOOR_AZ, LAYOUT, RADIUS } from './layout';
+import { DOOR_AZ, LAYOUT, RADIUS, fromDoor } from './layout';
 import { EYE, FOCUS, MARKERS, POINTS, phasePoint, type PointId, type Vec3 } from './points';
 import { GLOW } from './parts/materials';
 import { TAP_PX, tapOnly } from './parts/tap';
@@ -13,11 +13,14 @@ import { freeWalk } from '../walk/enabled';
 import { axes, listenKeys, running, walkInput, type Axes } from '../walk/input';
 import { heading } from '../walk/move';
 import { createWalker, walkDebug } from '../walk/walker';
+import { HAB_ROOM, ROOM_K } from '../walk/habitatRoom';
+import { habitatDoor } from './Interiors';
+import { astraLook } from './AstraBase';
 import { clearance, fits, type Solid, type XZ } from '../walk/collide';
 import { INSIDE, OUTSIDE, ROVER_AREA, ROVER_DISC } from '../walk/world';
 import { features } from '../config/features';
 import { pickAim, type AimTarget } from '../controls/aim';
-import { getRide, onRide, onTravel, setAim, setRide } from '../controls/bus';
+import { getRide, onRide, onTravel, setAim, setRide, type Ride } from '../controls/bus';
 import { STEP, createBody, stepBody, type Body } from '../character/body';
 import { telemetry } from '../character/telemetry';
 import { Astronaut } from './Astronaut';
@@ -54,6 +57,20 @@ const pedals = { throttle: 0, steer: 0, brake: false };
 const STEER_MAX = 0.45; // rad: the front wheel pairs at full lock (the rear pairs turn the other way)
 const cockpit = new THREE.Matrix4();
 const ckPos = new THREE.Vector3();
+/**
+ * The habitat door (ASTRA look, src/scene/Interiors.tsx): E beside it outside goes in, E by the airlock inside goes
+ * out. The hatch opens first (DOOR_GO s), then the usual float to the inside point or to the airlock point, and it
+ * closes once that is over. t < 0: no trip.
+ */
+const doorTrip = { to: null as PointId | null, t: -1 };
+const DOOR_GO = 0.7;
+const DOOR_SPOT = fromDoor(2.6); // in front of the door, just outside the habitat's hitbox
+/** Standing by the airlock in the habitat's room: more than 2 m towards the door from its middle (model frame). */
+function byAirlock(p: XZ): boolean {
+  const dx = p.x - LAYOUT.habitat[0];
+  const dz = p.z - LAYOUT.habitat[1];
+  return (dx * Math.sin(DOOR_AZ) + dz * Math.cos(DOOR_AZ)) / ROOM_K > 2.0;
+}
 const ckQ = new THREE.Quaternion();
 const ckE = new THREE.Euler();
 const BOARD_REACH = 3.5; // m from a hatch: E climbs in
@@ -110,11 +127,14 @@ export function Rig({ view }: { view: View }) {
   const invalidate = useThree((s) => s.invalidate);
   const aspect = useThree((s) => s.size.width / Math.max(1, s.size.height));
   const [point, setPoint] = useState<PointId>(() => phasePoint(view.phase) ?? 'hub');
+  const pointNow = useRef(point);
+  pointNow.current = point;
   // Free walk: `hop` asks for a float even to the point you last stood at (you may have walked away from it), and
   // `roaming` says you have, so that point's marker shows again.
   const [hop, setHop] = useState(0);
   const [roaming, setRoaming] = useState(false);
-  const walker = useMemo(() => (freeWalk && !character ? createWalker() : null), []);
+  // (with the astronaut, the walker walks only inside the habitat, in first person: the astronaut walks outside)
+  const walker = useMemo(() => (freeWalk ? createWalker() : null), []);
   const body = useMemo(() => createBody(POINTS.hub.pos[0], POINTS.hub.pos[2], ground), []);
   const c = useRef({ acc: 0, quiet: 0, shadowT: 0, car: 0, ck: 0, takeoff: NaN, peak: 0, ax: { ahead: 0, side: 0, turn: 0 } as Axes, wish: { x: 0, z: 0 } as XZ }).current;
   const s = useRef({
@@ -136,10 +156,14 @@ export function Rig({ view }: { view: View }) {
     invalidate();
   }, [camera, aspect, invalidate]);
 
-  // Phase → default point (run and unknown phases: stay).
+  // Phase → default point (run and unknown phases: stay). With the astronaut (third person) it stays where the
+  // player walked it: only a phase that needs another camera moves it (inside, the launch ladder, orbit) — a float
+  // across the base on every Next looked like a teleport.
   useEffect(() => {
     const p = phasePoint(view.phase);
-    if (p) {
+    const now = pointNow.current;
+    const stay = character && now !== 'inside' && now !== 'orbit' && p !== 'inside' && p !== 'ladder' && p !== 'orbit';
+    if (p && !stay) {
       setPoint(p);
       if (walker || character) setHop((h) => h + 1);
     }
@@ -160,11 +184,17 @@ export function Rig({ view }: { view: View }) {
   useEffect(() => () => setAim(null), []);
 
   // ?drive: E (or the rover button) beside a hatch climbs in; while driving, it stops the rover to get out.
+  // The habitat door (ASTRA look): E at it goes in, E by the airlock inside goes out.
   useEffect(() => {
-    if (!DRIVABLE) return;
     const off = onRide(() => {
-      if (seat.stage === 'drive') seat.stage = 'stop';
-      else if (seat.stage === 'walk' && getRide() === 'board') boardRover();
+      const r = getRide();
+      if ((r === 'enter' || r === 'leave') && doorTrip.t < 0) {
+        doorTrip.to = r === 'enter' ? 'inside' : 'airlock';
+        doorTrip.t = 0;
+        habitatDoor.want = 1;
+        setRide(null);
+      } else if (seat.stage === 'drive') seat.stage = 'stop';
+      else if (seat.stage === 'walk' && r === 'board') boardRover();
       invalidate();
     });
     return () => {
@@ -304,6 +334,19 @@ export function Rig({ view }: { view: View }) {
       if (!reduced || tc.t < 0.5) invalidate();
       return;
     }
+    if (doorTrip.t >= 0) {
+      doorTrip.t += dt;
+      if (doorTrip.to && doorTrip.t >= DOOR_GO) {
+        setPoint(doorTrip.to);
+        setHop((h) => h + 1);
+        doorTrip.to = null;
+      }
+      if (doorTrip.t >= DOOR_GO + 2.6) {
+        habitatDoor.want = 0; // in (or out): the hatch closes behind
+        doorTrip.t = -1;
+      }
+      invalidate();
+    }
     if (third) {
       followAstronaut(dt);
       return;
@@ -321,10 +364,12 @@ export function Rig({ view }: { view: View }) {
       camera.position.lerpVectors(s.from, s.to, ease(s.t));
     } else {
       // (Never during the launch or the truth sequence: there the camera is not standing on the ground.)
-      if (walker && walkInput.phaseOk) {
-        // Walk on from the point: the standing spot itself moves, and solid things stop it (src/walk/).
+      if (walker && walkInput.phaseOk && (!character || point === 'inside')) {
+        // Walk on from the point: the standing spot itself moves, and solid things stop it (src/walk/). Inside the
+        // ASTRA habitat: its furnished ground floor, at the room's scale (src/walk/habitatRoom.ts).
         const inside = point === 'inside';
-        walking = walker.step(s.to, s.yaw, inside ? INSIDE : OUTSIDE, dt);
+        const room = inside && astraLook;
+        walking = walker.step(s.to, s.yaw, room ? HAB_ROOM : inside ? INSIDE : OUTSIDE, dt, room ? ROOM_K : 1);
         if (!inside) s.to.y = groundHeight(s.to.x, s.to.z) + EYE;
         s.yawT += walker.turn() * MAX_TURN * dt;
         walkDebug.inside = inside;
@@ -345,6 +390,8 @@ export function Rig({ view }: { view: View }) {
     camState.inside = Math.hypot(camera.position.x - hx, camera.position.z - hz) < 1.6 && camera.position.y < 3;
     // E / ✋: which building is in front (stored only when it changes; nothing while floating or lifting off).
     if (features.controls) setAim(s.t < 1 || launching ? null : pickAim(camera.position.x, camera.position.z, s.yaw, AIM));
+    // in the habitat's room, by the airlock (model z > 2 m): E goes out
+    setRide(point === 'inside' && astraLook && s.t >= 1 && doorTrip.t < 0 && walkInput.phaseOk && byAirlock(s.to) ? 'leave' : null);
     if (s.t < 1 || Math.abs(dy) > 1e-3 || Math.abs(dp) > 1e-3 || launching || walking) invalidate();
   });
 
@@ -688,10 +735,12 @@ export function Rig({ view }: { view: View }) {
     // E / hand button: the building in front of the astronaut (its facing, in the camera's yaw convention)
     if (features.controls) setAim(s.t < 1 || launching || seat.stage !== 'walk' ? null : pickAim(body.x, body.z, body.facing + Math.PI, AIM));
     // ?drive: what E does at the rover now (stored only when it changes)
-    if (DRIVABLE) {
-      const canBoard = seat.stage === 'walk' && !scripted && s.t >= 1 && walkInput.phaseOk && body.onGround && body.windup < 0;
-      setRide(seat.stage === 'drive' ? 'exit' : canBoard && nearHatch() ? 'board' : null);
-    }
+    // E: the rover (?drive), or the habitat door (ASTRA look)
+    const onFoot = seat.stage === 'walk' && !scripted && s.t >= 1 && walkInput.phaseOk && body.onGround && body.windup < 0;
+    let ride: Ride | null = null;
+    if (DRIVABLE) ride = seat.stage === 'drive' ? 'exit' : onFoot && nearHatch() ? 'board' : null;
+    if (!ride && astraLook && onFoot && doorTrip.t < 0 && Math.hypot(body.x - DOOR_SPOT[0], body.z - DOOR_SPOT[1]) < 1.3) ride = 'enter';
+    setRide(ride);
     // the Sun's shadow map is drawn once a day; while the astronaut moves, redraw it ten times a second
     c.shadowT -= dt;
     if (active && c.shadowT <= 0) {
@@ -705,13 +754,15 @@ export function Rig({ view }: { view: View }) {
   const go = useMemo(
     () =>
       Object.fromEntries(
-        [...MARKERS, 'inside'].map((p) => [
-          p,
-          tapOnly(() => {
+        [...MARKERS, 'inside'].map((p) => {
+          const tap = tapOnly(() => {
             setPoint(p as PointId);
             setHop((h) => h + 1);
-          }),
-        ]),
+          });
+          // with the astronaut a mouse click looks around and the astronaut walks (the map M still travels): a click
+          // that happened to land on a marker floated it away; a finger still taps a marker
+          return [p, (e: ThreeEvent<MouseEvent>) => (character && (e.nativeEvent as PointerEvent).pointerType === 'mouse' ? undefined : tap(e))];
+        }),
       ),
     [],
   );

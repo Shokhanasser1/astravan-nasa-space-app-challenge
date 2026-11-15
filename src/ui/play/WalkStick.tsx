@@ -37,13 +37,15 @@ export function JumpButton() {
  * `?drive` (local preview): beside the crew rover's hatch, climb in and drive; while driving, stop and climb out. E on
  * a keyboard (the badge shows it), a tap on a touch screen. Shown only when it would do something.
  */
+const RIDE_LABEL: Record<Ride, string> = { board: 'Drive the rover', exit: 'Stop and get out', enter: 'Go inside', leave: 'Go outside' };
+
 export function RideButton({ ride }: { ride: Ride | null }) {
   if (!ride) return null;
   return (
     <button
       type="button"
       data-testid="ride"
-      aria-label={ride === 'board' ? 'Drive the rover' : 'Stop and get out'}
+      aria-label={RIDE_LABEL[ride]}
       className="hud-side pointer-events-auto fixed left-1/2 top-[22%] z-[5] grid h-16 w-16 -translate-x-1/2 touch-none select-none place-items-center rounded-full border-2 border-[#ff8a3d]/80 bg-[#ff8a3d]/15 text-white/90"
       onPointerDown={(e) => {
         e.preventDefault();

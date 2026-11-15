@@ -27,8 +27,6 @@ export interface Area {
 
 /** Body radius of the walker (0.35 m: a suited child-sized astronaut, shoulders and backpack). */
 export const BODY = 0.35;
-/** Longest piece of a step: half the body, so nothing thinner than the body can be skipped over. */
-const PIECE = BODY / 2;
 
 const near: XZ = { x: 0, z: 0 };
 
@@ -101,7 +99,8 @@ function settle(p: XZ, area: Area, body: number, dirX: number, dirZ: number): vo
  * nothing): stopped by solids and the bounds, sliding along them when the step is at an angle.
  */
 export function walkStep(from: XZ, dx: number, dz: number, area: Area, body = BODY, out: XZ = { x: 0, z: 0 }): XZ {
-  const pieces = Math.max(1, Math.ceil(Math.hypot(dx, dz) / PIECE));
+  // pieces of at most half the body, so nothing thinner than the body can be skipped over
+  const pieces = Math.max(1, Math.ceil(Math.hypot(dx, dz) / (body / 2)));
   out.x = from.x;
   out.z = from.z;
   for (let i = 0; i < pieces; i++) {
