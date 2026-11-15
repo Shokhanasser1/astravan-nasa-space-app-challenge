@@ -39,12 +39,16 @@ describe("the base's hitboxes", () => {
         for (let i = 0; i < 600; i++) {
           p = walkStep(p, (-Math.cos(a) * 2) / 60, (-Math.sin(a) * 2) / 60, OUTSIDE);
           least = Math.min(least, clearance(s, p.x, p.z));
-          for (const o of OUTSIDE.solids) expect(clearance(o, p.x, p.z), `${s.name} from ${k}: inside ${o.name}`).toBeGreaterThanOrEqual(-1e-6);
+          // (expect only on a miss: with the rocks there are ~N² × 7 200 checks, too slow as expect calls on CI)
+          for (const o of OUTSIDE.solids) {
+            const c = clearance(o, p.x, p.z);
+            if (c < -1e-6) expect(c, `${s.name} from ${k}: inside ${o.name}`).toBeGreaterThanOrEqual(-1e-6);
+          }
         }
         expect(least, `${s.name} from ${k}`).toBeGreaterThanOrEqual(-1e-6);
       }
     }
-  });
+  }, 30_000);
 
   it('can be crossed on foot between every pair of standing points', () => {
     // Head straight for the next point; sliding round whatever is in the way must get there. (Starting a hand's
