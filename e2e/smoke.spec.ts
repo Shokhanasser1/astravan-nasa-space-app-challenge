@@ -4,8 +4,9 @@ import { expect, test } from '@playwright/test';
 // driven only through the DOM layer (works without WebGL). Selectors are data-testid only — never words or keys.
 test('loads, starts and plays the first mission to the truth screen', async ({ page }) => {
   // A whole week with the 3D scene drawn in software (SwiftShader, no GPU): ~55 s at laptop size before ASTRA's
-  // base (15 Nov), more with it. Real phones and laptops draw on the GPU; their speed is checked with ?perf.
-  test.setTimeout(120_000);
+  // base (15 Nov), more with it (a laptop run on a busy machine reached Day 6 at 120 s, so 180 s). Real phones and
+  // laptops draw on the GPU; their speed is checked with ?perf.
+  test.setTimeout(180_000);
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
 
@@ -14,12 +15,26 @@ test('loads, starts and plays the first mission to the truth screen', async ({ p
   await page.getByTestId('start-mission').click();
 
   const truth = page.getByTestId('truth');
-  for (let i = 0; i < 80 && !(await truth.isVisible()); i++) {
+  // The first mission opens with the Day 1 tutorial: its task line is on screen, and it never blocks a button.
+  await expect(page.getByTestId('task')).toHaveAttribute('data-step', 'next');
+  for (let i = 0; i < 100 && !(await truth.isVisible()); i++) {
+    // The day's decision (day card, shelter) is its own dialog: take the first choice.
+    const decision = page.getByTestId('decision');
+    if (await decision.isVisible()) {
+      await decision.locator('[data-testid^="card-"], [data-testid^="shelter-"]').first().click();
+      continue;
+    }
     const confirm = page.getByTestId('confirm-day');
     if (await confirm.isVisible()) {
-      // a day card must be answered first: take the first choice
-      if (await confirm.isDisabled()) await page.getByTestId('card').getByRole('button').first().click();
-      // batteries on Life Support so the reserve never runs out
+      // a day card must be answered first: the Decision button opens the dialog again
+      if (await confirm.isDisabled()) {
+        await page.getByTestId('decision-open').click();
+        continue;
+      }
+      // The plan list never opens by itself (15 Nov): open it, then batteries on Life Support so the reserve
+      // never runs out (the list is the DOM way to play without walking, and without WebGL).
+      if (!(await page.getByTestId('plan-tablet').isVisible())) await page.getByTestId('tablet-open').click();
+      await expect(page.getByTestId('resources')).toBeVisible();
       const add = page.getByTestId('machine-ls-add');
       while (await add.isEnabled()) await add.click();
       await confirm.click();

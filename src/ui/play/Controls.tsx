@@ -1,6 +1,6 @@
-import { useEffect, useRef, type Dispatch, type ReactNode } from 'react';
-import { Hand, Headphones, HelpCircle, Map as MapIcon, Tablet as TabletIcon, Undo2, X } from 'lucide-react';
-import type { Action, Board, Machine } from '../../state/game';
+import { useEffect, useRef, type Dispatch } from 'react';
+import { HelpCircle, Map as MapIcon, X } from 'lucide-react';
+import type { Action } from '../../state/game';
 import { command } from '../../controls/keys';
 import { TRAVEL, resolve, type Ctx, type Effect, type Overlay, type UiOp } from '../../controls/act';
 import { travel } from '../../controls/bus';
@@ -56,76 +56,10 @@ export function Kbd({ k }: { k: string }) {
   );
 }
 
-function PadBtn({ size, onClick, label, testid, disabled, children }: {
-  size: 'use' | 'small';
-  onClick: () => void;
-  label: string;
-  testid: string;
-  disabled?: boolean;
-  children: ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      data-testid={testid}
-      aria-label={label}
-      disabled={disabled}
-      onClick={onClick}
-      className={`pointer-events-auto flex flex-col items-center justify-center rounded-full font-semibold leading-tight transition active:scale-95 disabled:opacity-35 ${
-        size === 'use' ? 'pad-use abtn primary !gap-0 !rounded-full !p-0' : 'pad-small glass text-white'
-      }`}
-    >
-      {children}
-    </button>
-  );
-}
-
-/**
- * Touch action buttons, right side (controls guide §3–4): ✋ Use on the building in front, ↩ take back, 📟 wrist
- * tablet, 🎧 Houston on storm days. Only while planning — the other phases need only the big button.
- */
-export function ActionPad({ board, aim, apply, tr }: { board: Board; aim: Machine | null; apply: (e: Effect) => void; tr: Tr }) {
-  const storm = board.shelterOptions.length > 0;
-  const name = aim ? tr(`ui.machine.${aim}`) : '';
-  return (
-    <div className="hud-side hud-pad grid grid-cols-[auto_auto] items-end gap-2" data-testid="action-pad">
-      {storm ? (
-        <PadBtn size="small" testid="pad-houston" label={tr('ui.shelter.askHouston')} onClick={() => apply({ ui: 'houston' })}>
-          <Headphones size={26} aria-hidden="true" />
-        </PadBtn>
-      ) : (
-        <span />
-      )}
-      <PadBtn size="small" testid="pad-tablet" label={tr('ui.controls.tablet')} onClick={() => apply({ ui: 'tablet' })}>
-        <TabletIcon size={26} aria-hidden="true" />
-      </PadBtn>
-      <PadBtn
-        size="small"
-        testid="pad-undo"
-        label={`${tr('ui.controls.undo')} ${name}`}
-        disabled={!aim || board.info.forced}
-        onClick={() => aim && apply({ action: { type: 'SET', k: aim, delta: -1 } })}
-      >
-        <Undo2 size={26} aria-hidden="true" />
-      </PadBtn>
-      <PadBtn
-        size="use"
-        testid="pad-use"
-        label={`${tr('ui.controls.use')} ${name}`}
-        disabled={!aim || board.info.forced}
-        onClick={() => aim && apply({ action: { type: 'SET', k: aim } })}
-      >
-        <Hand size={32} aria-hidden="true" />
-        <span className="max-w-full truncate px-1 text-[11px]">{name}</span>
-      </PadBtn>
-    </div>
-  );
-}
-
 /** Top-left: the base map (in the game) and the list of controls (always). */
 export function CornerButtons({ map, open, tr }: { map: boolean; open: (o: UiOp) => void; tr: Tr }) {
   return (
-    <div className="hud-corner pointer-events-auto flex flex-col gap-2">
+    <div className="hud-corner pointer-events-auto flex gap-2">
       {map && (
         <Btn data-testid="open-map" aria-label={tr('ui.controls.map')} onClick={() => open('map')} className="text-xl">
           <MapIcon size={22} aria-hidden="true" />
@@ -171,11 +105,11 @@ const HELP: { keys: string[]; touch: string; text: string; walk?: boolean }[] = 
   { keys: ['Shift'], touch: '🕹', text: 'ui.help.run', walk: true },
   { keys: ['Space'], touch: '⤒', text: 'ui.help.jump', walk: true },
   { keys: ['🖱'], touch: '👆', text: 'ui.help.look' },
-  { keys: ['E', '🖱'], touch: '✋', text: 'ui.help.use' },
+  { keys: ['E'], touch: '✋', text: 'ui.help.use' },
   { keys: ['Q'], touch: '↩', text: 'ui.help.undo' },
   { keys: ['1', '2', '3'], touch: '👆', text: 'ui.help.pick' },
   { keys: ['Enter'], touch: '▭', text: 'ui.help.confirm' },
-  { keys: ['Tab'], touch: '📟', text: 'ui.help.tablet' },
+  { keys: ['Tab'], touch: '📋', text: 'ui.help.tablet' },
   { keys: ['H'], touch: '🎧', text: 'ui.help.houston' },
   { keys: ['M'], touch: '🗺', text: 'ui.help.map' },
   { keys: ['Esc'], touch: '✕', text: 'ui.help.close' },

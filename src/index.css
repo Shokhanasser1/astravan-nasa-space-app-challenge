@@ -323,3 +323,91 @@ body,
 @media (prefers-reduced-motion: reduce) {
   .holo-in, .holo-pulse { animation: none; }
 }
+
+/*
+ * "Make it a game" HUD (15 Nov): the resource bar on top, the task line, the decision dialog's choice cards, the
+ * carried batteries. Pulses stay slow (≤ 1 per second), never red, and stop for reduced motion.
+ */
+.res-cell {
+  min-width: 3.1rem;
+  min-height: 48px;
+  color: #f3f6ff;
+}
+.res-cell:focus-visible {
+  outline: 2px solid var(--color-measured);
+  outline-offset: -2px;
+}
+@media (max-width: 380px) {
+  .res-cell {
+    min-width: 2.75rem;
+    padding-inline: 0.2rem;
+  }
+}
+.abtn.choice {
+  min-height: 4.5rem;
+  padding: 0.75rem;
+  white-space: normal;
+  justify-content: flex-start;
+}
+@keyframes glow-ring {
+  0%, 100% { box-shadow: 0 0 0 0 rgb(255 138 61 / 0.55); }
+  50% { box-shadow: 0 0 0 8px rgb(255 138 61 / 0); }
+}
+.abtn.glow {
+  animation: glow-ring 1.6s ease-in-out infinite;
+}
+@keyframes task-idle {
+  0%, 100% { box-shadow: var(--shadow), 0 0 0 0 rgb(255 138 61 / 0.6); }
+  50% { box-shadow: var(--shadow), 0 0 0 6px rgb(255 138 61 / 0); }
+}
+.task-idle {
+  border-color: rgb(255 138 61 / 0.8);
+  animation: task-idle 1.4s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .abtn.glow, .task-idle { animation: none; }
+}
+/* Laptops and tablets: the carried batteries sit in the bottom-left corner, out of the centre column. */
+@media (min-width: 1024px) {
+  .hud-inv {
+    position: fixed;
+    left: max(1rem, env(safe-area-inset-left));
+    bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+}
+/* A secondary button that sits on the bright regolith: solid navy glass so it never looks disabled. */
+.abtn.solid:not(.on) {
+  background: var(--glass);
+}
+
+/* Top row order: portrait = map/help · day · language/sound, the gauges on their own row below. */
+.hud-top > .hud-corner { order: 1; }
+.hud-top > [data-testid='day-badge'] { order: 2; }
+.hud-top > .hud-topbar { order: 3; }
+.hud-top > .hud-res { order: 4; flex-basis: 100%; }
+
+/* Landscape phone (≤ 540 px high): one top row, the batteries and the Sun photo move to the sides, so the
+   prompt and the Confirm button keep their place between the walk stick and the action button. */
+@media (orientation: landscape) and (max-height: 540px) {
+  .hud-top { flex-wrap: nowrap; }
+  .hud-top > .hud-res { order: 3; flex-basis: auto; width: auto; }
+  .hud-top > .hud-topbar { order: 4; }
+  .hud-inv {
+    position: fixed;
+    left: var(--hud-edge);
+    top: 8.5rem;
+  }
+  .hud-inv > span:first-child { display: none; }
+  .hud-sun {
+    position: fixed;
+    right: var(--hud-edge-r);
+    top: 5rem;
+  }
+  .hud-btns { flex-direction: row; }
+  .abtn.big { min-height: 48px; }
+}
+/* The day badge takes the room between the corner buttons and the language buttons (it shrinks before it wraps). */
+.hud-top > [data-testid='day-badge'] { flex: 1 1 0; max-width: 13rem; min-width: 0; }
+@media (max-width: 380px) {
+  [data-testid='day-badge'] > span:first-child { font-size: 0.75rem; letter-spacing: 0.02em; }
+}

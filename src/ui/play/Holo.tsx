@@ -34,9 +34,9 @@ export function HoloPanel({ className = '', children, ...rest }: { className?: s
 }
 
 /** Mission control's face: a line-drawn head with a headset, glowing (it pulses slowly while speaking). */
-function CapcomFace({ speaking }: { speaking: boolean }) {
+function CapcomFace({ speaking, small = false }: { speaking: boolean; small?: boolean }) {
   return (
-    <svg viewBox="0 0 48 48" className={`h-11 w-11 shrink-0 ${speaking ? 'holo-pulse' : ''}`} aria-hidden="true">
+    <svg viewBox="0 0 48 48" className={`${small ? 'h-8 w-8' : 'h-11 w-11'} shrink-0 ${speaking ? 'holo-pulse' : ''}`} aria-hidden="true">
       <g fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="text-measured">
         <circle cx="24" cy="20" r="9" />
         <path d="M8 44c2-9 8-13 16-13s14 4 16 13" />
@@ -53,8 +53,19 @@ function CapcomFace({ speaking }: { speaking: boolean }) {
  * The radio line as a hologram of mission control. With sound on, the line is read aloud between the two Quindar
  * tones, like Apollo's radio (the browser's voice for English and Russian; Uzbek lines are recorded by the team).
  */
-export function CapcomHolo({ textKey, tr, lang, sound }: { textKey: string | null; tr: Tr; lang: Lang; sound: boolean }) {
+export function CapcomHolo({
+  textKey, tr, lang, sound, collapsible = false,
+}: { textKey: string | null; tr: Tr; lang: Lang; sound: boolean; collapsible?: boolean }) {
   const [speaking, setSpeaking] = useState(false);
+  // In the game (15 Nov): the card folds into a small chip once read (or after ~6 s); a tap opens it again.
+  const [folded, setFolded] = useState(false);
+  const [opened, setOpened] = useState(0);
+  useEffect(() => setFolded(false), [textKey]);
+  useEffect(() => {
+    if (!collapsible || folded || speaking || !textKey) return;
+    const id = window.setTimeout(() => setFolded(true), 6000);
+    return () => window.clearTimeout(id);
+  }, [collapsible, folded, speaking, textKey, opened]);
   const text = textKey ? tr(textKey) : '';
   const say = () => {
     if (!text || lang === 'uz' || !('speechSynthesis' in window)) return;
@@ -77,12 +88,29 @@ export function CapcomHolo({ textKey, tr, lang, sound }: { textKey: string | nul
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [textKey]);
   if (!textKey) return null;
+  if (collapsible && folded) {
+    return (
+      <button
+        type="button"
+        data-testid="radio-chip"
+        className="holo pointer-events-auto mx-auto flex items-center gap-2 rounded-full py-1 pl-1 pr-3 text-sm"
+        aria-label={tr('ui.capcom.open')}
+        onClick={() => {
+          setFolded(false);
+          setOpened((n) => n + 1);
+        }}
+      >
+        <CapcomFace speaking={false} small />
+        <span className="eyebrow !text-measured">{tr('ui.capcom.short')}</span>
+      </button>
+    );
+  }
   return (
     <HoloPanel className="pointer-events-auto mx-auto flex max-w-md items-center gap-3" data-testid="radio">
-      <CapcomFace speaking={speaking} />
+      <CapcomFace speaking={speaking} small={collapsible} />
       <div className="flex min-w-0 flex-col">
         <span className="eyebrow !text-measured">{tr('ui.capcom.name')}</span>
-        <p className="text-base leading-snug">{text}</p>
+        <p className={`${collapsible ? 'text-sm' : 'text-base'} leading-snug`}>{text}</p>
       </div>
       {lang !== 'uz' && (
         <button type="button" className="abtn ml-auto !rounded-full !p-0" aria-label={tr('ui.capcom.speak')} onClick={say}>

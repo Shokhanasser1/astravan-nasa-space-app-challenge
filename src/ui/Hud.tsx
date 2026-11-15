@@ -1,31 +1,32 @@
-import { useEffect, useMemo, useState, type Dispatch } from 'react';
-import { ArrowRight, Check, Music, Tablet as TabletIcon, VolumeX } from 'lucide-react';
-import { board as selectBoard, truth as selectTruth, type Action, type Model, type View } from '../state/game';
+import { useCallback, useEffect, useMemo, useRef, useState, type Dispatch } from 'react';
+import { ArrowRight, Check, ClipboardList, MessageSquareWarning, Music, VolumeX } from 'lucide-react';
+import { atHub, board as selectBoard, truth as selectTruth, type Action, type Model, type View } from '../state/game';
 import type { Lang } from '../i18n/t';
 import { audio } from '../audio/audio';
 import { Btn, makeTr } from './play/kit';
-import { DayBadge, Gauges, radioKey } from './play/Visor';
+import { DayBadge } from './play/Visor';
 import { Briefing, CapcomHolo, PhysicsHolo, SunToday } from './play/Holo';
 import { HandControl, handsOn } from './play/HandControl';
 import { NightTablet, PlanTablet } from './play/Tablet';
 import { TruthScreen } from './play/TruthScreen';
 import { JumpButton, WalkStick } from './play/WalkStick';
-import { ActionPad, CornerButtons, HelpPanel, Kbd, MapPanel, makeApply, touchUi, useGameKeys } from './play/Controls';
+import { CornerButtons, HelpPanel, Kbd, MapPanel, makeApply, touchUi, useGameKeys } from './play/Controls';
+import { ResourceBar } from './play/ResourceBar';
+import { ContextButton, ContextPrompt, Inventory, contextOf } from './play/Hands';
+import { Decision, pendingDecision } from './play/Decision';
+import { TaskLine, useTask } from './play/Task';
 import { freeWalk } from '../walk/enabled';
 import { releaseAll, walkInput } from '../walk/input';
 import { features } from '../config/features';
-import { canTravel, type Overlay } from '../controls/act';
+import { canTravel, resolve, type Ctx, type Overlay } from '../controls/act';
 import { useAim } from '../controls/bus';
 
 /**
- * Lane D (Asilbek). DOM layer above the Canvas. This is the PLAYABLE G2 wiring (14 Nov): every control dispatches
- * the right action and every number comes from the engine selectors (`board`, `truth`). The visor design
- * (Dizayn 2.0 §04: rings on objects, wrist tablet, visor edge) restyles or replaces `play/*` — keep the wiring.
- * Text only through keys; the words are written by lane F.
- *
- * Controls (features.controls, docs/specs/2026-11-14-controls-guide.html): game keys, the touch action pad on the
- * right, the walk stick on the left, the base map and the controls list top left. Where they sit on a phone
- * (portrait, landscape) and a tablet is CSS in src/index.css (`.hud-*`).
+ * Lane D. DOM layer above the Canvas (15 Nov, "make it a game"): the base's gauges always on top, the task line
+ * (tutorial on Day 1, then the day's goal), the carried batteries and a context prompt at the bottom, the day's
+ * decision in its own dialog, and the plan list only when asked for. Every control dispatches an existing action
+ * and every number comes from the engine selectors (`board`, `truth`, `View.res`). Text only through keys.
+ * Where things sit on a phone (portrait, landscape) and a tablet is CSS in src/index.css (`.hud-*`).
  */
 const LANGS: Lang[] = ['en', 'uz', 'ru'];
 const RUN_MS = 4000; // the day runs (≤ 6 s, skippable)
@@ -47,7 +48,7 @@ function TopBar({ lang, setLang, sound, setSound, tr }: Pick<Props, 'lang' | 'se
   // With the controls on, one language button cycles EN → UZ → RU, so the top bar fits a 360 px phone with the map.
   const langs = features.controls ? [lang] : LANGS;
   return (
-    <div className="pointer-events-auto flex gap-2 self-start">
+    <div className="hud-topbar pointer-events-auto flex gap-2 self-start">
       {langs.map((l) => (
         <Btn
           key={l}
@@ -73,35 +74,62 @@ export function Hud({ model, view, dispatch, lang, setLang, sound, setSound, onS
   const truth = useMemo(() => selectTruth(model), [model]);
   const { phase, screen } = model;
   const aim = useAim();
-
-  // Windows of the controls layer: the map or the controls list; the wrist tablet open or folded; Houston's hint.
-  const [overlay, setOverlay] = useState<Overlay>(null);
-  const [tabletOpen, setTabletOpen] = useState(true);
-  const [houston, setHouston] = useState(false);
   const day = model.game?.day;
+  const planning = phase === 'plan' && board !== null;
+
+  // Windows: the map or the controls list; the plan list (never opens by itself); the day's decision; Houston.
+  const [overlay, setOverlay] = useState<Overlay>(null);
+  const [listOpen, setListOpen] = useState(false);
+  const [houston, setHouston] = useState(false);
+  const [decisionOpen, setDecisionOpen] = useState(false);
+  const [shelterPicked, setShelterPicked] = useState(false);
+  const boardRef = useRef(board);
+  boardRef.current = board;
+
   useEffect(() => {
-    // A new day or phase opens the tablet again and forgets the hint.
-    setTabletOpen(true);
+    // A new plan opens the decision only when one is waiting; Houston's hint is forgotten.
     setHouston(false);
+    setShelterPicked(false);
+    setDecisionOpen(phase === 'plan' && pendingDecision(boardRef.current, false));
   }, [phase, day]);
   useEffect(() => {
     // The map is for walking about; it closes when the phase does not allow it (launch, truth, start screen).
     if (!canTravel({ screen, phase })) setOverlay((o) => (o === 'map' ? null : o));
   }, [screen, phase]);
 
+  /** Every action goes through here, so a choice made by key or by button closes the dialog the same way. */
+  const act = useCallback(
+    (a: Action) => {
+      dispatch(a);
+      if (a.type !== 'CHOOSE') return;
+      const b = boardRef.current;
+      const cardLeft = a.card ? false : !!b?.info.card && (b?.cardOptions.length ?? 0) > 0 && !b?.cardChoice;
+      const shelterLeft = a.shelter ? false : (b?.shelterOptions.length ?? 0) > 0 && !shelterPicked;
+      if (a.shelter) setShelterPicked(true);
+      if (!cardLeft && !shelterLeft) setDecisionOpen(false);
+    },
+    [dispatch, shelterPicked],
+  );
+
   const apply = useMemo(
     () =>
-      makeApply(dispatch, {
+      makeApply(act, {
         setOverlay,
-        toggleTablet: () => setTabletOpen((v) => !v),
+        toggleTablet: () => setListOpen((v) => !v),
         toggleHouston: () => {
-          setTabletOpen(true);
+          setDecisionOpen(true);
           setHouston((v) => !v);
         },
       }),
-    [dispatch],
+    [act],
   );
-  useGameKeys({ screen, phase, board, aim, overlay, hands: view.hands }, features.controls ? apply : () => {});
+  const keyCtx: Ctx = { screen, phase, board, aim, overlay, hands: view.hands };
+  useGameKeys(keyCtx, features.controls ? apply : () => {});
+  /** The touch action button presses E or Q: the same `resolve` as the keys and the scene taps. */
+  const press = (kind: 'use' | 'undo') => {
+    const effect = resolve({ kind }, keyCtx);
+    if (effect) apply(effect);
+  };
 
   // The day runs by itself and the lander lifts off by itself; the main button skips.
   useEffect(() => {
@@ -110,34 +138,54 @@ export function Hud({ model, view, dispatch, lang, setLang, sound, setSound, onS
     return () => clearTimeout(id);
   }, [phase, screen, model.game?.day, dispatch]);
 
-  // Free walk: only while the game itself is on screen (never behind the start or the end screen) and no window
-  // of the controls layer is open (its keys would walk the astronaut away under the map).
+  const dialog = planning && decisionOpen;
+  // Free walk: only while the game itself is on screen and no window is open (its keys would walk away under it).
   useEffect(() => {
-    walkInput.inGame = screen === 'game' && overlay === null;
+    walkInput.inGame = screen === 'game' && overlay === null && !dialog;
     if (!walkInput.inGame) releaseAll();
-  }, [screen, overlay]);
+  }, [screen, overlay, dialog]);
+
+  // Night: the gauges as they were while planning, to show what moved.
+  const planRes = useRef<View['res']>(undefined);
+  if (phase === 'plan' && view.res) planRes.current = view.res;
+
+  const { task, skip } = useTask(model, view, board, aim);
+  const ctx = useMemo(() => contextOf(model, board, aim), [model, board, aim]);
 
   const confirmBlocked = phase === 'plan' && board?.preview?.warning === 'engine.warn.chooseCard';
   const primary =
     phase === 'plan'
       ? { label: tr('ui.board.confirmDay'), action: { type: 'CONFIRM' } as const }
       : { label: tr('ui.hud.next'), action: { type: 'NEXT' } as const };
+  const glow = task?.step === 'next' || task?.step === 'confirm' || task?.step === 'rest';
 
   const playing = screen === 'game' && phase !== 'truth';
-  const planning = phase === 'plan' && board !== null;
-  const showTablet = planning && (!features.controls || tabletOpen);
-  const sides = playing && phase !== 'launch' && overlay === null;
+  const showList = planning && listOpen;
+  const hasDecision = !!board && (board.cardOptions.length > 0 || board.shelterOptions.length > 0);
+  const sides = planning && overlay === null && !dialog;
 
   return (
     <div
       className="pointer-events-none fixed inset-0 flex flex-col justify-between gap-2 p-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-[max(1rem,env(safe-area-inset-top))]"
-      data-tablet={showTablet ? 'open' : 'closed'}
+      data-tablet={showList ? 'open' : 'closed'}
       onPointerDown={() => audio.unlock()}
     >
-      <div className="flex shrink-0 items-start justify-between gap-2">
-        {features.controls ? <CornerButtons map={canTravel({ screen, phase })} open={(ui) => apply({ ui })} tr={tr} /> : null}
-        {playing ? <DayBadge view={view} board={board} tr={tr} /> : <span />}
-        <TopBar lang={lang} setLang={setLang} sound={sound} setSound={setSound} tr={tr} />
+      <div className="flex shrink-0 flex-col gap-2">
+        {/* Portrait: buttons and the day on one row, the gauges below. Landscape phone: all on one row (CSS). */}
+        <div className="hud-top flex flex-wrap items-start justify-between gap-2">
+          {features.controls ? <CornerButtons map={canTravel({ screen, phase })} open={(ui) => apply({ ui })} tr={tr} /> : null}
+          {playing ? <DayBadge view={view} board={board} tr={tr} /> : <span />}
+          <TopBar lang={lang} setLang={setLang} sound={sound} setSound={setSound} tr={tr} />
+          {playing && !overlay && view.res && <ResourceBar res={view.res} tr={tr} />}
+        </div>
+        {playing && !overlay && task && (phase === 'morning' || phase === 'plan') && (
+          <TaskLine task={task} tr={tr} onSkip={task.step ? skip : undefined} />
+        )}
+        {playing && !overlay && (phase === 'morning' || phase === 'plan') && (
+          <div className="hud-sun pointer-events-none self-start">
+            <SunToday weekId={view.weekId} date={view.mediaDate} tr={tr} />
+          </div>
+        )}
       </div>
 
       {overlay && (
@@ -164,14 +212,8 @@ export function Hud({ model, view, dispatch, lang, setLang, sound, setSound, onS
       {screen === 'game' && phase === 'truth' && truth && <TruthScreen truth={truth} dispatch={dispatch} tr={tr} />}
 
       {playing && features.character && (
-        <div className="pointer-events-none absolute right-4 top-20 flex flex-col">
+        <div className="pointer-events-none absolute right-4 top-48 flex flex-col">
           <PhysicsHolo tr={tr} />
-        </div>
-      )}
-      {/* (Its own corner: in the centre column it pushed Confirm off a laptop screen on the flare day.) */}
-      {playing && !overlay && (phase === 'morning' || phase === 'plan') && (
-        <div className="pointer-events-none absolute left-4 top-36 flex flex-col">
-          <SunToday weekId={view.weekId} date={view.mediaDate} tr={tr} />
         </div>
       )}
 
@@ -182,35 +224,56 @@ export function Hud({ model, view, dispatch, lang, setLang, sound, setSound, onS
       )}
 
       {freeWalk && sides && <WalkStick />}
-      {freeWalk && sides && features.character && <JumpButton />}
-      {features.controls && touchUi && sides && planning && <ActionPad board={board} aim={aim === 'hub' ? null : aim} apply={apply} tr={tr} />}
+      {features.controls && touchUi && sides && (
+        <ContextButton ctx={ctx} press={press} tr={tr}>
+          {freeWalk && features.character && <JumpButton />}
+        </ContextButton>
+      )}
+
+      {dialog && board && (
+        <Decision
+          shelterPicked={shelterPicked}
+          board={board}
+          model={model}
+          dispatch={act}
+          tr={tr}
+          hint={houston}
+          onHint={() => setHouston((v) => !v)}
+          onClose={() => setDecisionOpen(false)}
+        />
+      )}
 
       {playing && !overlay && (
-        <div className="hud-center flex flex-col gap-2" data-phase={phase}>
-          {(phase === 'morning' || phase === 'plan') && <CapcomHolo textKey={radioKey(model, board)} tr={tr} lang={lang} sound={sound} />}
-          {showTablet && (
-            <PlanTablet
-              board={board}
-              model={model}
-              dispatch={dispatch}
-              tr={tr}
-              houston={houston}
-              onHouston={() => setHouston((v) => !v)}
-              onFold={features.controls ? () => setTabletOpen(false) : undefined}
-            />
+        <div className="hud-center flex min-h-0 flex-col gap-2 [&>*]:shrink-0" data-phase={phase}>
+          {(phase === 'morning' || phase === 'plan') && (
+            <CapcomHolo textKey={task?.radio ?? null} tr={tr} lang={lang} sound={sound} collapsible />
           )}
-          {planning && features.controls && !tabletOpen && !touchUi && (
-            // (Phones and tablets have the 📟 button of the action pad.) Dark: it often sits on a lit wall.
-            <Btn data-testid="tablet-open" className="pointer-events-auto self-center text-sm" onClick={() => setTabletOpen(true)}>
-              <TabletIcon size={18} aria-hidden="true" /> {tr('ui.controls.tablet')}
-              <Kbd k="Tab" />
-            </Btn>
+          {phase === 'night' && <NightTablet model={model} before={planRes.current} after={view.res} tr={tr} />}
+          {showList && !dialog && <PlanTablet board={board} model={model} dispatch={act} tr={tr} onFold={() => setListOpen(false)} />}
+          {planning && ctx && !dialog && !showList && <ContextPrompt ctx={ctx} tr={tr} />}
+          {planning && (
+            <div className="flex items-end justify-between gap-2">
+              {!board.info.forced ? (
+                <Inventory hands={view.hands ?? 0} free={atHub(model)} total={view.batteries?.total ?? 0} tr={tr} />
+              ) : (
+                <span />
+              )}
+              <div className="hud-btns flex flex-col items-end gap-2">
+                {hasDecision && (
+                  <Btn data-testid="decision-open" className="solid pointer-events-auto text-sm" onClick={() => setDecisionOpen(true)}>
+                    <MessageSquareWarning size={18} aria-hidden="true" /> {tr('ui.decide.open')}
+                  </Btn>
+                )}
+                <Btn data-testid="tablet-open" active={listOpen} className="solid pointer-events-auto text-sm" onClick={() => setListOpen((v) => !v)}>
+                  <ClipboardList size={18} aria-hidden="true" /> {tr('ui.plan.open')}
+                  <Kbd k="Tab" />
+                </Btn>
+              </div>
+            </div>
           )}
-          {phase === 'night' && <NightTablet model={model} tr={tr} />}
-          <Gauges model={model} board={phase === 'plan' ? board : null} tr={tr} />
           <Btn
             data-testid={phase === 'plan' ? 'confirm-day' : 'next'}
-            className="primary big pointer-events-auto w-full"
+            className={`primary big pointer-events-auto w-full ${glow ? 'glow' : ''}`}
             disabled={confirmBlocked}
             onClick={() => dispatch(primary.action)}
           >
