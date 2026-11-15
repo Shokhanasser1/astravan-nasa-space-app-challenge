@@ -244,7 +244,7 @@ export function Hud({ model, view, dispatch, lang, setLang, sound, setSound, onS
         // (phones, upright or on their side: the button stays left, the panel goes to the right edge, clear of the walk
         // stick, the jump button and the centre column; wide and tall screens keep both together on the left)
         <div
-          className={`pointer-events-none absolute top-28 ${handsOn ? 'right-4' : 'left-4 right-4 sm:[@media(min-height:501px)]:right-auto'}`}
+          className={`pointer-events-none absolute top-32 ${handsOn ? 'right-4' : 'left-4 right-4 sm:[@media(min-height:501px)]:right-auto'}`}
         >
           <ArmScanner tr={tr} />
         </div>

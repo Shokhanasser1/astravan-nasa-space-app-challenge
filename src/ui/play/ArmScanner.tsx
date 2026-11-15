@@ -219,7 +219,7 @@ export function ArmScanner({ tr }: { tr: Tr }) {
       {shown && (
         <Panel className="flex w-[208px] flex-col gap-2 text-xs [@media(max-height:500px)]:w-[168px]" data-testid="arm-scan-panel">
           <div className="text-sm font-bold text-[var(--text-1)]">{tr('ui.arm.title')}</div>
-          <canvas ref={canvas} width={184} height={138} className="w-full rounded-[14px] [@media(max-height:700px)]:w-3/4" aria-hidden="true" />
+          <canvas ref={canvas} width={184} height={138} className="w-full rounded-[14px] [@media(max-height:700px)]:w-1/2" aria-hidden="true" />
           {/* the arm's three joints and its grip, as icons and numbers; or why it waits */}
           <div aria-live="polite" className="min-h-[1lh] text-[var(--text-2)]">
             {status ? (
