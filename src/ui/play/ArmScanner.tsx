@@ -1,13 +1,27 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { invalidate } from '@react-three/fiber';
-import { Bot } from 'lucide-react';
+import { ArrowUp, Bot, CornerRightUp, Grab, Hand, RotateCw } from 'lucide-react';
 import { armTargets, type Pt } from '../../arm/reach';
 import { armState, armVersion, setArmOn, subscribeArm } from '../../arm/state';
 import type { ScanFrame } from '../../arm/scan';
-import { HoloPanel } from './Holo';
-import type { Tr } from './kit';
+import { Btn, Panel, type Tr } from './kit';
 
 type State = 'off' | 'camera' | 'models' | 'on' | 'denied' | 'error';
+/** What the panel reads out each scan frame: the arm's shown angles, its grip, and a note key ('' = none). */
+interface Readout {
+  lift: number;
+  bend: number;
+  wrist: number;
+  gripping: boolean;
+  note: string;
+}
+
+/** The canvas draws with the interface's colour tokens (docs/DESIGN.md: no raw colours in a component). */
+function tokens() {
+  const cs = getComputedStyle(document.documentElement);
+  const v = (name: string) => cs.getPropertyValue(name).trim();
+  return { bg: v('--bg-1'), dim: v('--bg-0'), box: v('--mint'), fore: v('--peri'), hand: v('--text-2'), tip: v('--mint') };
+}
 
 const HAND_LINES = [
   [0, 1], [1, 2], [2, 3], [3, 4], [0, 5], [5, 6], [6, 7], [7, 8], [5, 9], [9, 10], [10, 11], [11, 12],
@@ -24,7 +38,7 @@ const HAND_LINES = [
 export function ArmScanner({ tr }: { tr: Tr }) {
   useSyncExternalStore(subscribeArm, armVersion);
   const [state, setState] = useState<State>('off');
-  const [line, setLine] = useState('');
+  const [read, setRead] = useState<Readout | null>(null);
   const stop = useRef<(() => void) | null>(null);
   const last = useRef<{ hand: Pt[] | null; elbow: Pt | null; video: HTMLVideoElement } | null>(null);
   const canvas = useRef<HTMLCanvasElement>(null);
@@ -37,6 +51,7 @@ export function ArmScanner({ tr }: { tr: Tr }) {
     last.current = null;
     setArmOn(false);
     setState('off');
+    setRead(null);
     invalidate();
   };
 
@@ -50,10 +65,13 @@ export function ArmScanner({ tr }: { tr: Tr }) {
     };
     last.current = { hand: f.hand, elbow: t.elbow, video: f.video };
     const s = armState.shown;
-    const key = !f.hand ? 'ui.arm.noHand' : !t.elbow ? 'ui.arm.noElbow' : armState.held ? 'ui.arm.ground' : '';
-    setLine(
-      `${key ? tr(key) + ' · ' : ''}${tr('ui.arm.angles', { lift: Math.round(s.lift), bend: Math.round(s.bend), wrist: Math.round(s.wrist) })} · ${tr(s.open > 0.5 ? 'ui.arm.open' : 'ui.arm.closed')}`,
-    );
+    setRead({
+      lift: Math.round(s.lift),
+      bend: Math.round(s.bend),
+      wrist: Math.round(s.wrist),
+      gripping: s.open <= 0.5,
+      note: !f.hand ? 'ui.arm.noHand' : !t.elbow ? 'ui.arm.noElbow' : armState.held ? 'ui.arm.ground' : '',
+    });
     invalidate();
   };
 
@@ -97,6 +115,7 @@ export function ArmScanner({ tr }: { tr: Tr }) {
   useEffect(() => {
     if (!shown) return;
     let raf = 0;
+    const c = tokens();
     const draw = () => {
       raf = requestAnimationFrame(draw);
       const cv = canvas.current;
@@ -105,7 +124,7 @@ export function ArmScanner({ tr }: { tr: Tr }) {
       const W = cv.width;
       const H = cv.height;
       ctx.setTransform(1, 0, 0, 1, 0, 0);
-      ctx.fillStyle = '#10213f';
+      ctx.fillStyle = c.bg;
       ctx.fillRect(0, 0, W, H);
       const l = last.current;
       const video = l?.video;
@@ -131,8 +150,10 @@ export function ArmScanner({ tr }: { tr: Tr }) {
       small.current.getContext('2d')?.drawImage(video, sx, sy, sw, sh, 0, 0, 40, 30);
       ctx.imageSmoothingEnabled = true;
       ctx.drawImage(small.current, 0, 0, W, H);
-      ctx.fillStyle = 'rgba(10, 24, 48, 0.35)';
+      ctx.globalAlpha = 0.35;
+      ctx.fillStyle = c.dim;
       ctx.fillRect(0, 0, W, H);
+      ctx.globalAlpha = 1;
       // … except the scanned hand and forearm, sharp in a box round their points
       const pts: Pt[] = [...(l.hand ?? []), ...(l.elbow ? [l.elbow] : [])];
       if (pts.length) {
@@ -148,7 +169,7 @@ export function ArmScanner({ tr }: { tr: Tr }) {
           ctx.clip();
           ctx.drawImage(video, sx, sy, sw, sh, 0, 0, W, H);
           ctx.restore();
-          ctx.strokeStyle = 'rgba(127, 209, 255, 0.9)';
+          ctx.strokeStyle = c.box;
           ctx.lineWidth = 2;
           ctx.strokeRect(x0, y0, x1 - x0, y1 - y0);
         }
@@ -161,20 +182,20 @@ export function ArmScanner({ tr }: { tr: Tr }) {
         ctx.lineTo(X(b), Y(b));
         ctx.stroke();
       };
-      const dot = (p: Pt, r: number) => {
-        ctx.fillStyle = '#ffd166';
+      const dot = (p: Pt, r: number, color: string) => {
+        ctx.fillStyle = color;
         ctx.beginPath();
         ctx.arc(X(p), Y(p), r, 0, Math.PI * 2);
         ctx.fill();
       };
       ctx.lineCap = 'round';
       if (l.elbow && l.hand) {
-        seg(l.elbow, l.hand[0], '#5cc0a5', 7);
-        dot(l.elbow, 6);
+        seg(l.elbow, l.hand[0], c.fore, 7);
+        dot(l.elbow, 6, c.fore);
       }
       if (l.hand) {
-        for (const [a, b] of HAND_LINES) seg(l.hand[a], l.hand[b], '#ffffff', 2);
-        for (const i of [4, 8, 12, 16, 20]) dot(l.hand[i], 4);
+        for (const [a, b] of HAND_LINES) seg(l.hand[a], l.hand[b], c.hand, 2);
+        for (const i of [4, 8, 12, 16, 20]) dot(l.hand[i], 4, c.tip);
       }
     };
     draw();
@@ -185,28 +206,66 @@ export function ArmScanner({ tr }: { tr: Tr }) {
   const status =
     state === 'camera' ? 'ui.arm.camera' : state === 'models' ? 'ui.arm.loading' : state === 'denied' ? 'ui.arm.denied' : state === 'error' ? 'ui.arm.error' : '';
 
+  const angle = (Icon: typeof ArrowUp, key: string, deg: number) => (
+    <span className="inline-flex items-center gap-1" title={tr(key)} aria-label={`${tr(key)} ${deg}°`}>
+      <Icon size={14} aria-hidden="true" className="text-[var(--peri)]" />
+      {deg}°
+    </span>
+  );
+
   return (
-    <div className="pointer-events-auto flex flex-row-reverse items-center gap-2">
+    // (only the button and the panel take touches: the gap between them stays free for the walk stick)
+    <div className="pointer-events-none flex flex-row-reverse items-start justify-between gap-2">
       {shown && (
-        <HoloPanel className="flex w-[200px] flex-col gap-1 text-xs" data-testid="arm-scan-panel">
-          <span className="text-sm font-semibold">{tr('ui.arm.title')}</span>
-          <canvas ref={canvas} width={176} height={132} className="w-full rounded-lg" aria-hidden="true" />
-          <span aria-live="polite" className="min-h-[2lh]">{status ? tr(status) : line}</span>
-          <span className="opacity-80">{tr('ui.arm.help')}</span>
-          <span className="opacity-60">{tr('ui.arm.private')}</span>
-        </HoloPanel>
+        <Panel className="flex w-[208px] flex-col gap-2 text-xs [@media(max-height:500px)]:w-[168px]" data-testid="arm-scan-panel">
+          <div className="text-sm font-bold text-[var(--text-1)]">{tr('ui.arm.title')}</div>
+          <canvas ref={canvas} width={184} height={138} className="w-full rounded-[14px] [@media(max-height:700px)]:w-3/4" aria-hidden="true" />
+          {/* the arm's three joints and its grip, as icons and numbers; or why it waits */}
+          <div aria-live="polite" className="min-h-[1lh] text-[var(--text-2)]">
+            {status ? (
+              tr(status)
+            ) : read ? (
+              <div className="flex items-center justify-between font-semibold tabular-nums text-[var(--text-1)]">
+                {angle(ArrowUp, 'ui.arm.lift', read.lift)}
+                {angle(CornerRightUp, 'ui.arm.elbow', read.bend)}
+                {angle(RotateCw, 'ui.arm.wrist', read.wrist)}
+                <span title={tr('ui.arm.grip')} aria-label={tr(read.gripping ? 'ui.arm.closed' : 'ui.arm.open')}>
+                  {read.gripping ? <Grab size={16} aria-hidden="true" className="text-[var(--mint)]" /> : <Hand size={16} aria-hidden="true" />}
+                </span>
+              </div>
+            ) : null}
+            {!status && read?.note ? <div className="mt-1">{tr(read.note)}</div> : null}
+          </div>
+          {/* (the three how-to lines only where there is room: phones keep the picture and the numbers) */}
+          <ul className="flex flex-col gap-1 text-[var(--text-2)] [@media(max-height:700px)]:hidden">
+            <li className="flex items-center gap-2">
+              <ArrowUp size={14} aria-hidden="true" className="shrink-0" />
+              {tr('ui.arm.helpLift')}
+            </li>
+            <li className="flex items-center gap-2">
+              <RotateCw size={14} aria-hidden="true" className="shrink-0" />
+              {tr('ui.arm.helpWrist')}
+            </li>
+            <li className="flex items-center gap-2">
+              <Grab size={14} aria-hidden="true" className="shrink-0" />
+              {tr('ui.arm.helpGrip')}
+            </li>
+          </ul>
+          <div className="text-[var(--text-3)]">{tr('ui.arm.private')}</div>
+        </Panel>
       )}
-      <button
+      <Btn
         type="button"
         data-testid="arm-scan-toggle"
-        className={`holo grid h-14 w-14 place-items-center rounded-full ${shown ? 'ring-2 ring-measured' : ''}`}
+        active={shown}
+        className="pointer-events-auto !h-14 !w-14 shrink-0 !rounded-full !p-0"
         aria-label={tr(shown ? 'ui.arm.off' : 'ui.arm.on')}
         aria-pressed={shown}
         title={tr(shown ? 'ui.arm.off' : 'ui.arm.on')}
         onClick={toggle}
       >
-        <Bot size={28} aria-hidden="true" />
-      </button>
+        <Bot size={24} aria-hidden="true" />
+      </Btn>
     </div>
   );
 }

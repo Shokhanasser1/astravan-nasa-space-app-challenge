@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type Dispatch, type ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore, type Dispatch, type ReactNode } from 'react';
 import { ArrowRight, Check, ClipboardList, MessageSquareWarning, Music, VolumeX } from 'lucide-react';
 import { atHub, board as selectBoard, truth as selectTruth, type Action, type Model, type View } from '../state/game';
+import { armState, armVersion, subscribeArm } from '../arm/state';
 import type { Lang } from '../i18n/t';
 import { audio } from '../audio/audio';
 import { Btn, makeTr } from './play/kit';
@@ -172,6 +173,9 @@ export function Hud({ model, view, dispatch, lang, setLang, sound, setSound, onS
   const showList = planning && listOpen;
   const hasDecision = !!board && (board.cardOptions.length > 0 || board.shelterOptions.length > 0);
   const sides = planning && overlay === null && !dialog;
+  // the robot arm's scanner takes the upper-left corner while the astronaut stands near the arm
+  useSyncExternalStore(subscribeArm, armVersion);
+  const armCorner = armScan && (armState.near || armState.on);
 
   return (
     <div
@@ -190,7 +194,8 @@ export function Hud({ model, view, dispatch, lang, setLang, sound, setSound, onS
         {playing && !overlay && task && (phase === 'morning' || phase === 'plan') && (
           <TaskLine task={task} tr={tr} onSkip={task.step ? skip : undefined} />
         )}
-        {playing && !overlay && (phase === 'morning' || phase === 'plan') && (
+        {/* (the Sun photo steps aside while the robot arm's scanner has the upper-left corner: near the arm) */}
+        {playing && !overlay && (phase === 'morning' || phase === 'plan') && !armCorner && (
           <div className="hud-sun pointer-events-none self-start">
             <SunToday weekId={view.weekId} date={view.mediaDate} tr={tr} />
           </div>
@@ -233,10 +238,14 @@ export function Hud({ model, view, dispatch, lang, setLang, sound, setSound, onS
           <HandControl tr={tr} />
         </div>
       )}
-      {/* (the robot arm's scanner: its button shows only near the arm; the panel opens beside it, mid-left, clear of
-          the radio card and the big button at the bottom) */}
+      {/* (the robot arm's scanner: its button shows only near the arm, under the map and help buttons; the panel opens
+          beside it, above the radio card and the big button) */}
       {armScan && playing && !overlay && (
-        <div className={`pointer-events-none absolute top-1/2 -translate-y-1/2 ${handsOn ? 'right-4' : 'left-4'}`}>
+        // (phones, upright or on their side: the button stays left, the panel goes to the right edge, clear of the walk
+        // stick, the jump button and the centre column; wide and tall screens keep both together on the left)
+        <div
+          className={`pointer-events-none absolute top-28 ${handsOn ? 'right-4' : 'left-4 right-4 sm:[@media(min-height:501px)]:right-auto'}`}
+        >
           <ArmScanner tr={tr} />
         </div>
       )}
