@@ -28,7 +28,13 @@
   "ui.tut.putLs.say": "d6927ac3",
   "ui.tut.moreGh.say": "0aac7553",
   "ui.tut.rest.say": "96d48cbc",
-  "ui.tut.confirm.say": "a94acc13"
+  "ui.tut.confirm.say": "a94acc13",
+  "story.radio.day1.hs": "c3589b28",
+  "story.radio.quiet.hs": "54c3e9f1",
+  "story.radio.emergency.hs": "5414b466",
+  "story.radio.family.hs": "0d93ac3a",
+  "story.radio.launchDay.hs": "55d6c699",
+  "story.card.dust.text.hs": "33f15563"
  },
  "ru": {
   "story.radio.day1": "e931705c",
