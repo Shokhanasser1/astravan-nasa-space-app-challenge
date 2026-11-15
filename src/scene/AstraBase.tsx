@@ -72,6 +72,7 @@ function tameWhites(g: THREE.Object3D): void {
     if (!m || Array.isArray(m) || !m.isMeshStandardMaterial || m.transparent || m.userData.tamed) return;
     m.userData.tamed = true;
     const c = m.color;
+    m.userData.hex = c.getHexString(); // the colour as made: shellFit's colour checks read it (hexOf)
     if (0.2126 * c.r + 0.7152 * c.g + 0.0722 * c.b < 0.55) return; // (linear: about sRGB #c4c4c4 and brighter)
     c.multiplyScalar(0.86); // (0.72 under the old ACES 1.32 light; the Moon light and Neutral curve clip less)
     m.roughness = Math.max(m.roughness, 0.7);
@@ -103,6 +104,13 @@ export function setPower(v: ModuleView, on: boolean): void {
   for (const m of glazing ?? []) m.emissiveIntensity = on ? 0.9 : 0;
 }
 
+/**
+ * The greenhouse's glass (15 Nov, Shokhjahon aka: "make the window more noticeable, people look over it"): ASTRA's
+ * 16 % clear glass all but vanished under the Moon light (almost no environment to reflect). Ours is a cool blue
+ * tint at GLAZING.opacity, still plainly see-through to the plants.
+ */
+const GLAZING = { color: '#c4e2ff', opacity: 0.4 } as const;
+
 /** The greenhouse's glazing gets its own copy of ASTRA's shared glass, lit pink by the grow lights when powered. */
 function ownGlazing(g: THREE.Object3D): void {
   const copies = new Map<THREE.Material, THREE.MeshPhysicalMaterial>();
@@ -113,6 +121,8 @@ function ownGlazing(g: THREE.Object3D): void {
     let c = copies.get(mat);
     if (!c) {
       c = mat.clone();
+      c.color.set(GLAZING.color);
+      c.opacity = GLAZING.opacity;
       c.emissive.set('#ff9fe0');
       c.emissiveIntensity = 0;
       copies.set(mat, c);

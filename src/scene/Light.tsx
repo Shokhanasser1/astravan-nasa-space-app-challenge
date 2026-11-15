@@ -22,8 +22,7 @@ const elParam = typeof location !== 'undefined' ? Number(new URLSearchParams(loc
  */
 const SUN_I = 4;
 
-/** The Sun stands SUN_DIST m from the base centre; its shadow camera's depth range, m. (A tighter range around
- * SUN_DIST, 250–550 m, made the garden's arches vanish (15 Nov): keep 1–900 unless that is understood.) */
+/** The Sun stands SUN_DIST m from the base centre; its shadow camera's depth range, m. */
 const SUN_DIST = 400;
 const SHADOW_NEAR = 1;
 const SHADOW_FAR = 900;

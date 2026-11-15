@@ -14,7 +14,12 @@ import { HDU, HDU_MODULES, moduleToGame, type HduModule } from '../layout';
 const pa = new THREE.Vector3();
 const pb = new THREE.Vector3();
 const pc = new THREE.Vector3();
-const hexOf = (m: THREE.Material) => (m as THREE.MeshStandardMaterial).color?.getHexString() ?? '';
+/**
+ * A paint's colour as ASTRA made it. AstraBase's tameWhites darkens shared paints once and keeps the original in
+ * `userData.hex`: a building built after that (a second build, a quality change) must still match the same colour
+ * (15 Nov: the greenhouse's ribs, #d5dae2, were then taken for inside parts and hidden).
+ */
+const hexOf = (m: THREE.Material) => (m.userData.hex as string | undefined) ?? (m as THREE.MeshStandardMaterial).color?.getHexString() ?? '';
 
 /**
  * Drop every triangle of `g`'s meshes that `cut(a, b, c, colour)` says (model frame: call it while `g` has no
