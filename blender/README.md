@@ -3,7 +3,7 @@
 **Kim:** Samandar (Claude agentlari, Codex va Blender 5.3 yordamida). **Qachon:** 14.11.2026.
 **Manba:** jamoaning "Oy karvonsaroyi Model Studio" artifaktidagi 35 ta NASA 3D modeli (NASA 3D Resources / NASA Science).
 
-> EN: Samandar's 3D work, lean copy. Game-ready GLBs (35 NASA models, 8.9 MB total, Draco + WebP, metres, Y-up, `COL_*` colliders), a rigged astronaut, 360° skies, station backgrounds and sprites as WebP, NASA size comparisons and fact cards. Nothing here is shipped yet: it is outside `public/`. **Sarvar** (models lane) decides what goes into `public/models/` through `npm run glb` and `CREDITS.md`. The heavy `.blend` files, the original NASA GLBs and full-size PNG renders are **not in git**: download them from the GitHub Release [`blender-sources-2026-11-14`](https://github.com/Shokhanasser1/astravan-nasa-space-app-challenge/releases/tag/blender-sources-2026-11-14) (one zip, ~400 MB). See the last section below.
+> EN: Samandar's 3D work, lean copy. Game-ready GLBs (35 NASA models, 8.9 MB total, Draco + WebP, metres, Y-up, `COL_*` colliders), a rigged astronaut, 360° skies, station backgrounds and sprites as WebP, NASA size comparisons and fact cards. Nothing here is shipped yet: it is outside `public/`. **Sarvar** (models lane) decides what goes into `public/models/` through `npm run glb` and `CREDITS.md`. The heavy `.blend` files, the original NASA GLBs and full-size PNG renders are **not in git**: they are not published (the archive with the original NASA GLBs, insignia not yet painted out, was taken down on 15 Nov; Samandar keeps the sources) (one zip, ~400 MB). See the last section below.
 
 ## Nima bor
 
@@ -39,8 +39,7 @@
 `.blend` sahnalar, asl NASA GLB'lar va to'liq o'lchamdagi PNG renderlar repo'ga qo'yilmagan. Aks holda har bir
 `git pull` va har bir CI yig'ilishi ~400 MB tortardi. Hammasi bitta arxivda:
 
-- **Yuklab olish:** [Releases → `blender-sources-2026-11-14`](https://github.com/Shokhanasser1/astravan-nasa-space-app-challenge/releases/tag/blender-sources-2026-11-14) →
-  `oy-karvonsaroyi-3d-blender-sources.zip` (~400 MB, 479 fayl). Release "pre-release" deb belgilangan.
+- **Yuklab olish:** arxiv 15.11 da GitHub'dan olib tashlandi (ichida NASA logotiplari bo'yalmagan asl GLB'lar bor edi). Manbalar Samandarda.
 - **Ichida:**
   - 7 ta `.blend`: `scenes/{yer,xks,oy,mars,koinot}/*.blend` (5 bekat sahnalari),
     `review/BARCHA_RENDERLAR.blend` (hamma renderlar bitta faylda), `game3d/characters/_work/astronaut_rig.blend`

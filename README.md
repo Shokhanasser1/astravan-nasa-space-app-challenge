@@ -47,18 +47,14 @@ Pick a real week for a whole class: `/?week=2021-10-25`. Try hand control (exper
 - `CLAUDE.md`, `.claude/` — rules and skills for Claude Code
 - `blender/README.md` — Samandar's NASA 3D work (outside the game build); heavy sources are in a Release, see below
 
-## Blender sources: in Releases, not in git
+## Blender sources: not in git
 
-The heavy 3D files are kept out of git so that every `git pull` and CI run stays small. Download them from the
-GitHub Release [`blender-sources-2026-11-14`](https://github.com/Shokhanasser1/astravan-nasa-space-app-challenge/releases/tag/blender-sources-2026-11-14) (pre-release):
-one zip, `oy-karvonsaroyi-3d-blender-sources.zip`, ~400 MB (479 files).
-
-- 7 Blender files: `scenes/{yer,xks,oy,mars,koinot}/*.blend`, `review/BARCHA_RENDERLAR.blend` (all renders in one file),
-  `game3d/characters/_work/astronaut_rig.blend` (skeleton and animations).
-- The 35 original NASA GLBs (`source/models/`), 97 full-size PNG renders and 64 PNG sprite sheets.
-- Unzip it outside the repo (for example `~/dev/oy-karvonsaroyi-3d`) and open the `.blend` files in Blender 5.3+.
-  How to use them: `blender/README.md`.
-- **Do not commit these files to the repo.** If you change them, publish a new Release or tell Samandar.
+The heavy 3D files (`.blend` scenes, full-size renders) are kept out of git so that every `git pull` and CI run stays
+small. The 14 Nov 2026 archive of the Blender sources was taken down on 15 Nov: it held the original NASA 3D
+Resources models with their NASA insignia and flags not yet painted out. Samandar keeps the sources; the lunar
+lander v2 sources (an AI-made model) are in the Release
+[`lander-v2-2026-11-15`](https://github.com/Shokhanasser1/astravan-nasa-space-app-challenge/releases/tag/lander-v2-2026-11-15).
+How the Blender work is organised: `blender/README.md`.
 
 ## Use of Super Intelligence (SI)
 
