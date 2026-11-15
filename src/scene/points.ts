@@ -17,7 +17,9 @@ const at = (x: number, z: number): Vec3 => [x, groundHeight(x, z) + EYE, z];
 // (all from the layout: the base was spread on 15 Nov when its buildings grew to real size)
 const airlock = fromDoor(RADIUS.habitat + 1.4);
 const HUB_D = Math.hypot(LAYOUT.hub[0] - LAYOUT.habitat[0], LAYOUT.hub[1] - LAYOUT.habitat[1]);
-const hubSpot = fromDoor(HUB_D + 3.8); // behind the hub, looking back at hub → habitat → lander
+// Plan point: just behind the hub (1.65 m from its edge: within reach of it, room to stand), facing hub → habitat
+// → lander, the base in view behind the hub.
+const hubSpot = fromDoor(HUB_D + RADIUS.hub + 1.65);
 const hubLook = fromDoor(HUB_D * 0.42);
 const gardenSpot = towardBase(LAYOUT.garden, RADIUS.garden + 1.8); // the long glass side, all the troughs in view
 const workshopSpot = towardBase(LAYOUT.workshop, RADIUS.workshop + 1.6);

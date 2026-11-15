@@ -10,6 +10,7 @@ import { buildGreenhouse } from '../vendor/astra/scene/models/life';
 import { buildLander, buildPad } from '../vendor/astra/scene/models/site';
 import { buildLab } from '../vendor/astra/scene/models/works';
 import { bake, mergeWorld } from './astra/bake';
+import { mergePlants, type Plants } from './astra/plants';
 import { LAYOUT, PAD } from './layout';
 
 /**
@@ -44,13 +45,15 @@ export function astraModule(build: (v: ModuleView) => void): ModuleView {
   if (view.yaw) keep.push(view.yaw);
   if (view.tilt) keep.push(view.tilt);
   if (view.shield) keep.push(view.shield);
+  if (view.plants) keep.push(view.plants);
   const live: THREE.Material[] = [view.status, ...view.glow, ...view.blink, ...(view.bars ?? [])];
   if (view.windows) live.push(view.windows);
   bake(g, { keep, live });
   // What moves stays its own part, but its own pieces merge too (a solar wing, a fan); the shield is revealed
-  // bag by bag, so it is left as it is.
-  for (const k of keep) if (k !== view.shield) bake(k, { keep: keep.filter((o) => o !== k), live });
+  // bag by bag, so it is left as it is; the plants merge their own way (one mesh that follows the garden level).
+  for (const k of keep) if (k !== view.shield && k !== view.plants) bake(k, { keep: keep.filter((o) => o !== k), live });
   for (const k of keep) k.userData.moves = true; // AstraMerge leaves these alone
+  if (view.plants) view.plants.userData.merged = mergePlants(view.plants);
   return view;
 }
 
@@ -84,11 +87,12 @@ export function AstraHabitat({ on, wall, turn }: { on: boolean; wall: number; tu
   return <primitive object={v.group} rotation-y={turn} scale={ASTRA_SCALE.habitat} />;
 }
 
-/** Garden: ASTRA's greenhouse, grow lights on with batteries. */
-export function AstraGreenhouse({ on, turn }: { on: boolean; turn: number }) {
+/** Garden: ASTRA's greenhouse, grow lights on with batteries; its plants show the garden level (view.plant 0–4). */
+export function AstraGreenhouse({ on, turn, plant }: { on: boolean; turn: number; plant: number }) {
   const v = useMemo(() => astraModule(buildGreenhouse), []);
   v.group.name = 'astra_greenhouse';
   setPower(v, on);
+  (v.plants?.userData.merged as Plants | undefined)?.setLevel(plant);
   useSpin(v, on, 3);
   return <primitive object={v.group} rotation-y={turn} scale={ASTRA_SCALE.greenhouse} />;
 }

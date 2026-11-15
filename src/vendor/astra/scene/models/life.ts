@@ -264,11 +264,18 @@ export function buildGreenhouse(view: ModuleView) {
   const greens = [plantMaterial("#4e9b3e"), plantMaterial("#6db24a"), plantMaterial("#3b8236")];
   const red = paint("#d8402f", 0.35, 0);
   const stem = paint("#4a7a34", 0.8, 0);
+  // HB7: each plant in its own kept group (finalize merges it on its own) under view.plants: HOME BY SEVEN shows as
+  // many as the garden level allows and tints them (src/scene/astra/plants.ts).
+  const plants = keep(new THREE.Group());
+  g.add(plants);
+  view.plants = plants;
   for (let i = 0; i < 18; i++) {
     const x = -1.75 + (i % 9) * 0.44,
       z = i < 9 ? -0.62 : 0.62;
-    if (i % 3 === 2) vine(g, x, y0 + 0.59, z, 0.6 + r() * 0.12, r, greens, red, stem);
-    else rosette(g, x + (r() - 0.5) * 0.06, y0 + 0.59, z + (r() - 0.5) * 0.06, 0.26 + r() * 0.05, r, greens);
+    const p = keep(new THREE.Group());
+    plants.add(p);
+    if (i % 3 === 2) vine(p, x, y0 + 0.59, z, 0.6 + r() * 0.12, r, greens, red, stem);
+    else rosette(p, x + (r() - 0.5) * 0.06, y0 + 0.59, z + (r() - 0.5) * 0.06, 0.26 + r() * 0.05, r, greens);
   }
   view.status = statusLamp(g, 2.3, y0 + 1.42, 0.65);
   view.top = 2.3;

@@ -40,6 +40,9 @@ export interface ModuleView {
   windows?: THREE.MeshStandardMaterial;
   /** The lit panes behind the habitat's windows: hidden while you walk inside, so you can see out. */
   windowGlow?: THREE.Object3D[];
+  /** HB7: the greenhouse's plants, one kept group per plant, so the garden level can show and tint them
+   * (src/scene/astra/plants.ts) without rebuilding. */
+  plants?: THREE.Group;
   /** Height of the model's top, for labels and effects. */
   top: number;
 }
