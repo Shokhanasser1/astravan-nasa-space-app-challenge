@@ -9,7 +9,10 @@ import { DayBadge } from './play/Visor';
 import { Briefing, CapcomHolo, PhysicsHolo, SunToday } from './play/Holo';
 import { HandControl, handsOn } from './play/HandControl';
 import { JumpButton, RideButton, WalkStick } from './play/WalkStick';
-import { CornerButtons, HelpPanel, Kbd, MapPanel, makeApply, touchUi, useGameKeys } from './play/Controls';
+import { CornerButtons, HelpPanel, Kbd, KeyHint, MapPanel, makeApply, touchUi, useGameKeys } from './play/Controls';
+import { dropNudge } from '../state/nudge';
+import { dayStar } from '../state/tasks';
+import { TriangleAlert } from 'lucide-react';
 import { ResourceBar } from './play/ResourceBar';
 import { HomeBar } from './play/HomeBar';
 import { DayTasks } from './play/DayTasks';
@@ -116,6 +119,11 @@ export function Hud({ model, view, dispatch, lang, setLang, sound, setSound, onS
   const [shelterPicked, setShelterPicked] = useState(false);
   const boardRef = useRef(board);
   boardRef.current = board;
+  // A drop is noticed (home story, src/state/nudge.ts): the first "Start the day" with the air running out or the food
+  // falling lets Houston say it once; the next press starts the day. Remembered per game and day.
+  const modelRef = useRef(model);
+  modelRef.current = model;
+  const [nudged, setNudged] = useState<{ id: string; key: string } | null>(null);
 
   useEffect(() => {
     // A new plan opens the decision only when one is waiting; Houston's hint is forgotten.
@@ -131,6 +139,12 @@ export function Hud({ model, view, dispatch, lang, setLang, sound, setSound, onS
   /** Every action goes through here, so a choice made by key or by button closes the dialog the same way. */
   const act = useCallback(
     (a: Action) => {
+      if (a.type === 'CONFIRM' && features.homeStory) {
+        const m = modelRef.current;
+        const drop = dropNudge(m);
+        const id = `${m.seed}:${m.game?.day}`;
+        if (drop && nudged?.id !== id) return setNudged({ id, key: drop.key });
+      }
       dispatch(a);
       if (a.type !== 'CHOOSE') return;
       const b = boardRef.current;
@@ -139,7 +153,7 @@ export function Hud({ model, view, dispatch, lang, setLang, sound, setSound, onS
       if (a.shelter) setShelterPicked(true);
       if (!cardLeft && !shelterLeft) setDecisionOpen(false);
     },
-    [dispatch, shelterPicked],
+    [dispatch, shelterPicked, nudged],
   );
 
   const apply = useMemo(
@@ -212,6 +226,19 @@ export function Hud({ model, view, dispatch, lang, setLang, sound, setSound, onS
   // Night: the gauges as they were while planning, to show what moved.
   const planRes = useRef<View['res']>(undefined);
   if (phase === 'plan' && view.res) planRes.current = view.res;
+  // Home story: each day's star as the night (or the launch) shows it, for the finale's row of seven. A day this HUD
+  // never saw (a judge link, a resumed game) stays unknown, and then the finale shows no row rather than a wrong one.
+  const weekStars = useRef<{ seed: number; days: (boolean | null)[] }>({ seed: -1, days: [] });
+  if (features.homeStory && model.game && (phase === 'night' || phase === 'launch' || phase === 'truth')) {
+    if (weekStars.current.seed !== model.seed) weekStars.current = { seed: model.seed, days: Array<boolean | null>(7).fill(null) };
+    const lived = Math.min(7, model.game.day - 1);
+    if (lived >= 1) weekStars.current.days[lived - 1] = dayStar(model);
+  }
+  const finaleStars = weekStars.current.seed === model.seed && weekStars.current.days.every((d) => d !== null) ? (weekStars.current.days as boolean[]) : undefined;
+  // One message at a time (home story): the decision first; the task list and the radio wait until it is closed.
+  const oneAtATime = features.homeStory && planning && decisionOpen;
+  const nudgeNow = features.homeStory && phase === 'plan' && nudged?.id === `${model.seed}:${day}` ? nudged : null;
+  const dropNow = nudgeNow ? dropNudge(model) : null;
 
   const { task, skip } = useTask(model, view, board, aim);
   const ctx = useMemo(() => contextOf(model, board, aim), [model, board, aim]);
@@ -237,6 +264,7 @@ export function Hud({ model, view, dispatch, lang, setLang, sound, setSound, onS
     <div
       className="pointer-events-none fixed inset-0 flex flex-col justify-between gap-2 p-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-[max(1rem,env(safe-area-inset-top))]"
       data-tablet={showList ? 'open' : 'closed'}
+      data-nudge={dropNow ? 'on' : undefined}
       onPointerDown={() => audio.unlock()}
     >
       <div className="relative z-20 flex shrink-0 flex-col gap-2">
@@ -248,7 +276,7 @@ export function Hud({ model, view, dispatch, lang, setLang, sound, setSound, onS
           {playing && !overlay && view.res && (features.homeStory ? <HomeBar res={view.res} batteries={view.batteries} tr={tr} /> : <ResourceBar res={view.res} tr={tr} />)}
         </div>
         {/* (home story: from Day 2, or once the Day 1 tutorial is done, the plan shows Today's 5 instead of one line) */}
-        {playing && !overlay && features.homeStory && phase === 'plan' && !task?.step ? (
+        {oneAtATime ? null : playing && !overlay && features.homeStory && phase === 'plan' && !task?.step ? (
           <DayTasks model={model} tr={tr} />
         ) : (
           playing &&
@@ -301,7 +329,14 @@ export function Hud({ model, view, dispatch, lang, setLang, sound, setSound, onS
       )}
 
       {screen === 'game' && phase === 'truth' && truth && (
-        <TruthScreen truth={truth} dispatch={dispatch} tr={tr} onNext={quizPending ? nextOrQuiz : undefined} ship={view.res?.ship} />
+        <TruthScreen
+          truth={truth}
+          dispatch={dispatch}
+          tr={tr}
+          onNext={quizPending ? nextOrQuiz : undefined}
+          ship={view.res?.ship}
+          stars={features.homeStory ? finaleStars : undefined}
+        />
       )}
 
       {quizOpen && quizPending && (
@@ -356,13 +391,20 @@ export function Hud({ model, view, dispatch, lang, setLang, sound, setSound, onS
       {playing && !overlay && (
         <div className="hud-center flex min-h-0 flex-col gap-2 [&>*]:shrink-0" data-phase={phase}>
           {(phase === 'morning' || phase === 'plan') && (
-            <CapcomHolo textKey={task?.radio ?? null} tr={tr} lang={lang} sound={sound} collapsible />
+            <CapcomHolo textKey={nudgeNow?.key ?? task?.radio ?? null} tr={tr} lang={lang} sound={sound} collapsible hold={oneAtATime} />
           )}
           {phase === 'run' && <DayRun view={view} ms={runMs(view.hourly)} sound={sound} tr={tr} />}
           {phase === 'night' && <NightTablet model={model} before={planRes.current} after={view.res} tr={tr} />}
           {features.homeStory && phase === 'night' && <NightFact model={model} tr={tr} lang={lang} />}
           {showList && !dialog && <PlanTablet board={board} model={model} dispatch={act} tr={tr} onFold={() => setListOpen(false)} />}
           {planning && ctx && !dialog && !showList && <ContextPrompt ctx={ctx} tr={tr} />}
+          {features.homeStory && planning && !ctx && !dialog && !showList && <KeyHint go={primary.label} tr={tr} />}
+          {dropNow && (
+            <p className="holo pointer-events-none mx-auto flex items-center gap-1.5 rounded-[16px] px-3 py-1 text-sm font-semibold text-alert" data-testid="nudge" data-gauge={dropNow.gauge} role="status">
+              <TriangleAlert size={16} aria-hidden="true" />
+              {tr('ui.nudge.again')}
+            </p>
+          )}
           {planning && (
             <div className="flex items-end justify-between gap-2">
               {!board.info.forced ? (
@@ -387,7 +429,7 @@ export function Hud({ model, view, dispatch, lang, setLang, sound, setSound, onS
             data-testid={phase === 'plan' ? 'confirm-day' : 'next'}
             className={`primary big pointer-events-auto w-full ${glow ? 'glow' : ''}`}
             disabled={confirmBlocked}
-            onClick={() => (primary.action.type === 'NEXT' ? nextOrQuiz() : dispatch(primary.action))}
+            onClick={() => (primary.action.type === 'NEXT' ? nextOrQuiz() : act(primary.action))}
           >
             {primary.label}
             {phase === 'plan' ? <Check size={20} aria-hidden="true" /> : <ArrowRight size={20} aria-hidden="true" />}

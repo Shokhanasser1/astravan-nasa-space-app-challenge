@@ -182,7 +182,7 @@
   "ui.say.nothing": "Больше ничего не меняется.",
   "ui.say.blocked": "Задержано {n} из 10 частиц.",
   "ui.say.tenths": "{n} из 10",
-  "ui.say.blockedToday": "Ты задержал {n} из 10 частиц бури.",
+  "ui.say.blockedToday": "Задержано {n} из 10 частиц бури.",
   "ui.plan.houston": "План Хьюстона",
   "ui.plan.houstonDone": "План готов. Теперь измени одно!",
   "ui.nudge.again": "Нажми ещё раз, чтобы начать.",

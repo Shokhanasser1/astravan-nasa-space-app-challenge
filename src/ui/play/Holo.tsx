@@ -1,4 +1,4 @@
-import { useEffect, useState, useSyncExternalStore, type ReactNode } from 'react';
+import { useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from 'react';
 import { Volume2 } from 'lucide-react';
 import type { Lang } from '../../i18n/t';
 import { audio } from '../../audio/audio';
@@ -60,8 +60,19 @@ function CapcomFace({ speaking, small = false }: { speaking: boolean; small?: bo
  * tones, like Apollo's radio (the browser's voice for English and Russian; Uzbek lines are recorded by the team).
  */
 export function CapcomHolo({
-  textKey, tr, lang, sound, collapsible = false,
-}: { textKey: string | null; tr: Tr; lang: Lang; sound: boolean; collapsible?: boolean }) {
+  textKey, tr, lang, sound, collapsible = false, hold = false,
+}: {
+  textKey: string | null;
+  tr: Tr;
+  lang: Lang;
+  sound: boolean;
+  collapsible?: boolean;
+  /**
+   * One message at a time (home story; the lead's document p. 5): while the day's decision is open the radio waits —
+   * hidden and silent — and its line arrives once the decision is made. A line already heard is not said again.
+   */
+  hold?: boolean;
+}) {
   const [speaking, setSpeaking] = useState(false);
   // In the game (15 Nov): the card folds into a small chip once read (or after ~6 s); a tap opens it again.
   const [folded, setFolded] = useState(false);
@@ -69,14 +80,17 @@ export function CapcomHolo({
   // Communication delay (challenge objective): in the game a new line from Earth first shows the signal on its way
   // for the real one-way light time, then the words. (The start briefing has no delay.)
   const delayed = collapsible;
-  const [arriving, setArriving] = useState(false);
+  // The line whose delay is over. "Arriving" is derived, so the effect that reads a line aloud never sees a stale
+  // "arrived" from the line before and speaks only once, after the delay.
+  const [arrived, setArrived] = useState<string | null>(null);
+  const arriving = delayed && !!textKey && !hold && arrived !== textKey;
+  const heard = useRef<string | null>(null);
   useEffect(() => {
     setFolded(false);
-    if (!delayed || !textKey) return setArriving(false);
-    setArriving(true);
-    const id = window.setTimeout(() => setArriving(false), RADIO_DELAY_S * 1000);
+    if (!delayed || !textKey || hold || heard.current === textKey) return;
+    const id = window.setTimeout(() => setArrived(textKey), RADIO_DELAY_S * 1000);
     return () => window.clearTimeout(id);
-  }, [textKey, delayed]);
+  }, [textKey, delayed, hold]);
   useEffect(() => {
     if (!collapsible || folded || speaking || arriving || !textKey) return;
     const id = window.setTimeout(() => setFolded(true), 6000);
@@ -107,10 +121,12 @@ export function CapcomHolo({
   };
   useEffect(() => {
     // (A new line is read once, when it has arrived from Earth; the button reads it again.)
-    if (sound && textKey && !arriving) void say();
+    if (!textKey || arriving || hold || heard.current === textKey) return;
+    heard.current = textKey;
+    if (sound) void say();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [textKey, arriving]);
-  if (!textKey) return null;
+  }, [textKey, arriving, hold]);
+  if (!textKey || hold) return null;
   if (collapsible && folded) {
     return (
       <button

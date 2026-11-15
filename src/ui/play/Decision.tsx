@@ -5,6 +5,8 @@ import {
 } from 'lucide-react';
 import type { Action, Board, Model } from '../../state/game';
 import type { Shelter } from '../../engine/rules';
+import { cardSays, shelterSays, type Say } from '../../state/says';
+import { features } from '../../config/features';
 import { Btn, Delta, Panel, type Tr } from './kit';
 import { Kbd } from './Controls';
 import { Mark } from './Holo';
@@ -22,6 +24,20 @@ const PICK_ICON: Record<string, Icon> = {
   rest: House, push: Footprints,
 };
 const SHELTER_ICON: Record<Shelter, Icon> = { full: House, half: HousePlus, none: Pickaxe };
+
+/** Home story: a choice's price in short sentences (src/state/says.ts), one per line; numbers from the engine. */
+function Says({ lines, tr, children }: { lines: Say[]; tr: Tr; children?: ReactNode }) {
+  return (
+    <span className="flex flex-col gap-0.5 text-sm font-normal leading-snug" data-testid="says">
+      {lines.map((l) => (
+        <span key={l.key} className={l.key.endsWith('Down') || l.key.endsWith('Every') || l.key === 'ui.say.needRover' ? 'text-alert' : ''}>
+          {tr(l.key, l.vars)}
+          {l.key === 'ui.say.blocked' && children}
+        </span>
+      ))}
+    </span>
+  );
+}
 
 function Chip({ icon: I, tone, children }: { icon: Icon; tone: string; children: ReactNode }) {
   return (
@@ -56,6 +72,7 @@ export function Decision({
   const g = model.game!;
   const card = board.info.card;
   const known = board.info.known;
+  const words = features.homeStory ? { card: cardSays(model, board), shelter: shelterSays(model, board) } : null;
   return (
     <div className="decision-wrap pointer-events-auto fixed inset-0 z-20 flex items-center justify-center bg-[#050816]/55 p-4">
       <Panel className="holo-in flex max-h-[88dvh] w-full max-w-lg flex-col gap-3 overflow-y-auto" data-testid="decision" role="dialog" aria-modal="true" aria-label={tr('ui.decide.title')}>
@@ -86,12 +103,16 @@ export function Decision({
                       {tr(`story.card.${value.replace(':', '.')}`)}
                       <Kbd k={String(i + 1)} />
                     </span>
+                    {words ? (
+                      <Says lines={words.card[value] ?? []} tr={tr} />
+                    ) : (
                     <span className="flex flex-wrap gap-x-2 gap-y-0.5 text-xs font-normal">
                       <Chip icon={BatteryFull} tone="text-[var(--c-power)]">{tr('ui.decide.left', { n: p.left })}</Chip>
                       <Chip icon={Wind} tone="text-measured"><Delta from={g.air} to={p.reserveAfter} /></Chip>
                       <Chip icon={Sprout} tone="text-good"><Delta from={g.plant} to={p.gardenAfter} /></Chip>
                       {p.sciToday > 0 && <Chip icon={FlaskConical} tone="text-accent">+{p.sciToday}</Chip>}
                     </span>
+                    )}
                   </button>
                 );
               })}
@@ -120,7 +141,12 @@ export function Decision({
                         <Kbd k={String(board.cardOptions.length + i + 1)} />
                       </span>
                       <span className="text-xs font-normal">{tr(`ui.shelter.${value}Cost`)}</span>
-                      {known && (
+                      {words && known && (
+                        <Says lines={words.shelter[value] ?? []} tr={tr}>
+                          <Mark label="computed" tr={tr} />
+                        </Says>
+                      )}
+                      {!words && known && (
                         <span className="flex flex-wrap gap-x-2 text-xs font-normal tabular-nums">
                           <Chip icon={Shield} tone="text-measured">{tr('ui.decide.blocks', { pct: Math.round(p.blockedToday * 100) })}</Chip>
                           <Chip icon={Radiation} tone="text-computed">+{p.doseToday.toFixed(2)}</Chip>

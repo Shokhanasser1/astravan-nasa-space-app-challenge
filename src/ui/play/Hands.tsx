@@ -3,6 +3,7 @@ import { BatteryFull, Battery, Hand, Undo2 } from 'lucide-react';
 import { HANDS_MAX, STEP, atHub, reducer, type Action, type Board, type Machine, type Model } from '../../state/game';
 import type { AimId } from '../../controls/bus';
 import { Kbd } from './Controls';
+import { features } from '../../config/features';
 import type { Tr } from './kit';
 
 /**
@@ -69,6 +70,8 @@ export function contextOf(model: Model, board: Board | null, aim: AimId | null):
   }
   const fx = effect(model, k);
   if (fx === 'blocked') return { prompt: { key: 'ui.prompt.full', vars: { name } }, act: null, back, label: 'ui.act.back' };
+  // (home story, the lead's document p. 5: every building has its own job — "Start the Air Maker", "Send the rover")
+  if (features.homeStory) return { prompt: { key: `ui.verb.${k}` }, fx, act: { type: 'PUT', k }, back, label: `ui.verb.short.${k}` };
   return { prompt: { key: 'ui.prompt.put', vars: { name } }, fx, act: { type: 'PUT', k }, back, label: 'ui.act.put' };
 }
 

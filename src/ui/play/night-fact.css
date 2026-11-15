@@ -58,3 +58,15 @@
   color: var(--text-3);
   overflow-wrap: anywhere;
 }
+
+/* short screens (phones on their side, 360×640 upright): the night card and the fact scroll inside the column, so
+   the Wake up button never leaves the screen (DESIGN.md: a long panel scrolls, never pushes the big button out) */
+@media (orientation: landscape) and (max-height: 540px), (orientation: portrait) and (max-height: 700px) {
+  .hud-center [data-testid='night-log'],
+  .hud-center .night-fact {
+    flex-shrink: 1;
+    min-height: 3.5rem;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+}

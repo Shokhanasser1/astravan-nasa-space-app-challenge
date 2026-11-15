@@ -1,4 +1,4 @@
-import { ClipboardCheck, Heart, RotateCcw } from 'lucide-react';
+import { ClipboardCheck, Heart, RotateCcw, Star } from 'lucide-react';
 import type { Dispatch } from 'react';
 import type { Action, Truth } from '../../state/game';
 import type { Result } from '../../engine/rules';
@@ -6,6 +6,7 @@ import { features } from '../../config/features';
 import { Btn, Panel, type Tr } from './kit';
 import { HomeTruth, Mark, SunTruth } from './Holo';
 import { fmtRatio } from '../../quiz/quiz';
+import { tenths } from '../../state/says';
 
 /**
  * Truth screen (lane D placeholder for G2; the 25-second sequence and the hourly curve come after G2).
@@ -50,8 +51,10 @@ function Hearts({ crew, label }: { crew: number; label: string }) {
 }
 
 export function TruthScreen({
-  truth, dispatch, tr, onNext, ship,
+  truth, dispatch, tr, onNext, ship, stars,
 }: {
+  /** Home story: the day stars this week (Day 1 first), as the HUD saw them; none → no star row. */
+  stars?: boolean[];
   truth: Truth;
   dispatch: Dispatch<Action>;
   tr: Tr;
@@ -122,7 +125,10 @@ export function TruthScreen({
         )}
         <div>
           <div className="text-xs text-white/70">{tr('ui.truth.blocked')}</div>
-          <div className="text-2xl font-bold tabular-nums">{Math.round(r.blockedPct)}%</div>
+          {/* (home story: pieces, not percents — "8 of 10", from the engine's own share) */}
+          <div className="text-2xl font-bold tabular-nums" data-testid="truth-blocked">
+            {features.homeStory ? tr('ui.say.tenths', { n: tenths(r.blockedPct / 100) }) : `${Math.round(r.blockedPct)}%`}
+          </div>
           <Mark label="computed" tr={tr} />
         </div>
       </div>
@@ -150,6 +156,16 @@ export function TruthScreen({
               <Mark label="computed" tr={tr} />
             </div>
           </div>
+          {stars && stars.length > 0 && (
+            <div className="flex flex-col items-center gap-1" data-testid="truth-stars" data-stars={stars.filter(Boolean).length}>
+              <span className="flex gap-1.5" aria-hidden="true">
+                {stars.map((lit, i) => (
+                  <Star key={i} size={22} fill={lit ? 'currentColor' : 'none'} className={`day-tasks__star ${lit ? 'is-lit' : ''}`} />
+                ))}
+              </span>
+              <span className="text-sm text-[var(--text-2)]">{tr('ui.ending.stars', { n: stars.filter(Boolean).length, total: stars.length })}</span>
+            </div>
+          )}
         </>
       )}
       {/* Where every real thing in this week came from (challenge: name the data sources inside the tool). */}
