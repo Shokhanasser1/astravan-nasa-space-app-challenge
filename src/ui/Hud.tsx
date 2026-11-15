@@ -61,6 +61,7 @@ function TopBar({ lang, setLang, sound, setSound, tr }: Pick<Props, 'lang' | 'se
           key={l}
           data-testid={features.controls ? 'lang' : `lang-${l}`}
           data-lang={l}
+          className="solid" // (on the white habitat the glass button's light text vanished)
           active={!features.controls && lang === l}
           aria-label={features.controls ? tr('ui.controls.lang') : undefined}
           onClick={() => setLang(features.controls ? LANGS[(LANGS.indexOf(lang) + 1) % LANGS.length] : l)}
@@ -68,7 +69,7 @@ function TopBar({ lang, setLang, sound, setSound, tr }: Pick<Props, 'lang' | 'se
           {l.toUpperCase()}
         </Btn>
       ))}
-      <Btn data-testid="sound" active={sound} onClick={() => setSound(!sound)} aria-label={tr('ui.hud.sound')}>
+      <Btn data-testid="sound" className="solid" active={sound} onClick={() => setSound(!sound)} aria-label={tr('ui.hud.sound')}>
         {sound ? <Music size={20} aria-hidden="true" /> : <VolumeX size={20} aria-hidden="true" />}
       </Btn>
     </div>
