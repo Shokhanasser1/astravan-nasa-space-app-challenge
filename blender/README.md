@@ -19,7 +19,7 @@
 | `renders/final_gpu/<bekat>/` | 19 ta fon, 1920×1080 WebP (GPU, 256 sample): yer 3, xks 2, oy 4, mars 4, koinot 6 |
 | `renders/<bekat>/sprites/` | 37 ta shaffof sprite (WebP ≤512) |
 | `sprites_8dir/` | 35 model × 8 tomon varaqlari, `single/` 3/4 ko'rinish, `KATALOG.webp` |
-| `docs/<bekat>_nasa_taqqoslash.md` | Har model: haqiqiy NASA o'lchami ↔ model, farqlar, nima tuzatilgan; `docs/ref/` — NASA suratlari |
+| `docs/<bekat>_nasa_taqqoslash.md` | Har model: haqiqiy NASA o'lchami ↔ model, farqlar, nima tuzatilgan; NASA suratlari repodan olib tashlangan (NASA logotipi va bayroqlar), ID va havolalar shu faylda |
 | `facts/` | 35 ta fakt kartochka (uz + en, manbali) va `TEKSHIRUV.md` (mustaqil fakt-tekshiruv) |
 | `scenes/<bekat>/*.py` | Blender sahnalarini noldan quradigan skriptlar (`.blend` shulardan chiqadi) |
 | `source/INVENTORY.md`, `SOURCES.md` | 35 asl modelning o'lchami, poligoni, topilgan logolar, NASA manbalari |

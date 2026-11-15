@@ -4,7 +4,7 @@ Loyiha: "Oy karvonsaroyi" o'yini, OY bekati (ST = "oy"), NASA Space Apps 2026, O
 Sahna: `scenes/oy/oy.blend`. Uni `scenes/oy/build_oy.py` skripti noldan quradi (1 Blender birligi = 1 metr).
 
 **Kreditlar:** 3D models: NASA 3D Resources / NASA Science. Not endorsed by NASA.
-Haqiqiy fotolar: `docs/ref/oy/`. Ular NASA rasmlari (public domain), o'yinda ishlatilmaydi, faqat taqqoslash uchun.
+Haqiqiy fotolar: `docs/ref/oy/`. (fotolar repodan olib tashlandi: ularda NASA logotipi va bayroqlar bor edi; NASA ID va havolalar shu faylda qoldi — photos removed from the repo on 15 Nov because they show NASA logos and flags; their NASA IDs and links stay in this file) Ular NASA rasmlari (public domain), o'yinda ishlatilmaydi, faqat taqqoslash uchun.
 
 ## 1. Asosiy jadval
 
