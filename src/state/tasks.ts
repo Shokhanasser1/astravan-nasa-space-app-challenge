@@ -28,8 +28,16 @@ export interface Task {
   target?: TaskTarget;
   /** The number in the text, {n} (wall level for `wall` and `wallOrRover`). */
   n?: number;
-  /** Counts as done whether or not it was done (Day 7's robot arm): the star never waits for it. */
+  /** The star never waits for it (Day 7's robot arm): it ticks when done, and counts as done for the star anyway. */
   optional?: boolean;
+}
+
+/**
+ * What the game saw outside the model today (the HUD passes it): `arm` = the robot arm's scanner was switched on at
+ * least once on the day shown (src/arm/state.ts armState.on).
+ */
+export interface Seen {
+  arm?: boolean;
 }
 
 /** The document's table (p. 16), by day. */
@@ -73,7 +81,7 @@ function idsOf(day: number, card: CardId | null, choice: boolean): TaskId[] {
 }
 
 /** The five tasks of the day being shown (during run and night: the day just played); none before a game starts. */
-export function dayTasks(model: Model): Task[] {
+export function dayTasks(model: Model, seen: Seen = {}): Task[] {
   const g = model.game;
   if (!g || !model.week) return [];
   const day = shownDay(model);
@@ -117,8 +125,8 @@ export function dayTasks(model: Model): Task[] {
         return played ? g.bat >= P.maxStored : (model.preview?.left ?? 0) >= P.maxStored;
       case 'launch':
         return a.launch >= P.launchCost;
-      case 'arm':
-        return true;
+      case 'arm': // the doc (p. 17): the robot arm's scanner switched on once; optional, the star is given without it
+        return !!seen.arm;
       case 'sleep':
         return played;
       case 'ladder':
@@ -148,13 +156,17 @@ function backupDay(model: Model, day: number, played: boolean): boolean {
   return before !== undefined && before.air <= 0;
 }
 
-/** The first task still open (the beacon follows it), or null when all five are done. */
+/** Done for the star: done, or optional (Day 7's robot arm). */
+export const settled = (t: Task): boolean => t.done || !!t.optional;
+
+/** The first task still to do (the beacon follows it; an optional one never holds it), or null when all are settled. */
 export function firstOpen(tasks: readonly Task[]): Task | null {
-  return tasks.find((t) => !t.done) ?? null;
+  return tasks.find((t) => !settled(t)) ?? null;
 }
 
-/** The day's star: all the day's tasks done (five; the backup-tank day has one, rest — a star is never a penalty). */
-export function dayStar(model: Model): boolean {
-  const tasks = dayTasks(model);
-  return tasks.length > 0 && tasks.every((t) => t.done);
+/** The day's star: all the day's tasks settled (five; the backup-tank day has one, rest — a star is never a penalty;
+ * an optional one counts either way). */
+export function dayStar(model: Model, seen: Seen = {}): boolean {
+  const tasks = dayTasks(model, seen);
+  return tasks.length > 0 && tasks.every(settled);
 }

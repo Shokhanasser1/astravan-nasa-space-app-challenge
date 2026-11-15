@@ -33,6 +33,26 @@ describe('astronaut body', () => {
     expect(b.y).toBe(0);
   });
 
+  it('a jump on the move: stands still through the crouch (boots planted), then leaps on at the same speed', () => {
+    // 15 Nov: sliding on through the 0.8 s crouch skated ~1.7 m at a lope without a step (no boot prints)
+    const b = createBody(0, 20, flat);
+    for (let t = 0; t < 4; t += STEP) stepBody(b, go(0, 1, true), OUTSIDE, flat);
+    const v = b.vz;
+    expect(v).toBeCloseTo(MOVE.run, 3);
+    stepBody(b, { ...go(0, 1, true), jump: true }, OUTSIDE, flat);
+    const z0 = b.z;
+    let air = false;
+    while (b.windup >= 0) stepBody(b, go(0, 1, true), OUTSIDE, flat);
+    expect(b.z - z0).toBeLessThanOrEqual(MOVE.run * STEP + 1e-9); // no slide while crouching (only the take-off step)
+    for (let t = 0; t < 0.5; t += STEP) {
+      stepBody(b, go(0, 1, true), OUTSIDE, flat);
+      air ||= !b.onGround;
+    }
+    expect(air).toBe(true);
+    expect(b.vz).toBeCloseTo(v, 1); // the leap carries the lope on
+    expect(b.z - z0).toBeGreaterThan(0.5 * v * 0.9);
+  });
+
   it('cannot walk into the habitat', () => {
     const [hx, hz] = LAYOUT.habitat;
     const b = createBody(hx, hz + 6, flat);

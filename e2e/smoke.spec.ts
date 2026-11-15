@@ -74,6 +74,10 @@ test('loads, starts and plays the first mission to the truth screen', async ({ p
       // never runs out (the list is the DOM way to play without walking, and without WebGL).
       if (!(await page.getByTestId('plan-tablet').isVisible())) await page.getByTestId('tablet-open').click();
       await expect(page.getByTestId('resources')).toBeVisible();
+      // Day 7 (home story): the ship does not charge itself — its four batteries first (a press on a full ship
+      // does nothing). The launch button may warn first ("only n% ready"); the next pass presses it again.
+      const ship = page.getByTestId('machine-launch-add');
+      if ((await ship.isVisible()) && (await ship.isEnabled())) await ship.click();
       const add = page.getByTestId('machine-ls-add');
       while (await add.isEnabled()) await add.click();
       await confirm.click();
@@ -84,6 +88,7 @@ test('loads, starts and plays the first mission to the truth screen', async ({ p
   await expect(truth).toBeVisible();
   await expect(page.getByTestId('truth-dates')).toContainText('2021-10-25');
   await expect(page.getByTestId('truth-title')).toHaveAttribute('data-title', /.+/);
+  await expect(page.getByTestId('truth-title')).not.toHaveAttribute('data-title', 'Late Ride Home'); // the ship flew
   // The real Earth (EPIC) and Moon (SVS Dial-A-Moon) of the storm day: public/data/media/2021-10-25/manifest.json.
   await expect(page.getByTestId('home-truth')).toBeVisible();
   // The datasets behind the week, the "not an official NASA product" line, and day 7's partly measured mark (15 h).

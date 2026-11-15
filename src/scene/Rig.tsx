@@ -31,6 +31,7 @@ import { titleAngles, titlePose, useTitle } from './title';
 import { applyRover, arrival, arrivalCameraSpot, DOOR, DRIVABLE, DRIVE, hatchAt, HOP, HOP_OUT, rover, roverAt, sideKey, stepDoors } from './arrival';
 import { placeOnGround, stepRover } from './roverDrive';
 import { GRAVITY } from '../character/physics.js';
+import { BOARD_PATH, boardClimbPhase, boardPose, boardState, boarding } from './boarding';
 
 /**
  * First-person rig (final version, Dizayn 2.0). Eye 1.7 m; six standing points + inside; one-finger drag looks
@@ -113,8 +114,11 @@ function inAnyModule(x: number, y: number, z: number): boolean {
   for (const [cx, cz] of HDU_CENTRES) if (Math.hypot(x - cx, z - cz) < HDU.lining) return true;
   return false;
 }
-/** D3 (`?hdu`): the HDU modules are real size (1.95 m round inside): there the follow camera rides 1.1 m back. */
-const HDU_ROOM_CAM = 1.1;
+/**
+ * `?hdu` (Samandar, 15 Nov ~14:10: "inside the base, only through the eyes"): in the HDU modules (1.95 m round inside)
+ * the camera is the astronaut's own eyes — no follow distance, no downward tilt, the astronaut not drawn (D3's
+ * HIDE_NEAR hides it at once). Outside and in ASTRA's rooms the follow camera stays as it was.
+ */
 const ROOM_TILT = 0.25;
 /** D3: nearer than this to the head the astronaut is not drawn (the follow view becomes a first-person one). */
 export const HIDE_NEAR = 0.75;
@@ -124,16 +128,97 @@ export const isHduRoom = (room: Room | null, hdu = HDU_HABITAT): boolean => hdu 
 export const astronautShown = (camToHead: number): boolean => camToHead >= HIDE_NEAR;
 /**
  * How far behind the head (along the look −(fx, fz), horizontal parts) the follow camera rides in a room: its
- * full distance (ASTRA's ROOM_CAM, an HDU room's HDU_ROOM_CAM, × the room's scale), pulled in front of the first
+ * full distance (ASTRA's ROOM_CAM × the room's scale; an HDU room: 0, the eyes), pulled in front of the first
  * wall or furniture on the way (on the ladder: only its outer walls). Pure, no allocation.
  */
 export function roomCamDist(room: Room, hx: number, hz: number, fx: number, fz: number, climbing: boolean, hdu = HDU_HABITAT): number {
+  if (isHduRoom(room, hdu)) return 0; // (first person: the eyes)
   const k2 = room.s;
-  const far = (isHduRoom(room, hdu) ? HDU_ROOM_CAM : ROOM_CAM) * k2;
+  const far = ROOM_CAM * k2;
   for (let d = 0.3 * k2; d <= far; d += 0.05 * k2) {
     if (roomBlocked(room.area, hx - fx * d, hz - fz * d, 0.12 * k2, !climbing)) return Math.max(0.25 * k2, d - 0.08 * k2);
   }
   return far;
+}
+/**
+ * How far behind the head (along the look −(fx, fy, fz) at `pitch`) the outside follow camera can ride: `far`, or
+ * pulled in front of the first hitbox below `tall` m or, `?hdu`, the HDU complex (rooms.ts inHduComplex). `floor`:
+ * the old rule, never nearer than 0.8 m (+2.2 m in the rover, `kc`), even inside what blocks; −1: the boom's rule,
+ * no floor, and the ground blocks too (`ground`). Pure, no allocation.
+ */
+export function followDist(
+  hx: number, hy: number, hz: number, yaw: number, pitch: number, far: number, solids: readonly Solid[], tall: number,
+  hdu: boolean, floor: number,
+): number {
+  const fx = -Math.sin(yaw) * Math.cos(pitch);
+  const fy = Math.sin(pitch);
+  const fz = -Math.cos(yaw) * Math.cos(pitch);
+  for (let d = 0.6; d <= far; d += 0.2) {
+    const px = hx - fx * d;
+    const py = hy - fy * d;
+    const pz = hz - fz * d;
+    // (the rover's camera rides higher, so taller things count; and it never pulls in under the rover's own roof)
+    // (the HDU complex, `?hdu`: its modules are 5.8 m tall, its tunnels 2.6 m: the camera must not swing into a
+    // dome or a tunnel either, rooms.ts inHduComplex)
+    if ((py < tall && blocked(solids, px, pz)) || (hdu && inHduComplex(px, py, pz, 0.3))) return Math.max(floor, d - 0.3);
+  }
+  return far;
+}
+/**
+ * How far behind the head (at `pitch`) the boom can ride clear of the HDU complex (0.3 m margin) and 0.3 m above the
+ * ground: `far`, or 0.3 m in front of the first sample that is not. Pure, no allocation.
+ */
+export function boomClear(hx: number, hy: number, hz: number, yaw: number, pitch: number, far: number, ground: (x: number, z: number) => number): number {
+  const fx = -Math.sin(yaw) * Math.cos(pitch), fy = Math.sin(pitch), fz = -Math.cos(yaw) * Math.cos(pitch);
+  for (let d = 0.6; d <= far; d += 0.2) {
+    const px = hx - fx * d, py = hy - fy * d, pz = hz - fz * d;
+    if (inHduComplex(px, py, pz, 0.3) || py < ground(px, pz) + 0.3) return d - 0.3;
+  }
+  return far;
+}
+/** `?hdu` boom up (#34): extra look-down tried, in order, when the way back is blocked near the follow camera (rad). */
+const BOOM_STEPS = [0.15, 0.3, 0.45, 0.6, 0.75, 0.9, 1.05];
+/** The steepest boom look-down (rad, ~72°: still the astronaut, from above, horizon out of view but level). */
+const BOOM_LOW = -1.25;
+/** The boom keeps at least this far from the head (m); nearer, the helmet fills the screen. */
+export const BOOM_MIN = 1.6;
+/** The follow camera's choice: distance from the head, extra look-down (rad, ≥ 0) and the point (game). */
+export type FollowCam = { dist: number; extra: number; x: number; y: number; z: number };
+/**
+ * The outside follow camera on foot (#34). ASTRA (`hdu` false): today's rule — behind the head at `pitch`, pulled in
+ * front of the first hitbox below 3.2 m, never nearer than 0.8 m. `?hdu`: the same, but when that leaves it nearer
+ * than BOOM_MIN (a module, a tunnel or a prop just behind), it booms up: the first steeper look-down (BOOM_STEPS)
+ * whose way back is clear of the complex, the hitboxes and the ground for ≥ BOOM_MIN; none → today's rule.
+ * Writes `out` (no allocation) and returns it. The point is kept 0.3 m above `ground`, like Rig does.
+ */
+export function hduFollowCam(
+  out: FollowCam, hx: number, hy: number, hz: number, yaw: number, pitch: number, solids: readonly Solid[],
+  ground: (x: number, z: number) => number, hdu = HDU_HABITAT, far = CAM_DIST,
+): FollowCam {
+  let dist = followDist(hx, hy, hz, yaw, pitch, far, solids, 3.2, hdu, 0.8);
+  let p = pitch;
+  if (hdu && dist < BOOM_MIN) {
+    search: for (const e of BOOM_STEPS) {
+      const q = Math.max(BOOM_LOW, pitch - e);
+      // (the way back clear of the complex and the ground; then the point itself clear of the hitboxes below 3.2 m:
+      // a low ramp or apron between the head and a raised camera hides nothing)
+      const fx = -Math.sin(yaw) * Math.cos(q), fy = Math.sin(q), fz = -Math.cos(yaw) * Math.cos(q);
+      for (let d = boomClear(hx, hy, hz, yaw, q, far, ground); d >= BOOM_MIN; d -= 0.4) {
+        if (hy - fy * d < 3.2 && blocked(solids, hx - fx * d, hz - fz * d)) continue;
+        dist = d;
+        p = q;
+        break search;
+      }
+      if (q === BOOM_LOW) break;
+    }
+  }
+  out.dist = dist;
+  out.extra = pitch - p;
+  out.x = hx + Math.sin(yaw) * Math.cos(p) * dist;
+  out.y = hy - Math.sin(p) * dist;
+  out.z = hz + Math.cos(yaw) * Math.cos(p) * dist;
+  out.y = Math.max(out.y, ground(out.x, out.z) + 0.3);
+  return out;
 }
 /**
  * The camera would be in a room's wall or furniture, or outside its walls. (On the ladder only its outer walls
@@ -154,6 +239,8 @@ function byAirlock(p: XZ): boolean {
   const dz = p.z - LAYOUT.habitat[1];
   return (dx * Math.sin(DOOR_AZ) + dz * Math.cos(DOOR_AZ)) / ROOM_K > 2.0;
 }
+/** The boom's choice this frame (one object, reused). */
+const boom: FollowCam = { dist: 0, extra: 0, x: 0, y: 0, z: 0 };
 const ckQ = new THREE.Quaternion();
 const ckE = new THREE.Euler();
 const BOARD_REACH = 3.5; // m from a hatch: E climbs in
@@ -172,6 +259,8 @@ const FLOAT_S = reduced ? 1.4 : 1.0;
 const DRAG_RAD_PER_PX = 0.0045;
 
 const lander: Vec3 = [LAYOUT.lander[0], 3, LAYOUT.lander[1]];
+/** Day 7 boarding (home story): what the boarding shot looks at (the astronaut's chest; no allocation per frame). */
+const boardLook: Vec3 = [0, 0, 0];
 
 /** What E (or the ✋ button, or a tap) acts on: the power hub and the machines, at their footprint (src/controls/aim.ts). */
 const AIM: AimTarget[] = [
@@ -208,8 +297,12 @@ function anglesTo(from: THREE.Vector3, look: Vec3): [number, number] {
   return [yaw, Math.max(-MAX_PITCH, Math.min(MAX_PITCH, pitch))];
 }
 
-/** While something moves, the shadow map is redrawn this often, s (15 Nov perf audit: 10 Hz redrew every caster). */
-const SHADOW_EVERY = 0.2;
+/**
+ * While something moves, the shadow map is redrawn this often, s. The perf audit (15 Nov) cut it to 5 Hz, but then
+ * the astronaut's shadow trailed up to 0.4 m behind the boots at a lope; ~30 Hz keeps it on the feet (≤ 7 cm).
+ * One more redraw always follows the last move, so a body that stops never keeps a stale shadow.
+ */
+const SHADOW_EVERY = 1 / 30;
 
 export function Rig({ view }: { view: View }) {
   const camera = useThree((s) => s.camera) as THREE.PerspectiveCamera;
@@ -226,7 +319,7 @@ export function Rig({ view }: { view: View }) {
   // (with the astronaut, the walker walks only inside the habitat, in first person: the astronaut walks outside)
   const walker = useMemo(() => (freeWalk ? createWalker() : null), []);
   const body = useMemo(() => createBody(POINTS.hub.pos[0], POINTS.hub.pos[2], ground), []);
-  const c = useRef({ acc: 0, quiet: 0, shadowT: 0, car: 0, ck: 0, takeoff: NaN, peak: 0, ax: { ahead: 0, side: 0, turn: 0 } as Axes, wish: { x: 0, z: 0 } as XZ }).current;
+  const c = useRef({ acc: 0, quiet: 0, shadowT: 0, shadowStale: false, car: 0, ck: 0, boom: 0, boomDist: 0, takeoff: NaN, peak: 0, ax: { ahead: 0, side: 0, turn: 0 } as Axes, wish: { x: 0, z: 0 } as XZ }).current;
   const s = useRef({
     from: new THREE.Vector3(),
     to: new THREE.Vector3(),
@@ -478,6 +571,11 @@ export function Rig({ view }: { view: View }) {
       if (!reduced || tc.t < 0.5) invalidate();
       return;
     }
+    // Day 7 (home story, src/scene/boarding.ts): the astronaut boards the base ship, then the liftoff from the hill
+    if (boarding && character) {
+      if (launching) return boardFrame(dt);
+      if (boardState.t0 >= 0) endBoarding();
+    }
     if (doorTrip.t >= 0) {
       doorTrip.t += dt;
       if (doorTrip.to && doorTrip.t >= DOOR_GO) {
@@ -613,6 +711,77 @@ export function Rig({ view }: { view: View }) {
     }
     if (s.t < 1 || Math.abs(dy) > 1e-3 || Math.abs(dp) > 1e-3 || launching || walking) invalidate();
   });
+
+  /**
+   * Day 7 boarding (home story): out of any room, the rover or a trip at once, the astronaut appears a few steps from
+   * the base ship's ladder (a cut: a walk from where it stood could pass through walls), walks to it, climbs, steps
+   * along the porch through the hatch and is on board, hidden. The camera: a side shot of the ladder, then (on board)
+   * the hill, watching the liftoff (src/scene/parts/Lander.tsx waits for it: LIFTOFF_DELAY_S).
+   */
+  function boardFrame(dt: number) {
+    const now = performance.now() / 1000;
+    if (boardState.t0 < 0) {
+      boardState.t0 = now;
+      if (roomState.id) setRoom(null, getRoom(roomState.id).out);
+      if (seat.stage !== 'walk') leaveRover();
+      if (doorTrip.t >= 0) habitatDoor.want = 0;
+      if (roomTrip.room) interiorDoors[buildingOf(roomTrip.room)].want = 0;
+      doorTrip.t = roomTrip.t = climb.t = -1;
+      doorTrip.to = null;
+      roomTrip.room = climb.to = null;
+      walker?.stop();
+    }
+    const P = boardPose(BOARD_PATH, now - boardState.t0, boardState.pose);
+    const aboard = P.stage === 'aboard';
+    body.x = P.x;
+    body.z = P.z;
+    body.y = P.stage === 'walk' ? ground(P.x, P.z) : P.y;
+    body.facing = P.facing;
+    body.vx = P.vx;
+    body.vz = P.vz;
+    body.vy = 0;
+    body.onGround = true;
+    body.windup = -1;
+    climbState.on = P.stage === 'climb';
+    climbState.vy = P.vy;
+    climbState.phase = boardClimbPhase(P.h);
+    interiorDoors.lander.want = P.stage === 'porch' || P.stage === 'in' ? 1 : 0; // the hatch opens for it
+    nearCam.hide = aboard;
+    let look: Vec3;
+    if (aboard) {
+      camera.position.set(...POINTS.hill.pos);
+      lander[1] = 3 + launchState.h;
+      look = lander;
+    } else {
+      const C = BOARD_PATH.camera;
+      camera.position.set(C.x, ground(C.x, C.z) + C.h, C.z);
+      boardLook[0] = body.x;
+      boardLook[1] = body.y + 1.2;
+      boardLook[2] = body.z;
+      look = boardLook;
+    }
+    [s.yaw, s.pitch] = anglesTo(camera.position, look);
+    s.yawT = s.yaw;
+    s.pitchT = s.pitch;
+    camera.rotation.set(s.pitch, s.yaw, 0, 'YXZ'); // no roll: horizon always level
+    camState.inside = false;
+    if (features.controls) setAim(null);
+    setRide(null);
+    c.shadowT -= dt;
+    if (c.shadowT <= 0) {
+      c.shadowT = SHADOW_EVERY;
+      gl.shadowMap.needsUpdate = true; // the astronaut's shadow moves with it
+    }
+    invalidate();
+  }
+
+  /** The launch is over (the truth screen, a new game): the ladder clip and the hatch back to rest. */
+  function endBoarding() {
+    boardState.t0 = -1;
+    climbState.on = false;
+    climbState.vy = 0;
+    interiorDoors.lander.want = 0;
+  }
 
   /** In a room (or out of it, null) at a spot: the body at the room's scale, the camera straight behind it. */
   function setRoom(id: RoomId | null, at: { x: number; z: number; facing: number }) {
@@ -954,14 +1123,24 @@ export function Rig({ view }: { view: View }) {
       : roomState.id
         ? getRoom(roomState.id)
         : null;
-    const tilt = room ? ROOM_TILT : CAM_TILT + (CAR_TILT - CAM_TILT) * kc;
-    const pitch = Math.max(-MAX_PITCH - tilt, s.pitch - tilt);
-    const fx = -Math.sin(s.yaw) * Math.cos(pitch);
-    const fy = Math.sin(pitch);
-    const fz = -Math.cos(s.yaw) * Math.cos(pitch);
+    // (an HDU room is seen through the eyes: level, no follow tilt)
+    const tilt = room ? (isHduRoom(room) ? 0 : ROOM_TILT) : CAM_TILT + (CAR_TILT - CAM_TILT) * kc;
+    let pitch = Math.max(-MAX_PITCH - tilt, s.pitch - tilt);
     const hx = body.x + (rover.x - body.x) * kc;
     const hy = body.y + HEAD * body.scale + (rover.y + CAR_AIM - body.y - HEAD) * kc;
     const hz = body.z + (rover.z - body.z) * kc;
+    // `?hdu` on foot outside (#34): blocked just behind by the complex or a prop, the camera booms up — looks down
+    // more from higher instead of pinning 0.8 m behind the helmet (hduFollowCam); the extra look-down eases in and
+    // out over ~0.3 s, the distance grows back as smoothly (pulling in stays at once: never into a dome)
+    const boomed = HDU_HABITAT && !room && kc === 0 && !scripted;
+    if (boomed) {
+      hduFollowCam(boom, hx, hy, hz, s.yaw, pitch, OUTSIDE.solids, ground, true);
+      c.boom += (boom.extra - c.boom) * (1 - Math.exp(-10 * dt));
+      pitch = Math.max(BOOM_LOW, pitch - c.boom);
+    } else c.boom = 0;
+    const fx = -Math.sin(s.yaw) * Math.cos(pitch);
+    const fy = Math.sin(pitch);
+    const fz = -Math.cos(s.yaw) * Math.cos(pitch);
     let dist: number;
     if (room) {
       // in a room: closer, kept inside its walls and clear of its furniture, under its ceiling
@@ -969,20 +1148,14 @@ export function Rig({ view }: { view: View }) {
     } else {
       const far = CAM_DIST + (CAR_DIST - CAM_DIST) * kc;
       const solids = inCar ? ROVER_AREA.solids : OUTSIDE.solids;
-      dist = far;
-      for (let d = 0.6; d <= far; d += 0.2) {
-        const px = hx - fx * d;
-        const py = hy - fy * d;
-        const pz = hz - fz * d;
-        // (the rover's camera rides higher, so taller things count; and it never pulls in under the rover's own roof)
-        // (the HDU complex, `?hdu`: its modules are 5.8 m tall, its tunnels 2.6 m: the camera must not swing into a
-        // dome or a tunnel either, rooms.ts inHduComplex)
-        const tall = HDU_HABITAT && inHduComplex(px, py, pz, 0.3);
-        if (!scripted && ((py < (inCar ? 5 : 3.2) && blocked(solids, px, pz)) || tall)) {
-          dist = Math.max(0.8 + 2.2 * kc, d - 0.3);
-          break;
-        }
-      }
+      dist = scripted ? far : followDist(hx, hy, hz, s.yaw, pitch, far, solids, inCar ? 5 : 3.2, HDU_HABITAT, 0.8 + 2.2 * kc);
+      if (boomed && (boom.extra > 0 || c.boom > 0.01)) {
+        // (the boom's distance, never past the complex or into the ground at the eased look-down; it grows back
+        // smoothly and pulls in at once)
+        const want = Math.min(boom.extra > 0 ? boom.dist : dist, boomClear(hx, hy, hz, s.yaw, pitch, far, ground));
+        c.boomDist = want < c.boomDist ? want : c.boomDist + (want - c.boomDist) * (1 - Math.exp(-10 * dt));
+        dist = c.boomDist;
+      } else c.boomDist = dist;
     }
     camera.position.set(hx - fx * dist, hy - fy * dist, hz - fz * dist);
     if (climbing) {
@@ -1026,10 +1199,15 @@ export function Rig({ view }: { view: View }) {
       else if (nearDoor.id) ride = bed && buildingOf(nearDoor.id) === 'habitat' ? 'sleep' : 'enter';
     }
     setRide(ride);
-    // the Sun's shadow map is drawn once a day; while the astronaut moves, redraw it five times a second
+    // the Sun's shadow map is drawn once a day; while the astronaut moves, redraw it ~30 times a second, and once
+    // more when it has settled (the legs blend back to Idle while `quiet` runs down; else the last redraw, up to
+    // SHADOW_EVERY old, stays: a shadow beside the boots)
+    const moving = active || c.quiet > 0;
     c.shadowT -= dt;
-    if (active && c.shadowT <= 0) {
+    if (moving) c.shadowStale = true;
+    if (c.shadowStale && (!moving || c.shadowT <= 0)) {
       c.shadowT = SHADOW_EVERY;
+      c.shadowStale = moving;
       gl.shadowMap.needsUpdate = true;
     }
     c.quiet = active ? 0.6 : Math.max(0, c.quiet - dt);
@@ -1080,7 +1258,9 @@ export function Rig({ view }: { view: View }) {
     [goInside],
   );
 
-  const astronaut = character ? <Astronaut body={body} visible={point !== 'inside'} hands={view.hands ?? 0} view={view} /> : null;
+  // (home story: once the ship has flown the astronaut is on board, not on the Moon)
+  const aboard = boarding && view.launched === true && view.phase === 'truth';
+  const astronaut = character ? <Astronaut body={body} visible={point !== 'inside' && !aboard} hands={view.hands ?? 0} view={view} /> : null;
 
   return hideMarkers ? (
     astronaut

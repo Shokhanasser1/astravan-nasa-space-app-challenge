@@ -9,6 +9,7 @@ import {
   type Alloc, type CardId, type DayInfo, type Limits, type Preview, type Result, type Shelter, type State,
 } from '../engine/rules';
 import type { SkyDay, Week, WeekDay } from '../engine/week';
+import { features } from '../config/features';
 import { indoorsToday } from './homeDay';
 
 // ---- the contract with the scene (developer guide §02) ----
@@ -43,6 +44,9 @@ export type View = {
   // 15 Nov ~05:00 (Shoxjahon aka: "make it a game" — batteries are carried, resources always visible):
   hands?: number; // batteries the astronaut carries now (plan phase), 0..HANDS_MAX
   res?: Resources; // every gauge of the base, from the engine (see Resources)
+  // 15 Nov home story, Day 7 boarding: the ship flew (the engine's State.launched). The astronaut is on board from the
+  // launch on; when it did not fly (Late Ride Home) the base ship stays on the ground in the truth screen.
+  launched?: boolean;
   // 15 Nov home story (src/state/homeDay.ts): the crew stays in the habitat today — "Stay inside all day" on a storm
   // day, or the backup-tank day (the engine's shelter full); planning and running that day only.
   indoors?: boolean;
@@ -118,10 +122,17 @@ function withPreview(m: Model): Model {
   return m.game && m.week ? { ...m, preview: preview(m.game, m.week, m.alloc, m.cardChoice) } : m;
 }
 
-/** The board as the day opens: day 7 starts with four batteries on Launch; a forced day is already filled. */
+/**
+ * Day 7 opens with the four launch batteries already on Launch (the old game). Home story (features.homeStory; the
+ * lead's document p. 12, "Kema o'zi zaryadlanardi"): the ship does not charge itself — the child carries the four
+ * batteries to it like to any machine. Only the board the day opens with changes; the engine does not.
+ */
+export const selfCharge = !features.homeStory;
+
+/** The board as the day opens: day 7 starts with four batteries on Launch (selfCharge); a forced day is already filled. */
 function openBoard(m: Model): Model {
   if (!m.game || !m.week) return m;
-  const base: Alloc = { ...EMPTY, launch: m.game.day === 7 ? 4 : 0 };
+  const base: Alloc = { ...EMPTY, launch: m.game.day === 7 && selfCharge ? 4 : 0 };
   return withPreview({ ...m, alloc: playable(m.game, m.week, base), cardChoice: undefined, phase: 'plan', hands: 0 });
 }
 
@@ -324,6 +335,7 @@ export function toView(m: Model, sky?: Record<string, SkyDay[]>): View {
     batteries: lim && m.phase === 'plan' ? { left: m.preview?.left ?? lim.available, total: lim.available } : undefined,
     hands: m.phase === 'plan' ? (m.hands ?? 0) : 0,
     res: g && m.week ? resources(m, g, m.week) : undefined,
+    launched: g?.launched ?? false,
     indoors: indoorsToday(m.phase, m.alloc.shelter),
   };
 }
@@ -340,7 +352,7 @@ function resources(m: Model, g: State, week: Week): Resources {
 }
 
 /** Ship repair in % (computed): science points over the week's high-science target, capped at 100. */
-function shipPct(sci: number, target: number): number {
+export function shipPct(sci: number, target: number): number {
   return target > 0 ? Math.min(100, Math.max(0, Math.round((sci / target) * 100))) : 0;
 }
 

@@ -94,6 +94,7 @@ export class AnimController {
     this.landing = 0;    // s left of JumpLand
     this.wasAir = false;
     this.airTime = 0;
+    this.crouching = false; // in the crouch before a jump (its first frame leaves both boot prints)
     this.current = null;
     this.state = '';
     /** Footfalls since the last read: { x, z, yaw, side: 'L' | 'R', run } in world space. The reader empties it. */
@@ -263,11 +264,14 @@ export class AnimController {
       this.queued = null;
     }
     const landed = this.split && this.wasAir && s.onGround && this.airTime > 0.3;
+    // the crouch before a jump: both boots planted where it starts (the body stands still through it, body.ts)
+    const crouched = this.split && s.onGround && s.windup >= 0 && !this.crouching;
+    this.crouching = s.windup >= 0;
     if (this.split) this.updateSplit(dt, s);
     else this.updateLegacy(dt, s);
     this.mixer.update(dt);
     this.trackFootfalls();
-    if (landed) this.bothFeet();
+    if (landed || crouched) this.bothFeet();
   }
 
   updateSplit(dt, s) {

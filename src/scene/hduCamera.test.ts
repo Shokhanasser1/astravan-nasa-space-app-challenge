@@ -61,40 +61,32 @@ describe('HDU title camera (#26)', () => {
 
 describe('HDU room camera (#27, #34, D3)', () => {
   const rooms = Object.values(makeRooms(true)).filter((r) => isHduRoom(r, true));
-  const HEAD = 1.55, TILT = 0.25;
+  const HEAD = 1.55;
 
   it('has the six HDU rooms (the lander is ASTRA\'s)', () => {
     expect(rooms.map((r) => r.id).sort()).toEqual(['greenhouse', 'greenhouse_up', 'habitat', 'habitat_up', 'lab', 'lab_up']);
   });
 
-  it('over a grid of standable poses: 1.1 m at most, the astronaut hidden when nearer than 0.75 m, never past the lining', () => {
-    let n = 0, hidden = 0, full = 0;
+  it('is the astronaut\'s own eyes everywhere you can stand (Samandar: "inside the base, only through the eyes")', () => {
+    let n = 0;
     for (const R of rooms) {
       const { x: cx, z: cz } = R.area.bounds;
       for (let x = cx - 2; x <= cx + 2; x += 0.1)
         for (let z = cz - 2; z <= cz + 2; z += 0.1) {
           if (!fits(x, z, R.area, ROOM_BODY * R.s)) continue;
           for (let a = 0; a < 360; a += 30) {
-            const yaw = (a * Math.PI) / 180, pitch = -TILT;
-            const fx = -Math.sin(yaw) * Math.cos(pitch), fy = Math.sin(pitch), fz = -Math.cos(yaw) * Math.cos(pitch);
-            const hy = R.floorY + HEAD * R.s;
-            const d = roomCamDist(R, x, z, fx, fz, false, true);
-            expect(d).toBeLessThanOrEqual(1.1 * R.s + 1e-9);
-            const px = x - fx * d, pz = z - fz * d;
-            const py = Math.min(Math.max(hy - fy * d, R.floorY + 0.3 * R.s), R.ceilY - 0.1 * R.s);
-            expect(Math.hypot(px - cx, pz - cz)).toBeLessThan(HDU.lining);
-            const toHead = Math.hypot(px - x, py - hy, pz - z);
-            const shown = astronautShown(toHead);
-            expect(shown ? toHead >= HIDE_NEAR : true).toBe(true);
+            const yaw = (a * Math.PI) / 180;
+            const d = roomCamDist(R, x, z, -Math.sin(yaw), -Math.cos(yaw), false, true);
+            expect(d).toBe(0); // the camera is at the head: inside the lining, the astronaut not drawn
+            expect(astronautShown(d)).toBe(false);
+            expect(Math.hypot(x - cx, z - cz)).toBeLessThan(HDU.lining);
+            expect(R.floorY + HEAD * R.s).toBeLessThan(R.ceilY - 0.1 * R.s); // (the eyes under the ceiling)
             n++;
-            if (!shown) hidden++;
-            if (d >= 1.1 * R.s - 1e-9) full++;
           }
         }
     }
     expect(n).toBeGreaterThan(1000);
-    expect(full).toBeGreaterThan(0);
-    expect(hidden).toBeLessThan(n);
+    expect(HIDE_NEAR).toBeGreaterThan(0);
   });
 
   it('ASTRA rooms keep their 1.7 m', () => {
