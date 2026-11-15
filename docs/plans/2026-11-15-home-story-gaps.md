@@ -79,8 +79,19 @@ door, night camera) · **here** (this branch builds it, see the end). Video and 
 
 ## Built here (behind `features.homeStory`; flag off = the old screens)
 
-Houston's plan button · a drop is noticed (gauge warning + radio line once, on the first Start-the-day press) ·
-one message at a time (decision first, then Today's 5 and the radio) · decision buttons in words · pieces instead of
-fractions (decision, night card, finale) · kid keys (E and Enter badges only, the rest under "?") · rover truck icon ·
-building verbs (Plan list, prompt, touch button) · lesson line under the current task · the day's star at night and
-the week's stars in the finale. Details and results: the commit messages on `claude/kid-ux`.
+| Item | Where |
+|---|---|
+| Houston's plan: one button in the Plan list header; golden Plan A on the first week when it fits today, else a plain plan from the engine's limits; through DROP/SET; "Now change one thing!" | `src/state/houston.ts`, `Tablet.tsx` |
+| A drop is noticed: food gauge warns when it falls tonight, air when tonight's reserve is low; the first "Start the day" with the air running out or the food falling → Houston says it once (`story.radio.needAir` / `needLight`) + "Press again to start anyway" | `src/state/nudge.ts`, `HomeBar.tsx`, `Hud.tsx` |
+| One message at a time: while the decision is open, Today's 5 and the radio wait (the radio says its line once, after) | `Hud.tsx`, `Holo.tsx` (`hold`) |
+| Decision buttons in words ("1 battery goes. Food stays safe." / "No battery needed. Food: 1 less tonight."; shelter "9 of 10 particles blocked", "Health goes down") | `src/state/says.ts`, `Decision.tsx` |
+| Pieces, not fractions: night "You blocked 9 of 10 storm particles", ship % and hearts instead of points and dose; finale "Storm blocked 8 of 10" | `Tablet.tsx`, `TruthScreen.tsx` |
+| Keys for a child: on screen only E, Enter (and Esc in windows); laptop hint "WASD Walk · E Use · Enter Start the day · ? All keys"; help lists the three first | `Controls.tsx`, `Hud.tsx` |
+| Rover = truck icon; every building its verb (Plan list rows, prompt, touch button); `ui.task.air` "Start the Air Maker" | `Tablet.tsx`, `Hands.tsx`, `en/ui.json` |
+| Trainer: the astronaut's one-line lesson under the current task | `DayTasks.tsx` |
+| The day's star at night; the week's stars in the finale (only when every night was seen this session) | `Tablet.tsx`, `TruthScreen.tsx`, `Hud.tsx` |
+| Short screens (360×640, phones sideways): Today's 5 shows the current task only and steps aside for the open list and the nudge; the night card scrolls | `day-tasks.css`, `night-fact.css` |
+
+Still open (not UI/state, or another agent's): suit grey pack and red stripe (scene); the entry screen's seven stars
+read from `stars()` and `markStar` called per badge (`App.tsx` knows the badge); day length not measured; robot-arm
+camera download size; the "red" of the document is the design system's amber (`--color-alert`, the only warning colour).
