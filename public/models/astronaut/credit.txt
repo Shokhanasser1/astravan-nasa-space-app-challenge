@@ -45,3 +45,10 @@ scripts/models/pose_fix.mjs on the clips (mesh untouched): the upper arms turned
 Walk, Run and the jump (were 31-46 deg, held out for the old bulky suit), gestures blended back to Idle at their ends;
 the arm swing widened (walk -14..18 deg, lope -18..26 deg, was +-10 / +-6) with elbows bent 10-15 deg more; the legs
 turned in 2 deg so they are parallel (ankle 2.5 cm outside the hip). Climb re-made after it (climb_kid.mjs, same P).
+
+15 Nov 2026 ~22:20 (Shoxjahon aka: "the torso wider and more natural, the shoulders a little wider, the bag bigger and not
+moving, take it from the old model"): body rebuilt from the same Meshy file with a broader suit (scripts/models/meshy_rig.mjs
+P={"chestX":1.18,"chestZ":1.15}: chest and shoulders 18% wider, 15% deeper, arms out 3.2 cm with them); the old kid
+model's backpack cut out of it with its UVs (scripts/models/backpack.mjs), 0.40 x 0.66 x 0.24 m, as a rigid mesh under the
+Spine2 joint (moves with the chest as one piece); its texture at 512 px. Then optimize (ratio 0.42, error 0.002),
+pose_fix.mjs, climb_kid.mjs. 945 KB, under 20k triangles.
