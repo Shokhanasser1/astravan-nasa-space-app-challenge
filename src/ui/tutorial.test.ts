@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { dayGoal, radioLine, tutorialStep, tutorialTarget, tutorialTask, type DayFacts, type TutInput } from './tutorial';
+import { dayGoal, radioLine, tutorialSay, tutorialStep, tutorialTarget, tutorialTask, type DayFacts, type TutInput } from './tutorial';
 
 const NONE = { ls: 0, gh: 0, ws: 0, sc: 0, launch: 0 };
 const base: TutInput = { phase: 'plan', day: 1, firstMission: true, hands: 0, alloc: NONE, aim: null, free: 6 };
@@ -65,5 +65,30 @@ describe('day goals and radio lines (scenario, Act 2)', () => {
     expect(r({ day: 2, phase: 'morning', watch: true })).toBe('story.radio.watch');
     expect(r({ day: 3, forced: true })).toBe('story.radio.emergency');
     expect(r({ phase: 'night' })).toBeNull();
+  });
+});
+
+describe('the crash start (home story T2)', () => {
+  const crash = (o: Partial<TutInput>) => at({ phase: 'morning', crash: true, ...o });
+
+  it('walks to the base light, goes in at the door, then Next with Houston', () => {
+    expect(crash({})).toBe('reach');
+    expect(crash({ crashStage: 'walk' })).toBe('reach');
+    expect(crash({ crashStage: 'door' })).toBe('enter');
+    expect(crash({ crashStage: 'in' })).toBe('next');
+  });
+
+  it('puts the beacon at the habitat door; the door step has no radio line of its own', () => {
+    expect(tutorialTarget('reach', 0)).toBe('door');
+    expect(tutorialTarget('enter', 0)).toBe('door');
+    expect(tutorialTask('reach', 0)).toBe('ui.tut.reach.task');
+    expect(tutorialSay('reach')).toBe('ui.tut.reach.say');
+    expect(tutorialSay('enter')).toBeNull();
+  });
+
+  it('leaves the old start as it was without the crash, and the plan steps as they were after it', () => {
+    expect(at({ phase: 'morning' })).toBe('next');
+    expect(at({ phase: 'morning', crashStage: 'walk' })).toBe('next');
+    expect(at({ crash: false })).toBe('walkHub');
   });
 });

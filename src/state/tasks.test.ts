@@ -152,3 +152,22 @@ describe("today's 5", () => {
     }
   });
 });
+
+// Home story T2: Day 1 opens at the crash site; "Reach the base" ticks within 6 m of the habitat door (the rig reports
+// it, src/state/crash.ts), or when Next ends the morning.
+describe("today's 5: Reach the base (home story T2)", () => {
+  const reach = (m: Model, stage?: Parameters<typeof dayTasks>[1]) => dayTasks(m, stage).find((t) => t.id === 'reach')?.done;
+
+  it('is open on the walk and done at the door or inside', () => {
+    const morning = start();
+    expect(reach(morning)).toBe(false);
+    expect(reach(morning, 'walk')).toBe(false);
+    expect(reach(morning, 'door')).toBe(true);
+    expect(reach(morning, 'in')).toBe(true);
+  });
+
+  it('is done once Next skips the walk (the e2e plays without walking)', () => {
+    const plan = reducer(start(), { type: 'NEXT' });
+    expect(reach(plan, 'walk')).toBe(true);
+  });
+});

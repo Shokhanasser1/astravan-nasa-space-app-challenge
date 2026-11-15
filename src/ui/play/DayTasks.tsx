@@ -1,6 +1,7 @@
 import { Check, Circle, Star } from 'lucide-react';
 import type { Model } from '../../state/game';
 import { dayTasks } from '../../state/tasks';
+import { useCrashStage } from '../../state/crash';
 import type { Tr } from './kit';
 import './day-tasks.css';
 
@@ -11,7 +12,7 @@ import './day-tasks.css';
  * `rounded-[16px]` picks the HUD frame's small notification skin (src/ui/flight-deck.css: no status dots under the star).
  */
 export function DayTasks({ model, tr }: { model: Model; tr: Tr }) {
-  const tasks = dayTasks(model);
+  const tasks = dayTasks(model, useCrashStage());
   if (!tasks.length) return null;
   const current = tasks.findIndex((t) => !t.done);
   const count = tasks.filter((t) => t.done).length;

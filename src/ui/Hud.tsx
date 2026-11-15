@@ -14,6 +14,7 @@ import { ResourceBar } from './play/ResourceBar';
 import { HomeBar } from './play/HomeBar';
 import { DayTasks } from './play/DayTasks';
 import { NightFact } from './play/NightFact';
+import { CrashIntro } from './play/CrashIntro';
 import { ContextButton, ContextPrompt, Inventory, contextOf } from './play/Hands';
 import { Decision, pendingDecision } from './play/Decision';
 import { TaskLine, useTask } from './play/Task';
@@ -228,7 +229,8 @@ export function Hud({ model, view, dispatch, lang, setLang, sound, setSound, onS
   const playing = screen === 'game' && phase !== 'truth';
   const showList = planning && listOpen;
   const hasDecision = !!board && (board.cardOptions.length > 0 || board.shelterOptions.length > 0);
-  const sides = planning && overlay === null && !dialog;
+  // (home story T2: the crash morning is walked too — the stick, jump and the door button from the first second)
+  const sides = (planning || !!view.crash) && overlay === null && !dialog;
   // the robot arm's scanner takes the upper-left corner while the astronaut stands near the arm
   useSyncExternalStore(subscribeArm, armVersion);
   const armCorner = armScan && (armState.near || armState.on);
@@ -254,7 +256,7 @@ export function Hud({ model, view, dispatch, lang, setLang, sound, setSound, onS
           playing &&
           !overlay &&
           task &&
-          (phase === 'morning' || phase === 'plan') && <TaskLine task={task} tr={tr} onSkip={task.step ? skip : undefined} />
+          (phase === 'morning' || phase === 'plan') && <TaskLine task={task} tr={tr} onSkip={task.step && task.step !== 'reach' && task.step !== 'enter' ? skip : undefined} />
         )}
         {/* (the Sun photo steps aside while the robot arm's scanner has the upper-left corner: near the arm) */}
         {playing && !overlay && (phase === 'morning' || phase === 'plan') && !armCorner && (
@@ -284,6 +286,9 @@ export function Hud({ model, view, dispatch, lang, setLang, sound, setSound, onS
       )}
 
       {screen !== 'game' && !overlay && entry}
+
+      {/* home story T2: "IMPACT · SIGNAL LOST", the helmet lamp, the wrist's air (never takes a pointer) */}
+      {playing && view.crash && <CrashIntro seed={model.seed} tr={tr} />}
 
       {screen !== 'game' && !overlay && !entry && (
         <div className="pointer-events-auto flex flex-col items-center gap-4 self-center">
