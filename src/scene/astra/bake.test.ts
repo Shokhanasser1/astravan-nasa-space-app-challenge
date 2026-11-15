@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import * as THREE from 'three';
 import { bake, mergeWorld } from './bake';
 import { addDetail, DETAIL } from '../../vendor/astra/scene/surface';
+import { finalize } from '../../vendor/astra/scene/kit';
 
 const box = (mat: THREE.Material, x = 0) => {
   const m = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), mat);
@@ -85,5 +86,34 @@ describe('bake: static parts of a procedural model become a few meshes', () => {
     expect(out[0].geometry.boundingBox!.max.x).toBeCloseTo(10.5); // world space: model a stood at x = 10
     expect(meshes(a).every((m) => !m.visible)).toBe(true);
     expect(meshes(wing).every((m) => m.visible)).toBe(true);
+  });
+
+  it("mergeWorld draws the contact patches of every building in one call per strength, still under them", () => {
+    const patch = new THREE.MeshBasicMaterial({ transparent: true, depthWrite: false });
+    patch.userData.blob = true;
+    const roots = [0, 8].map((x) => {
+      const r = new THREE.Group();
+      r.position.x = x;
+      r.add(new THREE.Mesh(new THREE.PlaneGeometry(2, 2), patch));
+      return r;
+    });
+    const out = mergeWorld(roots).children as THREE.Mesh[];
+    expect(out.length).toBe(1);
+    expect(out[0].renderOrder).toBe(1);
+    expect(out[0].receiveShadow).toBe(false);
+    expect(out[0].castShadow).toBe(false);
+    expect(roots.every((r) => !r.children[0].visible)).toBe(true);
+  });
+
+  it("ASTRA's finalize leaves a hidden part hidden (labels below full detail are not drawn on phones)", () => {
+    const g = new THREE.Group();
+    const mat = new THREE.MeshStandardMaterial();
+    const label = new THREE.Mesh(new THREE.PlaneGeometry(1, 0.25), mat);
+    label.visible = false;
+    g.add(label, new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), mat));
+    finalize(g);
+    const drawn = meshes(g).filter((m) => m.visible);
+    expect(drawn.length).toBe(1);
+    expect(drawn[0].geometry.getAttribute('position').count).toBe(24); // the box only
   });
 });

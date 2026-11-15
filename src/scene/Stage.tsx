@@ -1,4 +1,4 @@
-import { Component, Suspense, lazy, useEffect, useState, type ReactNode } from 'react';
+import { Component, Suspense, lazy, useEffect, useRef, useState, type ReactNode } from 'react';
 import { Canvas, useThree, useFrame } from '@react-three/fiber';
 import { PerformanceMonitor, Preload, Stars, useGLTF } from '@react-three/drei';
 import { Bloom, EffectComposer, ToneMapping, Vignette } from '@react-three/postprocessing';
@@ -17,6 +17,7 @@ import { Rig } from './Rig';
 import { WalkDebug } from './WalkDebug';
 import { RobotArm } from './RobotArm';
 import { freeWalk } from '../walk/enabled';
+import { SMALL_CASTER_M, trimCasters } from './shadowDiet';
 
 // Draco decoder from our own server (copied by scripts/copy-decoders.mjs), never from Google's CDN:
 // the venue Wi-Fi may be down (developer guide §06). Meshopt-compressed models need no decoder file.
@@ -50,6 +51,20 @@ function Probe() {
     // ?shot only)
     (window as unknown as { __hb7?: object }).__hb7 = { calls: gl.info.render.calls, triangles: gl.info.render.triangles, scene, gl, camera };
     gl.info.reset();
+  });
+  return null;
+}
+
+/** Phones: small parts stop casting shadows as models arrive (shadowDiet.ts); looked at once a second while drawing. */
+function ShadowDiet() {
+  const scene = useThree((s) => s.scene);
+  const gl = useThree((s) => s.gl);
+  const wait = useRef(0);
+  useFrame((_, dt) => {
+    wait.current -= dt;
+    if (wait.current > 0) return;
+    wait.current = 1;
+    if (trimCasters(scene, SMALL_CASTER_M) > 0) gl.shadowMap.needsUpdate = true;
   });
   return null;
 }
@@ -131,6 +146,7 @@ export function Stage({ view, onTap, onUndo }: { view: View; onTap: (k: Machine)
         <Earth view={view} />
         <Storm level={view.level} />
         {features.light ? <Light sunAzDeg={sunAzimuth(view)} shadowSize={q.shadow} /> : <ambientLight intensity={0.6} />}
+        {!computer && q.shadow > 0 && <ShadowDiet />}
         <Suspense fallback={null}>
           <BaseScene view={view} onTap={onTap} onUndo={onUndo} />
           {/* (here, not in parts/Habitat.tsx: Habitat is not given view.res) */}

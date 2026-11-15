@@ -5,6 +5,7 @@ import * as THREE from 'three';
 import { camState } from './anim';
 import { buildingOf, roomState } from '../walk/rooms';
 import { inHabitatRoom } from './astra/shellFit';
+import { bake } from './astra/bake';
 import { ASTRA_SCALE, HDU_HABITAT } from './layout';
 
 /**
@@ -53,6 +54,22 @@ const ease = (t: number) => t * t * (3 - 2 * t);
  */
 export const HIDDEN_PARTS: readonly string[] = ['habitat_ground_int_bag', 'habitat_ground_int_water'];
 
+/**
+ * Few draw calls for a furnished interior (perf, 15 Nov): every part that no clip animates merges by finish, like
+ * ASTRA's buildings (astra/bake.ts) — the greenhouse went from 26 draw calls to a handful. Doors (any node a clip
+ * moves) stay whole, their own pieces merged. Baked under the model's root node, so the habitat's "only the hatch from
+ * outside" (its root's children) still works.
+ */
+export function bakeInterior(o: THREE.Object3D, clips: THREE.AnimationClip[]): void {
+  const moving = new Set(clips.flatMap((c) => c.tracks.map((t) => THREE.PropertyBinding.parseTrackName(t.name).nodeName)));
+  const keep: THREE.Object3D[] = [];
+  o.traverse((n) => {
+    if (n.name && moving.has(n.name)) keep.push(n);
+  });
+  bake(o.children[0] ?? o, { keep, live: [] });
+  for (const k of keep) bake(k, { keep: keep.filter((x) => x !== k), live: [] });
+}
+
 function Model({ id }: { id: InteriorId }) {
   // (the HDU habitat, `?hdu`, has its own interior: layout.ts HDU_HABITAT)
   const { scene, animations } = useGLTF(`${base}${id === 'habitat' && HDU_HABITAT ? 'hdu_habitat' : id}.glb`, false, true);
@@ -61,6 +78,7 @@ function Model({ id }: { id: InteriorId }) {
   const obj = useMemo(() => {
     const o = scene.clone(true);
     for (const name of HIDDEN_PARTS) o.getObjectByName(name)?.removeFromParent();
+    bakeInterior(o, animations);
     o.traverse((m) => {
       if ((m as THREE.Mesh).isMesh) {
         m.castShadow = false; // inside a shell: the shell casts the shadow
@@ -69,7 +87,7 @@ function Model({ id }: { id: InteriorId }) {
     });
     o.visible = false;
     return o;
-  }, [scene]);
+  }, [scene, animations]);
   // its door: the clip on the door pivot, and the pivot itself (the habitat's hatch also shows from outside)
   const door = useMemo(() => {
     const clip = (id === 'habitat' && animations.find((c) => c.name === 'DoorOpenOuter')) || animations.find((c) => c.name === 'DoorOpen');

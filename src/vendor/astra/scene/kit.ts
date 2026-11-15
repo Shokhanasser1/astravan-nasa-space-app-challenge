@@ -229,6 +229,7 @@ export function contactShadow(p: THREE.Object3D, rx: number, rz: number, strengt
   o.castShadow = false;
   o.receiveShadow = false;
   o.renderOrder = 1;
+  mat.userData.blob = true; // HB7: AstraMerge draws each strength's patches of every building in one call (bake.ts)
   return o;
 }
 
@@ -269,7 +270,9 @@ function merge(root: THREE.Object3D) {
   const drop: THREE.Mesh[] = [];
   root.traverse((o) => {
     const m = o as THREE.Mesh;
-    if (!m.isMesh || Array.isArray(m.material)) return;
+    // HB7: a hidden mesh (labels below full detail, common.ts) stays apart and hidden; merged, it became visible again
+    // and phones drew every label after all (15 Nov perf).
+    if (!m.isMesh || Array.isArray(m.material) || !m.visible) return;
     for (let a: THREE.Object3D | null = m; a && a !== root; a = a.parent) if (a.userData.keep) return;
     // Keep geometry indexed (detailed parts share their vertices), adding a plain index where missing.
     const g = m.geometry.clone();

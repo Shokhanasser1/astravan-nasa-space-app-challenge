@@ -1,5 +1,5 @@
-import { useMemo } from 'react';
-import { useFrame } from '@react-three/fiber';
+import { useEffect, useMemo } from 'react';
+import { useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import type { View } from '../state/game';
 import { BATTERY_BANK, LAYOUT } from './layout';
@@ -7,7 +7,7 @@ import { GLOW } from './parts/materials';
 import { ICE_CRATER, groundHeight } from './ground';
 import { sunAzimuth, sunDirection } from './Light';
 import { ASTRA_SCALE, astraModule } from './AstraBase';
-import { bake } from './astra/bake';
+import { bake, mergeWorld } from './astra/bake';
 import { finalize } from '../vendor/astra/scene/kit';
 import type { ModuleView } from '../vendor/astra/scene/models/common';
 import { buildBattery, buildSolar } from '../vendor/astra/scene/models/power';
@@ -64,7 +64,10 @@ export function SolarArrays({ view }: { view: View }) {
   const views = useMemo(() => ARRAYS.map(() => module((v) => buildSolar(v, 'moon'))), []);
   views.forEach((v) => (v.group.name = 'astra_solar'));
   const az = sunAzimuth(view);
-  useFrame(() => {
+  const scene = useThree((s) => s.scene);
+  const gl = useThree((s) => s.gl);
+  const invalidate = useThree((s) => s.invalidate);
+  useEffect(() => {
     sunDirection(az, sun);
     views.forEach((v, i) => {
       if (!v.yaw || !v.tilt) return;
@@ -74,7 +77,21 @@ export function SolarArrays({ view }: { view: View }) {
       v.tilt.rotation.x = Math.asin(sun.y);
       if (i === 1) v.tilt.rotation.z = 0.12; // bent at landing (the wing card's story)
     });
-  });
+    // The arrays turn only when the day (the Sun) changes: for the day, the turning parts of both arrays are drawn
+    // merged, one mesh per finish (18 draw calls → ~10 on a phone, 15 Nov perf). The originals stay, hidden, for taps.
+    // (Not named astra_*: AstraMerge must not take today's pose into its once-only merge.)
+    const parts = views.flatMap((v) => (v.yaw ? [v.yaw] : []));
+    const merged = mergeWorld(parts, { moving: true });
+    merged.name = 'solar_today';
+    scene.add(merged);
+    gl.shadowMap.needsUpdate = true;
+    invalidate();
+    return () => {
+      merged.removeFromParent();
+      merged.traverse((o) => (o as THREE.Mesh).geometry?.dispose());
+      for (const p of parts) p.traverse((o) => o.userData.mergedAway && ((o.visible = true), (o.userData.mergedAway = false)));
+    };
+  }, [az, views, scene, gl, invalidate]);
   return (
     <>
       {views.map((v, i) => (
