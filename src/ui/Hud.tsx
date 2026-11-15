@@ -28,14 +28,14 @@ import { runMs } from '../scene/runClock';
 import { DayRun } from './play/DayRun';
 import { NightTablet, PlanTablet } from './play/Tablet';
 import { Quiz } from './play/Quiz';
+import { TruthScreen } from './play/TruthScreen';
 import { lazyScreen, whenIdle } from './lazy';
 
-// Two screens a child meets once, late or by choice, load as their own chunks (imports start on idle after the first
-// frames, see the effect in Hud): the truth screen and the camera arm scanner. The night tablet, plan list, night fact
-// and quiz stay in the main chunk: a lazy screen suspends for a tick on its first show even when cached, and the quiz
-// then appeared a moment after the night — the e2e week clicked Next under it (15 Nov). They save only ~5 kB gzip.
+// Only the camera arm scanner (a child's choice, never in the week's flow) loads as its own chunk, its import started
+// on idle. Screens of the week's flow stay in the main chunk: a lazy screen suspends for a tick on its first show even
+// when cached — the quiz and then the truth screen appeared a moment late and the e2e week clicked Next under or past
+// them (15 Nov). Together they saved only ~6 kB gzip.
 const ArmScanner = lazyScreen(() => import('./play/ArmScanner').then((m) => ({ default: m.ArmScanner })));
-const TruthScreen = lazyScreen(() => import('./play/TruthScreen').then((m) => ({ default: m.TruthScreen })));
 
 /**
  * Lane D. DOM layer above the Canvas (15 Nov, "make it a game"): the base's gauges always on top, the task line
@@ -93,7 +93,6 @@ export function Hud({ model, view, dispatch, lang, setLang, sound, setSound, onS
   useEffect(
     () =>
       whenIdle(() => {
-        TruthScreen.preload();
         if (armScan) ArmScanner.preload();
       }),
     [],
@@ -302,9 +301,7 @@ export function Hud({ model, view, dispatch, lang, setLang, sound, setSound, onS
       )}
 
       {screen === 'game' && phase === 'truth' && truth && (
-        <Suspense fallback={null}>
-          <TruthScreen truth={truth} dispatch={dispatch} tr={tr} onNext={quizPending ? nextOrQuiz : undefined} ship={view.res?.ship} />
-        </Suspense>
+        <TruthScreen truth={truth} dispatch={dispatch} tr={tr} onNext={quizPending ? nextOrQuiz : undefined} ship={view.res?.ship} />
       )}
 
       {quizOpen && quizPending && (
