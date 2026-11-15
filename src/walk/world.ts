@@ -29,6 +29,7 @@ import { initialTier } from '../scene/quality';
 import { OUTPOST_ON, outpostSolids } from '../scene/outpostSite';
 import { makePoints } from '../scene/points';
 import { HDU_OUT } from './rooms';
+import { CRASH_ON, wreckSolids } from '../scene/crash';
 
 /** Every hitbox is its visual footprint plus this much (metres). */
 const MARGIN = 0.1;
@@ -168,6 +169,8 @@ export function makeOutside(hdu: boolean, rover: Solid = hdu === HDU_HABITAT ? R
       // (the drill's three outrigger feet reach 2.0 m from its mast; RASSOR is ~1.9 m long)
       ...(rich ? [disc('ice drill', ICE_DRILL, 2.0)] : []),
       ...(initialTier() === 'pc' ? [disc('rassor', RASSOR, 1.1)] : []),
+      // the crash site of Day 1 (home story T2, src/scene/crash.ts): the tipped lander and the overturned rover
+      ...(CRASH_ON ? wreckSolids() : []),
       // the rocks too tall to step over (the lower ones are ground: src/walk/rocks.ts)
       ...rockSolids(STEP_FOOT, EDGE),
     ],
