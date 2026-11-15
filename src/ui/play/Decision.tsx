@@ -1,4 +1,4 @@
-import { type ComponentType, type Dispatch, type ReactNode } from 'react';
+import { useEffect, type ComponentType, type Dispatch, type ReactNode } from 'react';
 import {
   BatteryFull, Flame, FlaskConical, Footprints, Headphones, House, HousePlus, Pickaxe, Radiation, Shield, Snowflake,
   Sparkles, Sprout, Sun, Wind, X,
@@ -44,6 +44,14 @@ export function Decision({
   onHint: () => void;
   onClose: () => void;
 }) {
+  // Esc closes it (as it closes the map and the help list); the Decision button opens it again.
+  useEffect(() => {
+    const down = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', down);
+    return () => window.removeEventListener('keydown', down);
+  }, [onClose]);
   const g = model.game!;
   const card = board.info.card;
   const known = board.info.known;
