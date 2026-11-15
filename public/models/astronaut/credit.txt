@@ -39,3 +39,9 @@ with the legs), simplified to 19,349 triangles, meshopt + WebP 1024 (788 KB); th
 (climb_kid.mjs, P={"behind":0.30,"hipy":0.70}: boots and gloves on the rungs within 0.1 mm). The helmet parts of the
 old body (KidHelmet/KidVisor/KidHelmetFrame) are gone: the new body has its own helmet and gold visor in its texture.
 AI-made, disclosed in docs/AI-USE.md. No NASA mesh, texture, insignia or flag.
+
+15 Nov 2026 ~22:05 (Shoxjahon aka: "walks like a robot; the arms must hang at 90 degrees, not in a V; the legs parallel"):
+scripts/models/pose_fix.mjs on the clips (mesh untouched): the upper arms turned in to ~8 deg from vertical in Idle,
+Walk, Run and the jump (were 31-46 deg, held out for the old bulky suit), gestures blended back to Idle at their ends;
+the arm swing widened (walk -14..18 deg, lope -18..26 deg, was +-10 / +-6) with elbows bent 10-15 deg more; the legs
+turned in 2 deg so they are parallel (ankle 2.5 cm outside the hip). Climb re-made after it (climb_kid.mjs, same P).
