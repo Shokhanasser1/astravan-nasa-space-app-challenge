@@ -108,7 +108,7 @@ function Desk({ tr, profiles, guestResult, onGuest, onPick, onMake }: ReceptionP
       <section className="pass-main" aria-labelledby="who-h">
         {guestResult && (
           <div className="entry-keep" data-testid="keep-result">
-            <Medal size={24} className="shrink-0 text-[var(--gold,#ffc56b)]" aria-hidden="true" />
+            <Medal size={24} className="shrink-0 text-[var(--gold)]" aria-hidden="true" />
             <span className="min-w-0 flex-1 font-semibold">{tr(guestResult.titleKey)}</span>
             {room && (
               <button type="button" className="abtn primary" data-testid="keep-make" onClick={onMake}>
@@ -129,7 +129,7 @@ function Desk({ tr, profiles, guestResult, onGuest, onPick, onMake }: ReceptionP
           ))}
           {room && (
             <button type="button" className="crew-seat crew-seat-new" data-testid="badge-new" onClick={onMake}>
-              <CrewMark color="#ffc56b" empty />
+              <CrewMark color="#7fe3ff" empty />
               <span className="crew-name">{tr('ui.entry.new')}</span>
             </button>
           )}
@@ -167,7 +167,7 @@ function BadgeMaker({
 }) {
   const signs = freeSigns(profiles);
   const [sign, setSign] = useState<Sign>(signs[0]);
-  const [patch, setPatch] = useState<Patch>('gold');
+  const [patch, setPatch] = useState<Patch>('ice');
   const preview: Profile = { id: sign, sign, patch, missions: keep ? [keep] : [] };
   return (
     <div className="entry-stack" data-testid="badge-maker">

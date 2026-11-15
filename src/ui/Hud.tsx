@@ -181,7 +181,7 @@ export function Hud({ model, view, dispatch, lang, setLang, sound, setSound, onS
       )}
       {/* (Its own corner: in the centre column it pushed Confirm off a laptop screen on the flare day.) */}
       {playing && !overlay && (phase === 'morning' || phase === 'plan') && (
-        <div className="pointer-events-none absolute left-4 top-36 flex flex-col">
+        <div className="hud-sun pointer-events-none absolute left-4 top-36 flex flex-col">
           <SunToday weekId={view.weekId} date={view.mediaDate} tr={tr} />
         </div>
       )}

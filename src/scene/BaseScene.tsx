@@ -114,7 +114,7 @@ function TargetRings({ strong }: { strong: boolean }) {
   );
 }
 
-const AIMED = glowColor('#ffd98a', 1.6);
+const AIMED = glowColor('#9fe8ff', 1.6);
 
 /** The building E or the ✋ button would act on gets a second, warm ring (no crosshair: the ring is the offer). */
 function AimRing() {

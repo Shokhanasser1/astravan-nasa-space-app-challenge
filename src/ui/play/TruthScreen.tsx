@@ -25,12 +25,15 @@ export function TruthScreen({ truth, dispatch, tr }: { truth: Truth; dispatch: D
       <p className="text-center text-lg tabular-nums" data-testid="truth-dates">
         {first} — {last}
       </p>
-      <div className="flex h-32 items-end justify-between gap-1" aria-label={tr('ui.truth.curve')}>
+      {/* (Each bar stands in its own track of fixed height: a percentage height needs a parent with a height.) */}
+      <div className="truth-chart" role="img" aria-label={tr('ui.truth.curve')} data-testid="truth-chart">
         {truth.days.map((d) => (
-          <div key={d.day} className="flex flex-1 flex-col items-center gap-1">
-            <span className="text-xs tabular-nums">{d.ratio}×</span>
-            <div className={`w-full rounded-t ${d.level > 0 ? 'bg-[#ff8a3d]' : 'bg-[#8b96c0]/60'}`} style={{ height: `${barHeight(d.ratio)}%` }} />
-            <span className="text-xs">{d.day}</span>
+          <div key={d.day} className="truth-col">
+            <span className="truth-val tabular-nums">{d.ratio}×</span>
+            <span className="truth-track">
+              <span className={`truth-bar ${d.level > 0 ? 'truth-bar-storm' : ''}`} style={{ height: `${barHeight(d.ratio)}%` }} />
+            </span>
+            <span className="truth-day">{d.day}</span>
           </div>
         ))}
       </div>

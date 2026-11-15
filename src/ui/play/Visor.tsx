@@ -60,7 +60,7 @@ export function Gauges({ model, board, tr }: { model: Model; board: Board | null
     <div className="glass hud-stats pointer-events-none" data-testid="gauges">
       <div className={cell}>
         <div className={label}>
-          <Zap size={16} aria-hidden="true" className="shrink-0 text-[#ffc94a]" />
+          <Zap size={16} aria-hidden="true" className="shrink-0 text-[var(--c-power)]" />
           {tr('ui.gauge.energy')}
           <Mark label="rule" tr={tr} />
         </div>
