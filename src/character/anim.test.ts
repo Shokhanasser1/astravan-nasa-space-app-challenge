@@ -7,7 +7,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import * as THREE from 'three';
 import { GLTFLoader, type GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
-import { AnimController, CLIP_SPEED, FIDGET_S, GESTURES, INSERT_HOLD } from './anim.js';
+import { AnimController, CLIMB_RISE, CLIP_SPEED, FIDGET_S, GESTURES, INSERT_HOLD } from './anim.js';
 
 const GLB = fileURLToPath(new URL('../../public/models/astronaut/astronaut.glb', import.meta.url));
 
@@ -182,5 +182,40 @@ describe('gestures (Insert, Wrist, LookAround) as the game plays them', () => {
     expect(anim.gesture('Insert')).toBe(false);
     expect(anim.fidget(1e12)).toBe(false);
     expect(anim.holdingBattery()).toBe(false);
+  });
+});
+
+describe('climbing the habitat ladder', () => {
+  const still = { onGround: true, windup: -1, vy: 0, v0: 1.2, speed: 0, carrying: false, pouring: false, running: false, k: 1 };
+  const make = () => new AnimController(gltf.scene, Object.fromEntries(gltf.animations.map((c) => [c.name, c])));
+  const run = (anim: AnimController, seconds: number, s: Record<string, unknown>) => {
+    for (let t = 0; t < seconds; t += 1 / 60) anim.update(1 / 60, s);
+  };
+
+  it('the shipped astronaut.glb has the Climb clip: 1.4 s for two 0.30 m rungs', () => {
+    const clip = gltf.animations.find((c) => c.name === 'Climb');
+    expect(clip).toBeTruthy();
+    expect(0.6 / clip!.duration).toBeCloseTo(CLIMB_RISE, 2);
+  });
+
+  it('scrubs Climb by the height on the ladder (so it runs backward going down), then stands again', () => {
+    const anim = make();
+    run(anim, 0.5, { ...still, climb: 0.25, climbV: 0.9 });
+    expect(anim.state).toBe('Climb');
+    const d = anim.actions.Climb.getClip().duration;
+    expect(anim.actions.Climb.time).toBeCloseTo(0.25 * (d - 0.001), 6);
+    run(anim, 0.1, { ...still, climb: 0.1, climbV: -0.9 });
+    expect(anim.actions.Climb.time).toBeCloseTo(0.1 * (d - 0.001), 6);
+    run(anim, 0.5, { ...still, climb: null });
+    expect(anim.state).toBe('Idle');
+  });
+
+  it('an astronaut.glb without Climb treads in place with Walk', () => {
+    const clips = Object.fromEntries(gltf.animations.map((c) => [c.name, c]));
+    delete clips.Climb;
+    const anim = new AnimController(gltf.scene, clips);
+    run(anim, 0.3, { ...still, climb: 0.5, climbV: 0.9 });
+    expect(anim.state).toBe('Walk');
+    expect(anim.actions.Walk.timeScale).toBeGreaterThan(0);
   });
 });

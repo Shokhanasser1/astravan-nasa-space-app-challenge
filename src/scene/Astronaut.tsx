@@ -14,6 +14,7 @@ import { LAYOUT } from './layout';
 import { Remote } from '../arm/remote';
 import { armState } from '../arm/state';
 import { rover } from './arrival';
+import { climbState } from '../walk/ladder';
 
 /** The suited astronaut: NASA EMU model, rigged and animated by Samandar (blender/game3d/characters/), 6k triangles. */
 const URL = `${import.meta.env.BASE_URL}models/astronaut/astronaut.glb`;
@@ -215,7 +216,9 @@ export function Astronaut({ body, visible, hands = 0, view }: { body: Body; visi
     anim.update(dt, {
       onGround: body.onGround, windup: body.windup, vy: body.vy / k, v0: body.v0 / k || 1.2,
       speed, carrying: h.hands > 0 || h.pour > 0, pouring: h.pour > 0, running: body.running, k: 1, seated, steer: rover.steerInput,
+      climb: climbState.on ? climbState.phase : null, climbV: climbState.vy / k, // on the habitat's ladder (full size)
     });
+    if (climbState.on) state.invalidate();
     cargo.mesh.count = model.visible && !seated ? Math.min(CARRY_MAX, h.hands) : 0;
     if (cargo.mesh.count > 0) {
       cargo.group.position.set(

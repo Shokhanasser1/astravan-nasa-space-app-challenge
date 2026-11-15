@@ -11,9 +11,9 @@ set -e
 HERE=$(cd "$(dirname "$0")" && pwd)
 CH=$(dirname "$HERE")                      # game3d/characters
 REPO=${1:-$HOME/dev/astravan-anim4}
-# the clips that ship in the game (other modules in clips/, e.g. seated.py for the SEV drive, are baked on their own)
-MODS=${MODS:-idle_pour.py,jump.py,lope.py,walk_carry.py,gesture_insert.py,gesture_idle.py}
-HELPERS=${HELPERS:-_arms.py,_gait.py,_jump_core.py,_insert_core.py,_gest_core.py}
+# the clips that ship in the game (seated.py: the SEV drive; climb.py: the habitat deck ladder, 15 Nov)
+MODS=${MODS:-idle_pour.py,jump.py,lope.py,walk_carry.py,gesture_insert.py,gesture_idle.py,seated.py,climb.py}
+HELPERS=${HELPERS:-_arms.py,_gait.py,_jump_core.py,_insert_core.py,_gest_core.py,_seated_core.py,_climb_core.py}
 B=/Applications/Blender.app/Contents/MacOS/Blender
 OUT=$CH/_work/anim_final
 mkdir -p "$OUT"

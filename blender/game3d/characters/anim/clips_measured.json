@@ -1,4 +1,31 @@
 {
+ "Climb": {
+  "frames": 42,
+  "seconds": 1.4,
+  "loop": true,
+  "speed": 0.0,
+  "module": "climb.py",
+  "sink": -0.0459,
+  "slide": {
+   "L": 0.1079,
+   "R": 0.108
+  },
+  "hips_acc": [
+   -1.595,
+   1.595
+  ],
+  "flight_s": 0.933,
+  "hips_z": [
+   0.7501,
+   0.7899
+  ],
+  "note": "vertical ladder climb loop (habitat deck ladder), 2 rungs per cycle, in place; the game raises the root by rise_per_cycle per cycle; play backwards to climb down",
+  "rise_per_cycle": 0.6,
+  "climb_speed": 0.4286,
+  "ladder_lean_deg": 0.0,
+  "rung_pitch": 0.3,
+  "body_behind_root": 0.42
+ },
  "Wrist": {
   "frames": 84,
   "seconds": 2.8,
@@ -236,6 +263,52 @@
    0.8125
   ],
   "note": "Apollo alternate-foot lope, 2.0 m/s, contact 0.333s + flight 0.333s per step, step 1.33 m"
+ },
+ "Seated": {
+  "frames": 120,
+  "seconds": 4.0,
+  "loop": true,
+  "speed": 0.0,
+  "module": "seated.py",
+  "sink": -0.0001,
+  "slide": {
+   "L": 0.0,
+   "R": 0.0
+  },
+  "hips_acc": [
+   0.0,
+   0.0
+  ],
+  "flight_s": 0.0,
+  "hips_z": [
+   0.6023,
+   0.6023
+  ],
+  "note": "rover driver seated idle: breathing, head look-around, gloves on the controller grips; root = cabin floor under the hip joints, faces -Y"
+ },
+ "SeatedSteer": {
+  "frames": 60,
+  "seconds": 2.0,
+  "loop": false,
+  "speed": 0.0,
+  "module": "seated.py",
+  "sink": -0.0001,
+  "slide": {
+   "L": 0.0,
+   "R": 0.0
+  },
+  "hips_acc": [
+   0.0,
+   0.0
+  ],
+  "flight_s": 0.0,
+  "hips_z": [
+   0.6023,
+   0.6023
+  ],
+  "note": "scrub by steering: time = (s + 1) s for s in -1 (full left) .. 1 (full right); frame 30 = Seated frame 0; controller roll +-35 deg, torso/head lean 6 deg into the turn",
+  "scrub": 1,
+  "steer_max_deg": 35.0
  },
  "Walk": {
   "frames": 40,

@@ -4,6 +4,8 @@ import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 import { camState } from './anim';
 import { buildingOf, roomState } from '../walk/rooms';
+import { inHabitatRoom } from './astra/shellFit';
+import { ASTRA_SCALE } from './layout';
 
 /**
  * Building interiors (local preview, 15 Nov): furnished insides made in Blender from NASA references
@@ -44,12 +46,20 @@ export const habitatDoor = interiorDoors.habitat;
 const DOOR_S = 0.8;
 const ease = (t: number) => t * t * (3 - 2 * t);
 
+/**
+ * Parts of the interior GLBs the game does not draw. The habitat's storm-shelter ring (water bags and cargo bags round
+ * the ladder, blender/interiors/habitat) read as the outside sandbag shield poking into the room and hid the galley
+ * (Samandar, 15 Nov ~09:00: take it out). Its hitbox never existed (src/walk/rooms.ts), so nothing else changes.
+ */
+export const HIDDEN_PARTS: readonly string[] = ['habitat_ground_int_bag', 'habitat_ground_int_water'];
+
 function Model({ id }: { id: InteriorId }) {
   const { scene, animations } = useGLTF(`${base}${id}.glb`, false, true);
   const camera = useThree((s) => s.camera);
   const invalidate = useThree((s) => s.invalidate);
   const obj = useMemo(() => {
     const o = scene.clone(true);
+    for (const name of HIDDEN_PARTS) o.getObjectByName(name)?.removeFromParent();
     o.traverse((m) => {
       if ((m as THREE.Mesh).isMesh) {
         m.castShadow = false; // inside a shell: the shell casts the shadow
@@ -84,8 +94,11 @@ function Model({ id }: { id: InteriorId }) {
     obj.getWorldPosition(at);
     const dist = at.distanceTo(camera.position);
     if (id === 'habitat') {
-      // inside (the first-person point or walking in its room): the whole room; outside, near: only the hatch
-      const full = camState.inside || inRoom;
+      // inside (the first-person point and anywhere it walks in the room, both decks, or walking in its room with
+      // the astronaut): the whole room; outside, near: only the hatch. (camState.inside alone is the old 0.34-scale
+      // 1.6 m circle below 3 m: at 0.6 the first-person walk left it by the galley and on the upper deck, and the
+      // room vanished round the camera, showing ASTRA's shell and shield from inside.)
+      const full = camState.inside || inRoom || inHabitatRoom(camera.position.x - at.x, camera.position.y - at.y, camera.position.z - at.z, ASTRA_SCALE.habitat);
       obj.visible = full || dist < 20;
       if (door) for (const c of door.root.children) c.visible = full || c === door.leaf;
       return;
