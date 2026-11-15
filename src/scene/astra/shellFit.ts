@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { HDU, HDU_HABITAT } from '../layout';
 
 /**
  * Where ASTRA's shells meet our furnished interiors (src/scene/Interiors.tsx; blender/interiors/<b>/HANDOFF.md).
@@ -165,5 +166,7 @@ export const HAB_LINING = 4.92;
 export const HAB_CEILING = 5.95;
 /** Is a camera at (dx, dy, dz) from the habitat's foot (game metres) inside its room, at scale k? */
 export function inHabitatRoom(dx: number, dy: number, dz: number, k: number): boolean {
+  // (the HDU habitat, `?hdu`: its lining 2.925 m and dome top 8.62 m, game metres at k 1)
+  if (HDU_HABITAT) return Math.hypot(dx, dz) < HDU.lining * k && dy < HDU.top * k;
   return Math.hypot(dx, dz) < HAB_LINING * k && dy < HAB_CEILING * k;
 }

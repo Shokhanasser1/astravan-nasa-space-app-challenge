@@ -3,3 +3,9 @@ Building interiors (habitat, greenhouse, lab/workshop, lander): modelled from sc
 and the NASA Image and Video Library, each fact listed with its API request and document id in
 blender/interiors/<building>/SOURCES.md. No NASA imagery, logos or insignia are in the models.
 Not endorsed by NASA.
+
+hdu_habitat.glb (15 Nov 2026, `?hdu`): the furnished interior of the HDU habitat (eight sections after NASA's HDU papers
+on NTRS: GeoLab glovebox with three pass-through chambers, lettuce racks, telerobotics, medical, galley, workshop,
+hygiene, the entry with suits; the X-Hab crew loft with four pods; a centre ladder), modelled by Blender Python written
+with Claude Code (AI-made, team-directed) in oy-karvonsaroyi-3d/hb7/hdu_base/build_game_habitat.py (SOURCES.md there).
+The toilet is Moonwards-Assets' Toilet.blend (MIT, Copyright (c) 2019 Moonwards, github.com/spenxeram/Moonwards-Assets).

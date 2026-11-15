@@ -115,16 +115,60 @@ export function bootPrint(renderer) {
       const i = y * W + x;
       const dx = depth[y * W + Math.min(W - 1, x + 1)] - depth[y * W + Math.max(0, x - 1)];
       const dy = depth[Math.min(H - 1, y + 1) * W + x] - depth[Math.max(0, y - 1) * W + x];
-      // trodden soil is a little darker than the ground (~sRGB 105–115 after regolithMaterial's albedo gain, real
-      // regolith ~12 %); the ribs show by their shading
-      const tone = 112 - depth[i] * 26;
-      col.set([tone, tone * 0.98, tone * 0.95, Math.min(255, mask[i] * 175)], i * 4);
+      // trodden soil is clearly darker than the ground (compacted regolith, like the Apollo photos: the ground is
+      // ~sRGB 105–115 after regolithMaterial's albedo gain); the ribs darker still, and a thin lighter rim of soil
+      // pushed up round the sole, so a print reads from a few metres away
+      const rim = Math.max(0, mask[i] * (1 - mask[i]) * 4);
+      const tone = 84 - depth[i] * 34 + rim * 46;
+      col.set([tone, tone * 0.98, tone * 0.95, Math.min(255, mask[i] * 235 + rim * 20)], i * 4);
       // a pressed-in print: the walls face inward
-      const nx = dx * 2.2, ny = -dy * 2.2, l = Math.hypot(nx, ny, 1);
+      const nx = dx * 3.2, ny = -dy * 3.2, l = Math.hypot(nx, ny, 1);
       nor.set([(nx / l * 0.5 + 0.5) * 255, (ny / l * 0.5 + 0.5) * 255, (1 / l * 0.5 + 0.5) * 255, 255], i * 4);
     }
   const make = (data, srgb) => {
     const t = new THREE.DataTexture(data, W, H, THREE.RGBAFormat);
+    t.colorSpace = srgb ? THREE.SRGBColorSpace : THREE.NoColorSpace;
+    t.minFilter = THREE.LinearMipmapLinearFilter;
+    t.magFilter = THREE.LinearFilter;
+    t.generateMipmaps = true;
+    t.anisotropy = Math.min(4, renderer.capabilities.getMaxAnisotropy());
+    t.needsUpdate = true;
+    return t;
+  };
+  return { map: make(col, true), normal: make(nor, false) };
+}
+
+/**
+ * A rover wheel's track, one tile 64×64 (= TRACK_TILE metres long, repeats along the path without a seam): chevron
+ * grousers pressed into the soil, soft side edges. Colour+alpha map and a normal map, like bootPrint.
+ */
+export function wheelTrack(renderer) {
+  const N = 64;
+  const depth = new Float32Array(N * N);
+  const mask = new Float32Array(N * N);
+  for (let y = 0; y < N; y++)
+    for (let x = 0; x < N; x++) {
+      const u = (x + 0.5) / N - 0.5, v = (y + 0.5) / N;
+      const m = Math.max(0, Math.min(1, (0.46 - Math.abs(u)) * 14));     // the tyre's width, soft edges
+      mask[y * N + x] = m;
+      const f = (v * 4 + Math.abs(u) * 1.1) % 1;                           // four chevrons per tile
+      const grouser = f < 0.32 ? 1 : 0;
+      depth[y * N + x] = m * (0.55 + 0.45 * grouser);
+    }
+  const col = new Uint8Array(N * N * 4), nor = new Uint8Array(N * N * 4);
+  for (let y = 0; y < N; y++)
+    for (let x = 0; x < N; x++) {
+      const i = y * N + x;
+      const dx = depth[y * N + Math.min(N - 1, x + 1)] - depth[y * N + Math.max(0, x - 1)];
+      const dy = depth[((y + 1) % N) * N + x] - depth[((y + N - 1) % N) * N + x];
+      const rim = Math.max(0, mask[i] * (1 - mask[i]) * 4);
+      const tone = 86 - depth[i] * 30 + rim * 40;
+      col.set([tone, tone * 0.98, tone * 0.95, Math.min(255, mask[i] * 225 + rim * 20)], i * 4);
+      const nx = dx * 3, ny = -dy * 3, l = Math.hypot(nx, ny, 1);
+      nor.set([(nx / l * 0.5 + 0.5) * 255, (ny / l * 0.5 + 0.5) * 255, (1 / l * 0.5 + 0.5) * 255, 255], i * 4);
+    }
+  const make = (data, srgb) => {
+    const t = new THREE.DataTexture(data, N, N, THREE.RGBAFormat);
     t.colorSpace = srgb ? THREE.SRGBColorSpace : THREE.NoColorSpace;
     t.minFilter = THREE.LinearMipmapLinearFilter;
     t.magFilter = THREE.LinearFilter;

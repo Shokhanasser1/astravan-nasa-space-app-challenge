@@ -1,13 +1,11 @@
-astronaut.glb — playable astronaut (skinned, 23 bones, clips Idle/Walk/Run/Jump/Carry/Pour/JumpStart/JumpAir/JumpLand)
-Mesh and suit texture: NASA 3D Resources, model "Astronaut" (id: astronaut) — https://github.com/nasa/NASA-3D-Resources , https://science.nasa.gov/3d-resources/
-Licence: NASA media usage guidelines (free to use with credit; no NASA insignia, no endorsement implied).
-Team-made (2026-11-14, Blender 5.3 scripts): the US flags, NASA insignia and mission patch painted into the texture were
-painted over; skeleton (Mixamo-style names + BagSocket) and the nine animation clips were made by the team
-(blender/game3d/characters/build_astronaut.py; clips re-made 2026-11-15 to Moon physics in blender/game3d/characters/anim/). Optimized with `npm run glb -- … --flatten false`.
-Credit line: "Astronaut model: NASA 3D Resources, rigged and animated by the team. Not endorsed by NASA."
-Model pages: https://science.nasa.gov/3d-resources/astronaut/ , https://github.com/nasa/NASA-3D-Resources/tree/master/3D%20Models/Astronaut
-Modified by Samandar (team) in Blender, 2026-11-14 (logos painted over, rig, clips); clips re-made 2026-11-15.
-Blender Python scripts written with Claude Code (Claude Opus 5.5); the model is NASA-derived. Exception: on 2026-11-15
-the backpack was replaced by a compact one built by an AI-written script (scripts/models/astronaut_plss.mjs) — that
-part is AI-made (disclosed in CREDITS.md and docs/AI-USE.md).
-Not endorsed by NASA.
+astronaut.glb — the playable kid astronaut (skinned, 23 bones, 15 clips: Idle/Walk/Run/Carry/Pour/Jump/JumpStart/JumpAir/
+JumpLand/Insert/Wrist/LookAround/Climb/Seated/SeatedSteer) and a small Battery prop in the right glove.
+Body (15 Nov 2026): an AI-generated, textured 3D model — Meshy multi-image-to-3D, run on Higgsfield — made from the
+team's concept picture (front, side and back views of a kid astronaut). The team's rig was fitted to its proportions
+and the body skinned in Blender (scripts/models/astronaut_ai.mjs, blender/kid_astronaut/bind_ai.py). AI-made, disclosed
+in docs/AI-USE.md. No NASA mesh, texture, insignia or flag.
+Skeleton and clips: made by the team (blender/game3d/characters/, anim/).
+
+15 Nov 2026 ~12:30 (Samandar): the visor is solid gold and faceless (no child's face is shown) and the helmet's open
+back is closed in the suit's white: the base-colour texture repainted on the helmet's faces only (mesh, rig and the
+15 clips untouched). Script: oy-karvonsaroyi-3d/hb7/hdu_base/tools/astro_visor.py.

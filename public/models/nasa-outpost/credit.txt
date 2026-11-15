@@ -1,0 +1,17 @@
+HOME BY SEVEN - the HDU outpost (?outpost), 2026-11-15
+
+outpost.glb: three NASA Habitat Demonstration Unit modules joined by two pressurised tunnels, exterior only.
+- Modules: "Habitat Demonstration Unit" part 1 (shell, side module, airlock) and part 2 (skid, fins, ramps, work
+  porch), NASA 3D Resources: https://science.nasa.gov/3d-resources/habitat-demonstration-unit/
+  GitHub: https://github.com/nasa/NASA-3D-Resources/tree/master/3D%20Models/Habitat%20Demonstration%20Unit
+  Scaled from inches to metres; the NASA logo, the US flags and the X-Hab logo painted out of the texture (greyscale);
+  part 2's fins cut at the shell wall; doors and tunnel lanes cut. NASA media guidelines; not endorsed by NASA.
+- Tunnels: team-made in Blender (AI-written Blender Python, Claude Code).
+Made by Samandar (team) with Claude Code in Blender (scripts: the team's oy-karvonsaroyi-3d/hb7/hdu_base,
+build_base.py, export_outpost.py, SOURCES.md); web-converted with gltf-transform as in `npm run glb` (meshopt, WebP textures <= 1024) plus
+--join false --flatten false: one node per module part and tunnel, so each sits on its own ground.
+The furnished interiors (NASA HDU papers on NTRS; Moonwards-Assets toilet, MIT) stay in the Blender file.
+
+hdu_habitat.glb (15 Nov 2026, `?hdu`): the main habitat as one HDU module at 1.5x its real size, from the same NASA
+"Habitat Demonstration Unit" part 1 (cylinder and loft dome; the side module and airlock bulb left off, a door cut at
+the front, logos and flags painted out). Script: oy-karvonsaroyi-3d/hb7/hdu_base/build_game_habitat.py.

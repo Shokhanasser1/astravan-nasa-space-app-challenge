@@ -7,6 +7,18 @@
  * developer guide's plan, same arrangement around the habitat, with ≥ 2 m of walkway between hitboxes
  * (src/walk/world.ts, its tests).
  */
+import { features } from '../config/features';
+
+const query = typeof location !== 'undefined' ? new URLSearchParams(location.search) : new URLSearchParams();
+/**
+ * The main habitat as NASA's Habitat Demonstration Unit at 1.5x its real size (`features.hduHabitat` / `?hdu`): the
+ * same 3.15 m radius as the ASTRA habitat it replaces, its interior built at real furniture size in game metres, so
+ * its scale is 1 (src/scene/HduHabitat.tsx, oy-karvonsaroyi-3d/hb7/hdu_base/build_game_habitat.py).
+ */
+export const HDU_HABITAT = features.hduHabitat || query.has('hdu');
+/** The HDU habitat's interior in game metres (build_game_habitat.py hdu_habitat_numbers.json). */
+export const HDU = { shell: 3.15, lining: 2.925, floor: 0.675, deck: 4.275, loftTop: 7.125, top: 8.62 } as const;
+
 export type XZ = readonly [number, number];
 
 export const LAYOUT = {
@@ -41,7 +53,7 @@ export const ROBOT_ARM = { x: 12.8, z: 0.5, yaw: 0, r: 0.7, near: 8 } as const;
  * 1.6 m high; lab 3.4 m tall; lander 4.3 m tall. The plan grew with them (LAYOUT, RADIUS, PAD). Here, not in
  * src/scene/AstraBase.tsx, because the walk uses them too (the building interiors, src/walk/rooms.ts).
  */
-export const ASTRA_SCALE = { habitat: 0.6, greenhouse: 0.9, lab: 0.85, lander: 0.7, scout: 0.9, battery: 1.0 } as const;
+export const ASTRA_SCALE = { habitat: HDU_HABITAT ? 1 : 0.6, greenhouse: 0.9, lab: 0.85, lander: 0.7, scout: 0.9, battery: 1.0 } as const;
 
 /**
  * Footprint radius of each tappable building (cable ends, target rings, hitboxes), from the ASTRA models at

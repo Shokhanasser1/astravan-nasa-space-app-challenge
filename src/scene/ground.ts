@@ -5,7 +5,7 @@
  * card. Flat for 22 m around the base. Pure function: the rig uses it to put the eye 1.7 m above the ground.
  */
 import site from '../../public/data/terrain/site.json';
-import { Heights } from '../look/terrain.js';
+import { Heights, surfaceHeight } from '../look/terrain.js';
 
 // 22 m: the whole base is flat (spread on 15 Nov when the buildings grew to real size), the solar arrays (~21 m out),
 // the parked rover and the lander's legs included.
@@ -43,4 +43,9 @@ export const GROUND = new Heights(site, 2026, {
 
 export function groundHeight(x: number, z: number): number {
   return GROUND.height(x, z);
+}
+
+/** The ground as drawn (flat triangles of the near disc): where prints and wheel tracks lie (src/look/terrain.js). */
+export function groundSurface(x: number, z: number): number {
+  return surfaceHeight(GROUND, x, z);
 }

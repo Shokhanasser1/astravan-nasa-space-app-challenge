@@ -3,7 +3,7 @@ import { useFrame, useThree, type ThreeEvent } from '@react-three/fiber';
 import * as THREE from 'three';
 import type { View } from '../state/game';
 import { camState, gesture, launchState } from './anim';
-import { DOOR_AZ, DOOR_R, LAYOUT, RADIUS } from './layout';
+import { DOOR_AZ, DOOR_R, HDU, HDU_HABITAT, LAYOUT, RADIUS } from './layout';
 import { EYE, FOCUS, POINTS, phasePoint, type PointId, type Vec3 } from './points';
 import { GLOW } from './parts/materials';
 import { TAP_PX, tapOnly } from './parts/tap';
@@ -909,7 +909,9 @@ export function Rig({ view }: { view: View }) {
         const py = hy - fy * d;
         const pz = hz - fz * d;
         // (the rover's camera rides higher, so taller things count; and it never pulls in under the rover's own roof)
-        if (!scripted && py < (inCar ? 5 : 3.2) && blocked(solids, px, pz)) {
+        // (the HDU habitat, `?hdu`, is 8.6 m tall: the camera must not swing into its loft dome either)
+        const tall = HDU_HABITAT && py < HDU.top + 0.3 && Math.hypot(px - LAYOUT.habitat[0], pz - LAYOUT.habitat[1]) < HDU.shell + 0.3;
+        if (!scripted && ((py < (inCar ? 5 : 3.2) && blocked(solids, px, pz)) || tall)) {
           dist = Math.max(0.8 + 2.2 * kc, d - 0.3);
           break;
         }
