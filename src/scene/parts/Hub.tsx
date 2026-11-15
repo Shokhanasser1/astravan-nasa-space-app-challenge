@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { Instance, Instances } from '@react-three/drei';
 import { LAYOUT, RADIUS, type XZ } from '../layout';
 import { GLOW, MAT } from './materials';
+import type { TapHandler } from './tap';
 import * as THREE from 'three';
 import { astraLook } from '../AstraBase';
 import { bake } from '../astra/bake';
@@ -19,20 +20,14 @@ const cabinetBody = (() => {
 })();
 
 /**
- * Power hub: one lamp per battery of the day (lit = still to place, dark = placed). At least six lamps;
- * the count and the lit number come from view.batteries (the engine), never from the scene.
+ * Power hub: the cabinet the batteries are taken from (E or a tap while facing it). Its battery cells — lit = free at
+ * the hub, dark = on a machine or in the hands — are drawn by src/scene/Batteries.tsx with every machine's socket, so
+ * all cells share one draw call. `tap` = the same as E (only when the hub is what the astronaut faces).
  */
-export function Hub({ batteries }: { batteries?: { left: number; total: number } }) {
+export function Hub({ tap }: { tap?: TapHandler }) {
   const [x, z] = LAYOUT.hub;
-  const total = Math.max(6, Math.min(10, batteries?.total ?? 6));
-  const left = Math.max(0, Math.min(total, batteries?.left ?? 0));
-  const spots = Array.from({ length: total }, (_, i) => {
-    const row = i < 5 ? 0 : 1;
-    const col = row === 0 ? i : i - 5;
-    return [-0.36 + col * 0.18, 0.86, -0.15 + row * 0.3] as const;
-  });
   return (
-    <group position={[x, 0, z]} rotation-y={-Math.PI / 4}>
+    <group position={[x, 0, z]} rotation-y={-Math.PI / 4} onClick={tap}>
       {astraLook ? (
         <primitive object={cabinetBody} />
       ) : (
@@ -40,18 +35,6 @@ export function Hub({ batteries }: { batteries?: { left: number; total: number }
           <boxGeometry args={[1.0, 0.8, 0.8]} />
         </mesh>
       )}
-      <Instances limit={10} material={GLOW.cableOn} frustumCulled={false}>
-        <cylinderGeometry args={[0.06, 0.06, 0.12, 10]} />
-        {spots.slice(0, left).map((p, i) => (
-          <Instance key={i} position={p} />
-        ))}
-      </Instances>
-      <Instances limit={10} material={GLOW.cableOff} frustumCulled={false}>
-        <cylinderGeometry args={[0.06, 0.06, 0.12, 10]} />
-        {spots.slice(left).map((p, i) => (
-          <Instance key={i} position={p} />
-        ))}
-      </Instances>
     </group>
   );
 }

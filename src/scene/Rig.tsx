@@ -1,11 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
-import { Instance, Instances } from '@react-three/drei';
 import * as THREE from 'three';
 import type { View } from '../state/game';
 import { camState, gesture, launchState } from './anim';
 import { DOOR_AZ, LAYOUT, RADIUS } from './layout';
-import { EYE, FOCUS, MARKERS, POINTS, phasePoint, type PointId, type Vec3 } from './points';
+import { EYE, FOCUS, POINTS, phasePoint, type PointId, type Vec3 } from './points';
 import { GLOW } from './parts/materials';
 import { TAP_PX, tapOnly } from './parts/tap';
 import { groundHeight } from './ground';
@@ -24,7 +23,8 @@ import { Astronaut } from './Astronaut';
 
 /**
  * First-person rig (final version, Dizayn 2.0). Eye 1.7 m; six standing points + inside; one-finger drag looks
- * around (yaw free, pitch ±35°); tap a glowing marker to float there in ~1 s; never teleports, never rolls, no shake.
+ * around (drag right looks right, drag up looks up; yaw free, pitch ±35°); the base map (M) or a new phase floats
+ * you to a point in ~1 s; never teleports, never rolls, no shake. (15 Nov: the glowing ground markers are gone.)
  * The point and the angles are scene-local refs/state, never part of the View.
  *
  * Free walk (features.freeWalk, or ?walk in the address; src/walk/): once the camera has arrived at a point, W A S D,
@@ -48,8 +48,9 @@ const DRAG_RAD_PER_PX = 0.0045;
 
 const lander: Vec3 = [LAYOUT.lander[0], 3, LAYOUT.lander[1]];
 
-/** Buildings E (or the ✋ button) can put a battery on: the tappable ones, at their footprint (src/controls/aim.ts). */
+/** What E (or the ✋ button, or a tap) acts on: the power hub and the machines, at their footprint (src/controls/aim.ts). */
 const AIM: AimTarget[] = [
+  { k: 'hub', x: LAYOUT.hub[0], z: LAYOUT.hub[1], r: RADIUS.hub },
   { k: 'ls', x: LAYOUT.habitat[0], z: LAYOUT.habitat[1], r: RADIUS.habitat },
   { k: 'gh', x: LAYOUT.garden[0], z: LAYOUT.garden[1], r: RADIUS.garden },
   { k: 'ws', x: LAYOUT.workshop[0], z: LAYOUT.workshop[1], r: RADIUS.workshop },
@@ -75,10 +76,8 @@ export function Rig({ view }: { view: View }) {
   const invalidate = useThree((s) => s.invalidate);
   const aspect = useThree((s) => s.size.width / Math.max(1, s.size.height));
   const [point, setPoint] = useState<PointId>(() => phasePoint(view.phase) ?? 'hub');
-  // Free walk: `hop` asks for a float even to the point you last stood at (you may have walked away from it), and
-  // `roaming` says you have, so that point's marker shows again.
+  // Free walk: `hop` asks for a float even to the point you last stood at (you may have walked away from it).
   const [hop, setHop] = useState(0);
-  const [roaming, setRoaming] = useState(false);
   const walker = useMemo(() => (freeWalk && !character ? createWalker() : null), []);
   const body = useMemo(() => createBody(POINTS.hub.pos[0], POINTS.hub.pos[2], ground), []);
   const c = useRef({ acc: 0, quiet: 0, shadowT: 0, takeoff: NaN, peak: 0, ax: { ahead: 0, side: 0, turn: 0 } as Axes, wish: { x: 0, z: 0 } as XZ }).current;
@@ -108,8 +107,9 @@ export function Rig({ view }: { view: View }) {
       setPoint(p);
       if (walker || character) setHop((h) => h + 1);
     }
-    // No walking while the lander lifts off or the truth sequence plays.
-    walkInput.phaseOk = view.phase !== 'launch' && view.phase !== 'truth';
+    // Walking has a job only while planning (carry batteries hub → machines; 15 Nov): the other phases move the
+    // astronaut by themselves (morning airlock, night inside, launch, truth).
+    walkInput.phaseOk = view.phase === 'plan';
   }, [view.phase, walker]);
 
   // The base map (M or 🗺) floats to a standing point, exactly like tapping its glowing marker.
@@ -151,7 +151,6 @@ export function Rig({ view }: { view: View }) {
       s.yawT = s.yaw + wrap(s.yawT - s.yaw);
     }
     walker?.stop();
-    setRoaming(false);
     invalidate();
   }, [point, hop, camera, invalidate, s, walker, body]);
 
@@ -190,8 +189,9 @@ export function Rig({ view }: { view: View }) {
       gesture.moved = Math.max(gesture.moved, Math.hypot(e.clientX - x0, e.clientY - y0));
       if (!dragging && gesture.moved > TAP_PX) dragging = true;
       if (dragging) {
-        s.yawT += (e.clientX - lx) * DRAG_RAD_PER_PX;
-        s.pitchT = Math.max(-MAX_PITCH, Math.min(MAX_PITCH, s.pitchT + (e.clientY - ly) * DRAG_RAD_PER_PX));
+        // (yaw grows to the left: a drag to the right looks right; a drag up looks up)
+        s.yawT -= (e.clientX - lx) * DRAG_RAD_PER_PX;
+        s.pitchT = Math.max(-MAX_PITCH, Math.min(MAX_PITCH, s.pitchT - (e.clientY - ly) * DRAG_RAD_PER_PX));
         invalidate();
       }
       lx = e.clientX;
@@ -241,10 +241,8 @@ export function Rig({ view }: { view: View }) {
         const inside = point === 'inside';
         walking = walker.step(s.to, s.yaw, inside ? INSIDE : OUTSIDE, dt);
         if (!inside) s.to.y = groundHeight(s.to.x, s.to.z) + EYE;
-        s.yawT += walker.turn() * MAX_TURN * dt;
+        s.yawT -= walker.turn() * MAX_TURN * dt; // → turns right (yaw grows to the left)
         walkDebug.inside = inside;
-        // (Once, not every frame: the marker of the point you left comes back.)
-        if (!roaming && !inside && Math.hypot(s.to.x - POINTS[point].pos[0], s.to.z - POINTS[point].pos[2]) > 1.2) setRoaming(true);
       }
       camera.position.copy(s.to);
     }
@@ -293,7 +291,7 @@ export function Rig({ view }: { view: View }) {
     } else if (walkInput.phaseOk) {
       axes(c.ax);
       heading(s.yaw, c.ax.ahead, c.ax.side, c.wish);
-      s.yawT += c.ax.turn * MAX_TURN * dt;
+      s.yawT -= c.ax.turn * MAX_TURN * dt; // → turns right (yaw grows to the left)
       c.acc = Math.min(c.acc + dt, 0.1);
       while (c.acc >= STEP) {
         c.acc -= STEP;
@@ -312,7 +310,6 @@ export function Rig({ view }: { view: View }) {
         }
       }
       s.to.set(body.x, body.y + EYE, body.z);
-      if (!roaming && Math.hypot(body.x - POINTS[point].pos[0], body.z - POINTS[point].pos[2]) > 1.2) setRoaming(true);
     }
 
     const dy = s.yawT - s.yaw;
@@ -356,57 +353,33 @@ export function Rig({ view }: { view: View }) {
     if (active || c.quiet > 0 || Math.abs(dy) > 1e-3 || Math.abs(dp) > 1e-3 || launching) invalidate();
   }
 
-  const go = useMemo(
+  // The glowing ground markers are gone (15 Nov, "make it a game"): you walk, the base map (M) floats you to a
+  // standing point, and each phase still moves you on by itself. Only the habitat door stays tappable.
+  const goInside = useMemo(
     () =>
-      Object.fromEntries(
-        [...MARKERS, 'inside'].map((p) => [
-          p,
-          tapOnly(() => {
-            setPoint(p as PointId);
-            setHop((h) => h + 1);
-          }),
-        ]),
-      ),
+      tapOnly(() => {
+        setPoint('inside');
+        setHop((h) => h + 1);
+      }),
     [],
   );
-  const shown = MARKERS.filter((p) => roaming || p !== point);
-  const floor = (p: PointId) => POINTS[p].pos[1] - EYE;
   const door: Vec3 = [LAYOUT.habitat[0] + Math.sin(DOOR_AZ) * 1.73, 1.1, LAYOUT.habitat[1] + Math.cos(DOOR_AZ) * 1.73];
   const hideMarkers = launching || view.phase === 'truth';
 
-  const astronaut = character ? <Astronaut body={body} visible={point !== 'inside'} /> : null;
+  const astronaut = character ? <Astronaut body={body} visible={point !== 'inside'} hands={view.hands ?? 0} /> : null;
 
   return hideMarkers ? (
     astronaut
   ) : (
     <group>
       {astronaut}
-      <Instances limit={MARKERS.length} material={GLOW.marker} frustumCulled={false}>
-        <ringGeometry args={[0.42, 0.55, 32]} />
-        {shown.map((p) => (
-          <Instance key={p} position={[POINTS[p].pos[0], floor(p) + 0.04, POINTS[p].pos[2]]} rotation={[-Math.PI / 2, 0, 0]} />
-        ))}
-      </Instances>
-      <Instances limit={MARKERS.length} material={GLOW.marker} frustumCulled={false}>
-        <coneGeometry args={[0.16, 0.3, 4]} />
-        {shown.map((p) => (
-          <Instance key={p} position={[POINTS[p].pos[0], floor(p) + 1.0, POINTS[p].pos[2]]} rotation={[Math.PI, 0, 0]} />
-        ))}
-      </Instances>
-      {shown.map((p) => (
-        // Invisible tap target (material.visible = false: raycast but no draw call), bigger than the glow.
-        <mesh key={p} position={[POINTS[p].pos[0], floor(p) + 0.9, POINTS[p].pos[2]]} onClick={go[p]}>
-          <cylinderGeometry args={[0.8, 0.8, 1.8, 8]} />
-          <meshBasicMaterial visible={false} />
-        </mesh>
-      ))}
       {point !== 'inside' && (
         <group position={door} rotation-y={DOOR_AZ}>
           <mesh scale={[0.68, 1.32, 1]} material={GLOW.marker}>
             <ringGeometry args={[0.64, 0.7, 4, 1, Math.PI / 4]} />
           </mesh>
           {/* tap target: the whole door, invisible */}
-          <mesh position-z={0.05} onClick={go.inside}>
+          <mesh position-z={0.05} onClick={goInside}>
             <planeGeometry args={[1.0, 1.9]} />
             <meshBasicMaterial visible={false} />
           </mesh>
@@ -415,4 +388,3 @@ export function Rig({ view }: { view: View }) {
     </group>
   );
 }
-

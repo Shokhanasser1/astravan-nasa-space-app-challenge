@@ -1,5 +1,3 @@
-import { useMemo } from 'react';
-import type { ThreeEvent } from '@react-three/fiber';
 import { Instance, Instances } from '@react-three/drei';
 import type { Machine, View } from '../state/game';
 import { LAYOUT, RADIUS } from './layout';
@@ -19,7 +17,9 @@ import { Dish } from './parts/Dish';
 import { tapOnly } from './parts/tap';
 import { glowColor } from './parts/materials';
 import { features } from '../config/features';
-import { useAim } from '../controls/bus';
+import { getAim, useAim, type AimId } from '../controls/bus';
+import { Batteries } from './Batteries';
+import { Beacon } from './Beacon';
 import { AstraMerge, AstraPads, astraLook, faceCentre } from './AstraBase';
 
 /** ASTRA's hexagonal pads under the outer buildings (width in metres, about the building's footprint). */
@@ -33,30 +33,27 @@ const PADS = (
 ).map(([[x, z], size]) => ({ x, z, size, turn: faceCentre(x, z) }));
 
 /**
+ * A tap on the thing the astronaut faces = E: the very same key path (src/ui/play/Controls.tsx useGameKeys →
+ * src/controls/act.ts resolve → TAKE at the hub / PUT at a machine), so a tap can never do more than the key.
+ * A tap on anything else does nothing (15 Nov: no acting from across the base; walk there first).
+ */
+function pressUse() {
+  window.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyE', key: 'e' }));
+  window.dispatchEvent(new KeyboardEvent('keyup', { code: 'KeyE', key: 'e' }));
+}
+const tapAimed = (k: AimId) =>
+  tapOnly(() => {
+    if (getAim() === k) pressUse();
+  });
+const TAP = { hub: tapAimed('hub'), ls: tapAimed('ls'), gh: tapAimed('gh'), ws: tapAimed('ws'), sc: tapAimed('sc'), launch: tapAimed('launch') };
+
+/**
  * Lane C (Shoxjahon aka). The 3D base: renders a View, reports taps. NEVER computes game numbers.
  * Grey code shapes until G3 decides on models (all six or none). Positions: docs/layout.md.
  * Only big bodies cast shadows; repeats use <Instances>.
+ * (`onTap` / `onUndo` are no longer used: a building is worked only from next to it, through E or a tap = E.)
  */
-export function BaseScene({ view, onTap, onUndo }: { view: View; onTap: (k: Machine) => void; onUndo?: (k: Machine) => void }) {
-  const tap = useMemo(
-    () => ({
-      ls: tapOnly(() => onTap('ls')),
-      gh: tapOnly(() => onTap('gh')),
-      ws: tapOnly(() => onTap('ws')),
-      sc: tapOnly(() => onTap('sc')),
-      launch: tapOnly(() => onTap('launch')),
-    }),
-    [onTap],
-  );
-  // Right mouse button on a building takes a battery back (controls guide; same as Q or the ↩ button).
-  const undo = useMemo(() => {
-    const one = (k: Machine) => (e: ThreeEvent<MouseEvent>) => {
-      e.nativeEvent.preventDefault();
-      e.stopPropagation();
-      onUndo?.(k);
-    };
-    return { ls: one('ls'), gh: one('gh'), ws: one('ws'), sc: one('sc'), launch: one('launch') };
-  }, [onUndo]);
+export function BaseScene({ view }: { view: View; onTap?: (k: Machine) => void; onUndo?: (k: Machine) => void }) {
   const a = view.alloc;
   return (
     <group>
@@ -64,29 +61,21 @@ export function BaseScene({ view, onTap, onUndo }: { view: View; onTap: (k: Mach
       <Decor />
       {astraLook && <AstraPads pads={PADS} />}
       {astraLook && <AstraMerge />}
-      <group onContextMenu={undo.ls}>
-        <Habitat on={a.ls > 0} wall={view.wall} tap={tap.ls} />
-      </group>
-      <group onContextMenu={undo.gh}>
-        <Garden on={a.gh > 0} plant={view.plant} tap={tap.gh} />
-      </group>
-      <group onContextMenu={undo.ws}>
-        <Workshop on={a.ws > 0} tap={tap.ws} />
-      </group>
-      <group onContextMenu={undo.sc}>
-        <Scout on={a.sc > 0} tap={tap.sc} />
-      </group>
-      <group onContextMenu={undo.launch}>
-        <Lander on={a.launch > 0} phase={view.phase} tap={tap.launch} />
-      </group>
+      <Habitat on={a.ls > 0} wall={view.wall} tap={TAP.ls} />
+      <Garden on={a.gh > 0} plant={view.plant} tap={TAP.gh} />
+      <Workshop on={a.ws > 0} tap={TAP.ws} />
+      <Scout on={a.sc > 0} tap={TAP.sc} />
+      <Lander on={a.launch > 0} phase={view.phase} tap={TAP.launch} />
       {rich ? <SolarArrays view={view} /> : <SolarWing />}
       {rich && <BatteryBank view={view} />}
       {rich && <IceDrill />}
-      <Hub batteries={view.batteries} />
+      <Hub tap={TAP.hub} />
+      <Batteries view={view} />
       <Cables alloc={a} />
       <Dish />
       <TargetRings strong={view.phase === 'plan'} />
       {features.controls && view.phase === 'plan' && <AimRing />}
+      <Beacon />
     </group>
   );
 }
@@ -116,10 +105,12 @@ function TargetRings({ strong }: { strong: boolean }) {
 
 const AIMED = glowColor('#ffd98a', 1.6);
 
-/** The building E or the ✋ button would act on gets a second, warm ring (no crosshair: the ring is the offer). */
+const HUB_RING = { k: 'hub', at: LAYOUT.hub, r: RADIUS.hub + 0.7 } as const;
+
+/** The building (or the hub) E or the ✋ button would act on gets a warm ring (no crosshair: the ring is the offer). */
 function AimRing() {
   const k = useAim();
-  const t = TARGETS.find((x) => x.k === k);
+  const t = k === 'hub' ? HUB_RING : TARGETS.find((x) => x.k === k);
   if (!t) return null;
   return (
     <mesh position={[t.at[0], 0.05, t.at[1]]} rotation={[-Math.PI / 2, 0, 0]} scale={t.r + 0.18}>
