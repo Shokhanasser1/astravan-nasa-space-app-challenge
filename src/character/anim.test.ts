@@ -81,6 +81,26 @@ describe('astronaut clips as the game plays them', () => {
   }
 });
 
+describe('a jump leaves boot prints', () => {
+  it('the crouch prints both boots once where it starts; the landing prints both again', () => {
+    const model = gltf.scene;
+    model.position.set(0, 0, 0);
+    model.rotation.set(0, 0, 0);
+    const anim = new AnimController(model, Object.fromEntries(gltf.animations.map((c) => [c.name, c])));
+    const s = { onGround: true, windup: -1, vy: 0, v0: 1.2, speed: 0, carrying: false, pouring: false, running: false, k: 1 };
+    const dt = 1 / 60;
+    for (let t = 0; t < 0.5; t += dt) anim.update(dt, s);
+    anim.footfalls.length = 0;
+    for (let w = 0; w < 0.8; w += dt) anim.update(dt, { ...s, windup: w }); // crouch
+    expect(anim.footfalls.map((f) => f.side).sort()).toEqual(['L', 'R']);
+    anim.footfalls.length = 0;
+    for (let u = 0; u < 1.4; u += dt) anim.update(dt, { ...s, onGround: false, vy: 1.2 - 1.62 * u }); // flight
+    expect(anim.footfalls.length).toBe(0);
+    anim.update(dt, s); // touch-down
+    expect(anim.footfalls.filter((f) => f.landing).map((f) => f.side).sort()).toEqual(['L', 'R']);
+  });
+});
+
 describe('gestures (Insert, Wrist, LookAround) as the game plays them', () => {
   const still = { onGround: true, windup: -1, vy: 0, v0: 1.2, speed: 0, carrying: false, pouring: false, running: false, k: 1 };
   const clipsOf = () => Object.fromEntries(gltf.animations.map((c) => [c.name, c]));

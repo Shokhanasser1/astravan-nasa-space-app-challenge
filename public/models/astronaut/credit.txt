@@ -9,3 +9,13 @@ Skeleton and clips: made by the team (blender/game3d/characters/, anim/).
 15 Nov 2026 ~12:30 (Samandar): the visor is solid gold and faceless (no child's face is shown) and the helmet's open
 back is closed in the suit's white: the base-colour texture repainted on the helmet's faces only (mesh, rig and the
 15 clips untouched). Script: oy-karvonsaroyi-3d/hb7/hdu_base/tools/astro_visor.py.
+
+15 Nov 2026 ~14:30 (Samandar): the gold reaches only the visor's cone at the front; the helmet's rims and sides are the
+shell's white (from behind, the first repaint showed a gold crescent on both sides of the helmet). Same texture-only
+repaint from the 15 Nov concept-picture model (mesh, rig and the 15 clips untouched). Script:
+oy-karvonsaroyi-3d/hb7/hdu_base/tools/astro_visor2.py.
+
+15 Nov 2026 ~14:50 (Samandar): the Climb clip remade for this 1.70 m kid astronaut (it was made for a 1.86 m suit: the
+helmet went through the rungs, the boots never stood on a rung): hips 0.42 m behind the rungs' plane, boots planted on
+the rungs, gloves on the rungs, one cycle per 0.60 m. Made by AI-written code (Claude Code) with IK in node,
+scripts/models/climb_kid.mjs; only the Climb samplers changed (mesh, skin, texture, the other 14 clips untouched).

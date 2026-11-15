@@ -17,6 +17,12 @@ const RAMP_S = 0.25;
 /** The Climb clip's cross-fade (s; src/character/anim.js): the origin moves onto the rungs over this long. */
 export const GRIP_S = 0.2;
 /**
+ * Off the rungs the Climb clip fades out over the next clip's cross-fade (src/character/anim.js: Walk 0.25 s): the
+ * origin slides from the rungs' plane back to the foot spot over this long at the start of the step off, so the
+ * body (hanging BODY_BEHIND behind the clip's origin) stays put instead of lurching back (audit #14, 15 Nov).
+ */
+const RELEASE_S = 0.25;
+/**
  * The Climb clip (blender/game3d/characters/anim/clips/climb.py, full-size m): one cycle climbs two 0.30 m rungs;
  * at phase 0 the origin is level with the middle of the rung under the left boot. The habitat's rung middles are
  * 0.2825 + 0.3 i m above its lower deck.
@@ -185,7 +191,8 @@ export function climbPose(c: LadderClimb, t: number, out: ClimbPose): ClimbPose 
   const tc = t - STEP_ON_S;
   if (tc < Tc) {
     const [dy, vy] = rise(tc, c.y1 - c.y0, Tc);
-    const w = Math.min(1, tc / GRIP_S, (Tc - tc) / GRIP_S);
+    // onto the rungs' plane while the clip fades in; it stays there to the end (the slide back is in the step off)
+    const w = Math.min(1, tc / GRIP_S);
     out.x = c.foot.x + (c.rungs.x - c.foot.x) * w;
     out.z = c.foot.z + (c.rungs.z - c.foot.z) * w;
     out.y = c.y0 + dy;
@@ -199,8 +206,10 @@ export function climbPose(c: LadderClimb, t: number, out: ClimbPose): ClimbPose 
   if (t < STEP_ON_S + Tc + STEP_OFF_S) {
     const u = to / STEP_OFF_S;
     const k = smooth(u), dk = dSmooth(u) / STEP_OFF_S;
-    out.x = c.foot.x + (c.to.x - c.foot.x) * k;
-    out.z = c.foot.z + (c.to.z - c.foot.z) * k;
+    // back from the rungs' plane while the clip fades out (the body itself does not move: no velocity for it)
+    const g = 1 - Math.min(1, to / RELEASE_S);
+    out.x = c.foot.x + (c.to.x - c.foot.x) * k + (c.rungs.x - c.foot.x) * g;
+    out.z = c.foot.z + (c.to.z - c.foot.z) * k + (c.rungs.z - c.foot.z) * g;
     out.y = c.y1;
     out.facing = turn(c.foot.facing, c.to.facing, smooth(u));
     out.vx = (c.to.x - c.foot.x) * dk;
