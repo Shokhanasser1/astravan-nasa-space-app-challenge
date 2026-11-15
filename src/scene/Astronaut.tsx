@@ -76,7 +76,7 @@ export function Astronaut({ body, visible, hands = 0, view }: { body: Body; visi
         const src = mesh.material as THREE.MeshStandardMaterial;
         if (src?.isMeshStandardMaterial) {
           const m = src.clone();
-          m.color.multiplyScalar(0.8);
+          m.color.multiplyScalar(0.7);
           m.roughness = Math.max(m.roughness, 0.65);
           m.envMapIntensity = 0.35;
           mesh.material = m;

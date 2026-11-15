@@ -39,6 +39,7 @@ export function astraModule(build: (v: ModuleView) => void, prep?: (g: THREE.Gro
   build(view);
   finalize(g);
   prep?.(g, view);
+  tameWhites(g);
   const keep: THREE.Object3D[] = [...view.spin, ...(view.windowGlow ?? [])];
   if (view.yaw) keep.push(view.yaw);
   if (view.tilt) keep.push(view.tilt);
@@ -53,6 +54,24 @@ export function astraModule(build: (v: ModuleView) => void, prep?: (g: THREE.Gro
   for (const k of keep) k.userData.moves = true; // AstraMerge leaves these alone
   if (view.plants) view.plants.userData.merged = mergePlants(view.plants);
   return view;
+}
+
+/**
+ * ASTRA's white paints burn out under our light (Stage.tsx exposure 1.32, Light.tsx): up close the habitat was a
+ * flat white wall (15 Nov). Each bright opaque paint gets a little greyer and more matte, once (materials are shared
+ * between buildings), so the panels, seams and windows read again. Glass, glow and lamps are left alone.
+ */
+function tameWhites(g: THREE.Object3D): void {
+  g.traverse((o) => {
+    const m = (o as THREE.Mesh).material as THREE.MeshStandardMaterial | undefined;
+    if (!m || Array.isArray(m) || !m.isMeshStandardMaterial || m.transparent || m.userData.tamed) return;
+    m.userData.tamed = true;
+    const c = m.color;
+    if (0.2126 * c.r + 0.7152 * c.g + 0.0722 * c.b < 0.55) return; // (linear: about sRGB #c4c4c4 and brighter)
+    c.multiplyScalar(0.72);
+    m.roughness = Math.max(m.roughness, 0.7);
+    m.envMapIntensity = Math.min(m.envMapIntensity ?? 1, 0.6);
+  });
 }
 
 /**
