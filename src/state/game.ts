@@ -50,6 +50,9 @@ export type View = {
   // 15 Nov home story (src/state/homeDay.ts): the crew stays in the habitat today — "Stay inside all day" on a storm
   // day, or the backup-tank day (the engine's shelter full); planning and running that day only.
   indoors?: boolean;
+  // 15 Nov home story T2 (features.homeStoryCrash): Day 1 of a first mission opens at the crash site, not at the
+  // airlock; true for that whole morning (src/scene/crash.ts, the rig; the HUD's "Reach the base" step).
+  crash?: boolean;
 };
 
 /**
@@ -337,7 +340,13 @@ export function toView(m: Model, sky?: Record<string, SkyDay[]>): View {
     res: g && m.week ? resources(m, g, m.week) : undefined,
     launched: g?.launched ?? false,
     indoors: indoorsToday(m.phase, m.alloc.shelter),
+    ...(crashMorning(m) ? { crash: true } : {}),
   };
+}
+
+/** Home story T2: the morning of Day 1 of a first mission, with the crash start on (features.homeStoryCrash). */
+export function crashMorning(m: Model): boolean {
+  return features.homeStory && features.homeStoryCrash && m.screen === 'game' && m.firstMission && m.game?.day === 1 && m.phase === 'morning';
 }
 
 /** The gauges (Resources). `after` only while a plan is on the board. */

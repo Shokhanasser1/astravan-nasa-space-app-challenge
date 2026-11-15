@@ -12,6 +12,7 @@
  */
 import { CARD_CHOICES, P, dayInfo, type CardId } from '../engine/rules';
 import { shownDay, type Model } from './game';
+import { reachDone, type CrashStage } from './crash';
 
 export type TaskId =
   | 'reach' | 'air' | 'greenhouse' | 'rover' | 'sleep' | 'cardShadow' | 'cardIce' | 'card' | 'wall' | 'call'
@@ -38,6 +39,8 @@ export interface Task {
  */
 export interface Seen {
   arm?: boolean;
+  /** Day 1's walk from the crash site (home story T2, the rig sets it): walk → door → in. */
+  crash?: CrashStage;
 }
 
 /** The document's table (p. 16), by day. */
@@ -80,7 +83,10 @@ function idsOf(day: number, card: CardId | null, choice: boolean): TaskId[] {
   return out;
 }
 
-/** The five tasks of the day being shown (during run and night: the day just played); none before a game starts. */
+/**
+ * The five tasks of the day being shown (during run and night: the day just played); none before a game starts.
+ * `seen.crash`: how far Day 1's walk from the crash site has come (src/state/crash.ts; home story T2), for "Reach the base".
+ */
 export function dayTasks(model: Model, seen: Seen = {}): Task[] {
   const g = model.game;
   if (!g || !model.week) return [];
@@ -98,7 +104,8 @@ export function dayTasks(model: Model, seen: Seen = {}): Task[] {
 
   const done = (id: TaskId): boolean => {
     switch (id) {
-      case 'reach': // the doc: within 6 m of the habitat door, or Next pressed; the model knows the second
+      case 'reach': // the doc: within 6 m of the habitat door (the rig, src/state/crash.ts), or Next pressed
+        return reachDone(model.phase, seen.crash ?? 'walk');
       case 'call': // Day 4's call from home plays in the morning
         return model.phase !== 'morning';
       case 'air': // enough for the crew: the reserve does not fall

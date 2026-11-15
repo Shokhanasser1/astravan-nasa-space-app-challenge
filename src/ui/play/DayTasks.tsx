@@ -2,6 +2,7 @@ import { Check, Circle, Star } from 'lucide-react';
 import type { Model } from '../../state/game';
 import { dayTasks, settled, type Seen, type TaskId } from '../../state/tasks';
 import { P } from '../../engine/rules';
+import { useCrashStage } from '../../state/crash';
 import type { Tr } from './kit';
 import './day-tasks.css';
 
@@ -22,7 +23,8 @@ const WHY: Partial<Record<TaskId, string>> = {
  * `rounded-[16px]` picks the HUD frame's small notification skin (src/ui/flight-deck.css: no status dots under the star).
  */
 export function DayTasks({ model, tr, seen }: { model: Model; tr: Tr; seen?: Seen }) {
-  const tasks = dayTasks(model, seen);
+  const crash = useCrashStage();
+  const tasks = dayTasks(model, { ...seen, crash });
   if (!tasks.length) return null;
   // (an optional task — Day 7's robot arm — never holds the star or the light; it ticks, and counts, when it is done)
   const current = tasks.findIndex((t) => !settled(t));

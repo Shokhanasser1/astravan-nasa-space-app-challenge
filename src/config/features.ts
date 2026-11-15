@@ -52,6 +52,10 @@ export const features = {
   // on Day 7. New words, 4 gauges + hearts, Today's 5, a fact a night, the finale, judge links. The engine is unchanged.
   // Off → today's game. Turned on only when the whole story is green.
   homeStory: true,
+  // Home story T2 (the document pp. 6–7, 18): Day 1 of a first mission opens at the crash site ~55 m from the base
+  // (src/scene/crash.ts, Wreck.tsx): "IMPACT · SIGNAL LOST", the helmet lamp, "AIR: 7 DAYS", then walk to the base
+  // light, E at the door, Houston inside. Next still skips the walk. Only with `homeStory`; off → today's start.
+  homeStoryCrash: true,
   // Pitch answer 5 (Sunday plan): "no account, no names, no date stored, nothing goes to a server".
   // Keep false unless the whole team changes that answer. True = anonymous results go to our PocketBase.
   sendResults: false,

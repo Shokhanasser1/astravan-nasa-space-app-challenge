@@ -19,7 +19,7 @@ const BUILDINGS = ['habitat', 'garden', 'workshop'];
 /** A part of the complex: a module's part (`habitat`, `habitat back`, …) or a tunnel. */
 const ofComplex = (s: Solid) => BUILDINGS.some((b) => s.name === b || s.name!.startsWith(b + ' ')) || s.name!.startsWith('tunnel');
 /** On the flat pad (r 22, src/scene/ground.ts): everything but the rocks and the things on the ice crater's rim. */
-const FAR = new Set(['rock', 'ice drill', 'rassor']);
+const FAR = new Set(['rock', 'ice drill', 'rassor', 'wreck', 'wreck rover']); // (the wreck: Day 1's crash site, 55 m out)
 const onPad = W.solids.filter((s) => !FAR.has(s.name!));
 const complex = onPad.filter(ofComplex);
 const props = onPad.filter((s) => !ofComplex(s));

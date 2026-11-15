@@ -1,0 +1,160 @@
+/*
+ * The crash intro (src/ui/play/CrashIntro.tsx): black → "IMPACT · SIGNAL LOST" → the helmet lamp flickers on → the
+ * wrist reads the air. 3.2 s, pointer-events none everywhere. The alarm line is amber (the warning token) and steady,
+ * never flashing; the wrist card is the HUD's own cold holo skin; the lamp flickers once, softly (≤ 3 flashes per second).
+ */
+.crash-intro {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  pointer-events: none;
+}
+.crash-intro * {
+  pointer-events: none;
+}
+
+.crash-intro__black {
+  position: absolute;
+  inset: 0;
+  background: var(--bg-0);
+  animation: crash-black 3.2s linear forwards;
+}
+@keyframes crash-black {
+  0%,
+  36% {
+    opacity: 1;
+  }
+  58% {
+    opacity: 0.35;
+  }
+  70%,
+  100% {
+    opacity: 0;
+  }
+}
+
+/* the helmet lamp: a warm cone of light from the middle of the view, one soft flicker before it holds */
+.crash-intro__lamp {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 55% 45% at 50% 58%, color-mix(in srgb, var(--ice) 55%, transparent), transparent 70%);
+  opacity: 0;
+  animation: crash-lamp 3.2s linear forwards;
+}
+@keyframes crash-lamp {
+  0%,
+  34% {
+    opacity: 0;
+  }
+  41% {
+    opacity: 0.8;
+  }
+  47% {
+    opacity: 0.35;
+  }
+  55% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+.crash-intro__impact {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 42%;
+  margin: 0;
+  padding: 0 16px;
+  text-align: center;
+  font-size: clamp(1.1rem, 5.2vw, 1.8rem);
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  color: var(--color-alert);
+  text-shadow: 0 0 12px color-mix(in srgb, var(--color-alert) 50%, transparent);
+  opacity: 0;
+  animation: crash-impact 3.2s linear forwards;
+}
+@keyframes crash-impact {
+  0%,
+  4% {
+    opacity: 0;
+  }
+  10%,
+  33% {
+    opacity: 1;
+  }
+  40%,
+  100% {
+    opacity: 0;
+  }
+}
+
+.crash-intro .crash-intro__wrist {
+  /* (two classes: index.css .holo, loaded after this file, would make it position: relative) */
+  position: absolute;
+  left: 50%;
+  bottom: 30%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  color: var(--text-1);
+  white-space: nowrap;
+  opacity: 0;
+  animation: crash-wrist 3.2s ease-out forwards;
+}
+@keyframes crash-wrist {
+  0%,
+  44% {
+    opacity: 0;
+    transform: translate(-50%, 10px);
+  }
+  54%,
+  88% {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, 0);
+  }
+}
+.crash-intro__icon {
+  color: var(--c-o2);
+}
+.crash-intro__air {
+  font-size: 1.15rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: var(--c-o2);
+  font-variant-numeric: tabular-nums;
+}
+.crash-intro__tag {
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* no flicker: the black simply fades and the lamp glows once */
+  .crash-intro__lamp {
+    animation-name: crash-lamp-calm;
+  }
+}
+@keyframes crash-lamp-calm {
+  0%,
+  34% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 0.8;
+  }
+  100% {
+    opacity: 0;
+  }
+}

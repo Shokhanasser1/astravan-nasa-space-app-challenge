@@ -25,6 +25,8 @@ import { Beacon } from './Beacon';
 import { AstraMerge, AstraPads, astraLook, faceCentre } from './AstraBase';
 import { HduComplex } from './HduComplex';
 import { ShipParts } from './ShipParts';
+import { Wreck } from './Wreck';
+import { CRASH_ON } from './crash';
 
 /**
  * ASTRA's hexagonal pads under the outer buildings (width in metres, about the building's footprint). The HDU complex
@@ -81,6 +83,8 @@ export function BaseScene({ view }: { view: View; onTap?: (k: Machine) => void; 
       {OUTPOST_ON && <Outpost />}
       {look && <AstraPads pads={PADS} />}
       {look && <AstraMerge />}
+      {/* Day 1's crash site (home story T2): in the same commit as AstraMerge, which folds its paints into the base's */}
+      {look && CRASH_ON && <Wreck />}
       {/* the HDU complex (`?hdu`) is the habitat, the garden and the workshop in one */}
       {HDU_HABITAT && (
         <HduComplex on={{ habitat: a.ls > 0, greenhouse: a.gh > 0, lab: a.ws > 0 }} wall={view.wall} plant={view.plant} taps={HDU_TAP} />

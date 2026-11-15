@@ -6,8 +6,9 @@
  */
 import { ASTRA_SCALE, HDU, HDU_HABITAT, basePlan, moduleToGame, type HduModule } from './layout';
 import { HILL, ICE_CRATER, groundHeight } from './ground';
+import { crashStart, doorSpot } from './crash';
 
-export type PointId = 'airlock' | 'hub' | 'garden' | 'workshop' | 'hill' | 'ladder' | 'inside' | 'orbit';
+export type PointId = 'airlock' | 'hub' | 'garden' | 'workshop' | 'hill' | 'ladder' | 'inside' | 'orbit' | 'crash';
 export type Vec3 = [number, number, number];
 
 export const EYE = 1.7;
@@ -58,6 +59,10 @@ export function makePoints(hdu: boolean): { POINTS: Record<PointId, { pos: Vec3;
   const gardenSpot = hdu ? mod('greenhouse', 0, 5.6) : towardBase(LAYOUT.garden, RADIUS.garden + 1.8);
   const workshopSpot = hdu ? mod('lab', 0, 5.6) : towardBase(LAYOUT.workshop, RADIUS.workshop + 1.6);
   const ladderSpot = towardBase(LAYOUT.lander, 2.7); // the ladder leg faces the base
+  // home story T2: Day 1 opens at the crash site (src/scene/crash.ts), looking at the base light over the door
+  const plan = basePlan(hdu);
+  const crash = crashStart(plan);
+  const crashDoor = doorSpot(plan);
 
   const POINTS: Record<PointId, { pos: Vec3; look: Vec3 }> = {
     airlock: {
@@ -84,6 +89,8 @@ export function makePoints(hdu: boolean): { POINTS: Record<PointId, { pos: Vec3;
         : // just in from the inner airlock hatch, eye 1.6 m above the deck (0.5), looking at the wardroom table and galley
           { pos: hab(0.3, 2.1, 2.45), look: hab(-3.4, 1.1, 1.6) },
     orbit: { pos: [40, 130, 170], look: [0, 0, 0] },
+    // (not a marker and not on the map: only the crash morning starts here; the look is a little up, over the far door)
+    crash: { pos: at(crash.x, crash.z), look: [crashDoor[0], 7, crashDoor[1]] },
   };
 
   /** Where the camera turns for view.focus (the event's place). */

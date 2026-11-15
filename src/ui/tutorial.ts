@@ -1,6 +1,7 @@
 import type { AimId } from '../controls/bus';
 import type { Phase, View } from '../state/game';
 import type { ObjectiveTarget } from '../state/objective';
+import type { CrashStage } from '../state/crash';
 
 /**
  * The first-mission tutorial (Day 1 only) and the goal line of every later day, as pure functions: the HUD feeds
@@ -9,8 +10,10 @@ import type { ObjectiveTarget } from '../state/objective';
  *
  * Tutorial steps (15 Nov, "make it a game"): press Next → walk to the power hub → take a battery → carry it to
  * Life Support → put it in → one more to the Garden → your call: spend the rest or save it → confirm the day.
+ * Home story T2 (View.crash: the day opens at the crash site): first walk to the base light (`reach`), then go in at
+ * the door (`enter`), then Next as before, with Houston's "We hear you!". Next skips the walk at any step.
  */
-export type TutStep = 'next' | 'walkHub' | 'take' | 'carryLs' | 'putLs' | 'moreGh' | 'rest' | 'confirm';
+export type TutStep = 'reach' | 'enter' | 'next' | 'walkHub' | 'take' | 'carryLs' | 'putLs' | 'moreGh' | 'rest' | 'confirm';
 
 export interface TutInput {
   phase: Phase;
@@ -23,11 +26,18 @@ export interface TutInput {
   aim: AimId | null;
   /** Free batteries at the hub (View.batteries.left − hands). */
   free: number;
+  /** The morning starts at the crash site (View.crash), and how far the walk to the base has come. */
+  crash?: boolean;
+  crashStage?: CrashStage;
 }
 
 export function tutorialStep(s: TutInput): TutStep | null {
   if (!s.firstMission || s.day !== 1) return null;
-  if (s.phase === 'morning') return 'next';
+  if (s.phase === 'morning') {
+    if (s.crash && (s.crashStage ?? 'walk') === 'walk') return 'reach';
+    if (s.crash && s.crashStage === 'door') return 'enter';
+    return 'next';
+  }
   if (s.phase !== 'plan') return null;
   const { ls, gh, ws, sc } = s.alloc;
   if (ls < 1) {
@@ -43,6 +53,9 @@ export function tutorialStep(s: TutInput): TutStep | null {
 /** Where the beacon of a tutorial step stands. */
 export function tutorialTarget(step: TutStep, hands: number): ObjectiveTarget {
   switch (step) {
+    case 'reach':
+    case 'enter':
+      return 'door';
     case 'walkHub':
     case 'take':
       return 'hub';
@@ -59,7 +72,8 @@ export function tutorialTarget(step: TutStep, hands: number): ObjectiveTarget {
 /** Task line key of a step (ui.tut.<step>.task) and the CAPCOM line said with it (ui.tut.<step>.say). */
 export const tutorialTask = (step: TutStep, hands: number) =>
   step === 'moreGh' && hands > 0 ? 'ui.tut.carryGh.task' : `ui.tut.${step}.task`;
-export const tutorialSay = (step: TutStep) => `ui.tut.${step}.say`;
+// (`enter` has no line of its own: at the door the task says it; Houston speaks once the astronaut is in)
+export const tutorialSay = (step: TutStep): string | null => (step === 'enter' ? null : `ui.tut.${step}.say`);
 
 // ---- the day's goal after the tutorial (scenario, Act 2: every day has its own new thing) ----
 

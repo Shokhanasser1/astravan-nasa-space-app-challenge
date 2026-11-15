@@ -5,6 +5,7 @@ import { atHub, type Board, type Model, type View } from '../../state/game';
 import { setObjective, type ObjectiveTarget } from '../../state/objective';
 import { dayGoal, radioLine, tutorialStep, tutorialSay, tutorialTarget, tutorialTask, type DayFacts, type TutStep } from '../tutorial';
 import type { Tr } from './kit';
+import { useCrashStage } from '../../state/crash';
 
 /**
  * The player's current task: the tutorial step on the first mission's Day 1, then the day's goal. It writes the
@@ -29,9 +30,11 @@ export function useTask(model: Model, view: View, board: Board | null, aim: AimI
   const done = skipped === model.seed;
   const day = model.game?.day ?? 1;
   const hands = model.hands ?? 0;
+  // home story T2: the morning opens at the crash site; the rig reports how far the walk to the base has come
+  const crashStage = useCrashStage();
   const step =
     !done && model.screen === 'game'
-      ? tutorialStep({ phase: model.phase, day, firstMission: model.firstMission, hands, alloc: view.alloc, aim, free: atHub(model) })
+      ? tutorialStep({ phase: model.phase, day, firstMission: model.firstMission, hands, alloc: view.alloc, aim, free: atHub(model), crash: view.crash, crashStage })
       : null;
 
   // (The tutorial is Day 1 only: tutorialStep returns null from Day 2 on.)
@@ -61,7 +64,8 @@ export function useTask(model: Model, view: View, board: Board | null, aim: AimI
     return () => window.clearTimeout(id);
   }, [progress, base]);
 
-  const target = model.phase === 'plan' ? (base?.target ?? null) : null;
+  // (the beacon stands in the plan; in the crash morning too: the base light to walk to)
+  const target = model.phase === 'plan' || view.crash ? (base?.target ?? null) : null;
   useEffect(() => {
     setObjective({ key: base?.key ?? null, target, idle: idle && !!base });
   }, [base, target, idle]);

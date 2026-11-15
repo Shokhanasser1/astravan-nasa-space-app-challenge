@@ -4,6 +4,7 @@ import { dayStar, dayTasks, firstOpen, settled, type Task } from './tasks';
 import { PLAN_A, week as realWeek } from '../engine/golden';
 import { CARD_CHOICES } from '../engine/rules';
 import type { Week } from '../engine/week';
+import type { CrashStage } from './crash';
 
 const run = (m: Model, actions: Action[]) => actions.reduce(reducer, m);
 const start = () => reducer(initialModel, { type: 'START', week: realWeek() });
@@ -199,5 +200,24 @@ describe("today's 5", () => {
       m = run(m, [{ type: 'SET', k: 'ls' }, { type: 'SET', k: 'ls' }, { type: 'CONFIRM' }, { type: 'NEXT' }]);
       if (m.phase === 'night') m = reducer(m, { type: 'NEXT' });
     }
+  });
+});
+
+// Home story T2: Day 1 opens at the crash site; "Reach the base" ticks within 6 m of the habitat door (the rig reports
+// it, src/state/crash.ts), or when Next ends the morning.
+describe("today's 5: Reach the base (home story T2)", () => {
+  const reach = (m: Model, crash?: CrashStage) => dayTasks(m, crash ? { crash } : {}).find((t) => t.id === 'reach')?.done;
+
+  it('is open on the walk and done at the door or inside', () => {
+    const morning = start();
+    expect(reach(morning)).toBe(false);
+    expect(reach(morning, 'walk')).toBe(false);
+    expect(reach(morning, 'door')).toBe(true);
+    expect(reach(morning, 'in')).toBe(true);
+  });
+
+  it('is done once Next skips the walk (the e2e plays without walking)', () => {
+    const plan = reducer(start(), { type: 'NEXT' });
+    expect(reach(plan, 'walk')).toBe(true);
   });
 });
