@@ -28,6 +28,9 @@ export const features = {
   // the player's forearm and hand (K or the button that shows near the arm), the astronaut holding a remote. Needs
   // `character`. Cut → no arm, no button, no hitbox.
   robotArm: true,
+  // The crew rover is drivable on computers without ?drive (Shoxjahon aka, 15 Nov ~08:35: PC first): E at its
+  // hatch climbs in, W/S/A/D drive, E again climbs out (src/scene/arrival.ts). Phones keep ?drive. Off → ?drive only.
+  drive: true,
   // Pitch answer 5 (Sunday plan): "no account, no names, no date stored, nothing goes to a server".
   // Keep false unless the whole team changes that answer. True = anonymous results go to our PocketBase.
   sendResults: false,
