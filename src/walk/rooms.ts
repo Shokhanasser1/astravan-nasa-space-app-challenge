@@ -16,6 +16,13 @@ import ROOM_BOXES from './rooms.json';
 export type RoomId = 'habitat' | 'habitat_up' | 'greenhouse' | 'lab' | 'lander';
 
 type Box = (string | number)[];
+
+/**
+ * Hitboxes of interior parts the game no longer draws: the habitat's storm-shelter ring of water and cargo bags round
+ * the ladder (hidden in src/scene/Interiors.tsx HIDDEN_PARTS, Samandar 15 Nov ~09:00). Its bench stays.
+ */
+const HIDDEN_BOX = /^shelter_wall\./;
+export const shown = (b: Box): boolean => !HIDDEN_BOX.test(String(b[0]));
 interface Spec {
   at: readonly [number, number];
   turn: number;
@@ -30,13 +37,24 @@ interface Spec {
   jump: boolean;
   /** No door of its own (an upper floor): reached by the ladder; a phase change takes you out by the main door. */
   noDoor?: boolean;
-  /** The ladder to another floor: E within `reach` of `at` (model x, z) climbs, arriving at `arrive` there. */
+  /**
+   * The ladder to another floor: E within `reach` of `at` (model x, z) climbs, arriving at `arrive` there.
+   */
   ladder?: { to: RoomId; at: [number, number]; reach: number; arrive: [number, number, number] };
 }
 
 /** A model's front (+z) faces the middle of the base (AstraBase.tsx faceCentre). */
 const faceCentre = (p: readonly [number, number]) => Math.atan2(-p[0], -p[1]);
 const ADULT = 1.8;
+/**
+ * The habitat's ladder (blender/interiors/habitat/build_habitat.py): vertical rails at x ±0.24, rungs every 0.30 m
+ * in the plane z = 0.212 (three), up through the deck well (z 0.11–1.13), the same on both floors. On it the
+ * Climb clip's origin is on the rungs' plane and the body hangs 0.42 m behind it (clips/climb.py meta
+ * body_behind_root): the body steps to `foot` (in the well, facing the rungs, −z), then its origin moves onto
+ * `rungs` as the clip fades in, so the body itself stays put.
+ */
+const LADDER_RUNGS: [number, number, number] = [0, 0.212, Math.PI];
+const LADDER_FOOT: [number, number, number] = [0, 0.212 + 0.42, Math.PI];
 
 const SPECS: Record<RoomId, Spec> = {
   // ground floor (deck 0.5, ceiling 3.1); the door is the airlock at +z; jumps allowed (2.6 m of headroom)
@@ -85,8 +103,17 @@ export interface Room {
   /** True where E inside goes out (game x, z). */
   exit: (x: number, z: number) => boolean;
   noDoor: boolean;
-  /** The ladder: where it leads, whether (x, z) is close enough to climb, where you arrive. */
-  ladder: { to: RoomId; near: (x: number, z: number) => boolean; arrive: { x: number; z: number; facing: number } } | null;
+  /**
+   * The ladder: where it leads, whether (x, z) is close enough to climb, where you arrive; where the body stands to
+   * climb (`foot`, facing the rungs) and the rungs' plane in front of it (`rungs`, the Climb clip's origin).
+   */
+  ladder: {
+    to: RoomId;
+    near: (x: number, z: number) => boolean;
+    arrive: { x: number; z: number; facing: number };
+    foot: { x: number; z: number; facing: number };
+    rungs: { x: number; z: number; facing: number };
+  } | null;
 }
 
 function build(id: RoomId): Room {
@@ -110,7 +137,7 @@ function build(id: RoomId): Room {
     const [bx, bz] = toGame(x + dx * half, z + dz * half);
     return { name: String(name), x: ax, z: az, bx, bz, r: r * p.k };
   };
-  const boxes = [...(ROOM_BOXES as Record<RoomId, Box[]>)[id], ...(p.extra ?? [])];
+  const boxes = [...(ROOM_BOXES as Record<RoomId, Box[]>)[id], ...(p.extra ?? [])].filter(shown);
   const fit = Math.min(1, (p.headroom - 0.1) / ADULT);
   const at = (m: [number, number, number]) => {
     const [x, z] = toGame(m[0], m[1]);
@@ -138,6 +165,8 @@ function build(id: RoomId): Room {
             return Math.hypot(mx - p.ladder!.at[0], mz - p.ladder!.at[1]) < p.ladder!.reach;
           },
           arrive: at(p.ladder.arrive),
+          foot: at(LADDER_FOOT),
+          rungs: at(LADDER_RUNGS),
         }
       : null,
   };
