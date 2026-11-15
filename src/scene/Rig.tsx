@@ -139,6 +139,86 @@ export function roomCamDist(room: Room, hx: number, hz: number, fx: number, fz: 
   return far;
 }
 /**
+ * How far behind the head (along the look −(fx, fy, fz) at `pitch`) the outside follow camera can ride: `far`, or
+ * pulled in front of the first hitbox below `tall` m or, `?hdu`, the HDU complex (rooms.ts inHduComplex). `floor`:
+ * the old rule, never nearer than 0.8 m (+2.2 m in the rover, `kc`), even inside what blocks; −1: the boom's rule,
+ * no floor, and the ground blocks too (`ground`). Pure, no allocation.
+ */
+export function followDist(
+  hx: number, hy: number, hz: number, yaw: number, pitch: number, far: number, solids: readonly Solid[], tall: number,
+  hdu: boolean, floor: number,
+): number {
+  const fx = -Math.sin(yaw) * Math.cos(pitch);
+  const fy = Math.sin(pitch);
+  const fz = -Math.cos(yaw) * Math.cos(pitch);
+  for (let d = 0.6; d <= far; d += 0.2) {
+    const px = hx - fx * d;
+    const py = hy - fy * d;
+    const pz = hz - fz * d;
+    // (the rover's camera rides higher, so taller things count; and it never pulls in under the rover's own roof)
+    // (the HDU complex, `?hdu`: its modules are 5.8 m tall, its tunnels 2.6 m: the camera must not swing into a
+    // dome or a tunnel either, rooms.ts inHduComplex)
+    if ((py < tall && blocked(solids, px, pz)) || (hdu && inHduComplex(px, py, pz, 0.3))) return Math.max(floor, d - 0.3);
+  }
+  return far;
+}
+/**
+ * How far behind the head (at `pitch`) the boom can ride clear of the HDU complex (0.3 m margin) and 0.3 m above the
+ * ground: `far`, or 0.3 m in front of the first sample that is not. Pure, no allocation.
+ */
+export function boomClear(hx: number, hy: number, hz: number, yaw: number, pitch: number, far: number, ground: (x: number, z: number) => number): number {
+  const fx = -Math.sin(yaw) * Math.cos(pitch), fy = Math.sin(pitch), fz = -Math.cos(yaw) * Math.cos(pitch);
+  for (let d = 0.6; d <= far; d += 0.2) {
+    const px = hx - fx * d, py = hy - fy * d, pz = hz - fz * d;
+    if (inHduComplex(px, py, pz, 0.3) || py < ground(px, pz) + 0.3) return d - 0.3;
+  }
+  return far;
+}
+/** `?hdu` boom up (#34): extra look-down tried, in order, when the way back is blocked near the follow camera (rad). */
+const BOOM_STEPS = [0.15, 0.3, 0.45, 0.6, 0.75, 0.9, 1.05];
+/** The steepest boom look-down (rad, ~72°: still the astronaut, from above, horizon out of view but level). */
+const BOOM_LOW = -1.25;
+/** The boom keeps at least this far from the head (m); nearer, the helmet fills the screen. */
+export const BOOM_MIN = 1.6;
+/** The follow camera's choice: distance from the head, extra look-down (rad, ≥ 0) and the point (game). */
+export type FollowCam = { dist: number; extra: number; x: number; y: number; z: number };
+/**
+ * The outside follow camera on foot (#34). ASTRA (`hdu` false): today's rule — behind the head at `pitch`, pulled in
+ * front of the first hitbox below 3.2 m, never nearer than 0.8 m. `?hdu`: the same, but when that leaves it nearer
+ * than BOOM_MIN (a module, a tunnel or a prop just behind), it booms up: the first steeper look-down (BOOM_STEPS)
+ * whose way back is clear of the complex, the hitboxes and the ground for ≥ BOOM_MIN; none → today's rule.
+ * Writes `out` (no allocation) and returns it. The point is kept 0.3 m above `ground`, like Rig does.
+ */
+export function hduFollowCam(
+  out: FollowCam, hx: number, hy: number, hz: number, yaw: number, pitch: number, solids: readonly Solid[],
+  ground: (x: number, z: number) => number, hdu = HDU_HABITAT, far = CAM_DIST,
+): FollowCam {
+  let dist = followDist(hx, hy, hz, yaw, pitch, far, solids, 3.2, hdu, 0.8);
+  let p = pitch;
+  if (hdu && dist < BOOM_MIN) {
+    search: for (const e of BOOM_STEPS) {
+      const q = Math.max(BOOM_LOW, pitch - e);
+      // (the way back clear of the complex and the ground; then the point itself clear of the hitboxes below 3.2 m:
+      // a low ramp or apron between the head and a raised camera hides nothing)
+      const fx = -Math.sin(yaw) * Math.cos(q), fy = Math.sin(q), fz = -Math.cos(yaw) * Math.cos(q);
+      for (let d = boomClear(hx, hy, hz, yaw, q, far, ground); d >= BOOM_MIN; d -= 0.4) {
+        if (hy - fy * d < 3.2 && blocked(solids, hx - fx * d, hz - fz * d)) continue;
+        dist = d;
+        p = q;
+        break search;
+      }
+      if (q === BOOM_LOW) break;
+    }
+  }
+  out.dist = dist;
+  out.extra = pitch - p;
+  out.x = hx + Math.sin(yaw) * Math.cos(p) * dist;
+  out.y = hy - Math.sin(p) * dist;
+  out.z = hz + Math.cos(yaw) * Math.cos(p) * dist;
+  out.y = Math.max(out.y, ground(out.x, out.z) + 0.3);
+  return out;
+}
+/**
  * The camera would be in a room's wall or furniture, or outside its walls. (On the ladder only its outer walls
  * count: behind the climber lie the open deck well and its guard rail, then the core rooms' doorways.)
  */
@@ -157,6 +237,8 @@ function byAirlock(p: XZ): boolean {
   const dz = p.z - LAYOUT.habitat[1];
   return (dx * Math.sin(DOOR_AZ) + dz * Math.cos(DOOR_AZ)) / ROOM_K > 2.0;
 }
+/** The boom's choice this frame (one object, reused). */
+const boom: FollowCam = { dist: 0, extra: 0, x: 0, y: 0, z: 0 };
 const ckQ = new THREE.Quaternion();
 const ckE = new THREE.Euler();
 const BOARD_REACH = 3.5; // m from a hatch: E climbs in
@@ -224,7 +306,7 @@ export function Rig({ view }: { view: View }) {
   // (with the astronaut, the walker walks only inside the habitat, in first person: the astronaut walks outside)
   const walker = useMemo(() => (freeWalk ? createWalker() : null), []);
   const body = useMemo(() => createBody(POINTS.hub.pos[0], POINTS.hub.pos[2], ground), []);
-  const c = useRef({ acc: 0, quiet: 0, shadowT: 0, car: 0, ck: 0, takeoff: NaN, peak: 0, ax: { ahead: 0, side: 0, turn: 0 } as Axes, wish: { x: 0, z: 0 } as XZ }).current;
+  const c = useRef({ acc: 0, quiet: 0, shadowT: 0, car: 0, ck: 0, boom: 0, boomDist: 0, takeoff: NaN, peak: 0, ax: { ahead: 0, side: 0, turn: 0 } as Axes, wish: { x: 0, z: 0 } as XZ }).current;
   const s = useRef({
     from: new THREE.Vector3(),
     to: new THREE.Vector3(),
@@ -937,13 +1019,22 @@ export function Rig({ view }: { view: View }) {
         : null;
     // (an HDU room is seen through the eyes: level, no follow tilt)
     const tilt = room ? (isHduRoom(room) ? 0 : ROOM_TILT) : CAM_TILT + (CAR_TILT - CAM_TILT) * kc;
-    const pitch = Math.max(-MAX_PITCH - tilt, s.pitch - tilt);
-    const fx = -Math.sin(s.yaw) * Math.cos(pitch);
-    const fy = Math.sin(pitch);
-    const fz = -Math.cos(s.yaw) * Math.cos(pitch);
+    let pitch = Math.max(-MAX_PITCH - tilt, s.pitch - tilt);
     const hx = body.x + (rover.x - body.x) * kc;
     const hy = body.y + HEAD * body.scale + (rover.y + CAR_AIM - body.y - HEAD) * kc;
     const hz = body.z + (rover.z - body.z) * kc;
+    // `?hdu` on foot outside (#34): blocked just behind by the complex or a prop, the camera booms up — looks down
+    // more from higher instead of pinning 0.8 m behind the helmet (hduFollowCam); the extra look-down eases in and
+    // out over ~0.3 s, the distance grows back as smoothly (pulling in stays at once: never into a dome)
+    const boomed = HDU_HABITAT && !room && kc === 0 && !scripted;
+    if (boomed) {
+      hduFollowCam(boom, hx, hy, hz, s.yaw, pitch, OUTSIDE.solids, ground, true);
+      c.boom += (boom.extra - c.boom) * (1 - Math.exp(-10 * dt));
+      pitch = Math.max(BOOM_LOW, pitch - c.boom);
+    } else c.boom = 0;
+    const fx = -Math.sin(s.yaw) * Math.cos(pitch);
+    const fy = Math.sin(pitch);
+    const fz = -Math.cos(s.yaw) * Math.cos(pitch);
     let dist: number;
     if (room) {
       // in a room: closer, kept inside its walls and clear of its furniture, under its ceiling
@@ -951,20 +1042,14 @@ export function Rig({ view }: { view: View }) {
     } else {
       const far = CAM_DIST + (CAR_DIST - CAM_DIST) * kc;
       const solids = inCar ? ROVER_AREA.solids : OUTSIDE.solids;
-      dist = far;
-      for (let d = 0.6; d <= far; d += 0.2) {
-        const px = hx - fx * d;
-        const py = hy - fy * d;
-        const pz = hz - fz * d;
-        // (the rover's camera rides higher, so taller things count; and it never pulls in under the rover's own roof)
-        // (the HDU complex, `?hdu`: its modules are 5.8 m tall, its tunnels 2.6 m: the camera must not swing into a
-        // dome or a tunnel either, rooms.ts inHduComplex)
-        const tall = HDU_HABITAT && inHduComplex(px, py, pz, 0.3);
-        if (!scripted && ((py < (inCar ? 5 : 3.2) && blocked(solids, px, pz)) || tall)) {
-          dist = Math.max(0.8 + 2.2 * kc, d - 0.3);
-          break;
-        }
-      }
+      dist = scripted ? far : followDist(hx, hy, hz, s.yaw, pitch, far, solids, inCar ? 5 : 3.2, HDU_HABITAT, 0.8 + 2.2 * kc);
+      if (boomed && (boom.extra > 0 || c.boom > 0.01)) {
+        // (the boom's distance, never past the complex or into the ground at the eased look-down; it grows back
+        // smoothly and pulls in at once)
+        const want = Math.min(boom.extra > 0 ? boom.dist : dist, boomClear(hx, hy, hz, s.yaw, pitch, far, ground));
+        c.boomDist = want < c.boomDist ? want : c.boomDist + (want - c.boomDist) * (1 - Math.exp(-10 * dt));
+        dist = c.boomDist;
+      } else c.boomDist = dist;
     }
     camera.position.set(hx - fx * dist, hy - fy * dist, hz - fz * dist);
     if (climbing) {

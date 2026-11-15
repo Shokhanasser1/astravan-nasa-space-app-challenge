@@ -34,3 +34,7 @@ closed); the shell's bottom dish cut below the floor; a 1.1 m ramp from the sill
 Batch 1 wave 2 (15 Nov 2026): a junction collar (sleeve r 1.20) at each tunnel end, its inner edge on the shell, so no
 gap between the flat tunnel end and the round shell; the tunnel floor slab level with the module floors (0.45) and inside
 the tunnel skin; the ramps painted light grey (a flat texel of the part 2 texture). Same script and sources.
+15 Nov 2026 (outpost.glb): the two NASA HDU textures (HDU_01 shell, HDU_02 frame) replaced with the scrubbed copies
+from hdu_complex.glb (no emblem, no "Segment A-H"/"AIRLOCK" lettering, no blotch, no placard print); its NASA paints
+lambert2SG/lambert3SG made matte (KHR_materials_transmission removed, metallic 0). Geometry and node names unchanged.
+15 Nov 2026 (hdu_complex.glb): the loose white frame fragment on the ground front-left of each module door (19 faces) removed in build_game_complex.py; re-exported and optimised as before.
