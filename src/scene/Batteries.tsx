@@ -152,7 +152,8 @@ export function Batteries({ view }: { view: View }) {
             )}
           </group>
         ))}
-        <group position={[hx, groundHeight(hx, hz), hz]} rotation-y={-Math.PI / 4}>
+        {/* (same frame as the hub cabinet in parts/Hub.tsx: on the base's flat ground, turned −45°) */}
+        <group position={[hx, 0, hz]} rotation-y={-Math.PI / 4}>
           {Array.from({ length: total }, (_, i) => {
             const row = i < 5 ? 0 : 1;
             const col = row === 0 ? i : i - 5;
