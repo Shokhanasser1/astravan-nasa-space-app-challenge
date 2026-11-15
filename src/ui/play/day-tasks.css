@@ -134,3 +134,12 @@
     transition: none;
   }
 }
+/* phones upright of any height: while the plan list (or a gauge nudge) is open, the list shows the day — Today's 5
+   steps aside so the big button stays on screen (15 Nov: Day 7 on a Pixel 7, 412×839 — HomeBar, Today's 5 with its
+   lesson, the radio, "Inside all day", the list and the launch warning pushed "Launch!" below the screen) */
+@media (max-width: 640px) and (orientation: portrait) {
+  [data-tablet='open'] .day-tasks,
+  [data-nudge='on'] .day-tasks {
+    display: none;
+  }
+}
