@@ -3,6 +3,7 @@ import { useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import { glareTexture } from '../look/textures.js';
 import { sunDirection } from './Light';
+import { TITLE, titlePose } from './title';
 
 /**
  * The night sky as one all-sky picture (features.hfGraphics.sky): the Milky Way with its dust lanes and star clouds,
@@ -16,9 +17,38 @@ import { sunDirection } from './Light';
  * Stage.tsx) the black stays black and only the brightest stars reach Bloom.
  */
 const R = 2700; // m: behind the stars (2.4 km) and Earth (2.3 km), inside the camera's far plane (3 km)
-// Turned so that, from the reception camera (looking roughly at (−0.66, −0.18, 0.73)), the galactic core sits 28° right
-// of centre just at the skyline and the band climbs to the left across the top of the view (scripts/hf/README.md).
-const ORIENT = new THREE.Quaternion(0.09212, 0.84439, -0.19206, -0.49157);
+/**
+ * Turned so that, from the title camera at the middle of its arc (src/scene/title.ts, the reception desk's view), the
+ * galactic core sits 28° right of centre just at the skyline and the band climbs 24° to the left across the top of the
+ * view. Worked out from the title shot itself, so a new title camera keeps the Milky Way in frame.
+ * Picture frame: the core is at u 0.38, v 0.55 of the panorama; the band runs along u.
+ */
+export function skyOrientation(): THREE.Quaternion {
+  const V = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);
+  const up = V(0, 1, 0);
+  const cam = titlePose(0, true, { x: 0, y: 0, z: 0 });
+  const [tx, ty, tz] = TITLE.target;
+  const d = V(tx - cam.x, ty - cam.y, tz - cam.z).normalize();
+  const f = V(d.x, 0, d.z).normalize();
+  const right = V().crossVectors(f, up).normalize();
+  const rad = THREE.MathUtils.degToRad;
+  const [yaw, el, al] = [rad(28), rad(-3), rad(24)];
+  const cw = f.clone().multiplyScalar(Math.cos(yaw)).addScaledVector(right, Math.sin(yaw)).multiplyScalar(Math.cos(el)).addScaledVector(up, Math.sin(el)).normalize();
+  const rc = V().crossVectors(cw, up).normalize();
+  const upP = V().crossVectors(rc, cw);
+  const bw = rc.clone().multiplyScalar(-Math.cos(al)).addScaledVector(upP, Math.sin(al)).normalize();
+  const nw = V().crossVectors(cw, bw);
+  // the same three directions in the picture (SphereGeometry's uv: u around from −x, v down from +y)
+  const phi = 2 * Math.PI * 0.38, th = Math.PI * 0.55;
+  const ct = V(-Math.cos(phi) * Math.sin(th), Math.cos(th), Math.sin(phi) * Math.sin(th));
+  const bt = V(Math.sin(phi), 0, Math.cos(phi));
+  bt.addScaledVector(ct, -bt.dot(ct)).normalize();
+  const nt = V().crossVectors(ct, bt);
+  const world = new THREE.Matrix4().makeBasis(cw, bw, nw);
+  const pic = new THREE.Matrix4().makeBasis(ct, bt, nt);
+  return new THREE.Quaternion().setFromRotationMatrix(world.multiply(pic.transpose()));
+}
+const ORIENT = skyOrientation();
 
 export function HfSky({ big, gain = 0.3, onReady }: { big: boolean; gain?: number; onReady?: (ok: boolean) => void }) {
   const invalidate = useThree((s) => s.invalidate);

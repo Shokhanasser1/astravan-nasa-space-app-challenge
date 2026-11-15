@@ -15,8 +15,9 @@ first frame and falls back to the old look if its file is missing; each has its 
 | `art/base.webp` | Still picture when the device has no WebGL (visible "AI" mark) | Cinema Studio 2.5 4k (`2085f5b1`) | resized, WebP |
 | `art/crash.webp` | Crash scene, not used in the game yet (for the pitch, a story card later) | Cinema Studio 2.5 4k (`1a27a77f`) | resized, WebP |
 
-Sky orientation (`ORIENT` in `HfSky.tsx`): a rotation that puts the galactic core (u 0.38, v 0.55 of the picture) 28°
-right of the reception camera's view (−0.661, −0.182, 0.728), at the skyline, the band climbing 24° to the left.
+Sky orientation (`skyOrientation()` in `HfSky.tsx`, test `HfSky.test.ts`): worked out at load from the title camera
+(`src/scene/title.ts`, middle of its arc), so the galactic core (u 0.38, v 0.55 of the picture) sits 28° right of the
+reception view at the skyline and the band climbs 24° to the left; a new title shot keeps the Milky Way in frame.
 
 Rules kept: no NASA logo, flag or lettering in any picture (the first crash picture had one and was regenerated); no
 people in the pictures; every full-screen picture carries a visible "AI" mark; textures inside the 3D scene are
