@@ -3,11 +3,17 @@ import { useFrame, useThree } from '@react-three/fiber';
 import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 import { DOOR_AZ, DOOR_R, LAYOUT, PARKED_ROVER as SEV } from './layout';
-import { ICE_CRATER, groundHeight } from './ground';
+import { ICE_CRATER, groundHeight, groundSurface } from './ground';
 import { initialTier } from './quality';
 import { softwareGl } from './rich';
 import { applyRover, ARRIVE, DRIVABLE, rover, stepSuspension } from './arrival';
 import { playClip } from './clip';
+import { WheelTracks } from '../look/fx.js';
+import { keepMarks, storedMarks } from './marks';
+
+/** One tyre's tread width (sev.glb: 0.584 × 0.291 m scale); a wheel is two of them side by side. */
+const TYRE_W = 0.17;
+const tyreAt = new THREE.Vector3();
 
 /**
  * NASA models around the base that are not machines of the week (public/models/nasa-decor, Samandar's catalog,
@@ -100,10 +106,36 @@ function Model({ file, at, yaw, shadow = true, play, drive = false }: ModelProps
       if (rover.object === obj) rover.object = null;
     };
   }, [obj, drive]);
+  // the wheels leave tracks wherever the rover drives (the arrival, the player); they stay, like boot prints
+  const world = useThree((s) => s.scene);
+  // (each of the six wheels is a pair of tyres, sev_wheel_L1…L6 / R1…R6: twelve tracks)
+  const tracks = useMemo(() => (drive ? new WheelTracks(gl, TYRE_W) : null), [drive, gl]);
+  const tyres = useMemo(() => {
+    const out: { id: string; node: THREE.Object3D; x: number; z: number }[] = [];
+    if (drive) obj.traverse((n) => /^sev_wheel_[LR][1-6]$/.test(n.name) && out.push({ id: n.name, node: n, x: 0, z: 0 }));
+    return out;
+  }, [obj, drive]);
+  useEffect(() => {
+    if (!tracks) return;
+    tracks.attach(world);
+    tracks.restore(storedMarks('tracks'), groundSurface); // the tracks of the last visit (once per page)
+    keepMarks();
+    invalidate();
+    return () => tracks.dispose();
+  }, [tracks, world, invalidate]);
   useFrame((_, dt) => {
     if (drive) {
       if (stepSuspension(Math.min(dt, 0.05))) invalidate(); // the chassis settles on its springs
       applyRover();
+      if (tracks && tyres.length && rover.speed !== 0) {
+        obj.updateMatrixWorld(true); // where each tyre is now (pose and steering just applied)
+        for (const t of tyres) {
+          t.node.getWorldPosition(tyreAt);
+          t.x = tyreAt.x;
+          t.z = tyreAt.z;
+        }
+        if (tracks.update(tyres, groundSurface)) invalidate();
+      }
       if (mixer) mixer.timeScale = rover.speed / 1.0; // the Drive clip is planted at 1.0 m/s (backing up: backwards)
     }
     mixer?.update(Math.min(dt, 0.05));

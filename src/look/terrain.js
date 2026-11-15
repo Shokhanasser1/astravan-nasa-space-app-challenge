@@ -166,10 +166,30 @@ export function sunVisibility(H, x, z, y, sun, maxDist, useDetail) {
 }
 
 // ------------------------------------------------------------------------------------------- geometry
+/** The near disc's lattice as drawn (set by buildNear): marks on the ground sit on these flat triangles. */
+let lattice = null;
+
+/**
+ * The height of the ground as it is drawn: the near disc is flat triangles between lattice points metres apart,
+ * so on a bump the smooth H.height can be centimetres above or below the drawn surface. A print or a track laid on
+ * H.height then sinks into the triangles and breaks up (uphill most). Same split as buildNear: (a, d, b), (b, d, f).
+ */
+export function surfaceHeight(H, x, z) {
+  const L = lattice;
+  if (!L || L.H !== H || Math.hypot(x, z) > L.radius) return H.height(x, z);
+  const fx = (x + L.half) / L.step, fz = (z + L.half) / L.step;
+  const j = Math.floor(fx), i = Math.floor(fz);
+  const u = fx - j, v = fz - i;
+  const p = (ii, jj) => H.height(-L.half + jj * L.step, -L.half + ii * L.step);
+  const a = p(i, j), b = p(i, j + 1), d = p(i + 1, j), f = p(i + 1, j + 1);
+  return u + v <= 1 ? a + (b - a) * u + (d - a) * v : f + (d - f) * (1 - u) + (b - f) * (1 - v);
+}
+
 /** Ground disc around the base: a square lattice (same as the collider's) cut to a circle. */
 export function buildNear(H, { step, radius, sun }) {
   const n = Math.round((2 * radius) / step);
   const half = (n * step) / 2;
+  lattice = { H, step, half, radius };
   const verts = (n + 1) * (n + 1);
   const pos = new Float32Array(verts * 3), nor = new Float32Array(verts * 3), col = new Float32Array(verts * 3);
   const vis = new Float32Array(verts), pad = new Float32Array(verts);

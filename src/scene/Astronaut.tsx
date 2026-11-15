@@ -7,9 +7,10 @@ import { AnimController } from '../character/anim.js';
 import type { Body } from '../character/body';
 import { GRAVITY } from '../character/physics.js';
 import { GroundFx } from '../look/fx.js';
+import { keepMarks, storedMarks } from './marks';
 import { features } from '../config/features';
 import type { Machine, View } from '../state/game';
-import { groundHeight } from './ground';
+import { groundHeight, groundSurface } from './ground';
 import { LAYOUT } from './layout';
 import { Remote } from '../arm/remote';
 import { armState } from '../arm/state';
@@ -98,7 +99,7 @@ export function Astronaut({ body, visible, hands = 0, view }: { body: Body; visi
     () => new AnimController(model, Object.fromEntries(gltf.animations.map((c) => [c.name, c]))),
     [model, gltf],
   );
-  const fx = useMemo(() => new GroundFx(scene, gl), [scene, gl]);
+  const fx = useMemo(() => new GroundFx(gl), [gl]);
 
   // the carried batteries: a stack of blocks, placed once; only the count and the group's place change
   const cargo = useMemo(() => {
@@ -121,7 +122,13 @@ export function Astronaut({ body, visible, hands = 0, view }: { body: Body; visi
     invalidate();
   }, [hands, invalidate]);
 
-  useEffect(() => () => fx.dispose(), [fx]);
+  // into the scene from an effect (StrictMode's extra mount cannot leave a dead copy); prints already walked stay
+  useEffect(() => {
+    fx.attach(scene);
+    fx.restore(storedMarks('prints'), groundSurface); // the prints of the last visit (once per page)
+    keepMarks();
+    return () => fx.dispose();
+  }, [fx, scene]);
   // the robot arm's remote in the right hand while its scanner is on (src/arm/remote.ts)
   const remote = useMemo(() => (features.robotArm ? new Remote(scene, model) : null), [scene, model]);
   useEffect(() => () => remote?.dispose(), [remote]);
@@ -181,6 +188,7 @@ export function Astronaut({ body, visible, hands = 0, view }: { body: Body; visi
       g: GRAVITY.moon,
       gravityKey: 'moon',
       groundHeight,
+      surfaceHeight: groundSurface, // prints lie on the ground as drawn (no gaps on bumps)
       footfalls: anim.footfalls, // boot prints exactly where the animated boots are planted
     }),
     [anim],

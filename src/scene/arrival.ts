@@ -16,13 +16,15 @@ import { wheelGround } from '../walk/rocks';
 import { placeOnGround, type Rover } from './roverDrive';
 import { GRAVITY } from '../character/physics.js';
 import { features } from '../config/features';
-import { initialTier } from './quality';
 
 const params = typeof location !== 'undefined' ? new URLSearchParams(location.search) : new URLSearchParams();
 export const ARRIVE = params.has('arrive');
 /** The player may drive the crew rover (E at its hatch climbs in, E again stops and climbs out). */
-// (?arrive brings the rover; it is drivable then too. On a computer it is drivable by default: features.drive)
-export const DRIVABLE = params.has('drive') || ARRIVE || (features.drive && features.character && initialTier() === 'pc');
+// (?arrive brings the rover; it is drivable then too. On a computer it is drivable by default: features.drive.)
+// "A computer" = a mouse and a keyboard (a fine pointer that hovers), not the graphics tier: initialTier() calls any
+// window under 600 px tall a phone, so a short browser window on a laptop lost the rover (15 Nov, E did nothing).
+const computer = typeof window !== 'undefined' && !!window.matchMedia?.('(hover: hover) and (pointer: fine)').matches;
+export const DRIVABLE = params.has('drive') || ARRIVE || (features.drive && features.character && computer);
 
 /** Drive: the last L metres to the parking spot in T seconds, slowing to a stop (speed 2L/T → 0). */
 export const DRIVE = { L: 16, T: 12, pause: 1.2 } as const;
