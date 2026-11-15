@@ -19,3 +19,10 @@ oy-karvonsaroyi-3d/hb7/hdu_base/tools/astro_visor2.py.
 helmet went through the rungs, the boots never stood on a rung): hips 0.42 m behind the rungs' plane, boots planted on
 the rungs, gloves on the rungs, one cycle per 0.60 m. Made by AI-written code (Claude Code) with IK in node,
 scripts/models/climb_kid.mjs; only the Climb samplers changed (mesh, skin, texture, the other 14 clips untouched).
+
+15 Nov 2026 ~15:10 (Samandar): a new helmet as its own parts. The AI model's helmet was a lumpy shell open at the back
+with the kid's head inside; its triangles (those following the Head bone above the neck ring) are cut out and a smooth
+helmet is built in their place, skinned to the Head bone: a white shell (KidHelmet), a gold oval visor (KidVisor) and
+a grey frame (KidHelmetFrame); the suit's normal map is softened. Made by AI-written code (Claude Code) in node with
+@gltf-transform: oy-karvonsaroyi-3d/hb7/hdu_base/tools/astro_helmet.mjs. Mesh of the suit, rig and the 15 clips
+otherwise untouched.
