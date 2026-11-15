@@ -84,6 +84,9 @@ export class ArmRig {
   private readonly p = new THREE.Vector3();
   private readonly q = new THREE.Quaternion();
   private readonly d = new THREE.Vector3();
+  /** The gripper's centre between the claws (where a lifted thing sits; src/arm/cargo.ts). */
+  private readonly grip = new THREE.Object3D();
+  private readonly gripScale = new THREE.Vector3();
 
   constructor(arm: THREE.Object3D, opts: ArmOptions = {}) {
     const scale = opts.scale ?? ARM_SCALE;
@@ -143,6 +146,8 @@ export class ArmRig {
       hand.add(holder);
       this.claws.push(c);
     }
+    this.grip.position.set(0, 0.28 * k, 0); // where the claws' gold tips bend in
+    hand.add(this.grip);
     this.wrist.add(hand);
 
     this.shape = {
@@ -224,6 +229,12 @@ export class ArmRig {
       const m = o as THREE.Mesh;
       if (m.isMesh && !this.fromModel.has(m)) m.geometry.dispose();
     });
+  }
+
+  /** The gripper's centre between the claws, world position and turn, written into pos and quat (no allocation). */
+  gripWorld(pos: THREE.Vector3, quat: THREE.Quaternion): void {
+    this.grip.updateWorldMatrix(true, false);
+    this.grip.matrixWorld.decompose(pos, quat, this.gripScale);
   }
 
   /** True when the ground or the pedestal holds the arm short of where it is going. */

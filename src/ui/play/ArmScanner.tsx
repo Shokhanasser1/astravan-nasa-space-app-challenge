@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { invalidate } from '@react-three/fiber';
-import { ArrowUp, Bot, CornerRightUp, Grab, Hand, RotateCw } from 'lucide-react';
+import { ArrowLeftRight, ArrowUp, Bot, CornerRightUp, Grab, Hand, RotateCw } from 'lucide-react';
 import { armTargets, type Pt } from '../../arm/reach';
 import { armState, armVersion, setArmOn, subscribeArm } from '../../arm/state';
 import type { ScanFrame } from '../../arm/scan';
@@ -8,11 +8,15 @@ import { Btn, Panel, type Tr } from './kit';
 import { touchUi } from './Controls';
 
 type State = 'off' | 'camera' | 'models' | 'on' | 'denied' | 'error';
+/** Each scan frame the turret's target moves this share of the way to the hand's new angle (a hand never holds
+ * perfectly still: unsmoothed, the turret would shiver). */
+const TURN_EASE = 0.25;
 /** What the panel reads out each scan frame: the arm's shown angles, its grip, and a note key ('' = none). */
 interface Readout {
   lift: number;
   bend: number;
   wrist: number;
+  turn: number;
   gripping: boolean;
   note: string;
 }
@@ -60,11 +64,14 @@ export function ArmScanner({ tr }: { tr: Tr }) {
 
   const onFrame = (f: ScanFrame) => {
     const t = armTargets(f.pose, f.hand, f.aspect);
+    const was = armState.target.turn ?? armState.shown.turn ?? 0; // (from where the keys left it)
     armState.target = {
       lift: t.lift ?? armState.target.lift,
       bend: t.bend ?? armState.target.bend,
       wrist: t.wrist ?? armState.target.wrist,
       open: t.open ?? armState.target.open,
+      // sideways (the roof turret): eased, and kept where it is while no hand or wrist is seen
+      turn: t.turn == null ? was : was + (t.turn - was) * TURN_EASE,
     };
     last.current = { hand: f.hand, elbow: t.elbow, video: f.video };
     const s = armState.shown;
@@ -72,6 +79,7 @@ export function ArmScanner({ tr }: { tr: Tr }) {
       lift: Math.round(s.lift),
       bend: Math.round(s.bend),
       wrist: Math.round(s.wrist),
+      turn: Math.round(s.turn ?? 0),
       gripping: s.open <= 0.5,
       note: !f.hand ? 'ui.arm.noHand' : !t.elbow ? 'ui.arm.noElbow' : armState.held ? 'ui.arm.ground' : '',
     };
@@ -237,15 +245,16 @@ export function ArmScanner({ tr }: { tr: Tr }) {
         <Panel className="flex w-[208px] flex-col gap-2 text-xs [@media(max-height:500px)]:w-[168px]" data-testid="arm-scan-panel">
           <div className="text-sm font-bold text-[var(--text-1)]">{tr('ui.arm.title')}</div>
           <canvas ref={canvas} width={184} height={138} className="w-full rounded-[14px] [@media(max-height:700px)]:w-1/2" aria-hidden="true" />
-          {/* the arm's three joints and its grip, as icons and numbers; or why it waits */}
+          {/* the arm's three joints, its turn and its grip, as icons and numbers; or why it waits */}
           <div aria-live="polite" className="min-h-[1lh] text-[var(--text-2)]">
             {status ? (
               tr(status)
             ) : read ? (
-              <div className="flex items-center justify-between font-semibold tabular-nums text-[var(--text-1)]">
+              <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1 font-semibold tabular-nums text-[var(--text-1)]">
                 {angle(ArrowUp, 'ui.arm.lift', read.lift)}
                 {angle(CornerRightUp, 'ui.arm.elbow', read.bend)}
                 {angle(RotateCw, 'ui.arm.wrist', read.wrist)}
+                {angle(ArrowLeftRight, 'ui.arm.turn', read.turn)}
                 <span title={tr('ui.arm.grip')} aria-label={tr(read.gripping ? 'ui.arm.closed' : 'ui.arm.open')}>
                   {read.gripping ? <Grab size={16} aria-hidden="true" className="text-[var(--mint)]" /> : <Hand size={16} aria-hidden="true" />}
                 </span>
@@ -253,7 +262,7 @@ export function ArmScanner({ tr }: { tr: Tr }) {
             ) : null}
             {!status && read?.note ? <div className="mt-1">{tr(read.note)}</div> : null}
           </div>
-          {/* (the three how-to lines only where there is room: phones keep the picture and the numbers) */}
+          {/* (the how-to lines only where there is room: phones keep the picture and the numbers) */}
           <ul className="flex flex-col gap-1 text-[var(--text-2)] [@media(max-height:700px)]:hidden">
             <li className="flex items-center gap-2">
               <ArrowUp size={14} aria-hidden="true" className="shrink-0" />
@@ -262,6 +271,10 @@ export function ArmScanner({ tr }: { tr: Tr }) {
             <li className="flex items-center gap-2">
               <RotateCw size={14} aria-hidden="true" className="shrink-0" />
               {tr('ui.arm.helpWrist')}
+            </li>
+            <li className="flex items-center gap-2">
+              <ArrowLeftRight size={14} aria-hidden="true" className="shrink-0" />
+              {tr('ui.arm.helpTurn')}
             </li>
             <li className="flex items-center gap-2">
               <Grab size={14} aria-hidden="true" className="shrink-0" />

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { BEND, ELBOW_SHARE, LIFT, WRIST, WRIST_GAIN, armTargets, elevation, openness, pickSide } from './reach';
+import { BEND, ELBOW_SHARE, LIFT, TURN, TURN_SCAN, WRIST, WRIST_GAIN, armTargets, elevation, openness, pickSide, turnAt } from './reach';
 
 type P = { x: number; y: number; visibility?: number };
 const pt = (x: number, y: number, visibility = 1): P => ({ x, y, visibility });
@@ -101,11 +101,43 @@ describe('arm targets: fingertips to elbow', () => {
     expect(t.elbow).toBeNull();
   });
   it('returns null for what the camera did not see', () => {
-    expect(armTargets(null, null)).toEqual({ lift: null, bend: null, wrist: null, open: null, side: null, elbow: null });
+    expect(armTargets(null, null)).toEqual({ lift: null, turn: null, bend: null, wrist: null, open: null, side: null, elbow: null });
     const noHand = armTargets(pose({ 14: E, 16: pt(0.6, 0.5) }), null, 1);
     expect(noHand.lift).toBeCloseTo(45);
     expect(noHand.bend).toBeNull();
     expect(noHand.wrist).toBeNull();
     expect(noHand.open).toBeNull();
+  });
+});
+
+/**
+ * Sideways. Sign: + turn = the rover's LEFT (rig.ts turns the reach from +Z to +X; the rover's left is +X). The front
+ * camera's picture is not mirrored, so image x to the right is the player's LEFT: the hand at the picture's right
+ * turns +, the hand at the picture's left (the player's RIGHT) turns -, to the rover's right as seen from behind.
+ */
+describe('arm targets: sideways turn', () => {
+  it('holds still for a hand near the centre (dead zone)', () => {
+    expect(turnAt(0.5)).toBe(0);
+    expect(turnAt(0.5 + TURN_SCAN.dead - 0.001)).toBe(0);
+    expect(turnAt(0.5 - TURN_SCAN.dead + 0.001)).toBe(0);
+    expect(armTargets(null, hand(0.52, 0.5, 90, 0.5), 1).turn).toBe(0);
+  });
+  it("turns to the rover's right (-) for the player's right (the picture's left) and left (+) the other way", () => {
+    expect(armTargets(null, hand(0, 0.5, 90, 0.5), 1).turn).toBeCloseTo(-TURN_SCAN.edge);
+    expect(armTargets(null, hand(1, 0.5, 90, 0.5), 1).turn).toBeCloseTo(TURN_SCAN.edge);
+    expect(TURN_SCAN.edge).toBeCloseTo(120);
+    const quarter = turnAt(0.25)!;
+    expect(quarter).toBeLessThan(0);
+    expect(quarter).toBeGreaterThan(-TURN_SCAN.edge);
+  });
+  it('is clamped to the turret limits for a hand past the picture edge', () => {
+    expect(turnAt(-1)).toBe(TURN.min);
+    expect(turnAt(2)).toBe(TURN.max);
+  });
+  it('uses the tracked wrist from the pose without a hand, and is null without either', () => {
+    const t = armTargets(pose({ 14: pt(0.1, 0.7), 16: pt(0.1, 0.5) }), null, 1);
+    expect(t.turn).toBeCloseTo(-TURN_SCAN.edge * (0.4 - TURN_SCAN.dead) / (0.5 - TURN_SCAN.dead));
+    expect(armTargets(null, null).turn).toBeNull();
+    expect(armTargets(pose({}), null).turn).toBeNull();
   });
 });

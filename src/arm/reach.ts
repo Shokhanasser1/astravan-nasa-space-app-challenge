@@ -8,7 +8,9 @@
  *   forearm (elbow -> wrist) raised -> the robot's upper arm lifts by the same angle;
  *   hand bent at the wrist (up or down from the forearm's line) -> the robot's wrist (the tool turret) turns that way,
  *   and its elbow follows by a smaller share, so the arm curls like the hand;
- *   all fingertips together -> the gripper closes; hand open -> it opens.
+ *   all fingertips together -> the gripper closes; hand open -> it opens;
+ *   the hand moved left or right in the picture -> the roof turret turns the arm that way (Samandar, 15 Nov: "it must
+ *   move sideways too, not only up and down").
  * Without the elbow in view (only a hand), the hand's own direction lifts the arm and the elbow and wrist stay
  * straight. The robot never follows into the ground: kin.ts limits the pose it shows.
  */
@@ -26,8 +28,18 @@ export const LIFT = { min: -20, max: 75 };
 export const BEND = { min: -80, max: 120 };
 /** Robot wrist (tool turret), degrees from the forearm's line: + up, - down. */
 export const WRIST = { min: -95, max: 95 };
-/** The roof turret turns this far either way (degrees): the keys turn it (src/arm/keys.ts); the scanner leaves it. */
+/** The roof turret turns this far either way (degrees): the keys (src/arm/keys.ts) and the hand's side-to-side place. */
 export const TURN = { min: -170, max: 170 };
+/**
+ * The hand's place across the picture -> the turret: within `dead` of the centre (a share of the width) a steady hand
+ * holds it still; past that it turns, `edge` degrees with the hand at the picture's edge.
+ * Sign: + turn swings the reach from the rover's front (+Z) to its +X side, the rover's LEFT (src/arm/rig.ts: the
+ * turntable's rotation.y; src/scene/arrival.ts: the rover's front is +Z, its left hatch +X; key Z turns +). The front
+ * camera's picture is not mirrored (x to the right = the player's LEFT), so the hand moved to the picture's right
+ * (the player's left) turns +, to the rover's left, and the player's right turns -, to the rover's right: the arm goes
+ * the way the hand goes, seen from behind the rover, and the panel's mirrored picture shows it the same way.
+ */
+export const TURN_SCAN = { dead: 0.06, edge: 120 };
 /** The player's wrist bend -> the robot's wrist (scaled up: a hand bends less than a robot wrist) and elbow. */
 export const WRIST_GAIN = 1.3;
 export const ELBOW_SHARE = 0.5;
@@ -39,6 +51,8 @@ export type Side = keyof typeof ARM_SIDES;
 
 export interface Targets {
   lift: number | null;
+  /** Roof turret, degrees (+ = the rover's left); null without a hand or wrist: the turret keeps its angle. */
+  turn: number | null;
   bend: number | null;
   wrist: number | null;
   open: number | null;
@@ -97,6 +111,18 @@ export function pickSide(pose: readonly Pt[], hand: readonly Pt[] | null, aspect
 }
 
 /**
+ * The turret's angle for a hand at image x (0..1, x to the right = the player's left): 0 within the dead zone round
+ * the centre, then growing evenly to TURN_SCAN.edge degrees at the picture's edge, + to the picture's right.
+ */
+export function turnAt(x: number): number {
+  const off = x - 0.5;
+  const past = Math.abs(off) - TURN_SCAN.dead;
+  if (past <= 0) return 0;
+  const deg = Math.sign(off) * (past / (0.5 - TURN_SCAN.dead)) * TURN_SCAN.edge;
+  return clamp(deg, TURN.min, TURN.max);
+}
+
+/**
  * One camera frame -> the arm's targets (degrees, 0..1 for open). A value the camera did not see is null, so the
  * arm keeps its last pose for it.
  */
@@ -125,5 +151,8 @@ export function armTargets(pose: readonly Pt[] | null, hand: readonly Pt[] | nul
     wrist = 0;
   }
   const open = hand ? openness(hand, aspect) : null;
-  return { lift, bend, wrist, open, side, elbow };
+  // sideways: the hand's wrist point, else the tracked arm's wrist from the pose
+  const w = hand ? hand[0] : pose && side && seen(pose[ARM_SIDES[side][1]]) ? pose[ARM_SIDES[side][1]] : null;
+  const turn = w ? turnAt(w.x) : null;
+  return { lift, turn, bend, wrist, open, side, elbow };
 }
