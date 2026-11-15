@@ -159,6 +159,9 @@ export function Astronaut({ body, visible, view }: { body: Body; visible: boolea
     const seated =
       rover.crew && rover.driver === 'player' && rover.object !== null && rover.seatLocal !== null && !!(anim.actions as Record<string, unknown>).SeatedSteer;
     model.visible = visible && (!rover.crew || seated);
+    // inside a building's room the astronaut is drawn at the room's scale (src/walk/rooms.ts)
+    const k = seated ? 1 : body.scale;
+    model.scale.setScalar(k);
     if (seated) {
       rover.object!.updateMatrixWorld(true);
       seatM.multiplyMatrices(rover.object!.matrixWorld, rover.seatLocal!);
@@ -167,9 +170,9 @@ export function Astronaut({ body, visible, view }: { body: Body; visible: boolea
       model.position.set(body.x, body.y, body.z);
       model.rotation.set(0, body.facing, 0);
     }
-    const speed = seated ? 0 : Math.hypot(body.vx, body.vz);
+    const speed = seated ? 0 : Math.hypot(body.vx, body.vz) / k; // (the clips are planted at full-size speeds)
     anim.update(dt, {
-      onGround: body.onGround, windup: body.windup, vy: body.vy, v0: body.v0 || 1.2,
+      onGround: body.onGround, windup: body.windup, vy: body.vy / k, v0: body.v0 / k || 1.2,
       speed, carrying: false, pouring: false, running: body.running, k: 1, seated, steer: rover.steerInput,
     });
     armState.player.x = body.x;
@@ -181,7 +184,8 @@ export function Astronaut({ body, visible, view }: { body: Body; visible: boolea
       settle.current -= dt;
       state.invalidate(); // demand mode: keep drawing while a gesture plays and fades back to Idle
     }
-    if (!visible) {
+    if (!visible || k !== 1) {
+      // (no boot prints or dust on a room's floor)
       anim.footfalls.length = 0;
       return;
     }

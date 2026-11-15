@@ -3,6 +3,7 @@ import { useFrame, useThree } from '@react-three/fiber';
 import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 import { camState } from './anim';
+import { roomState } from '../walk/rooms';
 
 /**
  * Building interiors (local preview, 15 Nov): furnished insides made in Blender from NASA references
@@ -30,10 +31,16 @@ class Quiet extends Component<{ children: ReactNode }, { failed: boolean }> {
 const at = new THREE.Vector3();
 
 /**
- * The habitat's outer hatch (its `DoorOpenOuter` clip, scrubbed): `want` 1 opens it, 0 closes it; `open` follows in
- * DOOR_S seconds. The Rig opens it when the astronaut goes in or out (E at the door, or at the airlock inside).
+ * Each building's door (its `DoorOpen` clip, the habitat's `DoorOpenOuter`, scrubbed): `want` 1 opens it, 0 closes
+ * it; `open` follows in DOOR_S seconds. The Rig opens one when the astronaut goes in or out (E at it).
  */
-export const habitatDoor = { open: 0, want: 0 };
+export const interiorDoors: Record<InteriorId, { open: number; want: number }> = {
+  habitat: { open: 0, want: 0 },
+  greenhouse: { open: 0, want: 0 },
+  lab: { open: 0, want: 0 },
+  lander: { open: 0, want: 0 },
+};
+export const habitatDoor = interiorDoors.habitat;
 const DOOR_S = 0.8;
 const ease = (t: number) => t * t * (3 - 2 * t);
 
@@ -52,12 +59,11 @@ function Model({ id }: { id: InteriorId }) {
     o.visible = false;
     return o;
   }, [scene]);
-  // the habitat: its outer hatch shows from outside too (on the shell's door, 1–2 cm proud), and opens
+  // its door: the clip on the door pivot, and the pivot itself (the habitat's hatch also shows from outside)
   const door = useMemo(() => {
-    if (id !== 'habitat') return null;
-    const clip = animations.find((c) => c.name === 'DoorOpenOuter') ?? animations.find((c) => c.name === 'DoorOpen');
+    const clip = (id === 'habitat' && animations.find((c) => c.name === 'DoorOpenOuter')) || animations.find((c) => c.name === 'DoorOpen');
     const root = obj.children[0] ?? obj;
-    const leaf = obj.getObjectByName('habitat_door');
+    const leaf = obj.getObjectByName(`${id}_door`);
     if (!clip || !leaf) return null;
     const mixer = new THREE.AnimationMixer(obj);
     const action = mixer.clipAction(clip);
@@ -66,26 +72,25 @@ function Model({ id }: { id: InteriorId }) {
     return { mixer, action, clip, root, leaf };
   }, [id, obj, animations]);
   useFrame((_, delta) => {
+    const d = interiorDoors[id];
+    const was = d.open;
+    d.open += Math.sign(d.want - d.open) * Math.min(Math.abs(d.want - d.open), Math.min(delta, 0.05) / DOOR_S);
+    if (door) {
+      door.action.time = ease(d.open) * door.clip.duration;
+      door.mixer.update(0);
+      if (d.open !== was) invalidate();
+    }
+    const inRoom = roomState.id === id;
+    obj.getWorldPosition(at);
+    const dist = at.distanceTo(camera.position);
     if (id === 'habitat') {
-      const d = habitatDoor;
-      const was = d.open;
-      d.open += Math.sign(d.want - d.open) * Math.min(Math.abs(d.want - d.open), Math.min(delta, 0.05) / DOOR_S);
-      if (door) {
-        door.action.time = ease(d.open) * door.clip.duration;
-        door.mixer.update(0);
-        if (d.open !== was) invalidate();
-        // inside: the whole room; outside, near: only the hatch on the shell
-        obj.getWorldPosition(at);
-        const near = at.distanceTo(camera.position) < 20;
-        obj.visible = camState.inside || near;
-        for (const c of door.root.children) c.visible = camState.inside || c === door.leaf;
-      } else {
-        obj.visible = camState.inside;
-      }
+      // inside (the first-person point or walking in its room): the whole room; outside, near: only the hatch
+      const full = camState.inside || inRoom;
+      obj.visible = full || dist < 20;
+      if (door) for (const c of door.root.children) c.visible = full || c === door.leaf;
       return;
     }
-    obj.getWorldPosition(at);
-    obj.visible = at.distanceTo(camera.position) < NEAR[id];
+    obj.visible = inRoom || dist < NEAR[id];
   });
   return <primitive object={obj} />;
 }

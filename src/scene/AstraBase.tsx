@@ -11,6 +11,7 @@ import { buildLander, buildPad } from '../vendor/astra/scene/models/site';
 import { buildLab } from '../vendor/astra/scene/models/works';
 import { bake, mergeWorld } from './astra/bake';
 import { Interior } from './Interiors';
+import { ASTRA_SCALE } from './layout';
 
 /**
  * The base in ASTRA's look (15 Nov, Shoxjahon aka: the best of ASTRA + the best of ours). ASTRA's procedural models
@@ -19,8 +20,8 @@ import { Interior } from './Interiors';
  * small meshes become a few, so phones keep their budget. Power changes only materials (ASTRA's own rule).
  */
 
-/** Scales that keep each model inside our building's footprint (src/scene/layout.ts RADIUS, walk/world.ts). */
-export const ASTRA_SCALE = { habitat: 0.34, greenhouse: 0.45, lab: 0.6, lander: 0.45 } as const;
+/** Scales that keep each model inside our building's footprint: in src/scene/layout.ts (the walk uses them too). */
+export { ASTRA_SCALE };
 
 // Phones build every curved part with half the segments (src/vendor/astra/scene/kit.ts sg): the base stays inside
 // the phone budget (< 100k triangles). Computers keep ASTRA's own detail.

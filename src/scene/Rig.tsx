@@ -4,7 +4,7 @@ import { Instance, Instances } from '@react-three/drei';
 import * as THREE from 'three';
 import type { View } from '../state/game';
 import { camState, gesture, launchState } from './anim';
-import { DOOR_AZ, LAYOUT, RADIUS, fromDoor } from './layout';
+import { DOOR_AZ, LAYOUT, RADIUS } from './layout';
 import { EYE, FOCUS, MARKERS, POINTS, phasePoint, type PointId, type Vec3 } from './points';
 import { GLOW } from './parts/materials';
 import { TAP_PX, tapOnly } from './parts/tap';
@@ -14,7 +14,8 @@ import { axes, listenKeys, running, walkInput, type Axes } from '../walk/input';
 import { heading } from '../walk/move';
 import { createWalker, walkDebug } from '../walk/walker';
 import { HAB_ROOM, ROOM_K } from '../walk/habitatRoom';
-import { habitatDoor } from './Interiors';
+import { habitatDoor, interiorDoors } from './Interiors';
+import { ROOMS, doorAt, roomState, type RoomId } from '../walk/rooms';
 import { astraLook } from './AstraBase';
 import { clearance, fits, type Solid, type XZ } from '../walk/collide';
 import { INSIDE, OUTSIDE, ROVER_AREA, ROVER_DISC } from '../walk/world';
@@ -64,7 +65,27 @@ const ckPos = new THREE.Vector3();
  */
 const doorTrip = { to: null as PointId | null, t: -1 };
 const DOOR_GO = 0.7;
-const DOOR_SPOT = fromDoor(2.6); // in front of the door, just outside the habitat's hitbox
+/**
+ * Walking in a building with the astronaut (src/walk/rooms.ts): E at its door outside opens it and steps in, E by
+ * the door inside steps out. dir 1 in, −1 out, 0 done (the door is closing); t < 0: no trip.
+ */
+const roomTrip = { room: null as RoomId | null, dir: 0, t: -1 };
+/** The room whose door the astronaut stands at now (outside), for E. */
+const nearDoor = { id: null as RoomId | null };
+/** A room's floor, as the ground the body walks on. */
+const roomFloor = { y: 0 };
+const roomGround = () => roomFloor.y;
+/** What the walk keys ask of the body this step (one object, no allocation per frame). */
+const stepWish = { x: 0, z: 0, run: false, jump: false };
+/** In a room the follow camera rides closer (native metres behind the head) and a little steeper. */
+const ROOM_CAM = 1.7;
+const ROOM_TILT = 0.25;
+/** The camera would be in a room's wall or furniture, or outside its walls. */
+function roomBlocked(a: { solids: readonly Solid[]; bounds: Solid }, x: number, z: number, m: number): boolean {
+  if (Math.hypot(x - a.bounds.x, z - a.bounds.z) > a.bounds.r - m) return true;
+  for (const o of a.solids) if (clearance(o, x, z, m) < 0) return true;
+  return false;
+}
 /** Standing by the airlock in the habitat's room: more than 2 m towards the door from its middle (model frame). */
 function byAirlock(p: XZ): boolean {
   const dx = p.x - LAYOUT.habitat[0];
@@ -188,10 +209,20 @@ export function Rig({ view }: { view: View }) {
   useEffect(() => {
     const off = onRide(() => {
       const r = getRide();
-      if ((r === 'enter' || r === 'leave') && doorTrip.t < 0) {
-        doorTrip.to = r === 'enter' ? 'inside' : 'airlock';
-        doorTrip.t = 0;
-        habitatDoor.want = 1;
+      if ((r === 'enter' || r === 'leave') && doorTrip.t < 0 && roomTrip.t < 0) {
+        const room = r === 'enter' ? nearDoor.id : roomState.id;
+        if (room) {
+          // with the astronaut: the door opens, it steps in (or out), the door closes behind
+          roomTrip.room = room;
+          roomTrip.dir = r === 'enter' ? 1 : -1;
+          roomTrip.t = 0;
+          interiorDoors[room].want = 1;
+        } else {
+          // first person in the habitat (night, morning): out through the airlock, the usual float
+          doorTrip.to = 'airlock';
+          doorTrip.t = 0;
+          habitatDoor.want = 1;
+        }
         setRide(null);
       } else if (seat.stage === 'drive') seat.stage = 'stop';
       else if (seat.stage === 'walk' && r === 'board') boardRover();
@@ -223,6 +254,11 @@ export function Rig({ view }: { view: View }) {
       body.y = ground(body.x, body.z);
       body.facing = s.yaw + Math.PI;
     } else {
+      // a new phase or the map while in a building: out at its door at once, the float starts from there
+      if (roomState.id) {
+        setRoom(null, ROOMS[roomState.id].out);
+        camera.position.set(body.x, body.y + EYE, body.z);
+      }
       // a new phase or the map while in the rover: out at once beside its hatch, and the float starts from there
       if (seat.stage !== 'walk') {
         leaveRover();
@@ -347,6 +383,20 @@ export function Rig({ view }: { view: View }) {
       }
       invalidate();
     }
+    if (roomTrip.t >= 0 && roomTrip.room) {
+      roomTrip.t += dt;
+      if (roomTrip.dir !== 0 && roomTrip.t >= DOOR_GO) {
+        const R = ROOMS[roomTrip.room];
+        setRoom(roomTrip.dir > 0 ? roomTrip.room : null, roomTrip.dir > 0 ? R.spawn : R.out);
+        roomTrip.dir = 0;
+      }
+      if (roomTrip.t >= DOOR_GO + 0.9) {
+        interiorDoors[roomTrip.room].want = 0;
+        roomTrip.t = -1;
+        roomTrip.room = null;
+      }
+      invalidate();
+    }
     if (third) {
       followAstronaut(dt);
       return;
@@ -394,6 +444,23 @@ export function Rig({ view }: { view: View }) {
     setRide(point === 'inside' && astraLook && s.t >= 1 && doorTrip.t < 0 && walkInput.phaseOk && byAirlock(s.to) ? 'leave' : null);
     if (s.t < 1 || Math.abs(dy) > 1e-3 || Math.abs(dp) > 1e-3 || launching || walking) invalidate();
   });
+
+  /** In a room (or out of it, null) at a spot: the body at the room's scale, the camera straight behind it. */
+  function setRoom(id: RoomId | null, at: { x: number; z: number; facing: number }) {
+    roomState.id = id;
+    const R = id ? ROOMS[id] : null;
+    body.scale = R ? R.s : 1;
+    roomFloor.y = R ? R.floorY : 0;
+    body.x = at.x;
+    body.z = at.z;
+    body.y = R ? R.floorY : ground(at.x, at.z);
+    body.vx = body.vy = body.vz = 0;
+    body.onGround = true;
+    body.windup = -1;
+    body.facing = at.facing;
+    s.yaw = s.yawT = at.facing + Math.PI;
+    s.pitch = s.pitchT = 0;
+  }
 
   /** The astronaut's frame: hop to a new point, or walk; then the follow camera behind it. */
   /**
@@ -657,11 +724,18 @@ export function Rig({ view }: { view: View }) {
       heading(s.yaw, c.ax.ahead, c.ax.side, c.wish);
       s.yawT += c.ax.turn * MAX_TURN * dt;
       c.acc = Math.min(c.acc + dt, 0.1);
+      // in a building: its room, its floor, the body at its scale (src/walk/rooms.ts)
+      const R = roomState.id ? ROOMS[roomState.id] : null;
       while (c.acc >= STEP) {
         c.acc -= STEP;
         const air = !body.onGround;
-        active = stepBody(body, { x: c.wish.x, z: c.wish.z, run: running(), jump: walkInput.jump }, OUTSIDE, ground) || active;
+        stepWish.x = c.wish.x;
+        stepWish.z = c.wish.z;
+        stepWish.run = running();
+        stepWish.jump = walkInput.jump && (!R || R.jump);
+        active = (R ? stepBody(body, stepWish, R.area, roomGround, GRAVITY.moon, R.s) : stepBody(body, stepWish, OUTSIDE, ground)) || active;
         walkInput.jump = false;
+        if (R) continue; // (the jump hologram measures full-size jumps outside)
         // measure the jump for the visor hologram: from take-off to the top, reported on landing
         if (!air && !body.onGround) {
           c.takeoff = body.y;
@@ -692,29 +766,44 @@ export function Rig({ view }: { view: View }) {
 
     // follow camera: behind and a little above the helmet (or the rover), pulled in front of anything solid, never
     // under the ground
-    const tilt = CAM_TILT + (CAR_TILT - CAM_TILT) * kc;
+    const room = roomState.id ? ROOMS[roomState.id] : null;
+    const tilt = room ? ROOM_TILT : CAM_TILT + (CAR_TILT - CAM_TILT) * kc;
     const pitch = Math.max(-MAX_PITCH - tilt, s.pitch - tilt);
     const fx = -Math.sin(s.yaw) * Math.cos(pitch);
     const fy = Math.sin(pitch);
     const fz = -Math.cos(s.yaw) * Math.cos(pitch);
     const hx = body.x + (rover.x - body.x) * kc;
-    const hy = body.y + HEAD + (rover.y + CAR_AIM - body.y - HEAD) * kc;
+    const hy = body.y + HEAD * body.scale + (rover.y + CAR_AIM - body.y - HEAD) * kc;
     const hz = body.z + (rover.z - body.z) * kc;
-    const far = CAM_DIST + (CAR_DIST - CAM_DIST) * kc;
-    const solids = inCar ? ROVER_AREA.solids : OUTSIDE.solids;
-    let dist = far;
-    for (let d = 0.6; d <= far; d += 0.2) {
-      const px = hx - fx * d;
-      const py = hy - fy * d;
-      const pz = hz - fz * d;
-      // (the rover's camera rides higher, so taller things count; and it never pulls in under the rover's own roof)
-      if (!scripted && py < (inCar ? 5 : 3.2) && blocked(solids, px, pz)) {
-        dist = Math.max(0.8 + 2.2 * kc, d - 0.3);
-        break;
+    let dist: number;
+    if (room) {
+      // in a room: closer, kept inside its walls and clear of its furniture, under its ceiling
+      const k2 = room.s;
+      dist = ROOM_CAM * k2;
+      for (let d = 0.3 * k2; d <= ROOM_CAM * k2; d += 0.05 * k2) {
+        if (roomBlocked(room.area, hx - fx * d, hz - fz * d, 0.12 * k2)) {
+          dist = Math.max(0.25 * k2, d - 0.08 * k2);
+          break;
+        }
+      }
+    } else {
+      const far = CAM_DIST + (CAR_DIST - CAM_DIST) * kc;
+      const solids = inCar ? ROVER_AREA.solids : OUTSIDE.solids;
+      dist = far;
+      for (let d = 0.6; d <= far; d += 0.2) {
+        const px = hx - fx * d;
+        const py = hy - fy * d;
+        const pz = hz - fz * d;
+        // (the rover's camera rides higher, so taller things count; and it never pulls in under the rover's own roof)
+        if (!scripted && py < (inCar ? 5 : 3.2) && blocked(solids, px, pz)) {
+          dist = Math.max(0.8 + 2.2 * kc, d - 0.3);
+          break;
+        }
       }
     }
     camera.position.set(hx - fx * dist, hy - fy * dist, hz - fz * dist);
-    camera.position.y = Math.max(camera.position.y, ground(camera.position.x, camera.position.z) + 0.3);
+    if (room) camera.position.y = Math.min(Math.max(camera.position.y, room.floorY + 0.3 * room.s), room.ceilY - 0.1 * room.s);
+    else camera.position.y = Math.max(camera.position.y, ground(camera.position.x, camera.position.z) + 0.3);
     camera.rotation.set(pitch, s.yaw, 0, 'YXZ'); // no roll: horizon always level
     camState.inside = false;
     // the rover model and its steered wheels, in the same frame as the camera (no lag between them)
@@ -733,13 +822,16 @@ export function Rig({ view }: { view: View }) {
     }
 
     // E / hand button: the building in front of the astronaut (its facing, in the camera's yaw convention)
-    if (features.controls) setAim(s.t < 1 || launching || seat.stage !== 'walk' ? null : pickAim(body.x, body.z, body.facing + Math.PI, AIM));
-    // ?drive: what E does at the rover now (stored only when it changes)
-    // E: the rover (?drive), or the habitat door (ASTRA look)
+    if (features.controls) setAim(s.t < 1 || launching || seat.stage !== 'walk' || room ? null : pickAim(body.x, body.z, body.facing + Math.PI, AIM));
+    // E (stored only when it changes): the rover (?drive); a building's door outside (in) or inside (out)
     const onFoot = seat.stage === 'walk' && !scripted && s.t >= 1 && walkInput.phaseOk && body.onGround && body.windup < 0;
     let ride: Ride | null = null;
-    if (DRIVABLE) ride = seat.stage === 'drive' ? 'exit' : onFoot && nearHatch() ? 'board' : null;
-    if (!ride && astraLook && onFoot && doorTrip.t < 0 && Math.hypot(body.x - DOOR_SPOT[0], body.z - DOOR_SPOT[1]) < 1.3) ride = 'enter';
+    if (DRIVABLE && !room) ride = seat.stage === 'drive' ? 'exit' : onFoot && nearHatch() ? 'board' : null;
+    nearDoor.id = astraLook && onFoot && !room ? doorAt(body) : null;
+    if (!ride && onFoot && doorTrip.t < 0 && roomTrip.t < 0) {
+      if (room) ride = room.exit(body.x, body.z) ? 'leave' : null;
+      else if (nearDoor.id) ride = 'enter';
+    }
     setRide(ride);
     // the Sun's shadow map is drawn once a day; while the astronaut moves, redraw it ten times a second
     c.shadowT -= dt;

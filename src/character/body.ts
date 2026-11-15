@@ -36,27 +36,31 @@ export interface Body {
   facing: number;
   /** Loping (run held) in the last step. */
   running: boolean;
+  /** Drawn and moved at this scale (1 outside; a building's room scale inside it, src/walk/rooms.ts). */
+  scale: number;
 }
 
 /** Fixed physics step (s): the same as the demo. */
 export const STEP = 1 / 120;
 
 export function createBody(x: number, z: number, ground: Ground, facing = 0): Body {
-  return { x, y: ground(x, z), z, vx: 0, vy: 0, vz: 0, onGround: true, windup: -1, v0: 0, facing, running: false };
+  return { x, y: ground(x, z), z, vx: 0, vy: 0, vz: 0, onGround: true, windup: -1, v0: 0, facing, running: false, scale: 1 };
 }
 
 const at: XZ = { x: 0, z: 0 };
 const next: XZ = { x: 0, z: 0 };
 
 /** One fixed step. Returns true while the body moves, crouches or flies (the scene keeps drawing). */
-export function stepBody(b: Body, wish: Wish, area: Area, ground: Ground, g = GRAVITY.moon): boolean {
+// `k` scales the body for a room drawn at a building's scale (src/walk/rooms.ts): its size, pace, push-off and
+// gravity all by k, so it moves exactly like a full-size body seen at that scale (same timing, same arcs).
+export function stepBody(b: Body, wish: Wish, area: Area, ground: Ground, g = GRAVITY.moon, k = 1): boolean {
   const dt = STEP;
   b.running = wish.run;
-  const vmax = wish.run ? MOVE.run : MOVE.walk;
+  const vmax = (wish.run ? MOVE.run : MOVE.walk) * k;
   const len = Math.min(1, Math.hypot(wish.x, wish.z));
   const tx = len > 1e-3 ? (wish.x / Math.hypot(wish.x, wish.z)) * vmax * len : 0;
   const tz = len > 1e-3 ? (wish.z / Math.hypot(wish.x, wish.z)) * vmax * len : 0;
-  const lim = groundAccel(g) * (b.onGround ? 1 : MOVE.airControl) * dt;
+  const lim = groundAccel(g) * k * (b.onGround ? 1 : MOVE.airControl) * dt;
   const dvx = tx - b.vx, dvz = tz - b.vz, dv = Math.hypot(dvx, dvz);
   if (dv > lim) {
     b.vx += (dvx / dv) * lim;
@@ -71,7 +75,7 @@ export function stepBody(b: Body, wish: Wish, area: Area, ground: Ground, g = GR
     b.windup += dt;
     if (b.windup >= MOVE.windup) {
       b.windup = -1;
-      b.v0 = jumpSpeed(0);
+      b.v0 = jumpSpeed(0) * k;
       b.vy = b.v0;
       b.onGround = false;
     }
@@ -80,7 +84,7 @@ export function stepBody(b: Body, wish: Wish, area: Area, ground: Ground, g = GR
   // across the ground, stopped and slid along by the hitboxes
   at.x = b.x;
   at.z = b.z;
-  walkStep(at, b.vx * dt, b.vz * dt, area, RADIUS, next);
+  walkStep(at, b.vx * dt, b.vz * dt, area, RADIUS * k, next);
   b.vx = (next.x - b.x) / dt;
   b.vz = (next.z - b.z) / dt;
   b.x = next.x;
@@ -89,14 +93,14 @@ export function stepBody(b: Body, wish: Wish, area: Area, ground: Ground, g = GR
   // up and down: an exact parabola in the air, following the ground on foot
   const gy = ground(b.x, b.z);
   if (!b.onGround) {
-    b.y += b.vy * dt - 0.5 * g * dt * dt;
-    b.vy -= g * dt;
+    b.y += b.vy * dt - 0.5 * g * k * dt * dt;
+    b.vy -= g * k * dt;
     if (b.y <= gy && b.vy <= 0) {
       b.y = gy;
       b.vy = 0;
       b.onGround = true;
     }
-  } else if (b.y - gy > MOVE.groundSnap && b.windup < 0) {
+  } else if (b.y - gy > MOVE.groundSnap * k && b.windup < 0) {
     b.onGround = false;            // walked off an edge: fall
     b.vy = 0;
   } else {
@@ -104,7 +108,7 @@ export function stepBody(b: Body, wish: Wish, area: Area, ground: Ground, g = GR
   }
 
   const speed = Math.hypot(b.vx, b.vz);
-  if (speed > 0.15) {
+  if (speed > 0.15 * k) {
     const want = Math.atan2(b.vx, b.vz);
     const d = Math.atan2(Math.sin(want - b.facing), Math.cos(want - b.facing));
     b.facing += d * Math.min(1, 10 * dt);

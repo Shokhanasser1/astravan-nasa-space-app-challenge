@@ -30,6 +30,9 @@ export const PARKED_ROVER = { x: 10.5, z: 8.2, yaw: -2.3, r: 2.4 } as const;
 export const ROBOT_ARM = { x: 12.8, z: 0.5, yaw: 0, r: 0.7, near: 8 } as const;
 
 /** Footprint radius of each tappable building (cable ends, target rings). */
+/** Scales that keep each ASTRA model inside our building's footprint (src/scene/AstraBase.tsx; RADIUS, walk/world.ts). */
+export const ASTRA_SCALE = { habitat: 0.34, greenhouse: 0.45, lab: 0.6, lander: 0.45 } as const;
+
 export const RADIUS = { habitat: 1.7, garden: 1.3, workshop: 1.55, scout: 0.9, lander: 1.6, hub: 0.6 } as const;
 
 /** The habitat door and the open side of the interior face the power hub (south-west). */
