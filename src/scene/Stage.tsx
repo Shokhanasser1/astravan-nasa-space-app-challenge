@@ -6,7 +6,8 @@ import { BlendFunction, ToneMappingMode } from 'postprocessing';
 import * as THREE from 'three';
 import type { Machine, View } from '../state/game';
 import { features } from '../config/features';
-import { LOWER, TIERS, hasWebGL, pcFpsBounds, startTier, type Tier } from './quality';
+import { LOWER, MAX_FPS, TIERS, canvasDpr, hasWebGL, pcFpsBounds, startTier, type Tier } from './quality';
+import { capFrameRate } from './frameCap';
 import { walkInput } from '../walk/input';
 import { Light, sunAzimuth } from './Light';
 import { Earth } from './Earth';
@@ -93,12 +94,38 @@ function Fallback() {
 }
 
 /** One <Canvas> for the whole game. Lane C. */
-export function Stage({ view, onTap, onUndo }: { view: View; onTap: (k: Machine) => void; onUndo?: (k: Machine) => void }) {
+export function Stage({
+  view,
+  onTap,
+  onUndo,
+  paused = false,
+}: {
+  view: View;
+  onTap: (k: Machine) => void;
+  onUndo?: (k: Machine) => void;
+  /** Nothing is drawn while true (the intro film covers the screen); models keep loading behind it. */
+  paused?: boolean;
+}) {
   const [tier, setTier] = useState<Tier>(startTier);
   // (fixed at the first render: a computer stays a computer after its tier steps down)
   const [computer] = useState(() => tier === 'pc' || tier === 'pcLow');
   const [webgl] = useState(hasWebGL);
   const q = TIERS[tier];
+  // The canvas covers the window; canvasDpr keeps it within ~Full HD on bigger screens (quality.ts, 15 Nov perf audit).
+  const [box, setBox] = useState(() => ({ w: window.innerWidth, h: window.innerHeight, dpr: window.devicePixelRatio || 1 }));
+  useEffect(() => {
+    const onResize = () =>
+      setBox((b) =>
+        b.w === window.innerWidth && b.h === window.innerHeight && b.dpr === window.devicePixelRatio
+          ? b
+          : { w: window.innerWidth, h: window.innerHeight, dpr: window.devicePixelRatio || 1 },
+      );
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+  const dpr = canvasDpr(q.dpr, box.dpr, box.w, box.h);
+  // ~60 fps at most on 120/144/240 Hz screens (frameCap.ts)
+  useEffect(() => (MAX_FPS > 0 ? capFrameRate(window, MAX_FPS) : undefined), []);
   // A calm scene is not redrawn (saves battery); storms, the day passing and launch animate.
   const animating = view.phase === 'run' || view.phase === 'launch' || view.level > 0 || view.alert;
   // A computer is also measured while the astronaut walks (frames come back to back then): a slow laptop that only
@@ -128,10 +155,12 @@ export function Stage({ view, onTap, onUndo }: { view: View; onTap: (k: Machine)
     <SceneBoundary fallback={<Fallback />}>
       <Canvas
         className="!fixed inset-0"
-        dpr={q.dpr}
+        dpr={dpr}
         // 'percentage' = PCFShadowMap; `true` would ask for PCFSoftShadowMap, removed in three 0.187.
         shadows={q.shadow > 0 ? 'percentage' : false}
-        frameloop={animating ? 'always' : 'demand'}
+        // 'never' under the intro film: the hidden base was drawn ~60×/s behind it and the film stuttered (15 Nov).
+        // Back to 'demand'/'always' → R3F's store change invalidates, so the first frame comes by itself.
+        frameloop={paused ? 'never' : animating ? 'always' : 'demand'}
         // far 3000: the real skyline is drawn at 1.5–1.95 km (Terrain.tsx), the stars behind it at 2.4 km
         camera={{ fov: 50, near: 0.1, far: 3000, position: [8, 5, 14] }}
         gl={{ antialias: false, powerPreference: 'high-performance' }}
