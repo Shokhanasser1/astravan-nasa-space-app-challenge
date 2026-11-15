@@ -1,0 +1,74 @@
+name: Test preview (GitHub Pages /test/)
+
+# The team's working branch on its own address, the live link untouched (Shoxjahon aka, 15 Nov ~15:50):
+#   https://shokhanasser1.github.io/astravan-nasa-space-app-challenge/        = main, the submitted build (rebuilt
+#                                                                                here from main's own commit: same files)
+#   https://shokhanasser1.github.io/astravan-nasa-space-app-challenge/test/   = the branch `test`
+# GitHub Pages holds one site per repository, so each deploy carries both. A later push to main (deploy.yml) deploys
+# main alone and the /test/ copy disappears until the next push to test.
+
+on:
+  push:
+    branches: [test]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      VITE_API_URL: ${{ vars.API_URL }}
+    steps:
+      # main, exactly as the live link was built (deploy.yml): its own commit as the app version
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          path: site-main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: site-main/package-lock.json
+      - name: Build main (the root of the site)
+        working-directory: site-main
+        run: |
+          npm ci
+          VITE_APP_VERSION=$(git rev-parse HEAD) npm run build
+      # test, checked like every push (npm run verify), built for /test/ (vite base './' is relative)
+      - uses: actions/checkout@v4
+        with:
+          path: site-test
+      - name: Verify and build test (the /test/ copy)
+        working-directory: site-test
+        env:
+          VITE_APP_VERSION: ${{ github.sha }}
+        run: |
+          npm ci
+          npm run verify
+      - name: Put both together
+        run: |
+          mkdir -p _site
+          cp -r site-main/dist/. _site/
+          mkdir -p _site/test
+          cp -r site-test/dist/. _site/test/
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  pages:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}test/
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
