@@ -1,6 +1,8 @@
-import { ClipboardCheck, RotateCcw } from 'lucide-react';
+import { ClipboardCheck, Heart, RotateCcw } from 'lucide-react';
 import type { Dispatch } from 'react';
 import type { Action, Truth } from '../../state/game';
+import type { Result } from '../../engine/rules';
+import { features } from '../../config/features';
 import { Btn, Panel, type Tr } from './kit';
 import { HomeTruth, Mark, SunTruth } from './Holo';
 import { fmtRatio } from '../../quiz/quiz';
@@ -18,14 +20,45 @@ const SOURCES = ['crater', 'donki', 'sdo', 'earth', 'sky', 'ground'] as const;
 
 const barHeight = (ratio: number) => Math.max(4, Math.min(100, (Math.log10(Math.max(ratio, 1)) / 4) * 100 + 4));
 
+/** Ship repair % (computed), the same formula as the View's `res.ship`: science over the week's high-science target. */
+const shipOf = (r: Result) =>
+  r.highSci > 0 ? Math.min(100, Math.max(0, Math.round((r.science / r.highSci) * 100))) : 0;
+
+/** Health as five hearts: crew 0–10 (computed by the engine), one heart = 2 crew, so an odd crew shows a half heart. */
+function Hearts({ crew, label }: { crew: number; label: string }) {
+  const halves = Math.max(0, Math.min(10, Math.round(crew)));
+  return (
+    <span className="flex justify-center gap-1 py-1 text-good" role="img" aria-label={`${label}: ${halves / 2} / 5`}>
+      {Array.from({ length: 5 }, (_, i) => {
+        const fill = Math.max(0, Math.min(2, halves - i * 2)); // 0 empty · 1 half · 2 full
+        return (
+          <span key={i} className="relative inline-block h-6 w-6" data-fill={fill}>
+            <Heart size={24} className="absolute inset-0 opacity-35" aria-hidden="true" />
+            {fill > 0 && (
+              <span
+                className="absolute inset-y-0 left-0 overflow-hidden"
+                style={{ width: fill === 2 ? '100%' : '50%' }}
+              >
+                <Heart size={24} className="max-w-none" fill="currentColor" aria-hidden="true" />
+              </span>
+            )}
+          </span>
+        );
+      })}
+    </span>
+  );
+}
+
 export function TruthScreen({
-  truth, dispatch, tr, onNext,
+  truth, dispatch, tr, onNext, ship,
 }: {
   truth: Truth;
   dispatch: Dispatch<Action>;
   tr: Tr;
   /** Set while the mission debrief (features.quiz) is still to pass: the button opens it instead of ending. */
   onNext?: () => void;
+  /** Home story: the View's `res.ship` when the HUD passes it; otherwise computed from the engine result. */
+  ship?: number;
 }) {
   const r = truth.result;
   // Days with fewer measured hours than PARTLY_H carry a "*" (rule: < 18 h measured → "partly measured").
@@ -67,7 +100,10 @@ export function TruthScreen({
       )}
       <SunTruth weekId={truth.weekId} tr={tr} />
       <HomeTruth weekId={truth.weekId} tr={tr} />
-      <div className="grid grid-cols-3 gap-2 text-center [&>div]:rounded-[16px] [&>div]:border [&>div]:border-[rgba(150,175,255,0.16)] [&>div]:bg-[rgba(150,175,255,0.08)] [&>div]:py-2">
+      <div className={`grid ${features.homeStory ? 'grid-cols-1' : 'grid-cols-3'} gap-2 text-center [&>div]:rounded-[16px] [&>div]:border [&>div]:border-[rgba(150,175,255,0.16)] [&>div]:bg-[rgba(150,175,255,0.08)] [&>div]:py-2`}>
+        {/* (home story: Health and Ship % are shown below the title as hearts and a bar, so these two would repeat them) */}
+        {!features.homeStory && (
+          <>
         <div>
           <div className="text-xs text-white/70">{tr('ui.truth.crew')}</div>
           <div className="text-2xl font-bold tabular-nums" data-testid="truth-crew">
@@ -82,6 +118,8 @@ export function TruthScreen({
           </div>
           <Mark label="rule" tr={tr} />
         </div>
+          </>
+        )}
         <div>
           <div className="text-xs text-white/70">{tr('ui.truth.blocked')}</div>
           <div className="text-2xl font-bold tabular-nums">{Math.round(r.blockedPct)}%</div>
@@ -91,6 +129,29 @@ export function TruthScreen({
       <p className="text-center text-lg font-bold" data-testid="truth-title" data-title={r.title}>
         {tr(r.titleKey)}
       </p>
+      {/* Home story finale (features.homeStory; lead's document p. 15): the ending by the engine's title, Health and
+          Ship %. Every number from the engine; off → this screen exactly as before. */}
+      {features.homeStory && (
+        <>
+          <p className="-mt-2 text-center" data-testid="truth-ending" data-ending={r.titleKey.split('.').pop()}>
+            {tr(`ui.ending.${r.titleKey.split('.').pop()}`)}
+          </p>
+          <div className="grid grid-cols-2 gap-2 text-center [&>div]:rounded-[16px] [&>div]:border [&>div]:border-[rgba(150,175,255,0.16)] [&>div]:bg-[rgba(150,175,255,0.08)] [&>div]:py-2">
+            <div data-testid="truth-health" data-crew={r.crew}>
+              <div className="text-xs text-white/70">{tr('ui.ending.health')}</div>
+              <Hearts crew={r.crew} label={tr('ui.ending.health')} />
+              <Mark label="computed" tr={tr} />
+            </div>
+            <div>
+              <div className="text-xs text-white/70">{tr('ui.ending.ship')}</div>
+              <div className="text-2xl font-bold tabular-nums" data-testid="truth-ship">
+                {ship ?? shipOf(r)}%
+              </div>
+              <Mark label="computed" tr={tr} />
+            </div>
+          </div>
+        </>
+      )}
       {/* Where every real thing in this week came from (challenge: name the data sources inside the tool). */}
       <details className="rounded-[16px] border border-[rgba(150,175,255,0.16)] bg-[rgba(150,175,255,0.06)] px-3 py-2 text-sm" data-testid="truth-sources">
         <summary className="cursor-pointer select-none font-semibold">{tr('ui.truth.dataTitle')}</summary>

@@ -5,7 +5,7 @@
  * Day flow: morning (report) → plan (card, shelter, board) → run (≤ 6 s) → night (log) → … → launch → truth.
  */
 import {
-  CARD_CHOICES, confirm, dayInfo, limits, newGame, playable, preview, result,
+  CARD_CHOICES, confirm, dayInfo, limits, newGame, playable, preview, result, sciTarget,
   type Alloc, type CardId, type DayInfo, type Limits, type Preview, type Result, type Shelter, type State,
 } from '../engine/rules';
 import type { SkyDay, Week, WeekDay } from '../engine/week';
@@ -59,6 +59,9 @@ export type Resources = {
   sci: number; // science points so far (game rule)
   stored: number; // batteries saved for tomorrow (game rule), 0..2
   after?: { air: number; plant: number; wall: number; sciToday: number; doseToday: number };
+  // 15 Nov home story (docs/plans/2026-11-15-home-story.md step 2): the ship's repair, 0..100 % (computed) =
+  // min(100, round(sci ÷ the week's high-science target × 100)); the same science points under a new name.
+  ship: number;
 };
 
 export type Machine = 'ls' | 'gh' | 'ws' | 'sc' | 'launch';
@@ -326,9 +329,14 @@ function resources(m: Model, g: State, week: Week): Resources {
   const r = result(g, week);
   return {
     air: g.air, airMax: AIR_MAX, plant: g.plant, wall: g.wall, dose: g.extra,
-    crew: r.crew, crewMax: CREW_MAX, sci: g.sci, stored: g.bat,
+    crew: r.crew, crewMax: CREW_MAX, sci: g.sci, stored: g.bat, ship: shipPct(g.sci, sciTarget(week)),
     after: p ? { air: p.reserveAfter, plant: p.gardenAfter, wall: p.wallAfter, sciToday: p.sciToday, doseToday: p.doseToday } : undefined,
   };
+}
+
+/** Ship repair in % (computed): science points over the week's high-science target, capped at 100. */
+function shipPct(sci: number, target: number): number {
+  return target > 0 ? Math.min(100, Math.max(0, Math.round((sci / target) * 100))) : 0;
 }
 
 /** Crew at the start (engine P.startCrew = 7). */

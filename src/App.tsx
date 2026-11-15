@@ -9,6 +9,7 @@ import { ambienceFor } from './audio/ambience';
 import { musicFor } from './audio/music';
 import { doseFor, levelOf, useRunHour } from './scene/runClock';
 import { load, save } from './lib/storage';
+import { demoModel, isDemoKind } from './state/demo';
 import { features } from './config/features';
 import { flush } from './net/api';
 import { Reception } from './ui/entry/Reception';
@@ -36,6 +37,11 @@ const viewOverride: Partial<View> | null = (() => {
     return null;
   }
 })();
+
+// Judge links (home story, src/state/demo.ts): ?demo=storm opens Day 4's morning, ?demo=launch Day 7's, the days
+// before played with golden Plan A. A demo is a guest's game: nothing is saved. Without the param nothing changes.
+const demoKind = params.get('demo');
+const demo = isDemoKind(demoKind) ? demoModel(demoKind) : null;
 
 /** Saved game: the model without the week (looked up again by id), so old saves survive a new weeks.json. */
 type Saved = Omit<Model, 'week'> & { weekId: string };
@@ -68,17 +74,19 @@ function chooseWeek(playedKey: string | undefined) {
 }
 
 export function App() {
-  const [model, dispatch] = useReducer(reducer, initialModel);
+  const [model, dispatch] = useReducer(reducer, initialModel, (m) => demo ?? m);
   const [lang, setLangState] = useState<Lang>(() => load<Lang>('lang', 'en'));
   const [sound, setSound] = useState(true);
   // Badges on this device; the one checked in (remembered, so a returning cadet lands in their lobby).
   const [profiles, setProfiles] = useState<Profile[]>(() => (features.entry ? sanitize(load('profiles', [])) : []));
   const [who, setWho] = useState<Who>(() => {
+    if (demo && features.entry) return 'guest'; // a demo plays as a guest; checking in at the desk later saves as usual
     const last = load<string | null>('lastBadge', null);
     return features.entry && last && profiles.some((p) => p.id === last) ? last : null;
   });
   const [guestResult, setGuestResult] = useState<MissionRecord | null>(null);
-  const keys = keysOf(who);
+  // (without the desk there is one shared save: a demo visit leaves it alone)
+  const keys = demo && !features.entry ? null : keysOf(who);
   const [saved, setSaved] = useState<Model | null>(() => loadSaved(keysOf(who)?.game));
   const tr = useMemo(() => makeTr(lang), [lang]);
 

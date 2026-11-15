@@ -14,6 +14,9 @@ import { TruthScreen } from './play/TruthScreen';
 import { JumpButton, RideButton, WalkStick } from './play/WalkStick';
 import { CornerButtons, HelpPanel, Kbd, MapPanel, makeApply, touchUi, useGameKeys } from './play/Controls';
 import { ResourceBar } from './play/ResourceBar';
+import { HomeBar } from './play/HomeBar';
+import { DayTasks } from './play/DayTasks';
+import { NightFact } from './play/NightFact';
 import { ContextButton, ContextPrompt, Inventory, contextOf } from './play/Hands';
 import { Decision, pendingDecision } from './play/Decision';
 import { TaskLine, useTask } from './play/Task';
@@ -201,10 +204,12 @@ export function Hud({ model, view, dispatch, lang, setLang, sound, setSound, onS
   const ctx = useMemo(() => contextOf(model, board, aim), [model, board, aim]);
 
   const confirmBlocked = phase === 'plan' && board?.preview?.warning === 'engine.warn.chooseCard';
+  // (home story: the day runs → "Sleep"; the night card → "Wake up"; the plan's button reads "Start the day")
+  const nextLabel = features.homeStory && phase === 'run' ? 'ui.hud.sleep' : features.homeStory && phase === 'night' ? 'ui.hud.wakeUp' : 'ui.hud.next';
   const primary =
     phase === 'plan'
       ? { label: tr('ui.board.confirmDay'), action: { type: 'CONFIRM' } as const }
-      : { label: tr('ui.hud.next'), action: { type: 'NEXT' } as const };
+      : { label: tr(nextLabel), action: { type: 'NEXT' } as const };
   const glow = task?.step === 'next' || task?.step === 'confirm' || task?.step === 'rest';
 
   const playing = screen === 'game' && phase !== 'truth';
@@ -227,10 +232,16 @@ export function Hud({ model, view, dispatch, lang, setLang, sound, setSound, onS
           {features.controls ? <CornerButtons map={canTravel({ screen, phase })} open={(ui) => apply({ ui })} tr={tr} /> : null}
           {playing ? <DayBadge view={view} board={board} tr={tr} /> : <span />}
           <TopBar lang={lang} setLang={setLang} sound={sound} setSound={setSound} tr={tr} />
-          {playing && !overlay && view.res && <ResourceBar res={view.res} tr={tr} />}
+          {playing && !overlay && view.res && (features.homeStory ? <HomeBar res={view.res} batteries={view.batteries} tr={tr} /> : <ResourceBar res={view.res} tr={tr} />)}
         </div>
-        {playing && !overlay && task && (phase === 'morning' || phase === 'plan') && (
-          <TaskLine task={task} tr={tr} onSkip={task.step ? skip : undefined} />
+        {/* (home story: from Day 2, or once the Day 1 tutorial is done, the plan shows Today's 5 instead of one line) */}
+        {playing && !overlay && features.homeStory && phase === 'plan' && !task?.step ? (
+          <DayTasks model={model} tr={tr} />
+        ) : (
+          playing &&
+          !overlay &&
+          task &&
+          (phase === 'morning' || phase === 'plan') && <TaskLine task={task} tr={tr} onSkip={task.step ? skip : undefined} />
         )}
         {/* (the Sun photo steps aside while the robot arm's scanner has the upper-left corner: near the arm) */}
         {playing && !overlay && (phase === 'morning' || phase === 'plan') && !armCorner && (
@@ -275,7 +286,7 @@ export function Hud({ model, view, dispatch, lang, setLang, sound, setSound, onS
       )}
 
       {screen === 'game' && phase === 'truth' && truth && (
-        <TruthScreen truth={truth} dispatch={dispatch} tr={tr} onNext={quizPending ? nextOrQuiz : undefined} />
+        <TruthScreen truth={truth} dispatch={dispatch} tr={tr} onNext={quizPending ? nextOrQuiz : undefined} ship={view.res?.ship} />
       )}
 
       {quizOpen && quizPending && (
@@ -334,6 +345,7 @@ export function Hud({ model, view, dispatch, lang, setLang, sound, setSound, onS
           )}
           {phase === 'run' && <DayRun view={view} ms={runMs(view.hourly)} sound={sound} tr={tr} />}
           {phase === 'night' && <NightTablet model={model} before={planRes.current} after={view.res} tr={tr} />}
+          {features.homeStory && phase === 'night' && <NightFact model={model} tr={tr} lang={lang} />}
           {showList && !dialog && <PlanTablet board={board} model={model} dispatch={act} tr={tr} onFold={() => setListOpen(false)} />}
           {planning && ctx && !dialog && !showList && <ContextPrompt ctx={ctx} tr={tr} />}
           {planning && (

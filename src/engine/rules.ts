@@ -427,10 +427,20 @@ const TITLE_KEYS: Record<string, string> = {
   'Late Ride Home': 'engine.title.lateRideHome',
 };
 
+/** The week's high marks (crew, science) by its kind; an unknown kind uses the severe row. */
+function threshold(week: Week): { crew: number; sci: number } {
+  const kind = String(week.kind ?? 'storm').toLowerCase();
+  return P.thresholds[kind] ?? P.thresholds.severe;
+}
+
+/** The week's high-science target (same number result() compares against), e.g. 14 for the first week. */
+export function sciTarget(week: Week): number {
+  return threshold(week).sci;
+}
+
 export function result(state: State, week: Week): Result {
   const crew = clamp(P.startCrew - dosePenalty(state.extra) + state.crew_adj, 0, 10);
-  const kind = String(week.kind ?? 'storm').toLowerCase();
-  const th = P.thresholds[kind] ?? P.thresholds.severe;
+  const th = threshold(week);
   const highCrew = crew >= th.crew;
   const highSci = state.sci >= th.sci;
   const title = state.late

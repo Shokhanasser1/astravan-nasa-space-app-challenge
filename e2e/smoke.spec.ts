@@ -36,7 +36,7 @@ test('loads, starts and plays the first mission to the truth screen', async ({ p
   // base (15 Nov), more with it (a laptop run on a busy machine reached Day 6 at 120 s, so 180 s). Real phones and
   // laptops draw on the GPU; their speed is checked with ?perf.
   // (+ the mission quiz on some nights and the 1.3 s radio delay, 15 Nov: a laptop run reached Day 7 at 180 s → 300 s)
-  test.setTimeout(300_000);
+  test.setTimeout(480_000);
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
 

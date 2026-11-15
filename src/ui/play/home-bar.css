@@ -1,0 +1,161 @@
+/*
+ * HomeBar (src/ui/play/HomeBar.tsx, home story step 2): four gauges + hearts at the top. Tokens only (src/index.css),
+ * cold colours; amber (--color-alert) only on a warning, always with the triangle icon. The bar reuses the compact
+ * Flight Deck frame (.res-bar.glass) and the 48 px cells (.res-cell). Layouts grow with uz/ru words, never truncate:
+ * on a narrow phone the five cells wrap into two centred rows.
+ */
+.home-bar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.25rem;
+  width: max-content;
+  max-width: 100%;
+  padding: 0.25rem;
+}
+
+.home-cell {
+  --tone: var(--peri);
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 0.25rem;
+  min-width: 4.25rem;
+  min-height: 48px;
+  padding: 0.3rem 0.55rem;
+  border-radius: 14px;
+  color: var(--text-1);
+  text-align: left;
+}
+.home-cell[data-k='air'] { --tone: var(--c-o2); }
+.home-cell[data-k='food'] { --tone: var(--mint); }
+.home-cell[data-k='power'] { --tone: var(--c-power); }
+.home-cell[data-k='ship'] { --tone: var(--violet); }
+.home-cell[data-k='health'] { --tone: var(--ice); }
+.home-cell[data-warn] { --tone: var(--color-alert); }
+.home-cell[aria-expanded='true'] {
+  background: color-mix(in srgb, var(--text-1) 10%, transparent);
+}
+
+.home-head {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.68rem;
+  font-weight: 600;
+  line-height: 1.1;
+  color: var(--text-2);
+  white-space: nowrap;
+}
+.home-tone { color: var(--tone); }
+.home-warn { color: var(--color-alert); }
+
+.home-body {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-height: 18px;
+}
+.home-num {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Air & water: a tank of airMax cells */
+.home-tank {
+  display: inline-flex;
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid color-mix(in srgb, var(--tone) 55%, transparent);
+  border-radius: 5px;
+}
+.home-tank > i {
+  width: 6px;
+  height: 12px;
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--tone) 14%, transparent);
+}
+.home-tank > i.on { background: var(--tone); }
+
+/* Food: four leaves, filled = garden health */
+.home-leaves {
+  display: inline-flex;
+  gap: 2px;
+}
+.home-leaves > svg {
+  color: var(--text-3);
+  opacity: 0.7;
+}
+.home-leaves > svg.on {
+  color: var(--tone);
+  fill: color-mix(in srgb, var(--tone) 55%, transparent);
+  opacity: 1;
+}
+
+/* Ship: repair % bar */
+.home-ship {
+  position: relative;
+  width: 3rem;
+  height: 8px;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--tone) 50%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--tone) 16%, transparent);
+}
+.home-ship-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--tone);
+  transition: width 0.3s ease-out;
+}
+
+/* Health: five hearts; a half heart = the filled heart clipped to its left half over the outline */
+.home-hearts {
+  display: inline-flex;
+  gap: 2px;
+}
+.home-heart {
+  display: inline-grid;
+}
+.home-heart > svg {
+  grid-area: 1 / 1;
+  color: var(--text-3);
+}
+.home-heart > .home-heart-in {
+  color: var(--tone);
+  fill: var(--tone);
+}
+.home-heart.empty > .home-heart-in { display: none; }
+.home-heart.half > .home-heart-in { clip-path: inset(0 50% 0 0); }
+
+/* Tonight's change while planning (res.after); the slot stays for the plan phase so nothing jumps */
+.home-after {
+  min-width: 1.75rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--color-measured);
+  font-variant-numeric: tabular-nums;
+}
+.home-after.worse { color: var(--color-alert); }
+.home-after.same { visibility: hidden; }
+
+@media (max-width: 380px) {
+  .home-bar { gap: 0.125rem; }
+  .home-cell {
+    min-width: 3.75rem;
+    padding-inline: 0.4rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-ship-fill { transition: none; }
+}

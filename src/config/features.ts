@@ -46,6 +46,11 @@ export const features = {
   // debrief after the truth screen that opens the next mission. Questions only about days already played, numbers
   // from the real week. Cut → the night's Next and the truth screen's Play again work as before.
   quiz: true,
+  // The home story (Shoxjahon aka's document "tanqid, yangi ssenariy va o'yin mantig'i", 15 Nov; plan
+  // docs/plans/2026-11-15-home-story.md): crash → reach the base → finish the base ship with your wreck's parts → home
+  // on Day 7. New words, 4 gauges + hearts, Today's 5, a fact a night, the finale, judge links. The engine is unchanged.
+  // Off → today's game. Turned on only when the whole story is green.
+  homeStory: true,
   // Pitch answer 5 (Sunday plan): "no account, no names, no date stored, nothing goes to a server".
   // Keep false unless the whole team changes that answer. True = anonymous results go to our PocketBase.
   sendResults: false,
