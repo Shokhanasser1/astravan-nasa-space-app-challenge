@@ -1,7 +1,8 @@
 import { Component, Suspense, useMemo, type ReactNode } from 'react';
 import { useGLTF } from '@react-three/drei';
 import type * as THREE from 'three';
-import { RADIUS } from './layout';
+import { HDU, RADIUS } from './layout';
+import { GLOW } from './parts/materials';
 import { Interior } from './Interiors';
 import { Sandbags } from './parts/Sandbags';
 
@@ -40,7 +41,17 @@ function Shell({ turn }: { turn: number }) {
   return <primitive object={obj} rotation-y={turn} />;
 }
 
-export function HduHabitat({ wall, turn }: { wall: number; turn: number }) {
+/**
+ * Round portholes that glow when Life Support has batteries (like ASTRA's windows, AstraBase.tsx WINDOW_GLOW): two on
+ * the ground floor either side of the door, one on the loft at the back. Model frame (front +z), on the shell.
+ */
+const PORTS: [number, number][] = [
+  [Math.PI / 3.2, 2.7],
+  [-Math.PI / 3.2, 2.7],
+  [Math.PI, 5.6],
+];
+
+export function HduHabitat({ on, wall, turn }: { on: boolean; wall: number; turn: number }) {
   return (
     <>
       <Quiet>
@@ -50,6 +61,11 @@ export function HduHabitat({ wall, turn }: { wall: number; turn: number }) {
       </Quiet>
       <group rotation-y={turn}>
         <Interior id="habitat" />
+        {PORTS.map(([a, y]) => (
+          <mesh key={a} position={[Math.sin(a) * (HDU.shell + 0.03), y, Math.cos(a) * (HDU.shell + 0.03)]} rotation-y={a} material={on ? GLOW.window : GLOW.dark}>
+            <circleGeometry args={[0.34, 20]} />
+          </mesh>
+        ))}
       </group>
       <Sandbags wall={wall} radius={RADIUS.habitat} />
     </>

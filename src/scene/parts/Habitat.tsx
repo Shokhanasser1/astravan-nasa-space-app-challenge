@@ -23,7 +23,7 @@ export function Habitat({ on, wall, tap }: { on: boolean; wall: number; tap: Tap
     <group position={[x, 0, z]}>
       <group onClick={tap}>
         {astraLook && HDU_HABITAT ? (
-          <HduHabitat wall={wall} turn={DOOR_AZ} />
+          <HduHabitat on={on} wall={wall} turn={DOOR_AZ} />
         ) : astraLook ? (
           <AstraHabitat on={on} wall={wall} turn={DOOR_AZ} />
         ) : (
