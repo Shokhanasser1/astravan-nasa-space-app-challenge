@@ -12,6 +12,7 @@
 import type * as THREE from 'three';
 import { PARKED_ROVER } from './layout';
 import { groundHeight } from './ground';
+import { wheelGround } from '../walk/rocks';
 import { placeOnGround, type Rover } from './roverDrive';
 import { GRAVITY } from '../character/physics.js';
 
@@ -87,7 +88,8 @@ export type RoverLive = Rover & {
   cam: 'chase' | 'cockpit';
   /** filled by Decor once the model has loaded (blender/decor_anim/sev_full): the rover and its parts */
   object: THREE.Object3D | null;
-  steerParts: { node: THREE.Object3D; k: number }[];
+  /** steer pivots (front +1 / middle 0 / rear −1) with where each sits in the model: x, z and its rest height y0 */
+  steerParts: { node: THREE.Object3D; k: number; x: number; z: number; y0: number }[];
   seatLocal: THREE.Matrix4 | null;
   camLocal: THREE.Matrix4 | null;
   /** the round side hatches: how open (0…1, eased in applyRover), where each is going, their hinges from the model */
@@ -135,13 +137,66 @@ export function stepDoors(dt: number): boolean {
   return moving;
 }
 
+/**
+ * Suspension: the chassis rides on springs. It follows the pose the ground gives (rover.y, pitch, roll) softly and
+ * a little bouncy — at 1/6 g a rover rocks slowly — squats when it speeds up and dives when it brakes, and never
+ * moves more than the springs' travel away from the ground pose. Each wheel pair keeps to the ground under it: its
+ * pivot moves up or down within the travel (applyRover). Game numbers, chosen to read well, not a measured SEV.
+ */
+export const SPRING = { hz: 1.3, damp: 0.38, travel: 0.18, squat: 0.05 } as const;
+export const chassis = { y: 0, pitch: 0, roll: 0, vy: 0, vp: 0, vr: 0, speed: 0 };
+
+/** One step of the springs (dt in s). True while the chassis still moves (the scene keeps drawing). */
+export function stepSuspension(dt: number): boolean {
+  if (dt <= 0) return false;
+  const w = 2 * Math.PI * SPRING.hz;
+  const k = w * w;
+  const c = 2 * SPRING.damp * w;
+  // speeding up lifts the nose (pitch −), braking dips it (pitch +), a little
+  const accel = (rover.speed - chassis.speed) / dt;
+  chassis.speed = rover.speed;
+  const pitchT = rover.pitch - Math.max(-1, Math.min(1, accel / ROVER_ACCEL)) * SPRING.squat;
+  const n = Math.max(1, Math.ceil(dt * 120));
+  const h = dt / n;
+  for (let i = 0; i < n; i++) {
+    chassis.vy += (k * (rover.y - chassis.y) - c * chassis.vy) * h;
+    chassis.y += chassis.vy * h;
+    chassis.vp += (k * (pitchT - chassis.pitch) - c * chassis.vp) * h;
+    chassis.pitch += chassis.vp * h;
+    chassis.vr += (k * (rover.roll - chassis.roll) - c * chassis.vr) * h;
+    chassis.roll += chassis.vr * h;
+  }
+  // the bump stops: the springs bottom out (and stop) at their travel
+  const dy = chassis.y - rover.y;
+  if (Math.abs(dy) > SPRING.travel) {
+    chassis.y = rover.y + Math.sign(dy) * SPRING.travel;
+    chassis.vy = 0;
+  }
+  return Math.abs(chassis.y - rover.y) + Math.abs(chassis.pitch - pitchT) + Math.abs(chassis.roll - rover.roll) > 1e-3 ||
+    Math.abs(chassis.vy) + Math.abs(chassis.vp) + Math.abs(chassis.vr) > 1e-3;
+}
+const ROVER_ACCEL = 0.8; // m/s² (roverDrive.ts ROVER.accel): full squat at full throttle
+
+/** How far a wheel pair at model (x, z) must reach down (−) or up (+) to the ground, within the travel. */
+export function wheelReach(x: number, z: number): number {
+  const c = Math.cos(rover.yaw), s = Math.sin(rover.yaw);
+  const wx = rover.x + x * c + z * s;
+  const wz = rover.z - x * s + z * c;
+  // the chassis plane at that wheel: nose down (+pitch) lowers the front (+z), left up (+roll) lifts +x
+  const plane = chassis.y - z * Math.tan(chassis.pitch) + x * Math.tan(chassis.roll);
+  return Math.max(-SPRING.travel, Math.min(SPRING.travel, wheelGround(wx, wz) - plane));
+}
+
 /** Put the rover model where the shared state says, wheels steered (the Rig calls it in the same frame as the camera). */
 export function applyRover() {
   const o = rover.object;
   if (!o) return;
-  o.position.set(rover.x, rover.y, rover.z);
-  o.rotation.set(rover.pitch, rover.yaw, rover.roll, 'YXZ'); // heading, then nose and side on the ground
-  for (const p of rover.steerParts) p.node.rotation.y = rover.steer * p.k;
+  o.position.set(rover.x, chassis.y, rover.z);
+  o.rotation.set(chassis.pitch, rover.yaw, chassis.roll, 'YXZ'); // heading, then nose and side on its springs
+  for (const p of rover.steerParts) {
+    p.node.rotation.y = rover.steer * p.k;
+    p.node.position.y = p.y0 + wheelReach(p.x, p.z); // each wheel pair on the ground under it
+  }
   for (const p of rover.doorParts) {
     const u = rover.door[p.side];
     p.node.rotation.y = (p.side === 'L' ? -1 : 1) * DOOR.open * u * u * (3 - 2 * u); // L opens at −, R at + (measured)
@@ -152,3 +207,6 @@ if (ARRIVE) {
   rover.speed = 0;
 }
 placeOnGround(rover, groundHeight);
+chassis.y = rover.y;
+chassis.pitch = rover.pitch;
+chassis.roll = rover.roll;

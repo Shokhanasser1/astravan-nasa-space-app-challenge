@@ -13,7 +13,7 @@ import { DOOR_AZ, LAYOUT, ASTRA_SCALE } from '../scene/layout';
 import type { Area, Solid, XZ } from './collide';
 import ROOM_BOXES from './rooms.json';
 
-export type RoomId = 'habitat' | 'greenhouse' | 'lab' | 'lander';
+export type RoomId = 'habitat' | 'habitat_up' | 'greenhouse' | 'lab' | 'lander';
 
 type Box = (string | number)[];
 interface Spec {
@@ -28,6 +28,10 @@ interface Spec {
   out: [number, number, number];
   exit: (x: number, z: number) => boolean;
   jump: boolean;
+  /** No door of its own (an upper floor): reached by the ladder; a phase change takes you out by the main door. */
+  noDoor?: boolean;
+  /** The ladder to another floor: E within `reach` of `at` (model x, z) climbs, arriving at `arrive` there. */
+  ladder?: { to: RoomId; at: [number, number]; reach: number; arrive: [number, number, number] };
 }
 
 /** A model's front (+z) faces the middle of the base (AstraBase.tsx faceCentre). */
@@ -39,6 +43,14 @@ const SPECS: Record<RoomId, Spec> = {
   habitat: {
     at: LAYOUT.habitat, turn: DOOR_AZ, k: ASTRA_SCALE.habitat, floor: 0.5, headroom: 2.6, bounds: 4.85,
     spawn: [0, 2.45, Math.PI], out: [0, 8.0, 0], exit: (x, z) => z > 2.25 && Math.abs(x) < 0.7, jump: true,
+    // the ladder in the storm shelter, up through the deck opening into the command room
+    ladder: { to: 'habitat_up', at: [0, 0.4], reach: 0.9, arrive: [1.15, 0.45, 0] },
+  },
+  // upper floor (deck 3.35, ceiling 5.95): command room, crew quarters, medical corner, stowage
+  habitat_up: {
+    at: LAYOUT.habitat, turn: DOOR_AZ, k: ASTRA_SCALE.habitat, floor: 3.35, headroom: 2.6, bounds: 4.85,
+    spawn: [1.15, 0.45, 0], out: [0, 8.0, 0], exit: () => false, jump: true, noDoor: true,
+    ladder: { to: 'habitat', at: [0, 0.62], reach: 1.6, arrive: [0, 0.75, 0] },
   },
   // the walkway between the two grow racks; the door at the east end (+x), closed behind
   greenhouse: {
@@ -72,6 +84,9 @@ export interface Room {
   out: { x: number; z: number; facing: number };
   /** True where E inside goes out (game x, z). */
   exit: (x: number, z: number) => boolean;
+  noDoor: boolean;
+  /** The ladder: where it leads, whether (x, z) is close enough to climb, where you arrive. */
+  ladder: { to: RoomId; near: (x: number, z: number) => boolean; arrive: { x: number; z: number; facing: number } } | null;
 }
 
 function build(id: RoomId): Room {
@@ -114,19 +129,37 @@ function build(id: RoomId): Room {
       const [mx, mz] = toModel(x, z);
       return p.exit(mx, mz);
     },
+    noDoor: Boolean(p.noDoor),
+    ladder: p.ladder
+      ? {
+          to: p.ladder.to,
+          near: (x, z) => {
+            const [mx, mz] = toModel(x, z);
+            return Math.hypot(mx - p.ladder!.at[0], mz - p.ladder!.at[1]) < p.ladder!.reach;
+          },
+          arrive: at(p.ladder.arrive),
+        }
+      : null,
   };
 }
 
 export const ROOMS: Record<RoomId, Room> = {
   habitat: build('habitat'),
+  habitat_up: build('habitat_up'),
   greenhouse: build('greenhouse'),
   lab: build('lab'),
   lander: build('lander'),
 };
 export const ROOM_IDS = Object.keys(ROOMS) as RoomId[];
 
+/** The building a room belongs to (its interior model and its door). */
+export const buildingOf = (id: RoomId): Exclude<RoomId, 'habitat_up'> => (id === 'habitat_up' ? 'habitat' : id);
+
 /** The room the astronaut walks in now (null: outside). Written by the Rig, read by Interiors and Astronaut. */
 export const roomState = { id: null as RoomId | null };
+
+/** The body's radius indoors (native m): a person's shoulders, so the rooms' doorways and the ladder's rail let it by. */
+export const ROOM_BODY = 0.25;
 
 /** E reaches a door from this far (m, in the game) from its `out` spot. */
 export const DOOR_REACH = 1.3;
@@ -134,6 +167,7 @@ export const DOOR_REACH = 1.3;
 /** The room whose door the astronaut stands at, outside (null: none). */
 export function doorAt(p: XZ): RoomId | null {
   for (const id of ROOM_IDS) {
+    if (ROOMS[id].noDoor) continue;
     const o = ROOMS[id].out;
     if (Math.hypot(p.x - o.x, p.z - o.z) < DOOR_REACH) return id;
   }

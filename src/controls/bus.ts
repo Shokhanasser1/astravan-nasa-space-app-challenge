@@ -45,8 +45,8 @@ export function onTravel(f: (p: PointId) => void): () => void {
   };
 }
 
-/** E's action now: climb into the rover, stop it and get out, go into the habitat at its door, go out at its airlock. */
-export type Ride = 'board' | 'exit' | 'enter' | 'leave';
+/** E's action now: climb into the rover, stop it and get out, go into a building at its door, go out, climb a ladder up or down. */
+export type Ride = 'board' | 'exit' | 'enter' | 'leave' | 'up' | 'down';
 let ride: Ride | null = null;
 const rideSubs = new Set<() => void>();
 const rideAsks = new Set<() => void>();

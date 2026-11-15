@@ -15,7 +15,7 @@ import { heading } from '../walk/move';
 import { createWalker, walkDebug } from '../walk/walker';
 import { HAB_ROOM, ROOM_K } from '../walk/habitatRoom';
 import { habitatDoor, interiorDoors } from './Interiors';
-import { ROOMS, doorAt, roomState, type RoomId } from '../walk/rooms';
+import { ROOMS, ROOM_BODY, buildingOf, doorAt, roomState, type RoomId } from '../walk/rooms';
 import { astraLook } from './AstraBase';
 import { clearance, fits, type Solid, type XZ } from '../walk/collide';
 import { INSIDE, OUTSIDE, ROVER_AREA, ROVER_DISC } from '../walk/world';
@@ -71,6 +71,13 @@ const DOOR_GO = 0.7;
  * the door inside steps out. dir 1 in, −1 out, 0 done (the door is closing); t < 0: no trip.
  */
 const roomTrip = { room: null as RoomId | null, dir: 0, t: -1 };
+/**
+ * The habitat's ladder (E at its foot or at its top): a short climb, then on the other floor. With the astronaut it
+ * moves between the two floor rooms; in first person (the inside point) the eye moves to the other deck (fp.floor).
+ */
+const climb = { to: null as RoomId | null, t: -1, fp: false, arrive: { x: 0, z: 0, facing: 0 } };
+const CLIMB_S = 0.6;
+const fp = { floor: 0 };
 /** The room whose door the astronaut stands at now (outside), for E. */
 const nearDoor = { id: null as RoomId | null };
 /** A room's floor, as the ground the body walks on. */
@@ -213,14 +220,25 @@ export function Rig({ view }: { view: View }) {
   useEffect(() => {
     const off = onRide(() => {
       const r = getRide();
-      if ((r === 'enter' || r === 'leave') && doorTrip.t < 0 && roomTrip.t < 0) {
+      if ((r === 'up' || r === 'down') && climb.t < 0) {
+        // the ladder: with the astronaut from its room; in first person from the inside point's floor
+        const from = roomState.id ?? (fp.floor ? 'habitat_up' : 'habitat');
+        const L = ROOMS[from].ladder;
+        if (L) {
+          climb.to = L.to;
+          climb.fp = !roomState.id;
+          climb.arrive = L.arrive;
+          climb.t = 0;
+        }
+        setRide(null);
+      } else if ((r === 'enter' || r === 'leave') && doorTrip.t < 0 && roomTrip.t < 0) {
         const room = r === 'enter' ? nearDoor.id : roomState.id;
         if (room) {
           // with the astronaut: the door opens, it steps in (or out), the door closes behind
           roomTrip.room = room;
           roomTrip.dir = r === 'enter' ? 1 : -1;
           roomTrip.t = 0;
-          interiorDoors[room].want = 1;
+          interiorDoors[buildingOf(room)].want = 1;
         } else {
           // first person in the habitat (night, morning): out through the airlock, the usual float
           doorTrip.to = 'airlock';
@@ -258,6 +276,7 @@ export function Rig({ view }: { view: View }) {
       body.y = ground(body.x, body.z);
       body.facing = s.yaw + Math.PI;
     } else {
+      fp.floor = 0; // (the inside point is on the ground floor)
       // a new phase or the map while in a building: out at its door at once, the float starts from there
       if (roomState.id) {
         setRoom(null, ROOMS[roomState.id].out);
@@ -387,6 +406,22 @@ export function Rig({ view }: { view: View }) {
       }
       invalidate();
     }
+    if (climb.t >= 0 && climb.to) {
+      climb.t += dt;
+      if (climb.t >= CLIMB_S) {
+        const R = ROOMS[climb.to];
+        if (climb.fp) {
+          fp.floor = climb.to === 'habitat_up' ? 1 : 0;
+          s.to.set(climb.arrive.x, R.floorY + 1.6 * ROOM_K, climb.arrive.z);
+          s.yawT = s.yaw;
+        } else {
+          setRoom(climb.to, climb.arrive);
+        }
+        climb.t = -1;
+        climb.to = null;
+      }
+      invalidate();
+    }
     if (roomTrip.t >= 0 && roomTrip.room) {
       roomTrip.t += dt;
       if (roomTrip.dir !== 0 && roomTrip.t >= DOOR_GO) {
@@ -395,7 +430,7 @@ export function Rig({ view }: { view: View }) {
         roomTrip.dir = 0;
       }
       if (roomTrip.t >= DOOR_GO + 0.9) {
-        interiorDoors[roomTrip.room].want = 0;
+        interiorDoors[buildingOf(roomTrip.room)].want = 0;
         roomTrip.t = -1;
         roomTrip.room = null;
       }
@@ -423,7 +458,7 @@ export function Rig({ view }: { view: View }) {
         // ASTRA habitat: its furnished ground floor, at the room's scale (src/walk/habitatRoom.ts).
         const inside = point === 'inside';
         const room = inside && astraLook;
-        walking = walker.step(s.to, s.yaw, room ? HAB_ROOM : inside ? INSIDE : OUTSIDE, dt, room ? ROOM_K : 1);
+        walking = walker.step(s.to, s.yaw, room ? (fp.floor ? ROOMS.habitat_up.area : HAB_ROOM) : inside ? INSIDE : OUTSIDE, dt, room ? ROOM_K : 1, room ? ROOM_BODY * ROOM_K : undefined);
         if (!inside) s.to.y = groundHeight(s.to.x, s.to.z) + EYE;
         s.yawT += walker.turn() * MAX_TURN * dt;
         walkDebug.inside = inside;
@@ -445,7 +480,15 @@ export function Rig({ view }: { view: View }) {
     // E / ✋: which building is in front (stored only when it changes; nothing while floating or lifting off).
     if (features.controls) setAim(s.t < 1 || launching ? null : pickAim(camera.position.x, camera.position.z, s.yaw, AIM));
     // in the habitat's room, by the airlock (model z > 2 m): E goes out
-    setRide(point === 'inside' && astraLook && s.t >= 1 && doorTrip.t < 0 && walkInput.phaseOk && byAirlock(s.to) ? 'leave' : null);
+    {
+      let r: Ride | null = null;
+      if (point === 'inside' && astraLook && s.t >= 1 && doorTrip.t < 0 && climb.t < 0 && walkInput.phaseOk) {
+        const floor = ROOMS[fp.floor ? 'habitat_up' : 'habitat'];
+        if (!fp.floor && byAirlock(s.to)) r = 'leave';
+        else if (floor.ladder?.near(s.to.x, s.to.z)) r = fp.floor ? 'down' : 'up';
+      }
+      setRide(r);
+    }
     if (s.t < 1 || Math.abs(dy) > 1e-3 || Math.abs(dp) > 1e-3 || launching || walking) invalidate();
   });
 
@@ -737,7 +780,7 @@ export function Rig({ view }: { view: View }) {
         stepWish.z = c.wish.z;
         stepWish.run = running();
         stepWish.jump = walkInput.jump && (!R || R.jump);
-        active = (R ? stepBody(body, stepWish, R.area, roomGround, GRAVITY.moon, R.s) : stepBody(body, stepWish, OUTSIDE, ground)) || active;
+        active = (R ? stepBody(body, stepWish, R.area, roomGround, GRAVITY.moon, R.s, ROOM_BODY * R.s) : stepBody(body, stepWish, OUTSIDE, ground)) || active;
         walkInput.jump = false;
         if (R) continue; // (the jump hologram measures full-size jumps outside)
         // measure the jump for the visor hologram: from take-off to the top, reported on landing
@@ -833,7 +876,10 @@ export function Rig({ view }: { view: View }) {
     if (DRIVABLE && !room) ride = seat.stage === 'drive' ? 'exit' : onFoot && nearHatch() ? 'board' : null;
     nearDoor.id = astraLook && onFoot && !room ? doorAt(body) : null;
     if (!ride && onFoot && doorTrip.t < 0 && roomTrip.t < 0) {
-      if (room) ride = room.exit(body.x, body.z) ? 'leave' : null;
+      if (room && climb.t < 0) {
+        if (room.exit(body.x, body.z)) ride = 'leave';
+        else if (room.ladder?.near(body.x, body.z)) ride = ROOMS[room.ladder.to].floorY > room.floorY ? 'up' : 'down';
+      }
       else if (nearDoor.id) ride = 'enter';
     }
     setRide(ride);

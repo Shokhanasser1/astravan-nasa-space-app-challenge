@@ -3,7 +3,7 @@ import { useFrame, useThree } from '@react-three/fiber';
 import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 import { camState } from './anim';
-import { roomState } from '../walk/rooms';
+import { buildingOf, roomState } from '../walk/rooms';
 
 /**
  * Building interiors (local preview, 15 Nov): furnished insides made in Blender from NASA references
@@ -80,7 +80,7 @@ function Model({ id }: { id: InteriorId }) {
       door.mixer.update(0);
       if (d.open !== was) invalidate();
     }
-    const inRoom = roomState.id === id;
+    const inRoom = roomState.id !== null && buildingOf(roomState.id) === id;
     obj.getWorldPosition(at);
     const dist = at.distanceTo(camera.position);
     if (id === 'habitat') {

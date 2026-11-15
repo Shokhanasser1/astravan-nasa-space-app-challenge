@@ -53,7 +53,7 @@ const next: XZ = { x: 0, z: 0 };
 /** One fixed step. Returns true while the body moves, crouches or flies (the scene keeps drawing). */
 // `k` scales the body for a room drawn at a building's scale (src/walk/rooms.ts): its size, pace, push-off and
 // gravity all by k, so it moves exactly like a full-size body seen at that scale (same timing, same arcs).
-export function stepBody(b: Body, wish: Wish, area: Area, ground: Ground, g = GRAVITY.moon, k = 1): boolean {
+export function stepBody(b: Body, wish: Wish, area: Area, ground: Ground, g = GRAVITY.moon, k = 1, radius = RADIUS * k): boolean {
   const dt = STEP;
   b.running = wish.run;
   const vmax = (wish.run ? MOVE.run : MOVE.walk) * k;
@@ -84,7 +84,7 @@ export function stepBody(b: Body, wish: Wish, area: Area, ground: Ground, g = GR
   // across the ground, stopped and slid along by the hitboxes
   at.x = b.x;
   at.z = b.z;
-  walkStep(at, b.vx * dt, b.vz * dt, area, RADIUS * k, next);
+  walkStep(at, b.vx * dt, b.vz * dt, area, radius, next);
   b.vx = (next.x - b.x) / dt;
   b.vz = (next.z - b.z) / dt;
   b.x = next.x;

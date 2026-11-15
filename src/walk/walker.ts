@@ -31,7 +31,7 @@ export function createWalker() {
      * Advance by `dt` seconds: moves `pos` (x and z) inside `area`, facing `yaw`. Returns true while a key or the
      * stick is held or the walker is still slowing down, so the caller keeps drawing frames.
      */
-    step(pos: XZ, yaw: number, area: Area, dt: number, k = 1): boolean {
+    step(pos: XZ, yaw: number, area: Area, dt: number, k = 1, body = BODY * k): boolean {
       // (k: the scale of the room it walks in — the habitat's interior is drawn at 0.34: body and pace shrink with it)
       axes(ax);
       const asked = ax.ahead !== 0 || ax.side !== 0;
@@ -46,7 +46,7 @@ export function createWalker() {
           v.z = 0;
           continue;
         }
-        walkStep(pos, v.x * PACE.tick, v.z * PACE.tick, area, BODY * k, next);
+        walkStep(pos, v.x * PACE.tick, v.z * PACE.tick, area, body, next);
         // What really happened is the new velocity: a wall takes away the part of it that pushed into the wall.
         v.x = (next.x - pos.x) / PACE.tick;
         v.z = (next.z - pos.z) / PACE.tick;

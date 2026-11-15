@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
 import { invalidate } from '@react-three/fiber';
-import { Car, DoorOpen } from 'lucide-react';
+import { Car, ChevronsDown, ChevronsUp, DoorOpen } from 'lucide-react';
 import { walkInput } from '../../walk/input';
 import { askRide, type Ride } from '../../controls/bus';
 import { Kbd, touchUi } from './Controls';
@@ -37,7 +37,7 @@ export function JumpButton() {
  * `?drive` (local preview): beside the crew rover's hatch, climb in and drive; while driving, stop and climb out. E on
  * a keyboard (the badge shows it), a tap on a touch screen. Shown only when it would do something.
  */
-const RIDE_LABEL: Record<Ride, string> = { board: 'Drive the rover', exit: 'Stop and get out', enter: 'Go inside', leave: 'Go outside' };
+const RIDE_LABEL: Record<Ride, string> = { board: 'Drive the rover', exit: 'Stop and get out', enter: 'Go inside', leave: 'Go outside', up: 'Climb up', down: 'Climb down' };
 
 export function RideButton({ ride }: { ride: Ride | null }) {
   if (!ride) return null;
@@ -53,7 +53,15 @@ export function RideButton({ ride }: { ride: Ride | null }) {
         invalidate();
       }}
     >
-      {ride === 'board' ? <Car size={30} aria-hidden="true" /> : <DoorOpen size={30} aria-hidden="true" />}
+      {ride === 'board' ? (
+        <Car size={30} aria-hidden="true" />
+      ) : ride === 'up' ? (
+        <ChevronsUp size={30} aria-hidden="true" />
+      ) : ride === 'down' ? (
+        <ChevronsDown size={30} aria-hidden="true" />
+      ) : (
+        <DoorOpen size={30} aria-hidden="true" />
+      )}
       <span className="absolute -bottom-2">
         <Kbd k="E" />
       </span>

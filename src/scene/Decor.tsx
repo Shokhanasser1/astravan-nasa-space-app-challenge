@@ -4,7 +4,7 @@ import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 import { DOOR_AZ, LAYOUT, PARKED_ROVER as SEV } from './layout';
 import { ICE_CRATER, groundHeight } from './ground';
-import { applyRover, ARRIVE, DRIVABLE, rover } from './arrival';
+import { applyRover, ARRIVE, DRIVABLE, rover, stepSuspension } from './arrival';
 import { playClip } from './clip';
 
 /**
@@ -86,7 +86,7 @@ function Model({ file, at, yaw, shadow = true, play, drive = false }: ModelProps
     rover.doorParts = [];
     obj.traverse((n) => {
       const m = /^sev_steer_[LR]([123])$/.exec(n.name);
-      if (m) rover.steerParts.push({ node: n, k: m[1] === '1' ? 1 : m[1] === '3' ? -1 : 0 });
+      if (m) rover.steerParts.push({ node: n, k: m[1] === '1' ? 1 : m[1] === '3' ? -1 : 0, x: n.position.x, z: n.position.z, y0: n.position.y });
       const d = /^sev_hatch_([LR])$/.exec(n.name);
       if (d) rover.doorParts.push({ node: n, side: d[1] as 'L' | 'R' });
     });
@@ -99,6 +99,7 @@ function Model({ file, at, yaw, shadow = true, play, drive = false }: ModelProps
   }, [obj, drive]);
   useFrame((_, dt) => {
     if (drive) {
+      if (stepSuspension(Math.min(dt, 0.05))) invalidate(); // the chassis settles on its springs
       applyRover();
       if (mixer) mixer.timeScale = rover.speed / 1.0; // the Drive clip is planted at 1.0 m/s (backing up: backwards)
     }

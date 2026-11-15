@@ -41,7 +41,7 @@ describe('crew rover in the game (Decor + applyRover)', () => {
     rover.steerParts = [];
     obj.traverse((n) => {
       const m = /^sev_steer_[LR]([123])$/.exec(n.name);
-      if (m) rover.steerParts.push({ node: n, k: m[1] === '1' ? 1 : m[1] === '3' ? -1 : 0 });
+      if (m) rover.steerParts.push({ node: n, k: m[1] === '1' ? 1 : m[1] === '3' ? -1 : 0, x: n.position.x, z: n.position.z, y0: n.position.y });
     });
     rover.object = obj;
     expect(rover.steerParts).toHaveLength(6);
