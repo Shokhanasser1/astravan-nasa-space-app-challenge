@@ -1,1 +1,8 @@
-{}
+{
+  "scene.suit.title": "Скафандр",
+  "scene.suit.o2": "Кислород",
+  "scene.suit.o2Value": "{n} из {max} дн.",
+  "scene.suit.rad": "Радиация",
+  "scene.suit.seal": "Герметичность",
+  "scene.suit.sealOk": "Цел"
+}

@@ -178,6 +178,7 @@
   "ui.goal.balance": "Havo, bogʻ va ekipajni asra",
   "ui.arm.on": "Robot qoʻl skaneri (kamera) — K",
   "ui.arm.off": "Robot qoʻl skanerini toʻxtat",
+  "ui.arm.keys": "Qoʻl tugmalari: R F koʻtar · T G tirsak · U J bilak · Z X bur · V qisqich",
   "ui.arm.title": "Robot qoʻl",
   "ui.arm.camera": "Kameraga ruxsat ber…",
   "ui.arm.loading": "Skaner ishga tushmoqda (birinchi marta ~13 MB)…",

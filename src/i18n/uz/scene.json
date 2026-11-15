@@ -1,1 +1,8 @@
-{}
+{
+  "scene.suit.title": "Skafandr",
+  "scene.suit.o2": "Kislorod",
+  "scene.suit.o2Value": "{n} / {max} kun",
+  "scene.suit.rad": "Radiatsiya",
+  "scene.suit.seal": "Germetiklik",
+  "scene.suit.sealOk": "Butun"
+}

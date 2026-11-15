@@ -16,6 +16,10 @@ import { Remote } from '../arm/remote';
 import { armState } from '../arm/state';
 import { rover } from './arrival';
 import { climbState } from '../walk/ladder';
+import { WristTablet } from './suit/wristTablet';
+
+/** Seconds of standing still before the astronaut checks the suit tablet and its hologram rises. */
+const SUIT_LOOK_S = 1.5;
 
 /** The suited astronaut: NASA EMU model, rigged and animated by Samandar (blender/game3d/characters/), 6k triangles. */
 const URL = `${import.meta.env.BASE_URL}models/astronaut/astronaut.glb`;
@@ -130,6 +134,15 @@ export function Astronaut({ body, visible, hands = 0, view }: { body: Body; visi
     keepMarks();
     return () => fx.dispose();
   }, [fx, scene]);
+  // the suit tablet on the left forearm and its hologram (src/scene/suit/wristTablet.ts)
+  const suit = useMemo(() => (features.suitTablet ? new WristTablet(model) : null), [model]);
+  useEffect(() => {
+    if (!suit) return;
+    suit.attach(scene);
+    invalidate();
+    return () => suit.dispose();
+  }, [suit, scene, invalidate]);
+  const suitLook = useRef({ still: 0, checked: false });
   // the robot arm's remote in the right hand while its scanner is on (src/arm/remote.ts)
   const remote = useMemo(() => (features.robotArm ? new Remote(scene, model) : null), [scene, model]);
   useEffect(() => () => remote?.dispose(), [remote]);
@@ -143,9 +156,10 @@ export function Astronaut({ body, visible, hands = 0, view }: { body: Body; visi
   // Gestures from what the player does (the View), never from game numbers: a battery in or out, Confirm.
   const turn = useRef<number | null>(null); // facing to turn to while putting a battery in
   const settle = useRef(0); // s of frames still asked for after a gesture (the fade back to Idle)
-  const live = useRef({ visible, phase: view?.phase });
+  const live = useRef({ visible, phase: view?.phase, view });
   live.current.visible = visible;
   live.current.phase = view?.phase;
+  live.current.view = view;
   const prev = useRef<{ day: number; phase: string; alloc: View['alloc']; hands: number } | null>(null);
   useEffect(() => {
     if (!view) return;
@@ -251,6 +265,25 @@ export function Astronaut({ body, visible, hands = 0, view }: { body: Body; visi
     if (settle.current > 0) {
       settle.current -= dt;
       state.invalidate(); // demand mode: keep drawing while a gesture plays and fades back to Idle
+    }
+    // the suit tablet: standing still a moment (outside, hands free, planning), check the wrist; the hologram rises
+    if (suit) {
+      const v = live.current.view;
+      if (v?.res && suit.setData({ air: v.res.air, airMax: v.res.airMax, level: v.level, ratio: v.ratio })) state.invalidate();
+      const phase = live.current.phase;
+      const calm =
+        model.visible && k === 1 && !seated && body.onGround && speed < 0.15 && h.hands === 0 && !armOn() && !climbState.on &&
+        (phase === 'plan' || phase === 'morning');
+      const w = suitLook.current;
+      w.still = calm ? w.still + dt : 0;
+      const want = w.still > SUIT_LOOK_S;
+      if (want && !w.checked) {
+        w.checked = true;
+        if (features.gestures && anim.gesture('Wrist')) settle.current = 0.4;
+      }
+      if (!calm) w.checked = false;
+      if (calm && !want) state.invalidate(); // (demand mode: count the moment of standing still)
+      if (suit.update(dt, state.camera, want, body)) state.invalidate();
     }
     if (!visible || k !== 1) {
       // (no boot prints or dust on a room's floor)

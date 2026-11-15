@@ -1,195 +1,273 @@
 /* ==========================================================================================================
- * FLIGHT DECK skin (15 Nov, Shoxjahon aka: "every button and input like a top game, a design kids have not seen").
- * Every control is a piece of real flight hardware seen through the visor: buttons are backlit panel keys that
- * travel down when pressed (hard lower edge, a light sweep on hover, a lit legend line on top); the one "go" is an
- * illuminated key that breathes slowly; steppers are knurled knobs; option chips are latching switches with a
- * status LED; keyboard hints are real keycaps; colour patches are stitched; panels are visor glass with two lit edge
- * marks and faint scan lines. Same tokens and palette (docs/DESIGN.md); amber still only means "warning".
- * Imported after index.css (src/main.tsx), so it is one layer over the base styles and can be lifted out in one cut.
- * The shades below are the key bodies (navy, darker than --bg-2) and their hard lower edge (#060a1c).
+ * HUD FRAME skin (15 Nov, Shoxjahon aka: "every button, icon and notification like a top game"; then his reference
+ * sheet "Interface menu": sci-fi HUD frames). Every panel, notification and button is a frame of thin cyan light on
+ * deep blue glass, the way the reference draws it:
+ *   - panels and notifications (.glass, .holo, the pass, plan rows): corners cut on a diagonal (top-left and
+ *     bottom-right), a lit tab on the top edge, three status dots, a faint grid behind;
+ *   - buttons (.abtn, chips): slanted bars, like the reference's parallelogram tabs; the one "go" is a filled bar;
+ *     icon-only buttons are cut on all four corners;
+ *   - icons (.machine-icon, steppers): round reticles with tick marks;
+ *   - keyboard hints are keycaps; every key press ticks (audio.key(), silent when sound is off).
+ * Shapes come from clip-path; the cut edges are drawn as background lines (a clipped border would leave them open).
+ * Glows stay inside the shape (anything outside a clip-path is cut away). Focus is a ring inside the frame.
+ * Same tokens and palette (docs/DESIGN.md): cyan is the frame, ice cyan the one "go", amber only a warning.
+ * Loaded after index.css (src/main.tsx): one layer over the base styles, one cut to remove.
  * ======================================================================================================== */
 
-/* ---- visor glass panels ---- */
-.glass {
-  background:
-    linear-gradient(90deg, var(--accent), var(--accent)) 22px 0 / 28px 2px no-repeat,
-    linear-gradient(90deg, var(--peri), var(--peri)) calc(100% - 22px) 100% / 28px 2px no-repeat,
-    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.018) 0 1px, transparent 1px 3px),
-    linear-gradient(180deg, rgba(160, 200, 255, 0.07), transparent 32%),
-    var(--glass);
-  border: 1px solid rgba(150, 175, 255, 0.2);
-  box-shadow: var(--shadow), inset 0 1px 0 rgba(255, 255, 255, 0.08), inset 0 0 0 1px rgba(5, 8, 22, 0.4);
+/* ---------- shared: the frame line colour and the cut ---------- */
+.glass,
+.holo,
+.entry-card.pass,
+.machine-row,
+.abtn,
+.entry-chip,
+.pass-guest {
+  --frame: rgba(94, 224, 255, 0.55);
+  --frame-hi: rgba(166, 238, 255, 0.95);
+  --cut: 14px;
 }
 
-/* ---- panel keys (every Btn) ---- */
+/* ---------- panels and notifications: cut corners, a lit tab, three dots, a grid ---------- */
+.glass,
+.holo,
+.entry-card.pass,
+.machine-row {
+  border-radius: 0;
+  border: 1px solid var(--frame);
+  clip-path: polygon(
+    var(--cut) 0,
+    100% 0,
+    100% calc(100% - var(--cut)),
+    calc(100% - var(--cut)) 100%,
+    0 100%,
+    0 var(--cut)
+  );
+  background:
+    /* the two cut edges (top-left, bottom-right) */
+    linear-gradient(135deg, transparent 50%, var(--frame) 50%, var(--frame) calc(50% + 1.5px), transparent calc(50% + 1.5px)) 0 0 / var(--cut) var(--cut) no-repeat border-box,
+    linear-gradient(135deg, transparent calc(50% - 1.5px), var(--frame) calc(50% - 1.5px), var(--frame) 50%, transparent 50%) 100% 100% / var(--cut) var(--cut) no-repeat border-box,
+    /* the lit tab on the top edge, and a short mark on the bottom edge */
+    linear-gradient(var(--frame-hi), var(--frame-hi)) calc(var(--cut) + 8px) 0 / 40px 3px no-repeat border-box,
+    linear-gradient(var(--peri), var(--peri)) 10px 100% / 24px 2px no-repeat border-box,
+    /* three status dots, top right */
+    radial-gradient(circle, var(--accent) 1.6px, transparent 2.2px) right 10px top 6px / 6px 6px no-repeat,
+    radial-gradient(circle, var(--accent) 1.6px, transparent 2.2px) right 19px top 6px / 6px 6px no-repeat,
+    radial-gradient(circle, rgba(94, 224, 255, 0.4) 1.6px, transparent 2.2px) right 28px top 6px / 6px 6px no-repeat,
+    /* the grid */
+    linear-gradient(rgba(94, 224, 255, 0.05) 1px, transparent 1px) 0 0 / 100% 16px,
+    linear-gradient(90deg, rgba(94, 224, 255, 0.05) 1px, transparent 1px) 0 0 / 16px 100%,
+    /* light from the top, the deep blue glass */
+    linear-gradient(180deg, rgba(94, 224, 255, 0.09), transparent 40%),
+    linear-gradient(180deg, rgba(14, 34, 72, 0.9), rgba(7, 16, 40, 0.92));
+  box-shadow: inset 0 0 22px rgba(94, 224, 255, 0.1), inset 0 0 0 1px rgba(5, 8, 22, 0.35);
+}
+/* small notifications (the task line, the CAPCOM chip): a smaller cut, no dots (they would sit on the words) */
+.holo.rounded-full,
+.holo[class*='rounded-[16px]'],
+.machine-row {
+  --cut: 9px;
+  background:
+    linear-gradient(135deg, transparent 50%, var(--frame) 50%, var(--frame) calc(50% + 1.5px), transparent calc(50% + 1.5px)) 0 0 / var(--cut) var(--cut) no-repeat border-box,
+    linear-gradient(135deg, transparent calc(50% - 1.5px), var(--frame) calc(50% - 1.5px), var(--frame) 50%, transparent 50%) 100% 100% / var(--cut) var(--cut) no-repeat border-box,
+    linear-gradient(var(--frame-hi), var(--frame-hi)) calc(var(--cut) + 6px) 0 / 22px 2px no-repeat border-box,
+    linear-gradient(180deg, rgba(94, 224, 255, 0.09), transparent 45%),
+    linear-gradient(180deg, rgba(14, 34, 72, 0.9), rgba(7, 16, 40, 0.92));
+}
+/* compact bars at the top (the day badge, the resource strip): the small frame, no dots over the numbers */
+.hud-day.glass,
+.res-bar.glass {
+  --cut: 10px;
+  background:
+    linear-gradient(135deg, transparent 50%, var(--frame) 50%, var(--frame) calc(50% + 1.5px), transparent calc(50% + 1.5px)) 0 0 / var(--cut) var(--cut) no-repeat border-box,
+    linear-gradient(135deg, transparent calc(50% - 1.5px), var(--frame) calc(50% - 1.5px), var(--frame) 50%, transparent 50%) 100% 100% / var(--cut) var(--cut) no-repeat border-box,
+    linear-gradient(var(--frame-hi), var(--frame-hi)) calc(var(--cut) + 6px) 0 / 28px 2px no-repeat border-box,
+    linear-gradient(rgba(94, 224, 255, 0.05) 1px, transparent 1px) 0 0 / 100% 12px,
+    linear-gradient(180deg, rgba(94, 224, 255, 0.09), transparent 45%),
+    linear-gradient(180deg, rgba(14, 34, 72, 0.9), rgba(7, 16, 40, 0.92));
+}
+/* the day badge's radiation level sits past its right edge on narrow layouts: no clip there, square corners */
+.hud-day.glass {
+  clip-path: none;
+  overflow: visible;
+}
+.machine-row {
+  --frame: rgba(94, 224, 255, 0.22);
+}
+.machine-on {
+  --frame: color-mix(in srgb, var(--tone) 70%, transparent);
+  --frame-hi: var(--tone);
+}
+/* an idle task asks for attention: the frame brightens and dims (outer rings would be clipped away) */
+@keyframes hud-call {
+  0%, 100% { box-shadow: inset 0 0 18px rgba(94, 224, 255, 0.08); }
+  50% { box-shadow: inset 0 0 26px rgba(94, 224, 255, 0.45); }
+}
+.task-idle {
+  --frame: var(--accent);
+  animation: hud-call 1.4s ease-in-out infinite;
+}
+
+/* ---------- buttons: slanted bars ---------- */
 .abtn {
+  --cut: 10px;
   position: relative;
   isolation: isolate;
   overflow: hidden;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0) 45%),
-    linear-gradient(180deg, #1b2652, #0e1534);
-  border: 1px solid rgba(170, 195, 255, 0.28);
+  border-radius: 0 !important;
+  border: 1px solid var(--frame);
+  border-left-color: transparent;
+  border-right-color: transparent;
+  padding-left: calc(16px + var(--cut));
+  padding-right: calc(16px + var(--cut));
+  clip-path: polygon(var(--cut) 0, 100% 0, calc(100% - var(--cut)) 100%, 0 100%);
   color: var(--text-1);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.14),
-    inset 0 -2px 0 rgba(0, 0, 0, 0.35),
-    0 3px 0 #060a1c,
-    0 8px 18px rgba(0, 0, 0, 0.4);
-  transition: transform 0.09s ease-out, box-shadow 0.09s ease-out, background 0.15s, border-color 0.15s;
+  background:
+    /* the slanted ends */
+    linear-gradient(to bottom right, transparent 50%, var(--frame) 50%, var(--frame) calc(50% + 1.2px), transparent calc(50% + 1.2px)) 0 0 / var(--cut) 100% no-repeat border-box,
+    linear-gradient(to bottom right, transparent calc(50% - 1.2px), var(--frame) calc(50% - 1.2px), var(--frame) 50%, transparent 50%) 100% 0 / var(--cut) 100% no-repeat border-box,
+    /* a lit tick on the top edge */
+    linear-gradient(var(--frame-hi), var(--frame-hi)) calc(var(--cut) + 6px) 0 / 14px 2px no-repeat border-box,
+    linear-gradient(180deg, rgba(94, 224, 255, 0.14), rgba(94, 224, 255, 0.04) 55%, rgba(94, 224, 255, 0.1)),
+    linear-gradient(180deg, rgba(14, 34, 72, 0.92), rgba(7, 16, 40, 0.94));
+  box-shadow: inset 0 0 14px rgba(94, 224, 255, 0.12);
+  transition: transform 0.09s ease-out, filter 0.15s, box-shadow 0.15s;
 }
-/* the lit legend line along the top of the key */
 .abtn::before {
-  content: '';
-  position: absolute;
-  left: 14px;
-  right: 14px;
-  top: 0;
-  height: 2px;
-  border-radius: 2px;
-  background: linear-gradient(90deg, transparent, var(--peri), transparent);
-  opacity: 0.45;
-  transition: opacity 0.2s;
-  pointer-events: none;
+  content: none;
 }
-/* a band of light that sweeps across once on hover */
+/* a band of light sweeps across once on hover */
 .abtn::after {
   content: '';
   position: absolute;
   inset: 0;
   z-index: -1;
-  background: linear-gradient(105deg, transparent 35%, rgba(200, 240, 255, 0.22) 50%, transparent 65%);
+  background: linear-gradient(105deg, transparent 35%, rgba(166, 238, 255, 0.25) 50%, transparent 65%);
   transform: translateX(-120%);
   pointer-events: none;
 }
 .abtn:hover:not(:disabled) {
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0) 45%),
-    linear-gradient(180deg, #223062, #121a40);
-  border-color: rgba(190, 215, 255, 0.45);
-}
-.abtn:hover:not(:disabled)::before {
-  opacity: 1;
+  --frame: var(--frame-hi);
+  box-shadow: inset 0 0 22px rgba(94, 224, 255, 0.3);
 }
 .abtn:hover:not(:disabled)::after {
   transform: translateX(120%);
   transition: transform 0.65s ease;
 }
-/* key travel: the key goes down and its edge disappears */
 .abtn:active:not(:disabled) {
-  transform: translateY(3px);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.08),
-    inset 0 2px 6px rgba(0, 0, 0, 0.45),
-    0 0 0 #060a1c,
-    0 3px 8px rgba(0, 0, 0, 0.35);
+  transform: translateY(2px);
+  filter: brightness(1.25);
 }
 .abtn:disabled {
-  opacity: 0.5;
+  opacity: 0.45;
   filter: saturate(0.4);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 1px 0 #060a1c;
+}
+/* (index.css gives "solid" buttons a plain glass fill; here they keep the frame) */
+.abtn.solid:not(.on) {
+  background:
+    linear-gradient(to bottom right, transparent 50%, var(--frame) 50%, var(--frame) calc(50% + 1.2px), transparent calc(50% + 1.2px)) 0 0 / var(--cut) 100% no-repeat border-box,
+    linear-gradient(to bottom right, transparent calc(50% - 1.2px), var(--frame) calc(50% - 1.2px), var(--frame) 50%, transparent 50%) 100% 0 / var(--cut) 100% no-repeat border-box,
+    linear-gradient(var(--frame-hi), var(--frame-hi)) calc(var(--cut) + 6px) 0 / 14px 2px no-repeat border-box,
+    linear-gradient(180deg, rgba(14, 34, 72, 0.96), rgba(7, 16, 40, 0.97));
 }
 
-/* ---- the one "go": an illuminated key ---- */
+/* the one "go": a filled bar of light */
 .abtn.primary,
 .abtn.on {
-  background:
-    radial-gradient(120% 90% at 50% 0%, rgba(255, 255, 255, 0.55), transparent 55%),
-    linear-gradient(180deg, var(--accent-hi), var(--accent) 62%, #2bb6ec);
-  border: 1px solid rgba(220, 250, 255, 0.75);
+  --frame: rgba(230, 250, 255, 0.95);
   color: var(--accent-ink);
   text-shadow: 0 1px 0 rgba(255, 255, 255, 0.35);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.85),
-    inset 0 -3px 0 rgba(3, 32, 54, 0.22),
-    0 4px 0 var(--accent-edge),
-    0 0 0 4px rgba(79, 210, 255, 0.12),
-    0 10px 28px rgba(79, 210, 255, 0.35);
-}
-.abtn.primary::before,
-.abtn.on::before {
-  background: linear-gradient(90deg, transparent, #fff, transparent);
-  opacity: 0.9;
+  background:
+    linear-gradient(to bottom right, transparent 50%, var(--frame) 50%, var(--frame) calc(50% + 1.2px), transparent calc(50% + 1.2px)) 0 0 / var(--cut) 100% no-repeat border-box,
+    linear-gradient(to bottom right, transparent calc(50% - 1.2px), var(--frame) calc(50% - 1.2px), var(--frame) 50%, transparent 50%) 100% 0 / var(--cut) 100% no-repeat border-box,
+    repeating-linear-gradient(90deg, rgba(3, 32, 54, 0.08) 0 2px, transparent 2px 6px) right 18px center / 46px 60% no-repeat,
+    radial-gradient(120% 90% at 50% 0%, rgba(255, 255, 255, 0.5), transparent 55%),
+    linear-gradient(180deg, var(--accent-hi), var(--accent) 62%, #2bb6ec);
+  box-shadow: inset 0 -3px 0 rgba(3, 32, 54, 0.25), inset 0 0 18px rgba(255, 255, 255, 0.25);
 }
 .abtn.primary::after,
 .abtn.on::after {
-  background: linear-gradient(105deg, transparent 35%, rgba(255, 255, 255, 0.5) 50%, transparent 65%);
+  z-index: 0;
+  background: linear-gradient(105deg, transparent 35%, rgba(255, 255, 255, 0.55) 50%, transparent 65%);
+}
+.abtn.primary > *,
+.abtn.on > * {
+  position: relative;
+  z-index: 1;
 }
 .abtn.primary:hover:not(:disabled),
 .abtn.on:hover:not(:disabled) {
-  background:
-    radial-gradient(120% 90% at 50% 0%, rgba(255, 255, 255, 0.7), transparent 55%),
-    linear-gradient(180deg, #c4f4ff, #6ddaff 62%, #36bdf0);
-  border-color: #fff;
+  filter: brightness(1.08);
 }
-.abtn.primary:active:not(:disabled),
-.abtn.on:active:not(:disabled) {
-  transform: translateY(4px);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.6),
-    inset 0 3px 8px rgba(3, 32, 54, 0.3),
-    0 0 0 var(--accent-edge),
-    0 0 0 4px rgba(79, 210, 255, 0.18),
-    0 4px 14px rgba(79, 210, 255, 0.3);
+/* the "go" bar breathes: one slow swell of its inner light every 2.8 s (far below 3 flashes a second) */
+@keyframes bar-breathe {
+  0%, 100% { box-shadow: inset 0 -3px 0 rgba(3, 32, 54, 0.25), inset 0 0 14px rgba(255, 255, 255, 0.2); }
+  50% { box-shadow: inset 0 -3px 0 rgba(3, 32, 54, 0.25), inset 0 0 30px rgba(255, 255, 255, 0.55); }
 }
-/* the "go" key breathes: one slow swell every 2.8 s (far below 3 flashes a second) */
-@keyframes key-breathe {
-  0%,
-  100% {
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.85),
-      inset 0 -3px 0 rgba(3, 32, 54, 0.22),
-      0 4px 0 var(--accent-edge),
-      0 0 0 4px rgba(79, 210, 255, 0.12),
-      0 10px 28px rgba(79, 210, 255, 0.3);
-  }
-  50% {
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.85),
-      inset 0 -3px 0 rgba(3, 32, 54, 0.22),
-      0 4px 0 var(--accent-edge),
-      0 0 0 6px rgba(79, 210, 255, 0.2),
-      0 10px 36px rgba(79, 210, 255, 0.5);
-  }
+.abtn.primary:not(:disabled):not(:active) {
+  animation: bar-breathe 2.8s ease-in-out infinite;
 }
-.abtn.primary:not(.glow):not(:disabled):not(:active) {
-  animation: key-breathe 2.8s ease-in-out infinite;
+.abtn.glow {
+  animation: hud-call 1.6s ease-in-out infinite;
 }
 .abtn.big {
+  min-height: 56px;
   font-weight: 800;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  --cut: 16px;
 }
 
-/* ---- choices (day card, shelter, quiz): a slab key with a status strip on the left ---- */
+/* icon-only buttons (map, help, sound, speaker): all four corners cut, an octagon frame */
+.abtn:has(> svg:only-child),
+.abtn.\!p-0 {
+  --cut: 9px;
+  padding-left: 0;
+  padding-right: 0;
+  border-left-color: var(--frame);
+  border-right-color: var(--frame);
+  clip-path: polygon(var(--cut) 0, calc(100% - var(--cut)) 0, 100% var(--cut), 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, var(--cut) 100%, 0 calc(100% - var(--cut)), 0 var(--cut));
+  background:
+    linear-gradient(135deg, transparent 50%, var(--frame) 50%, var(--frame) calc(50% + 1.5px), transparent calc(50% + 1.5px)) 0 0 / var(--cut) var(--cut) no-repeat border-box,
+    linear-gradient(225deg, transparent 50%, var(--frame) 50%, var(--frame) calc(50% + 1.5px), transparent calc(50% + 1.5px)) 100% 0 / var(--cut) var(--cut) no-repeat border-box,
+    linear-gradient(315deg, transparent 50%, var(--frame) 50%, var(--frame) calc(50% + 1.5px), transparent calc(50% + 1.5px)) 100% 100% / var(--cut) var(--cut) no-repeat border-box,
+    linear-gradient(45deg, transparent 50%, var(--frame) 50%, var(--frame) calc(50% + 1.5px), transparent calc(50% + 1.5px)) 0 100% / var(--cut) var(--cut) no-repeat border-box,
+    radial-gradient(circle, rgba(94, 224, 255, 0.16), transparent 70%),
+    linear-gradient(180deg, rgba(14, 34, 72, 0.94), rgba(7, 16, 40, 0.96));
+}
+.abtn.on:has(> svg:only-child) {
+  background:
+    linear-gradient(135deg, transparent 50%, var(--frame) 50%, var(--frame) calc(50% + 1.5px), transparent calc(50% + 1.5px)) 0 0 / var(--cut) var(--cut) no-repeat border-box,
+    linear-gradient(225deg, transparent 50%, var(--frame) 50%, var(--frame) calc(50% + 1.5px), transparent calc(50% + 1.5px)) 100% 0 / var(--cut) var(--cut) no-repeat border-box,
+    linear-gradient(315deg, transparent 50%, var(--frame) 50%, var(--frame) calc(50% + 1.5px), transparent calc(50% + 1.5px)) 100% 100% / var(--cut) var(--cut) no-repeat border-box,
+    linear-gradient(45deg, transparent 50%, var(--frame) 50%, var(--frame) calc(50% + 1.5px), transparent calc(50% + 1.5px)) 0 100% / var(--cut) var(--cut) no-repeat border-box,
+    linear-gradient(180deg, var(--accent-hi), var(--accent));
+}
+
+/* choices (day card, shelter, quiz): a long slanted slab with a status strip on the left */
 .abtn.choice {
-  padding-left: 1rem;
-  box-shadow:
-    inset 3px 0 0 rgba(143, 179, 255, 0.35),
-    inset 0 1px 0 rgba(255, 255, 255, 0.12),
-    0 3px 0 #060a1c,
-    0 8px 18px rgba(0, 0, 0, 0.35);
+  --cut: 12px;
+  justify-content: flex-start;
+  box-shadow: inset 4px 0 0 rgba(143, 179, 255, 0.4), inset 0 0 14px rgba(94, 224, 255, 0.1);
 }
 .abtn.choice:hover:not(:disabled) {
-  box-shadow:
-    inset 3px 0 0 var(--accent),
-    inset 0 1px 0 rgba(255, 255, 255, 0.16),
-    0 3px 0 #060a1c,
-    0 0 22px rgba(79, 210, 255, 0.18);
+  box-shadow: inset 4px 0 0 var(--accent), inset 0 0 24px rgba(94, 224, 255, 0.28);
 }
 .abtn.choice.quiz-right {
-  box-shadow: inset 3px 0 0 var(--color-good), 0 0 20px color-mix(in srgb, var(--color-good) 30%, transparent);
+  --frame: var(--color-good);
+  box-shadow: inset 4px 0 0 var(--color-good), inset 0 0 22px color-mix(in srgb, var(--color-good) 30%, transparent);
 }
 .abtn.choice.quiz-wrong {
-  box-shadow: inset 3px 0 0 var(--color-alert), 0 1px 0 #060a1c;
+  --frame: var(--color-alert);
+  box-shadow: inset 4px 0 0 var(--color-alert);
 }
 
-/* ---- keyboard hints: real keycaps ---- */
+/* ---------- keyboard hints: keycaps ---------- */
 .kbd {
   height: 1.5rem;
-  border-radius: 6px;
-  border: 1px solid rgba(170, 195, 255, 0.35);
-  border-bottom: 3px solid #070b1f;
-  background: linear-gradient(180deg, #26325f, #141c3d);
+  border-radius: 4px;
+  border: 1px solid rgba(94, 224, 255, 0.45);
+  border-bottom: 3px solid #04122a;
+  background: linear-gradient(180deg, #17325e, #0b1a3a);
   color: var(--text-1);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
 }
@@ -201,133 +279,147 @@
   color: var(--accent-ink);
 }
 
-/* ---- steppers (+ / − battery): knurled knobs ---- */
+/* ---------- icons: round reticles ---------- */
+.machine-icon {
+  border-radius: 999px;
+  background:
+    repeating-conic-gradient(from -4deg, var(--tone) 0 8deg, transparent 8deg 90deg) border-box,
+    radial-gradient(circle, color-mix(in srgb, var(--tone) 18%, rgba(5, 8, 22, 0.7)) 62%, transparent 64%),
+    radial-gradient(circle, transparent 66%, color-mix(in srgb, var(--tone) 55%, transparent) 67%, color-mix(in srgb, var(--tone) 55%, transparent) 70%, transparent 71%);
+  -webkit-mask: radial-gradient(circle, #000 71%, transparent 72%);
+  mask: radial-gradient(circle, #000 71%, transparent 72%);
+}
+/* the + / − steppers: reticle rings with four ticks */
 .machine-stepper {
-  background: linear-gradient(180deg, rgba(5, 8, 22, 0.7), rgba(18, 27, 60, 0.6));
-  border-color: rgba(150, 175, 255, 0.22);
+  border-radius: 999px;
+  background: rgba(5, 8, 22, 0.6);
+  border-color: rgba(94, 224, 255, 0.3);
   box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.5);
 }
 .machine-btn {
-  border: 3px solid transparent;
+  border: 2px solid rgba(94, 224, 255, 0.5);
   background:
-    radial-gradient(circle at 50% 30%, #2b386c, #121a3a 72%) padding-box,
-    repeating-conic-gradient(rgba(170, 195, 255, 0.4) 0 7deg, rgba(5, 8, 22, 0.8) 7deg 14deg) border-box;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 2px 0 #060a1c, 0 4px 10px rgba(0, 0, 0, 0.4);
+    repeating-conic-gradient(from -5deg, rgba(166, 238, 255, 0.9) 0 10deg, transparent 10deg 90deg) border-box,
+    radial-gradient(circle, rgba(94, 224, 255, 0.16), rgba(7, 16, 40, 0.95) 70%) padding-box;
+  box-shadow: inset 0 0 10px rgba(94, 224, 255, 0.2);
   transition: transform 0.12s, box-shadow 0.12s;
-}
-.machine-btn:hover:not(:disabled) {
-  background:
-    radial-gradient(circle at 50% 30%, #34447f, #16204a 72%) padding-box,
-    repeating-conic-gradient(rgba(190, 215, 255, 0.6) 0 7deg, rgba(5, 8, 22, 0.8) 7deg 14deg) border-box;
 }
 .machine-btn svg {
   transition: transform 0.25s;
+}
+.machine-btn:hover:not(:disabled) {
+  box-shadow: inset 0 0 16px rgba(94, 224, 255, 0.5);
 }
 .machine-btn:hover:not(:disabled) svg {
   transform: rotate(90deg);
 }
 .machine-btn:active:not(:disabled) {
   transform: scale(0.92);
-  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.5), 0 0 0 #060a1c;
 }
 .machine-btn-add:not(:disabled) {
+  border-color: var(--accent-hi);
   background:
-    radial-gradient(circle at 50% 30%, var(--accent-hi), var(--accent) 70%) padding-box,
-    repeating-conic-gradient(rgba(220, 250, 255, 0.9) 0 7deg, var(--accent-edge) 7deg 14deg) border-box;
+    repeating-conic-gradient(from -5deg, #fff 0 10deg, transparent 10deg 90deg) border-box,
+    radial-gradient(circle, var(--accent-hi), var(--accent) 70%) padding-box;
   color: var(--accent-ink);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8), 0 2px 0 var(--accent-edge), 0 0 16px rgba(79, 210, 255, 0.45);
-}
-.machine-on {
-  box-shadow: inset 3px 0 0 var(--tone);
+  box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.5);
 }
 
-/* ---- call-sign chips: latching switches with a status LED ---- */
+/* ---------- call-sign chips: slanted latching switches with a status LED ---------- */
 .entry-chip {
+  --cut: 8px;
   position: relative;
-  background: linear-gradient(180deg, #18224a, #0f1636);
-  border: 1px solid rgba(170, 195, 255, 0.22);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 3px 0 #060a1c;
-  transition: transform 0.09s, box-shadow 0.12s, background 0.15s, border-color 0.15s;
+  border-radius: 0;
+  border: 1px solid var(--frame);
+  border-left-color: transparent;
+  border-right-color: transparent;
+  clip-path: polygon(var(--cut) 0, 100% 0, calc(100% - var(--cut)) 100%, 0 100%);
+  background:
+    linear-gradient(to bottom right, transparent 50%, var(--frame) 50%, var(--frame) calc(50% + 1.2px), transparent calc(50% + 1.2px)) 0 0 / var(--cut) 100% no-repeat border-box,
+    linear-gradient(to bottom right, transparent calc(50% - 1.2px), var(--frame) calc(50% - 1.2px), var(--frame) 50%, transparent 50%) 100% 0 / var(--cut) 100% no-repeat border-box,
+    linear-gradient(180deg, rgba(14, 34, 72, 0.92), rgba(7, 16, 40, 0.94));
+  transition: transform 0.09s, box-shadow 0.12s, filter 0.15s;
 }
 .entry-chip::before {
   content: '';
   position: absolute;
   top: 7px;
-  right: 7px;
+  right: 14px;
   width: 6px;
   height: 6px;
   border-radius: 999px;
   background: rgba(143, 179, 255, 0.25);
 }
 .entry-chip:hover {
-  background: linear-gradient(180deg, #1f2b5a, #121a40);
+  --frame: var(--frame-hi);
 }
 .entry-chip:active {
   transform: translateY(2px);
 }
 .entry-chip-on {
-  transform: translateY(2px);
-  border-color: var(--accent);
-  background: linear-gradient(180deg, rgba(79, 210, 255, 0.3), rgba(79, 210, 255, 0.12));
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 1px 0 #060a1c, 0 0 18px rgba(79, 210, 255, 0.25);
+  --frame: var(--accent-hi);
+  box-shadow: inset 0 0 18px rgba(94, 224, 255, 0.35);
 }
 .entry-chip-on::before {
   background: var(--accent);
   box-shadow: 0 0 8px var(--accent);
 }
 
-/* ---- crew colours: embroidered mission patches (a stitched ring) ---- */
+/* ---------- the reception pass ---------- */
+.entry-card.pass {
+  --cut: 18px;
+}
+.pass-stub {
+  border-top: 2px dashed rgba(94, 224, 255, 0.25);
+}
+.pass-guest {
+  --cut: 10px;
+  border-radius: 0;
+  border: 1px solid var(--frame);
+  border-left-color: transparent;
+  border-right-color: transparent;
+  clip-path: polygon(var(--cut) 0, 100% 0, calc(100% - var(--cut)) 100%, 0 100%);
+  background:
+    linear-gradient(to bottom right, transparent 50%, var(--frame) 50%, var(--frame) calc(50% + 1.2px), transparent calc(50% + 1.2px)) 0 0 / var(--cut) 100% no-repeat border-box,
+    linear-gradient(to bottom right, transparent calc(50% - 1.2px), var(--frame) calc(50% - 1.2px), var(--frame) 50%, transparent 50%) 100% 0 / var(--cut) 100% no-repeat border-box,
+    linear-gradient(180deg, rgba(14, 34, 72, 0.92), rgba(7, 16, 40, 0.94));
+  padding-left: calc(0.75rem + var(--cut));
+  transition: transform 0.09s, box-shadow 0.15s;
+}
+.pass-guest:hover,
+.pass-guest:focus-visible {
+  --frame: var(--frame-hi);
+  box-shadow: inset 0 0 22px rgba(94, 224, 255, 0.3);
+}
+.pass-guest:active {
+  transform: translateY(2px);
+}
+.pass-guest-icon {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8), 0 0 0 3px rgba(94, 224, 255, 0.2), 0 0 16px rgba(79, 210, 255, 0.5);
+}
+
+/* ---------- colour patches: stitched ---------- */
 .entry-swatch {
   outline: 2px dashed rgba(255, 255, 255, 0.4);
   outline-offset: -7px;
 }
 
-/* ---- the reception pass: visor glass, a tear line before the stub, "play as guest" is a slab key ---- */
-.entry-card.pass {
-  background:
-    linear-gradient(90deg, var(--accent), var(--accent)) 26px 0 / 34px 2px no-repeat,
-    linear-gradient(90deg, var(--peri), var(--peri)) calc(100% - 26px) 100% / 34px 2px no-repeat,
-    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.018) 0 1px, transparent 1px 3px),
-    linear-gradient(180deg, rgba(160, 200, 255, 0.08), transparent 30%),
-    rgba(14, 21, 51, 0.84);
-  border-color: rgba(150, 175, 255, 0.22);
-  box-shadow: 0 20px 44px rgba(0, 0, 0, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.08);
-}
-.pass-stub {
-  border-top: 2px dashed rgba(170, 195, 255, 0.18);
-}
-.pass-guest {
-  position: relative;
-  overflow: hidden;
-  background: linear-gradient(180deg, rgba(27, 38, 82, 0.9), rgba(14, 21, 52, 0.9));
-  border: 1px solid rgba(170, 195, 255, 0.22);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 3px 0 #060a1c;
-  transition: transform 0.09s, box-shadow 0.09s, background 0.15s, border-color 0.15s;
-}
-.pass-guest:hover,
-.pass-guest:focus-visible {
-  background: linear-gradient(180deg, rgba(34, 48, 98, 0.95), rgba(18, 26, 64, 0.95));
-  border-color: rgba(190, 215, 255, 0.45);
-}
-.pass-guest:active {
-  transform: translateY(3px);
-  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.45), 0 0 0 #060a1c;
-}
-.pass-guest-icon {
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8), 0 2px 0 var(--accent-edge), 0 0 0 4px rgba(79, 210, 255, 0.14),
-    0 0 18px rgba(79, 210, 255, 0.45);
-}
-
-/* ---- focus: clear on every key (keyboard players) ---- */
+/* ---------- focus: a ring inside the frame (an outline would be clipped away) ---------- */
 .abtn:focus-visible,
-.machine-btn:focus-visible,
-.entry-chip:focus-visible {
+.entry-chip:focus-visible,
+.pass-guest:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 2px var(--ice), inset 0 0 18px rgba(94, 224, 255, 0.35);
+}
+.machine-btn:focus-visible {
   outline: 2px solid var(--ice);
   outline-offset: 3px;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .abtn.primary:not(.glow):not(:disabled):not(:active) {
+  .abtn.primary:not(:disabled):not(:active),
+  .abtn.glow,
+  .task-idle {
     animation: none;
   }
   .abtn:hover:not(:disabled)::after {
@@ -337,4 +429,56 @@
   .machine-btn:hover:not(:disabled) svg {
     transform: none;
   }
+}
+
+/* ==========================================================================================================
+ * EDGE LAYOUT (15 Nov, Shoxjahon aka: "every button as minimal as it can be, away from the centre; the passing ones
+ * (open a door, take batteries) may stay in the middle"). On a computer (mouse and keyboard, 1024 px and wider) the
+ * steady buttons leave the centre column for the bottom-right corner, compact and stacked: Decision and Plan list
+ * above, the one "go" (Next / Confirm day) under them. The centre keeps only what passes: the radio line, the
+ * "E: take / put" prompt, the rover and door buttons (their own place, top centre), the open tablets. The batteries
+ * stay bottom-left. Phones and tablets keep the centre column (their thumbs own the corners: walk stick, action and
+ * jump buttons), only more compact.
+ * ======================================================================================================== */
+@media (min-width: 1024px) and (hover: hover) and (pointer: fine) {
+  /* the centre column: subtitles and passing prompts only, narrower */
+  .hud-center {
+    max-width: 30rem;
+    padding-bottom: 0.25rem;
+  }
+  /* the "go": a compact bar in the bottom-right corner */
+  .hud-center > .abtn.big {
+    position: fixed;
+    right: max(1rem, env(safe-area-inset-right));
+    bottom: max(1rem, env(safe-area-inset-bottom));
+    width: auto;
+    min-width: 13rem;
+    min-height: 50px;
+    z-index: 6;
+  }
+  /* Decision and Plan list: stacked above it, right-aligned, same width */
+  .hud-center .hud-btns {
+    position: fixed;
+    right: max(1rem, env(safe-area-inset-right));
+    bottom: calc(max(1rem, env(safe-area-inset-bottom)) + 50px + 0.6rem);
+    z-index: 6;
+    align-items: stretch;
+    min-width: 13rem;
+    gap: 0.5rem;
+  }
+  .hud-center .hud-btns > .abtn {
+    justify-content: flex-start;
+    min-height: 44px;
+  }
+}
+
+/* every screen: the steady buttons are compact (44 px targets kept) */
+.hud-btns > .abtn {
+  min-height: 44px;
+  font-size: 0.85rem;
+  letter-spacing: 0.02em;
+}
+.hud-center > .abtn.big {
+  min-height: 50px;
+  font-size: 0.95rem;
 }

@@ -5,6 +5,7 @@ import { armTargets, type Pt } from '../../arm/reach';
 import { armState, armVersion, setArmOn, subscribeArm } from '../../arm/state';
 import type { ScanFrame } from '../../arm/scan';
 import { Btn, Panel, type Tr } from './kit';
+import { touchUi } from './Controls';
 
 type State = 'off' | 'camera' | 'models' | 'on' | 'denied' | 'error';
 /** What the panel reads out each scan frame: the arm's shown angles, its grip, and a note key ('' = none). */
@@ -253,6 +254,12 @@ export function ArmScanner({ tr }: { tr: Tr }) {
           </ul>
           <div className="text-[var(--text-3)]">{tr('ui.arm.private')}</div>
         </Panel>
+      )}
+      {/* with a keyboard, the arm's keys beside the button (src/arm/keys.ts): next to the rover, on foot or driving */}
+      {!shown && !touchUi && (
+        <span className="holo pointer-events-none self-center rounded-[16px] px-3 py-1.5 text-xs font-semibold text-[var(--text-2)]" data-testid="arm-keys">
+          {tr('ui.arm.keys')}
+        </span>
       )}
       <Btn
         type="button"

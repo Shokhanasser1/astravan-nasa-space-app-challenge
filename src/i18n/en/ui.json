@@ -178,6 +178,7 @@
   "ui.goal.balance": "Keep air, garden and crew safe",
   "ui.arm.on": "Robot arm scanner (camera) — K",
   "ui.arm.off": "Stop the robot arm scanner",
+  "ui.arm.keys": "Arm keys: R F lift · T G elbow · U J wrist · Z X turn · V claws",
   "ui.arm.title": "Robot arm",
   "ui.arm.camera": "Allow the camera…",
   "ui.arm.loading": "Starting the scanner (first time ~13 MB)…",

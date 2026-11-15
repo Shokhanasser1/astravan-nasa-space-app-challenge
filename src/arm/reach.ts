@@ -26,6 +26,8 @@ export const LIFT = { min: -20, max: 75 };
 export const BEND = { min: -80, max: 120 };
 /** Robot wrist (tool turret), degrees from the forearm's line: + up, - down. */
 export const WRIST = { min: -95, max: 95 };
+/** The roof turret turns this far either way (degrees): the keys turn it (src/arm/keys.ts); the scanner leaves it. */
+export const TURN = { min: -170, max: 170 };
 /** The player's wrist bend -> the robot's wrist (scaled up: a hand bends less than a robot wrist) and elbow. */
 export const WRIST_GAIN = 1.3;
 export const ELBOW_SHARE = 0.5;

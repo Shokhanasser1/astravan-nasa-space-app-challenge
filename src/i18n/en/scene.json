@@ -1,1 +1,8 @@
-{}
+{
+  "scene.suit.title": "Suit",
+  "scene.suit.o2": "Oxygen",
+  "scene.suit.o2Value": "{n} of {max} days",
+  "scene.suit.rad": "Radiation",
+  "scene.suit.seal": "Suit seal",
+  "scene.suit.sealOk": "Intact"
+}

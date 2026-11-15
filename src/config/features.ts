@@ -11,6 +11,9 @@ export const features = {
   // on a building → puts it in from the thigh pocket (taken back → backward); Confirm → checks the wrist tablet;
   // standing still a while → looks around. Cut → Idle only, as before.
   gestures: true,
+  // The suit tablet on the astronaut's left forearm (src/scene/suit/wristTablet.ts): oxygen (the base reserve, game rule),
+  // radiation (measured), the seal; standing still a moment, it checks the wrist and a HUD hologram rises. Cut → none.
+  suitTablet: true,
   // NASA-based buildings (public/models/nasa-base/) replace the grey shells, all six or none; ?models = one visit.
   nasaModels: true,
   // Free walking with hitboxes (src/walk/): W A S D, arrows or the touch stick, from the six standing points.

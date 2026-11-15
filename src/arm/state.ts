@@ -8,6 +8,8 @@ export interface ArmAngles {
   bend: number;
   wrist: number;
   open: number;
+  /** Round the vertical axis, degrees (the rover's roof turret; 0 = along the rover). Missing = 0. */
+  turn?: number;
 }
 
 /** The model's rest: upper arm level, forearm up, turret in line, jaws open. */
