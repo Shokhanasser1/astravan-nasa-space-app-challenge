@@ -10,6 +10,7 @@ import { Light, sunAzimuth } from './Light';
 import { Earth } from './Earth';
 import { BaseScene } from './BaseScene';
 import { Tanks } from './parts/Tanks';
+import { Storm } from './Storm';
 import { Rig } from './Rig';
 import { WalkDebug } from './WalkDebug';
 import { freeWalk } from '../walk/enabled';
@@ -90,6 +91,7 @@ export function Stage({ view, onTap, onUndo }: { view: View; onTap: (k: Machine)
         {/* Stars do not twinkle: no air. Replace with the Yale Bright Star catalogue when ready. */}
         <Stars radius={2400} depth={50} count={2500} factor={4} fade={false} speed={0} />
         <Earth view={view} />
+        <Storm level={view.level} />
         {features.light ? <Light sunAzDeg={sunAzimuth(view)} shadowSize={q.shadow} /> : <ambientLight intensity={0.6} />}
         <Suspense fallback={null}>
           <BaseScene view={view} onTap={onTap} onUndo={onUndo} />
