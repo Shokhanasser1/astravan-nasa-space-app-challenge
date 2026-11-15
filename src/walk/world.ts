@@ -29,6 +29,8 @@ import { initialTier } from '../scene/quality';
 import { OUTPOST_ON, outpostSolids } from '../scene/outpostSite';
 import { makePoints } from '../scene/points';
 import { HDU_OUT } from './rooms';
+import { features } from '../config/features';
+import { partsHitbox } from '../scene/partsPile';
 
 /** Every hitbox is its visual footprint plus this much (metres). */
 const MARGIN = 0.1;
@@ -152,6 +154,8 @@ export function makeOutside(hdu: boolean, rover: Solid = hdu === HDU_HABITAT ? R
             disc('workshop', LAYOUT.workshop, RADIUS.workshop),
           ]),
       disc('lander', LAYOUT.lander, RADIUS.lander),
+      // the ship's parts pile beside it (home story, src/scene/ShipParts.tsx): its pallet is always there
+      ...(features.homeStory ? [partsHitbox(basePlan(hdu))] : []),
       disc('scout', LAYOUT.scout, RADIUS.scout),
       disc('hub', LAYOUT.hub, RADIUS.hub),
       // (Its mast is thin, but the dish hangs at head height. 1.1: the NASA dish model's reflector reaches 1.17 m.)
