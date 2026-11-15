@@ -138,6 +138,12 @@ export function stepBody(b: Body, wish: Wish, area: Area, ground: Ground, g = GR
     const want = Math.atan2(b.vx, b.vz);
     const d = Math.atan2(Math.sin(want - b.facing), Math.cos(want - b.facing));
     b.facing += d * Math.min(1, 10 * dt);
+  } else if (len > 0.3 && b.onGround) {
+    // pushing against a wall or a door (nothing moves): still turn to face where the stick or the keys point, so
+    // the astronaut faces the door it walked up to (15 Nov: it kept the old facing and E never offered the door)
+    const want = Math.atan2(wish.x, wish.z);
+    const d = Math.atan2(Math.sin(want - b.facing), Math.cos(want - b.facing));
+    b.facing += d * Math.min(1, 10 * dt);
   }
   return speed > 0.01 || !b.onGround || b.windup >= 0;
 }

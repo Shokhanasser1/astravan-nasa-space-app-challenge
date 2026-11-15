@@ -134,7 +134,7 @@ export function ContextButton({ ctx, press, tr, children }: { ctx: Context | nul
   const kind = ctx?.act ? 'use' : ctx?.back ? 'undo' : null;
   const label = ctx ? tr(ctx.act ? ctx.label : ctx.back?.type === 'DROP' ? 'ui.act.drop' : 'ui.act.back') : tr('ui.controls.use');
   return (
-    <div className="hud-side hud-pad flex flex-col items-center gap-3" data-testid="action-pad">
+    <div className="hud-side hud-pad" data-testid="action-pad">
       <button
         type="button"
         data-testid="pad-use"
@@ -145,10 +145,10 @@ export function ContextButton({ ctx, press, tr, children }: { ctx: Context | nul
           e.preventDefault();
           if (kind) press(kind);
         }}
-        className="pad-use abtn primary pointer-events-auto flex flex-col items-center justify-center !gap-0 !rounded-full !p-0 font-semibold leading-tight disabled:opacity-35"
+        className="pad-use abtn primary pointer-events-auto flex flex-col items-center justify-center !gap-0.5 font-semibold leading-tight"
       >
         {kind === 'undo' ? <Undo2 size={30} aria-hidden="true" /> : <Hand size={32} aria-hidden="true" />}
-        <span className="max-w-full truncate px-1 text-xs">{label}</span>
+        <span className="pad-use-label">{label}</span>
       </button>
       {children}
     </div>

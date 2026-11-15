@@ -7,6 +7,7 @@ import { listenArmKeys, stepArmKeys } from '../arm/keys';
 import { groundHeight } from './ground';
 import { PARKED_ROVER } from './layout';
 import { rover } from './arrival';
+import { ArmCargo, type CargoStep } from './ArmCargo';
 
 /** Curiosity's robotic arm, cut into three moving parts (scripts/models/curiosity_arm.py), 330 kB, ~5k triangles. */
 const URL = `${import.meta.env.BASE_URL}models/curiosity-arm/curiosity-arm.glb`;
@@ -36,6 +37,8 @@ export function RobotArm() {
   const rig = useMemo(() => new ArmRig(gltf.scene.clone(true), ON_ROVER), [gltf]);
   const shadowT = useRef(0);
   const last = useRef({ x: NaN, z: NaN, yaw: NaN });
+  /** The rocks and boxes it lifts (ArmCargo.tsx): stepped after the arm has moved, so a held one keeps to the claws. */
+  const cargo = useRef<CargoStep | null>(null);
   useEffect(() => {
     rig.setGround(groundHeight);
     listenArmKeys(invalidate);
@@ -77,9 +80,10 @@ export function RobotArm() {
     const moving = rig.update(dt) || keys;
     armState.shown = rig.shown;
     armState.held = rig.held();
+    const lifting = cargo.current ? cargo.current(dt, rig.shown.open) : false;
     const p = armState.player;
     setArmNear(Math.hypot(p.x - rover.x, p.z - rover.z) < NEAR);
-    if (!moving) return;
+    if (!moving && !lifting) return;
     // the Sun's shadow map is drawn once a day; while the arm moves, redraw it ten times a second (like Rig.tsx)
     shadowT.current -= dt;
     if (shadowT.current <= 0) {
@@ -89,7 +93,7 @@ export function RobotArm() {
     invalidate();
   });
 
-  return null;
+  return <ArmCargo rig={rig} stepRef={cargo} />;
 }
 
 useGLTF.preload(URL);
