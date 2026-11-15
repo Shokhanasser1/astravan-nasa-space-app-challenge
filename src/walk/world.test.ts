@@ -28,7 +28,9 @@ describe("the base's hitboxes", () => {
     expect(Math.hypot(lx - LAYOUT.lander[0], lz - LAYOUT.lander[1])).toBeLessThan(3);
   });
 
-  it('cannot be walked through from any side, but can be walked round', () => {
+  // (Every step is still checked against every solid; the worst one is asserted once per approach, not one expect
+  // per step and solid: that took > 5 s on the CI runner once the robot arm's pedestal joined the solids.)
+  it('cannot be walked through from any side, but can be walked round', { timeout: 20_000 }, () => {
     for (const s of OUTSIDE.solids) {
       const cx = s.bx === undefined ? s.x : (s.x + s.bx) / 2;
       const cz = s.bz === undefined ? s.z : (s.z + s.bz!) / 2;
@@ -36,11 +38,20 @@ describe("the base's hitboxes", () => {
         const a = (k / 12) * Math.PI * 2;
         let p = { x: cx + Math.cos(a) * 7, z: cz + Math.sin(a) * 7 };
         let least = Infinity;
+        let deepest = Infinity;
+        let deepestIn = '';
         for (let i = 0; i < 600; i++) {
           p = walkStep(p, (-Math.cos(a) * 2) / 60, (-Math.sin(a) * 2) / 60, OUTSIDE);
           least = Math.min(least, clearance(s, p.x, p.z));
-          for (const o of OUTSIDE.solids) expect(clearance(o, p.x, p.z), `${s.name} from ${k}: inside ${o.name}`).toBeGreaterThanOrEqual(-1e-6);
+          for (const o of OUTSIDE.solids) {
+            const c = clearance(o, p.x, p.z);
+            if (c < deepest) {
+              deepest = c;
+              deepestIn = o.name ?? '';
+            }
+          }
         }
+        expect(deepest, `${s.name} from ${k}: inside ${deepestIn}`).toBeGreaterThanOrEqual(-1e-6);
         expect(least, `${s.name} from ${k}`).toBeGreaterThanOrEqual(-1e-6);
       }
     }
