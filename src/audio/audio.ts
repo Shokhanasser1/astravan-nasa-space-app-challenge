@@ -19,6 +19,7 @@ class AudioEngine {
       const Ctx = window.AudioContext ?? (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
       this.ctx = new Ctx();
       this.master = this.ctx.createGain();
+      this.master.gain.value = this.muted ? 0 : 1;
       this.master.connect(this.ctx.destination);
       this.dosimeter = new Dosimeter(this.ctx, this.master);
       this.dosimeter.setRatio(this.doseRatio);
@@ -44,7 +45,42 @@ class AudioEngine {
   }
 
   setMuted(muted: boolean) {
+    this.muted = muted;
     if (this.master && this.ctx) this.master.gain.setTargetAtTime(muted ? 0 : 1, this.ctx.currentTime, 0.05);
+  }
+  /** Kept so a mute chosen before the first tap still holds once the AudioContext exists (unlock). */
+  private muted = false;
+
+  /**
+   * The press of a panel key (Flight Deck skin, src/ui/flight-deck.css): a dry mechanical tick, ~30 ms of filtered
+   * noise over a low thump, very quiet. Generated, zero bytes; the key's travel is its visual twin.
+   */
+  key() {
+    if (!this.ctx || !this.master || this.muted) return;
+    const t = this.ctx.currentTime;
+    const n = Math.floor(this.ctx.sampleRate * 0.03);
+    const buf = this.ctx.createBuffer(1, n, this.ctx.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, 4);
+    const src = this.ctx.createBufferSource();
+    src.buffer = buf;
+    const hp = this.ctx.createBiquadFilter();
+    hp.type = 'bandpass';
+    hp.frequency.value = 3200;
+    hp.Q.value = 0.9;
+    const g = this.ctx.createGain();
+    g.gain.value = 0.16;
+    src.connect(hp).connect(g).connect(this.master);
+    src.start(t);
+    const o = this.ctx.createOscillator();
+    const og = this.ctx.createGain();
+    o.frequency.setValueAtTime(180, t);
+    o.frequency.exponentialRampToValueAtTime(90, t + 0.04);
+    og.gain.setValueAtTime(0.06, t);
+    og.gain.exponentialRampToValueAtTime(0.0001, t + 0.05);
+    o.connect(og).connect(this.master);
+    o.start(t);
+    o.stop(t + 0.06);
   }
 
   /** NASA "Quindar" tones before and after a Houston line: 2525 Hz before, 2475 Hz after, 250 ms. */
