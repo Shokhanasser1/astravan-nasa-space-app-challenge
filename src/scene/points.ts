@@ -3,7 +3,7 @@
  * 1 airlock · 2 power hub (main place) · 3 garden window · 4 workshop · 5 hill · 6 lander ladder · inside the habitat.
  * `orbit` is the truth-screen pull-back, not a marker.
  */
-import { ASTRA_SCALE, DOOR_AZ, LAYOUT, RADIUS, fromDoor, towardBase } from './layout';
+import { ASTRA_SCALE, DOOR_AZ, HDU, HDU_HABITAT, LAYOUT, RADIUS, fromDoor, towardBase } from './layout';
 import { HILL, ICE_CRATER, groundHeight } from './ground';
 
 export type PointId = 'airlock' | 'hub' | 'garden' | 'workshop' | 'hill' | 'ladder' | 'inside' | 'orbit';
@@ -50,7 +50,10 @@ export const POINTS: Record<PointId, { pos: Vec3; look: Vec3 }> = {
   ladder: { pos: at(ladderSpot[0], ladderSpot[1]), look: [LAYOUT.lander[0], 2.8, LAYOUT.lander[1]] },
   inside: lite
     ? { pos: [LAYOUT.habitat[0], HAB_FLOOR + 1.5, LAYOUT.habitat[1]], look: [LAYOUT.hub[0], 1.2, LAYOUT.hub[1]] }
-    : { pos: hab(0.3, 2.1, 2.45), look: hab(-3.4, 1.1, 1.6) },
+    : HDU_HABITAT
+      ? // the HDU habitat (game metres): in the entry section by the door, looking past the ladder at the GeoLab
+        { pos: hab(0, HDU.floor + 1.6, 1.9), look: hab(0, HDU.floor + 1.1, -2.4) }
+      : { pos: hab(0.3, 2.1, 2.45), look: hab(-3.4, 1.1, 1.6) },
   orbit: { pos: [40, 130, 170], look: [0, 0, 0] },
 };
 

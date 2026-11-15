@@ -5,15 +5,18 @@
  * [name, x, z, hx, hz, yaw], model frame, native metres) — each box becomes a bar along its long side — and the
  * lining as the bounds.
  */
-import { ASTRA_SCALE, DOOR_AZ, LAYOUT } from '../scene/layout';
+import { ASTRA_SCALE, DOOR_AZ, HDU, HDU_HABITAT, LAYOUT } from '../scene/layout';
 import type { Area, Solid } from './collide';
-import boxes from './habitatRoom.json';
+import astraBoxes from './habitatRoom.json';
+import hduBoxes from './rooms_hdu.json';
 import { shown } from './rooms';
 
 /** The habitat's ASTRA scale (layout.ts ASTRA_SCALE.habitat): the room, the walker's body and pace. */
 export const ROOM_K: number = ASTRA_SCALE.habitat;
-/** The lining's radius (4.92 m) less a little: where the walker can stand. */
-const LINING = 4.85;
+/** The lining's radius (4.92 m; the HDU habitat's 2.925 m) less a little: where the walker can stand. */
+const LINING = HDU_HABITAT ? HDU.lining - 0.05 : 4.85;
+/** The ground floor's hitboxes (the HDU habitat's from its own Blender build). */
+const boxes = HDU_HABITAT ? hduBoxes.habitat : astraBoxes;
 
 const c = Math.cos(DOOR_AZ);
 const s = Math.sin(DOOR_AZ);

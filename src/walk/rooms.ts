@@ -9,9 +9,10 @@
  * headroom, where E outside goes in (`out`, also where the astronaut comes back out), where it stands inside
  * (`spawn`), and where E inside goes out (`exit`). Facing: 0 = model +z.
  */
-import { DOOR_AZ, LAYOUT, ASTRA_SCALE } from '../scene/layout';
+import { DOOR_AZ, HDU, HDU_HABITAT, LAYOUT, ASTRA_SCALE } from '../scene/layout';
 import type { Area, Solid, XZ } from './collide';
 import ROOM_BOXES from './rooms.json';
+import ROOM_BOXES_HDU from './rooms_hdu.json';
 
 export type RoomId = 'habitat' | 'habitat_up' | 'greenhouse' | 'lab' | 'lander';
 
@@ -41,6 +42,8 @@ interface Spec {
    * The ladder to another floor: E within `reach` of `at` (model x, z) climbs, arriving at `arrive` there.
    */
   ladder?: { to: RoomId; at: [number, number]; reach: number; arrive: [number, number, number] };
+  /** The ladder's rungs plane (model z; default the ASTRA habitat's 0.212). */
+  rungsZ?: number;
 }
 
 /** A model's front (+z) faces the middle of the base (AstraBase.tsx faceCentre). */
@@ -53,10 +56,11 @@ const ADULT = 1.8;
  * body_behind_root): the body steps to `foot` (in the well, facing the rungs, −z), then its origin moves onto
  * `rungs` as the clip fades in, so the body itself stays put.
  */
-const LADDER_RUNGS: [number, number, number] = [0, 0.212, Math.PI];
-const LADDER_FOOT: [number, number, number] = [0, 0.212 + 0.42, Math.PI];
+const RUNGS_Z = 0.212;
+/** The body hangs this far behind the rungs on the Climb clip (clips/climb.py meta body_behind_root). */
+const BODY_BEHIND = 0.42;
 
-const SPECS: Record<RoomId, Spec> = {
+const ASTRA_SPECS: Record<RoomId, Spec> = {
   // ground floor (deck 0.5, ceiling 3.1); the door is the airlock at +z; jumps allowed (2.6 m of headroom)
   habitat: {
     at: LAYOUT.habitat, turn: DOOR_AZ, k: ASTRA_SCALE.habitat, floor: 0.5, headroom: 2.6, bounds: 4.85,
@@ -89,6 +93,26 @@ const SPECS: Record<RoomId, Spec> = {
   },
 };
 
+/**
+ * The main habitat as NASA's HDU at 1.5x (`?hdu`, layout.ts HDU): game metres (k 1, the furniture is real size),
+ * eight sections round an open middle with the ladder at the centre (rungs along x in the plane z = 0, climbed from
+ * the door side), the crew loft above (oy-karvonsaroyi-3d/hb7/hdu_base/build_game_habitat.py, rooms_hdu.json).
+ */
+const HDU_SPECS: Pick<Record<RoomId, Spec>, 'habitat' | 'habitat_up'> = {
+  // ground floor (0.675 up, ceiling 4.2): the door at +z through the shell, the entry section with the suits
+  habitat: {
+    at: LAYOUT.habitat, turn: DOOR_AZ, k: 1, floor: HDU.floor, headroom: 3.5, bounds: HDU.lining - 0.05,
+    spawn: [0, 2.3, Math.PI], out: [0, HDU.shell + 1.6, 0], exit: (x, z) => z > 2.2 && Math.abs(x) < 0.6, jump: true,
+    rungsZ: 0, ladder: { to: 'habitat_up', at: [0, 0.42], reach: 0.9, arrive: [0, 1.0, 0] },
+  },
+  // the loft (4.275 up, its straight wall to 7.1): four sleep pods, lockers, a rail round the ladder well open to +z
+  habitat_up: {
+    at: LAYOUT.habitat, turn: DOOR_AZ, k: 1, floor: HDU.deck, headroom: 2.85, bounds: HDU.lining - 0.05,
+    spawn: [0, 1.0, 0], out: [0, HDU.shell + 1.6, 0], exit: () => false, jump: true, noDoor: true,
+    rungsZ: 0, ladder: { to: 'habitat', at: [0, 0.85], reach: 1.1, arrive: [0, 0.75, 0] },
+  },
+};
+
 export interface Room {
   id: RoomId;
   /** The astronaut's scale inside (body, pace, jump, gravity, camera). */
@@ -116,8 +140,7 @@ export interface Room {
   } | null;
 }
 
-function build(id: RoomId): Room {
-  const p = SPECS[id];
+function build(id: RoomId, p: Spec, roomBoxes: Box[]): Room {
   const c = Math.cos(p.turn), sn = Math.sin(p.turn);
   // model (x, z) → game: three.js rotation-y = turn, then scale k, then the building's place
   const toGame = (x: number, z: number): [number, number] => [p.at[0] + (x * c + z * sn) * p.k, p.at[1] + (-x * sn + z * c) * p.k];
@@ -137,7 +160,8 @@ function build(id: RoomId): Room {
     const [bx, bz] = toGame(x + dx * half, z + dz * half);
     return { name: String(name), x: ax, z: az, bx, bz, r: r * p.k };
   };
-  const boxes = [...(ROOM_BOXES as Record<RoomId, Box[]>)[id], ...(p.extra ?? [])].filter(shown);
+  const boxes = [...roomBoxes, ...(p.extra ?? [])].filter(shown);
+  const rz = p.rungsZ ?? RUNGS_Z;
   const fit = Math.min(1, (p.headroom - 0.1) / ADULT);
   const at = (m: [number, number, number]) => {
     const [x, z] = toGame(m[0], m[1]);
@@ -165,20 +189,24 @@ function build(id: RoomId): Room {
             return Math.hypot(mx - p.ladder!.at[0], mz - p.ladder!.at[1]) < p.ladder!.reach;
           },
           arrive: at(p.ladder.arrive),
-          foot: at(LADDER_FOOT),
-          rungs: at(LADDER_RUNGS),
+          foot: at([0, rz + BODY_BEHIND, Math.PI]),
+          rungs: at([0, rz, Math.PI]),
         }
       : null,
   };
 }
 
-export const ROOMS: Record<RoomId, Room> = {
-  habitat: build('habitat'),
-  habitat_up: build('habitat_up'),
-  greenhouse: build('greenhouse'),
-  lab: build('lab'),
-  lander: build('lander'),
-};
+/** Every room, with the ASTRA habitat or (hdu) the NASA HDU habitat. Exported for the tests of both. */
+export function makeRooms(hdu: boolean): Record<RoomId, Room> {
+  const specs: Record<RoomId, Spec> = hdu ? { ...ASTRA_SPECS, ...HDU_SPECS } : ASTRA_SPECS;
+  const boxes: Record<RoomId, Box[]> = hdu
+    ? { ...(ROOM_BOXES as Record<RoomId, Box[]>), ...(ROOM_BOXES_HDU as Record<'habitat' | 'habitat_up', Box[]>) }
+    : (ROOM_BOXES as Record<RoomId, Box[]>);
+  const ids: RoomId[] = ['habitat', 'habitat_up', 'greenhouse', 'lab', 'lander'];
+  return Object.fromEntries(ids.map((id) => [id, build(id, specs[id], boxes[id])])) as Record<RoomId, Room>;
+}
+
+export const ROOMS: Record<RoomId, Room> = makeRooms(HDU_HABITAT);
 export const ROOM_IDS = Object.keys(ROOMS) as RoomId[];
 
 /** The building a room belongs to (its interior model and its door). */

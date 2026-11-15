@@ -2,13 +2,14 @@ import { useRef } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import { Instance, Instances } from '@react-three/drei';
 import * as THREE from 'three';
-import { DOOR_AZ, LAYOUT, RADIUS } from '../layout';
+import { DOOR_AZ, HDU_HABITAT, LAYOUT, RADIUS } from '../layout';
 import { camState } from '../anim';
 import { GLOW, MAT } from './materials';
 import type { TapHandler } from './tap';
 import { Shell } from '../models/Shell';
 import { Sandbags } from './Sandbags';
 import { AstraHabitat, astraLook } from '../AstraBase';
+import { HduHabitat } from '../HduHabitat';
 
 const R = 1.7; // interior room radius (and the ?lite shell's own size, drawn grown to RADIUS.habitat)
 const LITE = RADIUS.habitat / R; // ?lite: the old shapes grow with the base (15 Nov: buildings at real size)
@@ -21,7 +22,9 @@ export function Habitat({ on, wall, tap }: { on: boolean; wall: number; tap: Tap
   return (
     <group position={[x, 0, z]}>
       <group onClick={tap}>
-        {astraLook ? (
+        {astraLook && HDU_HABITAT ? (
+          <HduHabitat wall={wall} turn={DOOR_AZ} />
+        ) : astraLook ? (
           <AstraHabitat on={on} wall={wall} turn={DOOR_AZ} />
         ) : (
           <group scale={LITE}>

@@ -5,7 +5,7 @@ import * as THREE from 'three';
 import { camState } from './anim';
 import { buildingOf, roomState } from '../walk/rooms';
 import { inHabitatRoom } from './astra/shellFit';
-import { ASTRA_SCALE } from './layout';
+import { ASTRA_SCALE, HDU_HABITAT } from './layout';
 
 /**
  * Building interiors (local preview, 15 Nov): furnished insides made in Blender from NASA references
@@ -54,7 +54,8 @@ const ease = (t: number) => t * t * (3 - 2 * t);
 export const HIDDEN_PARTS: readonly string[] = ['habitat_ground_int_bag', 'habitat_ground_int_water'];
 
 function Model({ id }: { id: InteriorId }) {
-  const { scene, animations } = useGLTF(`${base}${id}.glb`, false, true);
+  // (the HDU habitat, `?hdu`, has its own interior: layout.ts HDU_HABITAT)
+  const { scene, animations } = useGLTF(`${base}${id === 'habitat' && HDU_HABITAT ? 'hdu_habitat' : id}.glb`, false, true);
   const camera = useThree((s) => s.camera);
   const invalidate = useThree((s) => s.invalidate);
   const obj = useMemo(() => {
