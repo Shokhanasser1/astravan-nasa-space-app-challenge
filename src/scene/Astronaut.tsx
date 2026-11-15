@@ -75,6 +75,11 @@ export function Astronaut({ body, visible, hands = 0, view }: { body: Body; visi
         const mesh = o as THREE.Mesh;
         if (mesh.name === 'Battery' || mesh.parent?.name === 'Battery') return; // the prop keeps its own look
         const src = mesh.material as THREE.MeshStandardMaterial;
+        // the kid astronaut's gold visor, gold bands and clear bubble keep their shine (the bubble casts no shadow)
+        if (/^Kid(Visor|Gold|Glass)$/.test(src?.name ?? '')) {
+          if (src.name === 'KidGlass') o.castShadow = false;
+          return;
+        }
         if (src?.isMeshStandardMaterial) {
           const m = src.clone();
           m.color.multiplyScalar(0.7);

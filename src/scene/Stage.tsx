@@ -6,7 +6,7 @@ import { ToneMappingMode } from 'postprocessing';
 import * as THREE from 'three';
 import type { Machine, View } from '../state/game';
 import { features } from '../config/features';
-import { LOWER, TIERS, hasWebGL, initialTier, type Tier } from './quality';
+import { LOWER, TIERS, hasWebGL, pcFpsBounds, startTier, type Tier } from './quality';
 import { Light, sunAzimuth } from './Light';
 import { Earth } from './Earth';
 import { BaseScene } from './BaseScene';
@@ -71,7 +71,9 @@ function Fallback() {
 
 /** One <Canvas> for the whole game. Lane C. */
 export function Stage({ view, onTap, onUndo }: { view: View; onTap: (k: Machine) => void; onUndo?: (k: Machine) => void }) {
-  const [tier, setTier] = useState<Tier>(initialTier);
+  const [tier, setTier] = useState<Tier>(startTier);
+  // (fixed at the first render: a computer stays a computer after its tier steps down)
+  const [computer] = useState(() => tier === 'pc' || tier === 'pcLow');
   const [webgl] = useState(hasWebGL);
   const q = TIERS[tier];
   // A calm scene is not redrawn (saves battery); storms, the day passing and launch animate.
@@ -103,7 +105,12 @@ export function Stage({ view, onTap, onUndo }: { view: View; onTap: (k: Machine)
         role="img"
         aria-label="Moon base"
       >
-        <PerformanceMonitor onDecline={() => setTier((t) => LOWER[t])} flipflops={2} />
+        {/* FPS is only real while frames are drawn back to back. In demand mode (calm scenes) the gaps between redraws
+            read as 1–10 fps and stepped a fast laptop down to DPR 1 with no anti-aliasing ("144p"), so a computer is
+            measured only while the scene animates, with computer bounds (pcFpsBounds). Phones: as before. */}
+        {(!computer || animating) && (
+          <PerformanceMonitor onDecline={() => setTier((t) => LOWER[t])} flipflops={2} bounds={computer ? pcFpsBounds(tier) : undefined} />
+        )}
         {/* Stars do not twinkle: no air. Replace with the Yale Bright Star catalogue when ready. */}
         <Stars radius={2400} depth={50} count={2500} factor={4} fade={false} speed={0} />
         <Earth view={view} />
@@ -119,7 +126,7 @@ export function Stage({ view, onTap, onUndo }: { view: View; onTap: (k: Machine)
           <Preload all />
         </Suspense>
         {(q.bloom || q.vignette) && (
-          <EffectComposer multisampling={tier === 'pc' ? 4 : 0} resolutionScale={tier === 'pc' ? 1 : 0.5}>
+          <EffectComposer multisampling={q.msaa} resolutionScale={tier === 'pc' ? 1 : 0.5}>
             {q.bloom ? <Bloom mipmapBlur luminanceThreshold={1} luminanceSmoothing={0.2} intensity={0.9} /> : <></>}
             {/* After Bloom (which reads the scene's HDR values), merged into the same pass: no extra draw call. */}
             <ToneMapping mode={TONE.post} />
