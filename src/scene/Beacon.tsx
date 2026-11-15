@@ -14,6 +14,9 @@ import { socketSpot } from './Batteries';
  */
 const BEAM_H = 7;
 const ARROW_Y = 2.3;
+/** Seen from further than this (m), the beam widens and grows with the distance, so it stays a few pixels wide on a
+ * phone: Day 1's base light is seen from the crash site, 55 m out (home story T2). */
+const FAR_M = 20;
 
 function spot(t: ObjectiveTarget): [number, number] | null {
   switch (t) {
@@ -82,7 +85,7 @@ export function Beacon() {
   );
   const at = spot(target);
 
-  useFrame(({ clock }) => {
+  useFrame(({ clock, camera }) => {
     if (!at) return;
     const t = clock.elapsedTime;
     const hz = idle ? 2.2 : 0.8;
@@ -92,7 +95,11 @@ export function Beacon() {
       arrow.current.position.y = ARROW_Y + (idle ? 0.3 : 0.16) * wave;
       arrow.current.rotation.y = t * 1.2;
     }
-    if (beam.current) beam.current.scale.setScalar(idle ? 1 + 0.15 * wave : 1);
+    if (beam.current) {
+      const far = Math.max(1, Math.hypot(camera.position.x - at[0], camera.position.z - at[1]) / FAR_M);
+      const pulse = idle ? 1 + 0.15 * wave : 1;
+      beam.current.scale.set(pulse * far, pulse * Math.sqrt(far), pulse * far);
+    }
     invalidate();
   });
 
