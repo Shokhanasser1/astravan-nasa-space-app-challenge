@@ -360,6 +360,48 @@ body,
   white-space: normal;
   justify-content: flex-start;
 }
+/* The radio line on its way from Earth (CapcomHolo, 1.3 s): three dots that light up in turn. */
+.radio-dots {
+  display: inline-flex;
+  gap: 3px;
+  vertical-align: middle;
+}
+.radio-dots i {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--accent);
+  opacity: 0.25;
+  animation: radio-dot 0.9s ease-in-out infinite;
+}
+.radio-dots i:nth-child(2) { animation-delay: 0.15s; }
+.radio-dots i:nth-child(3) { animation-delay: 0.3s; }
+@keyframes radio-dot {
+  0%, 100% { opacity: 0.25; }
+  50% { opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .radio-dots i { animation: none; opacity: 0.7; }
+}
+/* Mission quiz answers (src/ui/play/Quiz.tsx): colour + icon + word, never colour alone. Disabled answers stay
+   readable (no grey-out filter); the one picked shows mint (right) or amber (wrong). */
+.abtn.choice.quiz-right,
+.abtn.choice.quiz-wrong,
+.abtn.choice.quiz-dim {
+  filter: none;
+  opacity: 1;
+}
+.abtn.choice.quiz-right {
+  border-color: var(--color-good);
+  background: color-mix(in srgb, var(--color-good) 18%, transparent);
+}
+.abtn.choice.quiz-wrong {
+  border-color: var(--color-alert);
+  background: color-mix(in srgb, var(--color-alert) 16%, transparent);
+}
+.abtn.choice.quiz-dim {
+  opacity: 0.55;
+}
 @keyframes glow-ring {
   0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 55%, transparent); }
   50% { box-shadow: 0 0 0 8px transparent; }
@@ -419,6 +461,22 @@ body,
 }
 /* The day badge takes the room between the corner buttons and the language buttons (it shrinks before it wraps). */
 .hud-top > [data-testid='day-badge'] { flex: 1 1 0; max-width: 13rem; min-width: 0; }
+/* Landscape phone (15 Nov audit: the storm level hid under the gauges on one row): the badge keeps its own width
+   as a small two-line card — day on top, the radiation level below — and drops the day marks. */
+@media (orientation: landscape) and (max-height: 540px) {
+  .hud-top > [data-testid='day-badge'] {
+    flex: 0 0 auto;
+    max-width: none;
+    flex-direction: column;
+    gap: 0.2rem;
+    border-radius: 16px;
+    padding: 0.3rem 0.6rem;
+  }
+  .hud-top > [data-testid='day-badge'] .hud-day-pips { display: none; }
+  .hud-top > [data-testid='day-badge'] .hud-day-text { font-size: 0.7rem; }
+  .hud-top > [data-testid='day-badge'] .hud-level { font-size: 0.72rem; padding: 0.1rem 0.5rem; }
+  .hud-top > .hud-res { min-width: 0; flex: 1 1 auto; }
+}
 @media (max-width: 380px) {
   [data-testid='day-badge'] > span:first-child { font-size: 0.75rem; letter-spacing: 0.02em; }
 }
@@ -672,7 +730,7 @@ body,
 }
 .entry-remove {
   align-self: center;
-  min-height: 40px;
+  min-height: 48px;
   padding: 0 0.75rem;
   font-size: 0.8rem;
   color: var(--text-3);
@@ -1269,6 +1327,11 @@ svg.entry-day-home {
 }
 .crew-seat-new .crew-name {
   color: var(--gold);
+  /* "New cadet" is longer in Russian and Uzbek: two short lines, never "Новый ка…" (15 Nov audit) */
+  white-space: normal;
+  overflow: visible;
+  text-align: center;
+  line-height: 1.15;
 }
 
 /* play as guest: one quiet row with the gold "go" */

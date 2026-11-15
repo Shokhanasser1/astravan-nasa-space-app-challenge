@@ -31,6 +31,10 @@ export const features = {
   // The crew rover is drivable on computers without ?drive (Shoxjahon aka, 15 Nov ~08:35: PC first): E at its
   // hatch climbs in, W/S/A/D drive, E again climbs out (src/scene/arrival.ts). Phones keep ?drive. Off → ?drive only.
   drive: true,
+  // Mission quiz (src/quiz/, src/ui/play/Quiz.tsx; 15 Nov): a radio check on nights 2, 4, 6 and a three-question
+  // debrief after the truth screen that opens the next mission. Questions only about days already played, numbers
+  // from the real week. Cut → the night's Next and the truth screen's Play again work as before.
+  quiz: true,
   // Pitch answer 5 (Sunday plan): "no account, no names, no date stored, nothing goes to a server".
   // Keep false unless the whole team changes that answer. True = anonymous results go to our PocketBase.
   sendResults: false,

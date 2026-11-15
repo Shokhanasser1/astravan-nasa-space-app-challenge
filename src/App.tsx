@@ -134,8 +134,12 @@ export function App() {
   const onStart = () => {
     const week = chooseWeek(keys?.played);
     if (!week) return;
+    // A child's first mission (no finished mission on this badge) gets the Day 1 tutorial and the first-mission
+    // cards, also when a class code picked another week. (Without a badge store: the first-mission week decides.)
+    const played = keys ? load<boolean>(keys.played, false) : false;
+    const firstMission = features.entry ? !played : undefined;
     // The seed only shuffles the day cards; it is drawn here, outside the pure engine and reducer.
-    dispatch({ type: 'START', week, seed: Math.floor(Math.random() * 2 ** 31) });
+    dispatch({ type: 'START', week, seed: Math.floor(Math.random() * 2 ** 31), firstMission });
     setSaved(null);
   };
   const onContinue = saved ? () => dispatch({ type: 'RESUME', model: saved }) : undefined;
@@ -163,7 +167,8 @@ export function App() {
         setSaved(null);
         setGuestResult(null);
         const week = chooseWeek(undefined);
-        if (week) dispatch({ type: 'START', week, seed: Math.floor(Math.random() * 2 ** 31) });
+        // (a guest is treated as a new child: the tutorial and the first-mission cards, whatever the week)
+        if (week) dispatch({ type: 'START', week, seed: Math.floor(Math.random() * 2 ** 31), firstMission: true });
       }}
       onPick={(id) => checkIn(id)}
       onCreate={(sign: Sign, patch: Patch) => {

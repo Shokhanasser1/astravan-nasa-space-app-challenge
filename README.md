@@ -1,6 +1,6 @@
 # HOME BY SEVEN
 
-A browser game for ages 7–14, made by Team Astrakarvan (Tashkent) for NASA Space Apps Challenge 2026,
+A browser game for ages 7–12, made by Team Astrakarvan (Tashkent) for NASA Space Apps Challenge 2026,
 challenge **Build a Junior Astronaut Mission Trainer**. A child lives one week on a Moon base near the south pole.
 The Sun, the radiation storm and the Earth in the sky are one real week from NASA's records; the date is revealed
 on the way home.
@@ -27,10 +27,15 @@ Pick a real week for a whole class: `/?week=2021-10-25`. Try hand control (exper
   stick), lope (Shift), jump 0.44 m at Moon gravity (Space or ⤒); after a jump a hologram shows h = v²/2g and the
   Earth jump. Six base buildings (NASA-based models), each a machine of the week.
 - Each day: radiation from the real week (LRO CRaTER, hourly; flares and particles from DONKI), mission control
-  (CAPCOM) as a hologram that reads its line aloud, a plan with prices shown before you press, the night log.
+  (CAPCOM) as a hologram that reads its line aloud — each line first travels from Earth for the real 1.3 s radio
+  delay — a plan with prices shown before you press, the night log.
+- Radio checks on nights 2, 4 and 6 and a three-question debrief after the reveal, which opens the next mission. The
+  quiz asks only about what the player has already lived (their clogged water filter, their storm day, their wall),
+  with that week's measured numbers; a wrong answer shows why and lets them try again.
 - The sky of that week: the Sun's direction (computed, checked against JPL Horizons), Earth of the day at its real
   height with the NASA GIBS picture of that day, and on the flare's day the SDO photo of the Sun.
-- On the way home the truth: the real dates, the measured curve, the SDO flare before and at its peak.
+- On the way home the truth: the real dates, the measured curve, the SDO flare before and at its peak, and the list of
+  datasets behind the week.
 - Every number carries a mark: measured, computed or game rule. Nothing about the player leaves the device; progress
   is saved in the browser.
 - Controls: `?` in the game, or `docs/specs/2026-11-14-controls-guide.html`.
@@ -63,8 +68,8 @@ Following the Space Apps 2026 Project Submission Guide, SI use is acknowledged i
   Log: `docs/AI-USE.md`.
 - **Data:** NASA data files are downloaded and converted by scripts (some SI-assisted); the measurements themselves are
   unchanged NASA records (LRO CRaTER via RadLab, DONKI, SDO, GIBS, EPIC, SVS, JPL Horizons, LOLA).
-- **Text:** English game text and the Uzbek and Russian lines were first drafted with Claude Code and are edited by
-  the team (Aminjon). The idea and the game design are the team's.
+- **Text:** English game text, the Uzbek and Russian lines and the mission-quiz questions were first drafted with
+  Claude Code and are edited by the team (Aminjon). The idea and the game design are the team's.
 - **3D models:** the furnished building interiors (`public/models/interiors`) and the astronaut's compact backpack
   were built in Blender by SI-written scripts (AI-made models, marked in `CREDITS.md`); so was the lunar lander v2 in
   `blender/lander_v2/` (not in the game). The NASA models themselves are NASA's.

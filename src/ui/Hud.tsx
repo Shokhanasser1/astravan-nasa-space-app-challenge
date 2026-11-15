@@ -17,6 +17,8 @@ import { ResourceBar } from './play/ResourceBar';
 import { ContextButton, ContextPrompt, Inventory, contextOf } from './play/Hands';
 import { Decision, pendingDecision } from './play/Decision';
 import { TaskLine, useTask } from './play/Task';
+import { Quiz } from './play/Quiz';
+import { debriefQuiz, nightQuiz } from '../quiz/quiz';
 import { freeWalk } from '../walk/enabled';
 import { releaseAll, walkInput } from '../walk/input';
 import { features } from '../config/features';
@@ -135,8 +137,40 @@ export function Hud({ model, view, dispatch, lang, setLang, sound, setSound, onS
       }),
     [act],
   );
-  const keyCtx: Ctx = { screen, phase, board, aim, overlay, hands: view.hands, ride };
-  useGameKeys(keyCtx, features.controls ? apply : () => {});
+  // Mission quiz (features.quiz, src/quiz/quiz.ts): a radio check on some nights, the debrief after the truth
+  // screen. Each one must be passed before Next goes on; nothing is saved (the same mission asks the same again).
+  const [quizOpen, setQuizOpen] = useState(false);
+  const [passed, setPassed] = useState<string[]>([]);
+  const quizInput = useMemo(
+    () => (features.quiz && model.week && model.game ? { week: model.week, game: model.game, picks: model.picks, seed: model.seed } : null),
+    [model.week, model.game, model.picks, model.seed],
+  );
+  const quizKey = phase === 'night' ? `${model.seed}:n${(day ?? 1) - 1}` : phase === 'truth' ? `${model.seed}:debrief` : '';
+  const quizQs = useMemo(() => {
+    if (!quizInput || screen !== 'game') return [];
+    if (phase === 'night') return nightQuiz(quizInput, quizInput.game.day - 1);
+    if (phase === 'truth') return debriefQuiz(quizInput);
+    return [];
+  }, [quizInput, phase, screen]);
+  const quizPending = quizQs.length > 0 && !passed.includes(quizKey);
+  useEffect(() => setQuizOpen(false), [phase, day]);
+  /** Next (button or key) with a quiz still to pass opens the quiz instead. */
+  const nextOrQuiz = useCallback(() => {
+    if (quizPending) setQuizOpen(true);
+    else dispatch({ type: 'NEXT' });
+  }, [quizPending, dispatch]);
+
+  // (while the quiz window is open the game's keys are off: it takes 1–3 and Enter for itself)
+  const keyCtx: Ctx = { screen, phase, board, aim, overlay: quizOpen ? 'help' : overlay, hands: view.hands, ride };
+  const keyApply = useCallback(
+    (e: Parameters<typeof apply>[0]) => {
+      if (quizOpen) return;
+      if ('action' in e && e.action.type === 'NEXT' && quizPending) return setQuizOpen(true);
+      apply(e);
+    },
+    [apply, quizOpen, quizPending],
+  );
+  useGameKeys(keyCtx, features.controls ? keyApply : () => {});
   /** The touch action button presses E or Q: the same `resolve` as the keys and the scene taps. */
   const press = (kind: 'use' | 'undo') => {
     const effect = resolve({ kind }, { ...keyCtx, ride: null }); // (E at the rover is the keyboard's and the 🚙 button's)
@@ -153,9 +187,9 @@ export function Hud({ model, view, dispatch, lang, setLang, sound, setSound, onS
   const dialog = planning && decisionOpen;
   // Free walk: only while the game itself is on screen and no window is open (its keys would walk away under it).
   useEffect(() => {
-    walkInput.inGame = screen === 'game' && overlay === null && !dialog;
+    walkInput.inGame = screen === 'game' && overlay === null && !dialog && !quizOpen;
     if (!walkInput.inGame) releaseAll();
-  }, [screen, overlay, dialog]);
+  }, [screen, overlay, dialog, quizOpen]);
 
   // Night: the gauges as they were while planning, to show what moved.
   const planRes = useRef<View['res']>(undefined);
@@ -238,7 +272,25 @@ export function Hud({ model, view, dispatch, lang, setLang, sound, setSound, onS
         </div>
       )}
 
-      {screen === 'game' && phase === 'truth' && truth && <TruthScreen truth={truth} dispatch={dispatch} tr={tr} />}
+      {screen === 'game' && phase === 'truth' && truth && (
+        <TruthScreen truth={truth} dispatch={dispatch} tr={tr} onNext={quizPending ? nextOrQuiz : undefined} />
+      )}
+
+      {quizOpen && quizPending && (
+        <Quiz
+          key={quizKey}
+          kind={phase === 'truth' ? 'debrief' : 'night'}
+          questions={quizQs}
+          tr={tr}
+          lang={lang}
+          sound={sound}
+          onDone={() => {
+            setPassed((p) => [...p, quizKey]);
+            setQuizOpen(false);
+            dispatch({ type: 'NEXT' });
+          }}
+        />
+      )}
 
       {playing && features.character && (
         <div className="pointer-events-none absolute right-4 top-48 flex flex-col">
@@ -305,7 +357,7 @@ export function Hud({ model, view, dispatch, lang, setLang, sound, setSound, onS
             data-testid={phase === 'plan' ? 'confirm-day' : 'next'}
             className={`primary big pointer-events-auto w-full ${glow ? 'glow' : ''}`}
             disabled={confirmBlocked}
-            onClick={() => dispatch(primary.action)}
+            onClick={() => (primary.action.type === 'NEXT' ? nextOrQuiz() : dispatch(primary.action))}
           >
             {primary.label}
             {phase === 'plan' ? <Check size={20} aria-hidden="true" /> : <ArrowRight size={20} aria-hidden="true" />}

@@ -61,6 +61,12 @@ export function PlanTablet({
         </Btn>
       </div>
       {forced && <p className="text-sm text-alert">{tr("ui.board.forced")}</p>}
+      {/* the warning sits above the rows: at the bottom of the scrolling list a child never saw it (15 Nov audit) */}
+      {warning && (
+        <p className="text-sm text-alert" data-testid="warning">
+          {tr(warning)}
+        </p>
+      )}
       <div className="flex flex-col gap-1.5" data-testid="machines">
         {ROWS.filter((r) => r.k !== "launch" || board.limits.max.launch > 0).map(({ k, e, icon: I, tone }) => {
           const count = board.alloc[e];
@@ -96,11 +102,6 @@ export function PlanTablet({
           );
         })}
       </div>
-      {warning && (
-        <p className="text-sm text-alert" data-testid="warning">
-          {tr(warning)}
-        </p>
-      )}
     </Panel>
   );
 }

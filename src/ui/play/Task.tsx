@@ -3,7 +3,6 @@ import { Target, X } from 'lucide-react';
 import type { AimId } from '../../controls/bus';
 import { atHub, type Board, type Model, type View } from '../../state/game';
 import { setObjective, type ObjectiveTarget } from '../../state/objective';
-import { load, save } from '../../lib/storage';
 import { dayGoal, radioLine, tutorialStep, tutorialSay, tutorialTarget, tutorialTask, type DayFacts, type TutStep } from '../tutorial';
 import type { Tr } from './kit';
 
@@ -13,7 +12,6 @@ import type { Tr } from './kit';
  * after 7 s without progress (the beacon and the task line pulse). Words only; no game number is computed.
  */
 const IDLE_MS = 7000;
-const TUTORIAL_KEY = 'tutorialDone';
 
 export interface Task {
   key: string;
@@ -25,7 +23,10 @@ export interface Task {
 }
 
 export function useTask(model: Model, view: View, board: Board | null, aim: AimId | null): { task: Task | null; skip: () => void } {
-  const [done, setDone] = useState(() => load<boolean>(TUTORIAL_KEY, false));
+  // The tutorial belongs to a child's first mission (model.firstMission, set per badge in App.tsx), not to the
+  // device: on a shared class tablet every new badge and every guest gets it. "Skip" ends it for this game only.
+  const [skipped, setSkipped] = useState<number | null>(null);
+  const done = skipped === model.seed;
   const day = model.game?.day ?? 1;
   const hands = model.hands ?? 0;
   const step =
@@ -33,17 +34,8 @@ export function useTask(model: Model, view: View, board: Board | null, aim: AimI
       ? tutorialStep({ phase: model.phase, day, firstMission: model.firstMission, hands, alloc: view.alloc, aim, free: atHub(model) })
       : null;
 
-  // The tutorial ends for good once the first day is confirmed (or skipped).
-  useEffect(() => {
-    if (!done && model.firstMission && model.game && model.game.day >= 2) {
-      save(TUTORIAL_KEY, true);
-      setDone(true);
-    }
-  }, [done, model.firstMission, model.game]);
-  const skip = () => {
-    save(TUTORIAL_KEY, true);
-    setDone(true);
-  };
+  // (The tutorial is Day 1 only: tutorialStep returns null from Day 2 on.)
+  const skip = () => setSkipped(model.seed);
 
   const facts: DayFacts | null = board
     ? { day, phase: model.phase, card: board.info.card, choice: board.info.choice, alert: board.info.alert, forced: board.info.forced }
@@ -93,7 +85,7 @@ export function TaskLine({ task, tr, onSkip }: { task: Task; tr: Tr; onSkip?: ()
         {tr(task.key)}
       </p>
       {onSkip && (
-        <button type="button" data-testid="tutorial-skip" className="abtn ml-1 !min-h-9 shrink-0 !rounded-full !px-2.5 !py-1 text-xs" onClick={onSkip}>
+        <button type="button" data-testid="tutorial-skip" className="abtn ml-1 !min-h-12 shrink-0 !rounded-full !px-2.5 !py-1 text-xs" onClick={onSkip}>
           {tr('ui.tut.skip')}
           <X size={14} aria-hidden="true" />
         </button>

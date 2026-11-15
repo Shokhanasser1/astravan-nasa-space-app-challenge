@@ -26,7 +26,9 @@ export default defineConfig({
         // Draco decoder only matters for Draco models (prefer meshopt); it loads on demand instead of on first visit.
         // Real media of the 14 weeks (~12 MB, public/data/media/) are not precached: a player sees one week, so its
         // pictures are cached the first time they are shown (runtimeCaching below) and work offline after that.
-        globIgnores: ['draco/**', 'mediapipe/**', 'data/media/**'],
+        // (Also left out: MediaPipe's JS, needed only when a child turns the camera on for the arm or ?hands, and the
+        // LRO model, which no screen loads at the moment.)
+        globIgnores: ['draco/**', 'mediapipe/**', 'data/media/**', 'bundle/vision_bundle-*.js', 'models/nasa-lro/**'],
         runtimeCaching: [
           {
             urlPattern: ({ url }) => url.pathname.includes('/data/media/'),

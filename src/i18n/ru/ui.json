@@ -230,5 +230,15 @@
   "ui.arm.grip": "Захват",
   "ui.arm.helpLift": "Подними предплечье: рука поднимется",
   "ui.arm.helpWrist": "Согни кисть: запястье повернётся",
-  "ui.arm.helpGrip": "Сведи кончики пальцев: захват сожмётся"
+  "ui.arm.helpGrip": "Сведи кончики пальцев: захват сожмётся",
+  "ui.capcom.delay": "Сигнал с Земли · {s} с",
+  "ui.truth.dataTitle": "Откуда данные этой недели",
+  "ui.truth.data.crater": "Радиация: LRO CRaTER, ежечасно (NASA OSDR RadLab)",
+  "ui.truth.data.donki": "Вспышки, частицы, выбросы: DONKI (CCMC, NASA Goddard)",
+  "ui.truth.data.sdo": "Снимки Солнца: SDO, AIA 131 Å",
+  "ui.truth.data.earth": "Земля: GIBS (VIIRS, MODIS) и DSCOVR EPIC",
+  "ui.truth.data.sky": "Солнце и Земля на небе: JPL Horizons",
+  "ui.truth.data.ground": "Грунт и горы: высоты LRO LOLA",
+  "ui.truth.notNasa": "Сделано командой Astrakarvan для NASA Space Apps 2026. Не официальный продукт NASA.",
+  "ui.truth.partly": "День {days}: измерена только часть дня"
 }

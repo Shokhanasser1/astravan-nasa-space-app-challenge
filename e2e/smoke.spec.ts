@@ -1,4 +1,33 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
+
+/**
+ * The mission quiz (features.quiz): answers are tried in order until one is right (a wrong one shows why and
+ * "Try again"), then Next; the debrief ends with the "next mission" card. Returns the kinds of questions asked.
+ */
+async function passQuiz(page: Page): Promise<string[]> {
+  const quiz = page.getByTestId('quiz');
+  const asked: string[] = [];
+  for (let n = 0; n < 30 && (await quiz.isVisible()); n++) {
+    if (await page.getByTestId('quiz-finish').isVisible()) {
+      await page.getByTestId('quiz-finish').click();
+      break;
+    }
+    if (await page.getByTestId('quiz-next').isVisible()) {
+      await page.getByTestId('quiz-next').click();
+      continue;
+    }
+    if (await page.getByTestId('quiz-retry').isVisible()) {
+      await page.getByTestId('quiz-retry').click();
+      continue;
+    }
+    const template = (await page.getByTestId('quiz-question').getAttribute('data-template')) ?? '';
+    if (asked[asked.length - 1] !== template) asked.push(template); // (a retry shows the same question again)
+    // every retry turns the answers one place, so the first button is always an answer not tried yet
+    await quiz.locator('[data-testid^="quiz-option-"]').first().click();
+  }
+  await expect(quiz).toBeHidden();
+  return asked;
+}
 
 // G2 gate in code: the first mission loads without errors and seven days can be played to the truth screen,
 // driven only through the DOM layer (works without WebGL). Selectors are data-testid only — never words or keys.
@@ -17,7 +46,16 @@ test('loads, starts and plays the first mission to the truth screen', async ({ p
   const truth = page.getByTestId('truth');
   // The first mission opens with the Day 1 tutorial: its task line is on screen, and it never blocks a button.
   await expect(page.getByTestId('task')).toHaveAttribute('data-step', 'next');
+  // CAPCOM's first line travels from Earth first (the 1.3 s radio delay), then shows its words.
+  await expect(page.getByTestId('radio')).toBeVisible();
+  await expect(page.getByTestId('radio-delay')).toBeHidden({ timeout: 5000 });
+  const asked: string[] = [];
   for (let i = 0; i < 100 && !(await truth.isVisible()); i++) {
+    // A radio check on some nights (features.quiz): answer it, then the night goes on.
+    if (await page.getByTestId('quiz').isVisible()) {
+      asked.push(...(await passQuiz(page)));
+      continue;
+    }
     // The day's decision (day card, shelter) is its own dialog: take the first choice.
     const decision = page.getByTestId('decision');
     if (await decision.isVisible()) {
@@ -47,6 +85,10 @@ test('loads, starts and plays the first mission to the truth screen', async ({ p
   await expect(page.getByTestId('truth-title')).toHaveAttribute('data-title', /.+/);
   // The real Earth (EPIC) and Moon (SVS Dial-A-Moon) of the storm day: public/data/media/2021-10-25/manifest.json.
   await expect(page.getByTestId('home-truth')).toBeVisible();
+  // The datasets behind the week, the "not an official NASA product" line, and day 7's partly measured mark (15 h).
+  await expect(page.getByTestId('truth-sources')).toBeAttached();
+  await expect(page.getByTestId('not-nasa')).toBeAttached();
+  await expect(page.getByTestId('truth-partly')).toContainText('7');
   await page.screenshot({ path: test.info().outputPath('truth.png'), animations: 'disabled' });
   // 360×640: the reveal is taller than the screen, so the panel stays inside it and scrolls (Play again reachable).
   await page.setViewportSize({ width: 360, height: 640 });
@@ -55,5 +97,13 @@ test('loads, starts and plays the first mission to the truth screen', async ({ p
   expect(await truth.evaluate((el) => getComputedStyle(el).overflowY)).toBe('auto');
   await page.getByTestId('again').scrollIntoViewIfNeeded();
   await expect(page.getByTestId('again')).toBeInViewport();
+  // Three radio checks came on nights 2, 4 and 6; the debrief (three more) opens the next mission.
+  expect(asked).toHaveLength(3);
+  await expect(page.getByTestId('again')).toHaveAttribute('data-quiz', 'pending');
+  await page.getByTestId('again').click();
+  const debrief = await passQuiz(page);
+  expect(debrief).toHaveLength(3);
+  expect(new Set([...asked, ...debrief]).size).toBe(6); // never the same kind of question twice
+  await expect(truth).toBeHidden();
   expect(errors).toEqual([]);
 });

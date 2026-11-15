@@ -73,7 +73,7 @@ export function ResourceBar({ res, tr }: { res: Res; tr: Tr }) {
               aria-label={tr(`ui.res.${x.k}.name`)}
               aria-expanded={open === x.k}
               className={`res-cell flex flex-col items-center justify-center rounded-[14px] px-1.5 py-1 ${open === x.k ? 'bg-white/10' : ''}`}
-              onPointerDown={() => setOpen((o) => (o === x.k ? null : x.k))}
+              onClick={() => setOpen((o) => (o === x.k ? null : x.k))}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
                   e.preventDefault();
@@ -107,7 +107,7 @@ export function ResourceBar({ res, tr }: { res: Res; tr: Tr }) {
               {g.max ? ` / ${g.max(res)}` : ''}
             </span>
             <Mark label={g.label} tr={tr} />
-            <button type="button" className="abtn ml-auto !min-h-9 !rounded-full !p-1.5" aria-label={tr('ui.controls.close')} onClick={() => setOpen(null)}>
+            <button type="button" className="abtn ml-auto !min-h-12 !min-w-12 !rounded-full !p-1.5" aria-label={tr('ui.controls.close')} onClick={() => setOpen(null)}>
               <X size={16} aria-hidden="true" />
             </button>
           </div>
