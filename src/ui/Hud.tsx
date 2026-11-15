@@ -23,6 +23,8 @@ import { features } from '../config/features';
 import { canTravel, resolve, type Ctx, type Overlay } from '../controls/act';
 import { useAim, useRide } from '../controls/bus';
 import { setTitle } from '../scene/title';
+import { runMs } from '../scene/runClock';
+import { DayRun } from './play/DayRun';
 
 /**
  * Lane D. DOM layer above the Canvas (15 Nov, "make it a game"): the base's gauges always on top, the task line
@@ -34,7 +36,6 @@ import { setTitle } from '../scene/title';
 const LANGS: Lang[] = ['en', 'uz', 'ru'];
 /** The robot arm's hand scanner (it needs the walking astronaut). */
 const armScan = features.robotArm && features.character;
-const RUN_MS = 4000; // the day runs (≤ 6 s, skippable)
 const LAUNCH_MS = 4000;
 
 interface Props {
@@ -146,9 +147,10 @@ export function Hud({ model, view, dispatch, lang, setLang, sound, setSound, onS
   // The day runs by itself and the lander lifts off by itself; the main button skips.
   useEffect(() => {
     if (screen !== 'game' || (phase !== 'run' && phase !== 'launch')) return;
-    const id = setTimeout(() => dispatch({ type: 'NEXT' }), phase === 'run' ? RUN_MS : LAUNCH_MS);
+    // (a day whose measured hours change runs 6 s, a calm one 4 s: src/scene/runClock.ts runMs)
+    const id = setTimeout(() => dispatch({ type: 'NEXT' }), phase === 'run' ? runMs(view.hourly) : LAUNCH_MS);
     return () => clearTimeout(id);
-  }, [phase, screen, model.game?.day, dispatch]);
+  }, [phase, screen, model.game?.day, dispatch, view.hourly]);
 
   const dialog = planning && decisionOpen;
   // Free walk: only while the game itself is on screen and no window is open (its keys would walk away under it).
@@ -278,6 +280,7 @@ export function Hud({ model, view, dispatch, lang, setLang, sound, setSound, onS
           {(phase === 'morning' || phase === 'plan') && (
             <CapcomHolo textKey={task?.radio ?? null} tr={tr} lang={lang} sound={sound} collapsible />
           )}
+          {phase === 'run' && <DayRun view={view} ms={runMs(view.hourly)} sound={sound} tr={tr} />}
           {phase === 'night' && <NightTablet model={model} before={planRes.current} after={view.res} tr={tr} />}
           {showList && !dialog && <PlanTablet board={board} model={model} dispatch={act} tr={tr} onFold={() => setListOpen(false)} />}
           {planning && ctx && !dialog && !showList && <ContextPrompt ctx={ctx} tr={tr} />}

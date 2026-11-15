@@ -230,5 +230,8 @@
   "ui.arm.grip": "Gripper",
   "ui.arm.helpLift": "Raise your forearm: the arm lifts",
   "ui.arm.helpWrist": "Bend your hand: the wrist turns",
-  "ui.arm.helpGrip": "Fingertips together: it grips"
+  "ui.arm.helpGrip": "Fingertips together: it grips",
+  "ui.run.title": "Today, hour by hour",
+  "ui.run.particles": "Particles",
+  "ui.run.source": "Dosimeter LRO CRaTER, events DONKI"
 }

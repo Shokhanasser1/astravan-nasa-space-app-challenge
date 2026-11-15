@@ -1,6 +1,7 @@
 import { useEffect, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
+import { levelOf, useRunHour } from './runClock';
 
 /**
  * The storm in the air (docs/layout.md "Invisible storm"; 15 Nov): at radiation level ≥ 2 (View.level, from the
@@ -33,7 +34,10 @@ function dotTexture(): THREE.Texture {
 }
 
 export function Storm({ level }: { level: number }) {
-  const l = Math.max(0, Math.min(4, Math.round(level)));
+  // While the day runs, the storm follows the measured hour being played (src/scene/runClock.ts): it comes in at the
+  // real particle arrival, not before.
+  const run = useRunHour();
+  const l = Math.max(0, Math.min(4, Math.round(run ? levelOf(run.ratio) : level)));
   const on = l >= 2;
   const parts = useMemo(() => {
     const pos = new Float32Array(MAX * 3);

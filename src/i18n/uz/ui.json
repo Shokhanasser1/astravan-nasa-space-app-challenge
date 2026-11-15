@@ -230,5 +230,8 @@
   "ui.arm.grip": "Qisqich",
   "ui.arm.helpLift": "Bilagingni koʻtar: qoʻl koʻtariladi",
   "ui.arm.helpWrist": "Kaftingni buk: bilak buriladi",
-  "ui.arm.helpGrip": "Barmoq uchlarini birlashtir: ushlaydi"
+  "ui.arm.helpGrip": "Barmoq uchlarini birlashtir: ushlaydi",
+  "ui.run.title": "Bugun, soatma-soat",
+  "ui.run.particles": "Zarralar",
+  "ui.run.source": "Dozimetr LRO CRaTER, hodisalar DONKI"
 }

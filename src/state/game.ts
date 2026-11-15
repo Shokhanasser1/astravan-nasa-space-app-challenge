@@ -8,7 +8,7 @@ import {
   CARD_CHOICES, confirm, dayInfo, limits, newGame, playable, preview, result,
   type Alloc, type CardId, type DayInfo, type Limits, type Preview, type Result, type Shelter, type State,
 } from '../engine/rules';
-import type { SkyDay, Week } from '../engine/week';
+import type { SkyDay, Week, WeekDay } from '../engine/week';
 
 // ---- the contract with the scene (developer guide §02) ----
 export type Phase = 'morning' | 'plan' | 'run' | 'night' | 'launch' | 'truth';
@@ -28,6 +28,12 @@ export type View = {
   earthElDeg?: number;
   earthPhase?: number;
   ratio?: number; // today's (or this hour's) dose / normal, measured → dosimeter clicks, scout-cam snow
+  // 15 Nov ~09:40 (Shoxjahon aka: "the storm follows the real NASA data"): today's 24 measured hourly ratios
+  // (LRO CRaTER) and DONKI's flare / particle times, for the day running hour by hour (src/scene/runClock.ts).
+  // Times only, never the date: the date is revealed on the truth screen.
+  hourly?: WeekDay['hourly'];
+  flares?: WeekDay['flares'];
+  particles?: WeekDay['particles'];
   batteries?: { left: number; total: number }; // power hub lights: total today, left = not placed yet
   // 15 Nov (engine owner Shoxjahon aka): where this day's real media lives — public/data/media/<weekId>/
   // (earth-<mediaDate>.webp, sdo-*.webp, manifest.json). File paths only: the date is never shown during play.
@@ -296,6 +302,9 @@ export function toView(m: Model, sky?: Record<string, SkyDay[]>): View {
     earthElDeg: skyDay?.earth_el_deg,
     earthPhase: skyDay?.earth_phase,
     ratio: today?.ratio,
+    hourly: today?.hourly,
+    flares: today?.flares,
+    particles: today?.particles,
     weekId: m.week?.id,
     mediaDate: today?.date,
     batteries: lim && m.phase === 'plan' ? { left: m.preview?.left ?? lim.available, total: lim.available } : undefined,

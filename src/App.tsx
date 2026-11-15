@@ -5,6 +5,7 @@ import { FIRST_WEEK, initialModel, reducer, toView, truth, type Machine, type Mo
 import { SKY, WEEKS, pickWeek } from './engine/week';
 import type { Lang } from './i18n/t';
 import { audio } from './audio/audio';
+import { doseFor } from './scene/runClock';
 import { load, save } from './lib/storage';
 import { features } from './config/features';
 import { flush } from './net/api';
@@ -90,9 +91,13 @@ export function App() {
   // Dosimeter clicks (concept 3.0 §03): the day's measured dose ratio (LRO CRaTER, view.ratio) as Geiger clicks
   // while the crew is on the Moon — a quiet day ticks slowly, a storm day rattles. Silent with the sound off, on the
   // start and end screens, at the launch and on the truth screen.
-  const onMoon = model.screen === 'game' && view.phase !== 'launch' && view.phase !== 'truth';
-  const doseRatio = sound && onMoon ? (view.ratio ?? 0) : 0;
-  useEffect(() => audio.setDose(doseRatio), [doseRatio]);
+  // The plan is made in the morning and the night card read in the evening, so they hear those real hours; while the
+  // day runs, src/ui/play/DayRun.tsx plays it hour by hour (src/scene/runClock.ts).
+  const onMoon = model.screen === 'game' && view.phase !== 'launch' && view.phase !== 'truth' && view.phase !== 'run';
+  const doseRatio = sound && onMoon ? doseFor(view.phase, view.hourly, view.ratio ?? 0) : 0;
+  useEffect(() => {
+    if (view.phase !== 'run') audio.setDose(doseRatio);
+  }, [doseRatio, view.phase]);
   useEffect(() => {
     if (features.sendResults) void flush();
   }, []);
