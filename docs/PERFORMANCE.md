@@ -25,6 +25,13 @@ only big bodies cast shadows, storm in one draw call). Concept 3.0 measured Desi
 - Shadows recomputed once per day; bloom at half resolution, threshold 0.9; stars static (no twinkle, no air).
 - Sounds generated in code (dosimeter, Quindar): zero bytes. Data and images bundled: no network during play.
 - Calm scenes are not redrawn (`frameloop="demand"`); per-frame animation lives in refs, not React state.
+- (15 Nov, branch `test`) Phones: parts smaller than 0.4 m cast no shadow (`src/scene/shadowDiet.ts`); interiors are
+  baked by finish like ASTRA's buildings (`bakeInterior`, `Interiors.tsx`); the solar arrays' turning parts are merged
+  once a day (`AstraProps.tsx`); every building's contact patch is one draw call per strength (`mergeWorld`); hidden
+  labels stay hidden (`finalize`, vendor `kit.ts`). Touch screens draw panels without `backdrop-filter`; HUD pulses
+  animate only `opacity`; later screens (night, truth, quiz, plan list, arm scanner) are lazy chunks preloaded on idle.
+- Measuring: `SHOT_COST=1 SHOT_PORT=4190 ./shot.sh` checks in as a guest, plays, and prints calls, triangles, the
+  costliest groups and every shadow caster; the phone shot is a touch device (the real `phone` tier).
 
 ## Rules for the team
 
