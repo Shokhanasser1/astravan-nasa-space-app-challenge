@@ -72,6 +72,15 @@ describe('aim: the building in front', () => {
     expect(pickAim(0, 0, 0, [{ k: 'hub', x: 0, z: -2, r: 0.6 }])).toBe('hub');
   });
 
+  it('a target with `near` counts when the astronaut stands next to it, whichever way they face', () => {
+    const hub: AimTarget = { k: 'hub', x: 1.5, z: 0.8, r: 0.6, near: 1.6 }; // to the side and a bit behind
+    expect(pickAim(0, 0, 0, [hub])).toBe('hub');
+    expect(pickAim(0, 0, 0, [{ ...hub, x: 3 }])).toBeNull(); // 2.4 m from its edge: too far
+    expect(pickAim(0, 0, 0, [{ ...hub, near: undefined }])).toBeNull(); // without `near` the heading counts
+    // a building in front wins over the one beside
+    expect(pickAim(0, 0, 0, [hub, { k: 'ls', x: 0, z: -3, r: 1 }])).toBe('ls');
+  });
+
   it('a building a little off the centre still counts; far off it does not', () => {
     const ahead = (deg: number) => -Math.tan((deg * Math.PI) / 180) * 3; // x of a point `deg` to the right at 3 m
     expect(pickAim(0, 0, 0, [{ k: 'ls', x: -ahead(30), z: -3, r: 1 }])).toBe('ls');

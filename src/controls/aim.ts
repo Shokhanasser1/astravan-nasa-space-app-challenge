@@ -12,6 +12,11 @@ export interface AimTarget {
   z: number;
   /** Footprint radius, metres. */
   r: number;
+  /**
+   * Optional: within this many metres of its edge it counts whichever way the astronaut faces (a proximity prompt,
+   * as in most kids' games) — used for the small power hub; a building in front still wins.
+   */
+  near?: number;
 }
 
 /** Extra angle around a building's edge that still counts as "looking at it". */
@@ -25,12 +30,18 @@ export function pickAim(x: number, z: number, yaw: number, targets: readonly Aim
   const fz = -Math.cos(yaw);
   let best: AimId | null = null;
   let bestScore = Infinity;
+  let beside: AimId | null = null;
+  let besideGap = Infinity;
   for (const t of targets) {
     const dx = t.x - x;
     const dz = t.z - z;
     const d = Math.hypot(dx, dz);
     if (d <= t.r) return t.k; // standing inside it (the habitat)
     const gap = d - t.r;
+    if (t.near !== undefined && gap <= t.near && gap < besideGap) {
+      beside = t.k;
+      besideGap = gap;
+    }
     if (gap > reach) continue;
     const cos = Math.max(-1, Math.min(1, (dx * fx + dz * fz) / d));
     const off = Math.acos(cos);
@@ -43,5 +54,5 @@ export function pickAim(x: number, z: number, yaw: number, targets: readonly Aim
       best = t.k;
     }
   }
-  return best;
+  return best ?? beside;
 }
