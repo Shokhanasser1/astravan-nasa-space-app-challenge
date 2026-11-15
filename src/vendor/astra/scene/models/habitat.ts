@@ -302,13 +302,18 @@ export function buildHabitat(view: ModuleView, planet: Planet) {
   torus(g, shellRadius(HOME.floor[1]) + 0.05, 0.03, paint(C.grey, 0.6), 0, HOME.floor[1], 0).rotation.x = Math.PI / 2;
 
   // Windows on both floors: framed glass on a stiffened boss, with the lit room behind (warm at night).
-  view.windows = new THREE.MeshStandardMaterial({ color: "#1c232e", emissive: "#ffc98a", emissiveIntensity: 0.6, roughness: 0.7, toneMapped: false });
+  // HB7: "cold Moon, warm home": the rooms glow amber like a lit house at dusk. Black base colour, so the Sun never
+  // greys the light out; the warmth is all emissive, past the bloom threshold when the habitat has batteries
+  // (AstraBase setPower). A deep amber, because the final tone mapping whitens bright cores: the halo keeps the colour.
+  // (toneMapped: false counts only on tiers without post effects; with them, Stage's <ToneMapping> maps everything.)
+  // ASTRA had #1c232e / #ffc98a, roughness 0.7.
+  view.windows = new THREE.MeshStandardMaterial({ color: "#000000", emissive: "#ffa000", emissiveIntensity: 0.6, roughness: 1, metalness: 0, toneMapped: false });
   view.windowGlow = [];
   for (const w of WINDOWS) {
     const y = windowY(w),
       R = shellRadius(y) + 0.06;
     const p = polar(w.bearing, R);
-    const pane = faceOut(windowPane(g, w.w, w.h, Math.min(w.w, w.h) * 0.3, frame, glass("#9fb8cc", 0.32), seal, p.x, y, p.z, 0.075), w.bearing);
+    const pane = faceOut(windowPane(g, w.w, w.h, Math.min(w.w, w.h) * 0.3, frame, glass("#9fb8cc", 0.2) /* HB7: thinner tint (ASTRA 0.32): the warm room shows through */, seal, p.x, y, p.z, 0.075), w.bearing);
     const glow = mesh(geo(`hab2-glow-${w.w}-${w.h}`, () => new THREE.ShapeGeometry(roundRect(w.w - 0.02, w.h - 0.02, Math.min(w.w, w.h) * 0.28), 8)), view.windows, pane, 0, 0, -0.06);
     glow.castShadow = false;
     view.windowGlow.push(glow);

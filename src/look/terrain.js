@@ -300,9 +300,16 @@ export async function bakeSunVis(geo, H, sun, { maxDist, useDetail, slice = 1500
  * (mountain shadows) on the sunlight only, and the opposition surge — the bright glow around your own
  * shadow that every Apollo photo shows.
  */
+/**
+ * Albedo gain on top of the vertex colour (sRGB, multiplies it): real regolith reflects only ~12 % of sunlight, a
+ * dark, slightly warm grey; the soil colours passed in are lighter and cooler, so on their own the ground read as
+ * snow or concrete. This darkens and warms them, so the white base and the astronaut stand out.
+ */
+const ALBEDO_GAIN = '#b3ada5';
+
 /** @param {{ detail?: THREE.Texture | null, detailNormal?: THREE.Texture | null, surge?: number }} [opts] */
 export function regolithMaterial({ detail = null, detailNormal = null, surge = 0.5 } = {}) {
-  const mat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 1, metalness: 0 });
+  const mat = new THREE.MeshStandardMaterial({ color: ALBEDO_GAIN, vertexColors: true, roughness: 1, metalness: 0 });
   const uniforms = {
     uDetail: { value: detail },
     uDetailN: { value: detailNormal },

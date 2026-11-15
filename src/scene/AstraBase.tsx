@@ -41,7 +41,9 @@ export function astraModule(build: (v: ModuleView) => void, prep?: (g: THREE.Gro
   finalize(g);
   prep?.(g, view);
   tameWhites(g);
-  const keep: THREE.Object3D[] = [...view.spin, ...(view.windowGlow ?? [])];
+  // The habitat's lit window panes are not kept apart (our inside view is its own room, Habitat.tsx Interior): they
+  // bake into one mesh with their shared live material, one draw call for all eleven windows instead of eleven.
+  const keep: THREE.Object3D[] = [...view.spin];
   if (view.yaw) keep.push(view.yaw);
   if (view.tilt) keep.push(view.tilt);
   if (view.shield) keep.push(view.shield);
@@ -58,7 +60,7 @@ export function astraModule(build: (v: ModuleView) => void, prep?: (g: THREE.Gro
 }
 
 /**
- * ASTRA's white paints burn out under our light (Stage.tsx exposure 1.32, Light.tsx): up close the habitat was a
+ * ASTRA's white paints burned out under the old light (ACES 1.32, before the Moon light): up close the habitat was a
  * flat white wall (15 Nov). Each bright opaque paint gets a little greyer and more matte, once (materials are shared
  * between buildings), so the panels, seams and windows read again. Glass, glow and lamps are left alone.
  */
@@ -69,16 +71,24 @@ function tameWhites(g: THREE.Object3D): void {
     m.userData.tamed = true;
     const c = m.color;
     if (0.2126 * c.r + 0.7152 * c.g + 0.0722 * c.b < 0.55) return; // (linear: about sRGB #c4c4c4 and brighter)
-    c.multiplyScalar(0.72);
+    c.multiplyScalar(0.86); // (0.72 under the old ACES 1.32 light; the Moon light and Neutral curve clip less)
     m.roughness = Math.max(m.roughness, 0.7);
     m.envMapIntensity = Math.min(m.envMapIntensity ?? 1, 0.6);
   });
 }
 
 /**
+ * The habitat's windows: "cold Moon, warm home". With batteries the rooms shine amber past the bloom threshold, so
+ * they halo softly; without, a dim ember below it (someone lives there, on low power) instead of ASTRA's near-black,
+ * so the home still reads warm while "powered" stays plainly brighter (the gameplay signal).
+ */
+export const WINDOW_GLOW = { on: 4, off: 0.12 } as const;
+
+/**
  * ASTRA's power look (World.tsx), made plainer to read from across the base (15 Nov): a powered building's lights
- * glow past the bloom threshold (0.08 + 2.6 × power, ASTRA had 1.9) and its windows shine warm (2.4, ASTRA 1.6);
- * without power they go nearly dark (0.03 / 0.05) and the status lamp turns amber. Materials only: no draw calls.
+ * glow past the bloom threshold (0.08 + 2.6 × power, ASTRA had 1.9) and its windows shine warm (WINDOW_GLOW,
+ * ASTRA 1.6); without power the lights go nearly dark (0.03), the windows dim to an ember and the status lamp turns
+ * amber. Materials only: no draw calls.
  */
 export function setPower(v: ModuleView, on: boolean): void {
   for (const m of v.glow) m.emissiveIntensity = on ? 0.08 + 2.6 * ((m.userData.glow as number | undefined) ?? 1) : 0.03;
@@ -86,7 +96,7 @@ export function setPower(v: ModuleView, on: boolean): void {
   v.status.color.set(lamp);
   v.status.emissive.set(lamp);
   v.status.emissiveIntensity = on ? 1.4 : 0.4;
-  if (v.windows) v.windows.emissiveIntensity = on ? 2.4 : 0.05;
+  if (v.windows) v.windows.emissiveIntensity = on ? WINDOW_GLOW.on : WINDOW_GLOW.off;
   const glazing = v.group.userData.glazing as THREE.MeshPhysicalMaterial[] | undefined;
   for (const m of glazing ?? []) m.emissiveIntensity = on ? 0.9 : 0;
 }
