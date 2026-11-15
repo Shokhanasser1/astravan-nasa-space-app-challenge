@@ -32,6 +32,9 @@ export interface Body {
   windup: number;
   /** Take-off speed of the last jump (the animation scrubs the flight by it). */
   v0: number;
+  /** Ground speed when the crouch began: the boots stay planted while crouching, the leap carries it on. */
+  leapX: number;
+  leapZ: number;
   /** Facing on the ground: 0 = +z (the model's front). */
   facing: number;
   /** Loping (run held) in the last step. */
@@ -44,7 +47,7 @@ export interface Body {
 export const STEP = 1 / 120;
 
 export function createBody(x: number, z: number, ground: Ground, facing = 0): Body {
-  return { x, y: ground(x, z), z, vx: 0, vy: 0, vz: 0, onGround: true, windup: -1, v0: 0, facing, running: false, scale: 1 };
+  return { x, y: ground(x, z), z, vx: 0, vy: 0, vz: 0, onGround: true, windup: -1, v0: 0, leapX: 0, leapZ: 0, facing, running: false, scale: 1 };
 }
 
 const at: XZ = { x: 0, z: 0 };
@@ -70,13 +73,24 @@ export function stepBody(b: Body, wish: Wish, area: Area, ground: Ground, g = GR
     b.vz = tz;
   }
 
-  if (wish.jump && b.onGround && b.windup < 0) b.windup = 0;
+  // The jump: a crouch with both boots planted (the JumpStart clip), then the leap. Walking or loping into it, the
+  // body stops for the crouch and the leap carries the speed on (15 Nov: sliding on through the 0.8 s crouch skated
+  // ~1.7 m at a lope without a step, so no boot prints; now the crouch leaves two prints and the landing two more).
+  if (wish.jump && b.onGround && b.windup < 0) {
+    b.windup = 0;
+    b.leapX = b.vx;
+    b.leapZ = b.vz;
+  }
   if (b.windup >= 0) {
     b.windup += dt;
+    b.vx = 0;
+    b.vz = 0;
     if (b.windup >= MOVE.windup) {
       b.windup = -1;
       b.v0 = jumpSpeed(0) * k;
       b.vy = b.v0;
+      b.vx = b.leapX;
+      b.vz = b.leapZ;
       b.onGround = false;
     }
   }
