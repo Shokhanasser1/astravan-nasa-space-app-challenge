@@ -76,6 +76,8 @@ export interface Model {
   firstMission: boolean;
   /** Batteries in the astronaut's hands (plan phase); they are not on any machine yet. Old saves lack it → 0. */
   hands?: number;
+  /** 15 Nov (mission quiz): the day card answered on each played day, e.g. { 3: 'filter:wait' }. Old saves lack it. */
+  picks?: Record<number, string>;
 }
 
 export type Action =
@@ -203,7 +205,9 @@ export function reducer(m: Model, a: Action): Model {
       if (!m.game || !m.week || m.phase !== 'plan') return m;
       if (m.preview?.warning === 'engine.warn.chooseCard') return m; // the card needs an answer first
       // batteries still in the hands go back to the hub: they were never on a machine
-      return { ...m, game: confirm(m.game, m.week, m.alloc, m.cardChoice), phase: 'run', preview: null, hands: 0 };
+      // (the card answer is kept for the mission quiz: it asks only about roads the child has walked)
+      const picks = m.cardChoice && !m.game.forced ? { ...m.picks, [m.game.day]: m.cardChoice } : m.picks;
+      return { ...m, game: confirm(m.game, m.week, m.alloc, m.cardChoice), phase: 'run', preview: null, hands: 0, picks };
     }
     case 'NEXT':
       return next(m);
@@ -289,9 +293,12 @@ export function toView(m: Model, sky?: Record<string, SkyDay[]>): View {
   const skyDay = m.week && sky ? sky[m.week.id]?.find((d) => d.day === day) : undefined;
   const today = m.week?.days.find((d) => d.day === day);
   const lim = g && m.week && g.day <= 7 ? limits(g, m.week, m.alloc.shelter, m.cardChoice) : null;
+  // A day already lived (night, launch, truth) shows its real level, an alert day too (15 Nov: the badge showed
+  // the next day's level at night); while a day is planned or runs, an alert day stays unknown.
+  const lived = m.phase === 'night' || m.phase === 'launch' || m.phase === 'truth';
   return {
     day,
-    level: (info?.level ?? 0) as View['level'],
+    level: ((lived ? info?.realLevel : info?.level) ?? 0) as View['level'],
     alert: info?.alert ?? false,
     alloc: { ls: m.alloc.ls, gh: m.alloc.gh, ws: m.alloc.build, sc: m.alloc.sc, launch: m.alloc.launch },
     wall: clamp<View['wall']>(g?.wall ?? 0, 3),

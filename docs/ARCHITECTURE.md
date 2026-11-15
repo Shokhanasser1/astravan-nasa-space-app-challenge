@@ -102,8 +102,9 @@ day 4, ends in 90 s), before/after questions (counted on the device), saving to 
 - One `<Canvas>` (`Stage.tsx`), never remounted. `frameloop="demand"` while calm; `always` during run, launch, storms.
 - Quality tiers (`quality.ts`, developer guide §05): pc → phone → phoneLow → min. `PerformanceMonitor` steps down:
   DPR 1 → Bloom off → shadow 1024 → no shadows, half storm. The child never sets anything.
-- Light: concept 3.0 recipe (`Light.tsx`): Sun 1.5° above the horizon, azimuth from `sky.json`, ambient ≈ 0,
-  ACES, shadow recomputed once per day. Materials and colours: developer guide §10 table.
+- Light (`Light.tsx`, 15 Nov "cold Moon, warm home"): one hard Sun at 12° (game rule; `?sunel=1.5` = the real
+  pole), azimuth from `sky.json`, faint ground bounce and earthshine, Neutral tone mapping (exposure 3.3, applied
+  by the composer's `<ToneMapping>` effect), shadow recomputed once per day. Materials and colours: developer guide §10 table.
 - Storm: concept 3.0 — not drawn. Dosimeter clicks, scout-camera snow, sparks in the shelter, driven by `view.ratio`.
 - Models: grey code shapes first; GLB in `<Suspense fallback={<Proxy/>}>` later (after G2). Draco decoder from
   `/draco/`. All six models or none.

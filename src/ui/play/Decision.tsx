@@ -7,6 +7,7 @@ import type { Action, Board, Model } from '../../state/game';
 import type { Shelter } from '../../engine/rules';
 import { Btn, Delta, Panel, type Tr } from './kit';
 import { Kbd } from './Controls';
+import { Mark } from './Holo';
 
 /**
  * The day's decision as its own simple dialog (15 Nov, "make it a game"): it opens only when a decision is
@@ -123,6 +124,7 @@ export function Decision({
                         <span className="flex flex-wrap gap-x-2 text-xs font-normal tabular-nums">
                           <Chip icon={Shield} tone="text-measured">{tr('ui.decide.blocks', { pct: Math.round(p.blockedToday * 100) })}</Chip>
                           <Chip icon={Radiation} tone="text-computed">+{p.doseToday.toFixed(2)}</Chip>
+                          <Mark label="computed" tr={tr} />
                         </span>
                       )}
                     </span>

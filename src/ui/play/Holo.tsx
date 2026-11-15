@@ -33,6 +33,12 @@ export function HoloPanel({ className = '', children, ...rest }: { className?: s
   );
 }
 
+/**
+ * One-way radio time Earth → Moon: 384,400 km ÷ 299,792 km/s = 1.28 s ≈ 1.3 s (computed; facts.json `radioDelay`,
+ * Moon distance from NASA Space Place, cross-checked with lunar laser ranging's ~2.5 s round trip).
+ */
+export const RADIO_DELAY_S = 1.3;
+
 /** Mission control's face: a line-drawn head with a headset, glowing (it pulses slowly while speaking). */
 function CapcomFace({ speaking, small = false }: { speaking: boolean; small?: boolean }) {
   return (
@@ -60,12 +66,22 @@ export function CapcomHolo({
   // In the game (15 Nov): the card folds into a small chip once read (or after ~6 s); a tap opens it again.
   const [folded, setFolded] = useState(false);
   const [opened, setOpened] = useState(0);
-  useEffect(() => setFolded(false), [textKey]);
+  // Communication delay (challenge objective): in the game a new line from Earth first shows the signal on its way
+  // for the real one-way light time, then the words. (The start briefing has no delay.)
+  const delayed = collapsible;
+  const [arriving, setArriving] = useState(false);
   useEffect(() => {
-    if (!collapsible || folded || speaking || !textKey) return;
+    setFolded(false);
+    if (!delayed || !textKey) return setArriving(false);
+    setArriving(true);
+    const id = window.setTimeout(() => setArriving(false), RADIO_DELAY_S * 1000);
+    return () => window.clearTimeout(id);
+  }, [textKey, delayed]);
+  useEffect(() => {
+    if (!collapsible || folded || speaking || arriving || !textKey) return;
     const id = window.setTimeout(() => setFolded(true), 6000);
     return () => window.clearTimeout(id);
-  }, [collapsible, folded, speaking, textKey, opened]);
+  }, [collapsible, folded, speaking, arriving, textKey, opened]);
   const text = textKey ? tr(textKey) : '';
   const say = () => {
     if (!text || lang === 'uz' || !('speechSynthesis' in window)) return;
@@ -83,10 +99,10 @@ export function CapcomHolo({
     }, 280);
   };
   useEffect(() => {
-    if (sound && textKey) say();
-    // (A new line is read once; the button reads it again.)
+    // (A new line is read once, when it has arrived from Earth; the button reads it again.)
+    if (sound && textKey && !arriving) say();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [textKey]);
+  }, [textKey, arriving]);
   if (!textKey) return null;
   if (collapsible && folded) {
     return (
@@ -110,7 +126,19 @@ export function CapcomHolo({
       <CapcomFace speaking={speaking} small={collapsible} />
       <div className="flex min-w-0 flex-col">
         <span className="eyebrow !text-measured">{tr('ui.capcom.name')}</span>
-        <p className={`${collapsible ? 'text-sm' : 'text-base'} leading-snug`}>{text}</p>
+        {arriving ? (
+          <p className="text-sm leading-snug text-white/80" data-testid="radio-delay">
+            <span className="radio-dots" aria-hidden="true">
+              <i />
+              <i />
+              <i />
+            </span>{' '}
+            {tr('ui.capcom.delay', { s: RADIO_DELAY_S })}
+            <Mark label="computed" tr={tr} />
+          </p>
+        ) : (
+          <p className={`${collapsible ? 'text-sm' : 'text-base'} leading-snug`}>{text}</p>
+        )}
       </div>
       {lang !== 'uz' && (
         <button type="button" className="abtn ml-auto !rounded-full !p-0" aria-label={tr('ui.capcom.speak')} onClick={say}>

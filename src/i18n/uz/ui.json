@@ -233,5 +233,15 @@
   "ui.arm.helpGrip": "Barmoq uchlarini birlashtir: ushlaydi",
   "ui.run.title": "Bugun, soatma-soat",
   "ui.run.particles": "Zarralar",
-  "ui.run.source": "Dozimetr LRO CRaTER, hodisalar DONKI"
+  "ui.run.source": "Dozimetr LRO CRaTER, hodisalar DONKI",
+  "ui.capcom.delay": "Yerdan signal · {s} s",
+  "ui.truth.dataTitle": "Bu hafta maʼlumotlari qayerdan",
+  "ui.truth.data.crater": "Radiatsiya: LRO CRaTER, har soatlik (NASA OSDR RadLab)",
+  "ui.truth.data.donki": "Chaqnashlar, zarralar, otilishlar: DONKI (CCMC, NASA Goddard)",
+  "ui.truth.data.sdo": "Quyosh suratlari: SDO, AIA 131 Å",
+  "ui.truth.data.earth": "Yer: GIBS (VIIRS, MODIS) va DSCOVR EPIC",
+  "ui.truth.data.sky": "Osmondagi Quyosh va Yer: JPL Horizons",
+  "ui.truth.data.ground": "Yer yuzasi va togʻlar: LRO LOLA balandliklari",
+  "ui.truth.notNasa": "Astrakarvan jamoasi NASA Space Apps 2026 uchun yaratdi. Rasmiy NASA mahsuloti emas.",
+  "ui.truth.partly": "{days}-kun: kunning faqat bir qismi oʻlchangan"
 }

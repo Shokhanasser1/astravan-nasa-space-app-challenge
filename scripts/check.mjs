@@ -17,7 +17,7 @@ const json = (p) => JSON.parse(readFileSync(join(root, p), 'utf8'));
 // 1. Strings
 // One file per language and lane (src/i18n/<lang>/<lane>.json). Keys must start with the lane's prefix,
 // and a key may live in only one lane file — this is what keeps five agents from colliding.
-const LANES = ['ui', 'scene', 'story', 'engine', 'data'];
+const LANES = ['ui', 'scene', 'story', 'engine', 'data', 'quiz'];
 const dicts = { en: {}, uz: {}, ru: {} };
 for (const lang of Object.keys(dicts)) {
   for (const lane of LANES) {

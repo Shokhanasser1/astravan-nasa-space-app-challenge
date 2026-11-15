@@ -233,5 +233,15 @@
   "ui.arm.helpGrip": "Fingertips together: it grips",
   "ui.run.title": "Today, hour by hour",
   "ui.run.particles": "Particles",
-  "ui.run.source": "Dosimeter LRO CRaTER, events DONKI"
+  "ui.run.source": "Dosimeter LRO CRaTER, events DONKI",
+  "ui.capcom.delay": "Signal from Earth · {s} s",
+  "ui.truth.dataTitle": "Where this week’s data comes from",
+  "ui.truth.data.crater": "Radiation: LRO CRaTER, hourly (NASA OSDR RadLab)",
+  "ui.truth.data.donki": "Flares, particles, eruptions: DONKI (CCMC, NASA Goddard)",
+  "ui.truth.data.sdo": "Sun photos: SDO, AIA 131 Å",
+  "ui.truth.data.earth": "Earth: GIBS (VIIRS, MODIS) and DSCOVR EPIC",
+  "ui.truth.data.sky": "Sun and Earth in the sky: JPL Horizons",
+  "ui.truth.data.ground": "Ground and mountains: LRO LOLA heights",
+  "ui.truth.notNasa": "Made by Team Astrakarvan for NASA Space Apps 2026. Not an official NASA product.",
+  "ui.truth.partly": "Day {days}: only part of the day was measured"
 }

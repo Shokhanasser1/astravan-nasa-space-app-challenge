@@ -5,13 +5,23 @@ import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment
 import type { View } from '../state/game';
 
 /**
- * Light in ASTRA's look (15 Nov, Shoxjahon aka: "the whole game with the graphics of that repo"; ASTRA World.tsx,
- * Moon: Sun #fff4e2 × 3, sky hemisphere #b9c6ff/#2a2a30 × 0.4, cool fill × 0.25, ACES exposure 1.32, a soft
- * environment × 0.42). The Sun stands 12° up (the developer guide's skeleton value; ASTRA's Moon goes to 25°), a game
- * rule: at the real pole it hugs the horizon (sky.json sun_el_true_deg, −2° to +1.7°). `?sunel=1.5` shows the real
- * pole light (concept 3.0: black shadows ~38× long). Shadows are recomputed once per day, not every frame.
+ * Moon light, "cinematic realism" (15 Nov): one hard Sun is the key light and the sky is black, so shadows go dark.
+ * Was ASTRA's studio recipe (Sun × 3, sky hemisphere × 0.4, fill × 0.25, environment × 0.42, ACES 1.32): everything
+ * evenly lit, shadows lost, a plastic toy in a photo studio. Now the Sun × SUN_I, a faint hemisphere (light bounced
+ * off the ground), a weak blue earthshine and a low environment only so metal and white panels keep a glint; Neutral
+ * tone mapping and the exposure in Stage.tsx. The Sun stands 12° up (the developer guide's skeleton value; ASTRA's
+ * Moon goes to 25°), a game rule: at the real pole it hugs the horizon (sky.json sun_el_true_deg, −2° to +1.7°).
+ * `?sunel=1.5` shows the real pole light (concept 3.0: black shadows ~38× long). Shadows are recomputed once per day.
  */
 const elParam = typeof location !== 'undefined' ? Number(new URLSearchParams(location.search).get('sunel')) : NaN;
+
+/**
+ * The one key light. Kept low on purpose (a white panel facing it stays below 1.0 in the scene's linear values) so
+ * Bloom (threshold 1) catches only the glowing parts, not every sunlit wall; the exposure (Stage.tsx) brightens the
+ * picture after Bloom. The other lights below are scaled to it: change all of them together.
+ */
+const SUN_I = 4;
+
 export const SUN_EL_DEG = Number.isFinite(elParam) && elParam > 0 && elParam < 60 ? elParam : 12;
 
 /** Sun azimuth of the day: sky.json, or ~12° a day when the week has no entry (developer guide §03). */
@@ -73,11 +83,13 @@ export function Light({ sunAzDeg = 268, shadowSize }: { sunAzDeg?: number; shado
   return (
     <>
       <color attach="background" args={['#020308']} />
-      <directionalLight ref={sun} color="#fff4e2" intensity={3} position={position} castShadow={shadowSize > 0} />
-      {/* ASTRA's Moon: a cool sky hemisphere and a faint fill from the side away from the Sun. */}
-      <hemisphereLight args={['#b9c6ff', '#2a2a30', 0.4]} />
-      <directionalLight color="#8fb2ff" intensity={0.25} position={[-position.x, position.y + 80, -position.z]} />
-      <SoftEnvironment intensity={0.42} />
+      <directionalLight ref={sun} color="#fff4e2" intensity={SUN_I} position={position} castShadow={shadowSize > 0} />
+      {/* No air, no blue sky: only light bounced off the grey ground (warm from below, near-black above) keeps the
+          shadow side of things from turning into a void. */}
+      <hemisphereLight args={['#8a93a8', '#5c534a', 0.1]} />
+      {/* Earthshine: a weak blue light from the side away from the Sun. */}
+      <directionalLight color="#8fb2ff" intensity={0.055} position={[-position.x, position.y + 80, -position.z]} />
+      <SoftEnvironment intensity={0.045} />
     </>
   );
 }
