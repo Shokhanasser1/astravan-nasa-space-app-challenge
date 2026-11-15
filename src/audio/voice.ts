@@ -17,16 +17,28 @@ function loadManifest(base: string): Promise<Manifest> {
   return manifest;
 }
 
+/**
+ * The file that speaks this line as it reads now: the home story's version (`<key>.hs`, src/i18n/t.ts) or the plain
+ * one — whichever was recorded for exactly this text. Null when neither matches.
+ */
+async function voicedKey(base: string, lang: string, key: string, text: string): Promise<string | null> {
+  const m = (await loadManifest(base))[lang];
+  const fp = fingerprint(text);
+  if (m?.[`${key}.hs`] === fp) return `${key}.hs`;
+  if (m?.[key] === fp) return key;
+  return null;
+}
+
 /** True when a recorded voice exists for this line as it reads now. */
 export async function hasVoice(base: string, lang: string, key: string, text: string): Promise<boolean> {
-  const m = await loadManifest(base);
-  return m[lang]?.[key] === fingerprint(text);
+  return (await voicedKey(base, lang, key, text)) !== null;
 }
 
 /** Play the recorded line; resolves when it has finished (false if there is none or it failed to load). */
 export async function playVoice(ctx: AudioContext, out: AudioNode, base: string, lang: string, key: string, text: string): Promise<boolean> {
-  if (!(await hasVoice(base, lang, key, text))) return false;
-  const url = `${base}${voiceFile(lang, key)}`;
+  const file = await voicedKey(base, lang, key, text);
+  if (!file) return false;
+  const url = `${base}${voiceFile(lang, file)}`;
   let p = buffers.get(url);
   if (!p) {
     p = fetch(url)

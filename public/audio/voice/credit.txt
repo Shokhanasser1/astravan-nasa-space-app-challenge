@@ -1,5 +1,7 @@
-Radio voices of HOME BY SEVEN: <lang>/<i18n key>.mp3, one file per spoken line (Houston, Pilot, Scout, family).
-AI-GENERATED: Google Gemini TTS (gemini-3.8-flash-tts, prebuilt voices Charon, Puck, Leda, Sulafat), 15 Nov 2026,
-made by scripts/audio/gemini-voices.mts from the game's own text (src/i18n). Adult synthetic voices only — no child's
-voice is recorded or imitated. Each file's metadata says "AI-generated". manifest.json pairs each file with the text
-it speaks; an edited line falls back to the device's voice until it is made again. Not endorsed by NASA.
+Radio voices of HOME BY SEVEN: <lang>/<i18n key>.mp3 (en, ru, uz), one file per spoken line — Houston, Pilot,
+Scout (the rover robot) and the family call.
+AI-GENERATED: ElevenLabs v4 through Higgsfield, 15 Nov 2026, adult preset voices (Houston = Holden, Pilot = Benji,
+Scout = Juno, family = Helena), from the game's own text (src/i18n); imported by scripts/audio/import-voices.mts
+(scripts/audio/gemini-voices.mts makes the same files with Gemini TTS). No child's voice is recorded or imitated.
+Each file's metadata says "AI-generated". manifest.json pairs each file with the text it speaks; an edited line falls
+back to the device's voice until it is made again. Not endorsed by NASA.
