@@ -5,3 +5,7 @@ team's concept picture (front, side and back views of a kid astronaut). The team
 and the body skinned in Blender (scripts/models/astronaut_ai.mjs, blender/kid_astronaut/bind_ai.py). AI-made, disclosed
 in docs/AI-USE.md. No NASA mesh, texture, insignia or flag.
 Skeleton and clips: made by the team (blender/game3d/characters/, anim/).
+
+15 Nov 2026 ~12:30 (Samandar): the visor is solid gold and faceless (no child's face is shown) and the helmet's open
+back is closed in the suit's white: the base-colour texture repainted on the helmet's faces only (mesh, rig and the
+15 clips untouched). Script: oy-karvonsaroyi-3d/hb7/hdu_base/tools/astro_visor.py.
