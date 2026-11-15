@@ -101,8 +101,8 @@ ridge. You have seven days. On Day 7 the lander must take the crew home: home by
 - **Shelter from the storm.** On a flare alert you choose: everyone inside, half a day inside, keep working, or ask
   Houston. The wall and time inside cut the storm dose; moonwalks add to it.
 - **Night log.** Up to three "cause → effect" lines tell you what your choices did.
-- **The robot arm.** Next to the base stands a robot arm made from NASA's Curiosity rover model. Switch on the scanner
-  and move your own forearm and hand in front of the camera: the arm follows you.
+- **The robot arm.** On the rover's roof rides a robot arm made from NASA's Curiosity rover model. Switch on the
+  scanner and move your own forearm and hand in front of the camera: the arm follows you.
 - **That week's sky.** The Sun's direction is computed with JPL Horizons. The Earth hangs at its real height, wearing
   the NASA GIBS picture of that very day.
 - **Go home.** On Day 7 the lander takes off. You get a crew score, a science score and a title: Balance Master, Bold
@@ -135,7 +135,7 @@ in the link (for example `?week=2021-10-25`).
 - **3D.** three.js with React Three Fiber in one canvas: the real LOLA heights and a skyline out to 60 km with
   mountain shadows, models from NASA 3D Resources, and procedural base buildings adapted from ASTRA (MIT). Quality
   steps down on slower phones.
-- **Checked.** 269 unit tests, plus Playwright end-to-end tests that play the whole week to the reveal on phone and
+- **Checked.** 309 unit tests, plus Playwright end-to-end tests that play the whole week to the reveal on phone and
   laptop screens. Every green push deploys to GitHub Pages.
 
 ### Privacy and safety
@@ -148,7 +148,8 @@ in the link (for example `?week=2021-10-25`).
   device (MediaPipe). The picture is not stored and not sent, and the scanner window blurs everything except the hand
   and forearm, so no face is shown. The tracking model files download from Google's model store the first time the
   scanner is switched on.
-- Voices are adults or the device's text-to-speech.
+- The radio voices are adult synthetic voices (AI text-to-speech) or the device's text-to-speech. No child's voice is
+  recorded or imitated.
 
 HOME BY SEVEN is not an official NASA product and is not endorsed by NASA.
 
@@ -186,8 +187,9 @@ every line of the game exists in all three.
 - 3D: Blender (models, rigging, animation; Python scripts).
 - Data: Node.js and Python scripts (`scripts/data/`) for RadLab, DONKI, SDO, Helioviewer, GIBS, EPIC, SVS, JPL
   Horizons and LOLA.
-- AI tools: Claude Code (Anthropic), OpenAI Codex and Gemini (Antigravity CLI). What each one did is logged in
-  `docs/AI-USE.md` in the repo, and AI-made models are marked in `CREDITS.md`.
+- AI tools: Claude Code (Anthropic), OpenAI Codex and Gemini (Antigravity CLI); Google Gemini TTS (radio voices);
+  ElevenLabs Music and Meshy, both through Higgsfield (background music; the kid astronaut's body). What each one did
+  is logged in `docs/AI-USE.md` in the repo, and AI-made models, music and voices are marked in `CREDITS.md`.
 - Hardware: any phone, tablet or laptop with a web browser; a camera only for the optional scanner.
 
 ## 6. Use of Super Intelligence (SI)
@@ -217,20 +219,23 @@ AI-made models are also marked in `CREDITS.md`.
   finished.]
 - **Data:** NASA data is downloaded and converted by scripts, some written with AI. The measurements are unchanged
   NASA records; no data is generated.
-- **3D models made with AI** (geometry built by AI-written scripts, not AI images; marked in `CREDITS.md`):
+- **3D models made with AI** (marked in `CREDITS.md`):
+  - the playable kid astronaut's body: a textured 3D model made by Meshy (multi-image-to-3D, run on Higgsfield) from
+    the team's own concept picture; the team fitted its rig and made the animation clips in Blender, and painted the
+    visor solid gold so no face is shown;
   - the furnished interiors of the habitat, greenhouse, workshop and lander (`public/models/interiors`), modelled in
     Blender by AI-written scripts (Claude Code), with NASA reports as reference only;
-  - the astronaut's compact backpack, built by an AI-written script (`scripts/models/astronaut_plss.mjs`) that
-    replaces the backpack of the NASA astronaut model;
   - a new lunar lander (`blender/lander_v2`), built by AI-written Blender scripts; it is not in the game and is used
     only in the video and pitch, where its renders carry a visible "AI" mark.
-- **NASA-based models:** the astronaut, rover, RASSOR, LRO and Curiosity's robot arm come from NASA 3D Resources and
-  were prepared by the team in Blender, partly with AI-written scripts (flags and insignia removed); some astronaut
-  animation clips were also made by AI-written scripts. OpenAI Codex made sky panoramas and a render gallery for our
-  Blender work, outside the game.
-- **Images and voice:** the avatars, rocks and ground textures in the game are drawn by code, not AI images. English
-  and Russian narration uses the device's text-to-speech. [TODO human: confirm the game ships no AI-generated picture,
-  and that every AI image or shot in the video carries a visible "AI" mark.]
+- **NASA-based models:** the rover, RASSOR, LRO, the Habitat Demonstration Unit modules and Curiosity's robot arm
+  come from NASA 3D Resources and were prepared by the team in Blender, partly with AI-written scripts (logos, flags
+  and insignia removed). OpenAI Codex made sky panoramas and a render gallery for our Blender work, outside the game.
+- **Music and voices:** the three background music loops are AI-made (ElevenLabs Music v2.5 through Higgsfield). The
+  radio voices in English and Russian are AI-made with Google Gemini TTS from the game's own text, adult voices only.
+  Every music and voice file says "AI-generated" in its metadata; a line without a made voice uses the device's
+  text-to-speech. Sound effects are made in code.
+- **Images:** the avatars, rocks and ground textures in the game are drawn by code, not AI images. [TODO human: confirm
+  the game ships no AI-generated picture, and that every AI image or shot in the video carries a visible "AI" mark.]
 
 ## 7. NASA Data
 
@@ -261,7 +266,6 @@ NASA resources (3D models, prepared by the team in Blender):
 
 | Resource | Use | Link |
 |---|---|---|
-| NASA 3D Resources "Astronaut" | The playable astronaut, rigged and animated by the team | https://science.nasa.gov/3d-resources/astronaut/ |
 | NASA 3D Resources: Space Exploration Vehicle, RASSOR, crew lock bags, Lunar Reconnaissance Orbiter, and base buildings after the Habitat Demonstration Unit, Apollo Lunar Module and Deep Space Network 34-meter antenna | Base decor, the LRO on the reveal screen, buildings | https://github.com/nasa/NASA-3D-Resources |
 | NASA Science / NASA/JPL-Caltech "Curiosity" rover model | The robot arm (cut from the rover into three moving parts) | https://science.nasa.gov/resource/curiosity-rover-3d-model/ |
 
