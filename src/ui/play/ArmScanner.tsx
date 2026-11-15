@@ -294,7 +294,7 @@ export function ArmScanner({ tr }: { tr: Tr }) {
         type="button"
         data-testid="arm-scan-toggle"
         active={shown}
-        className="pointer-events-auto !h-14 !w-14 shrink-0 !rounded-full !p-0"
+        className="icon-btn pointer-events-auto !h-14 !w-14 shrink-0"
         aria-label={tr(shown ? 'ui.arm.off' : 'ui.arm.on')}
         aria-pressed={shown}
         title={tr(shown ? 'ui.arm.off' : 'ui.arm.on')}

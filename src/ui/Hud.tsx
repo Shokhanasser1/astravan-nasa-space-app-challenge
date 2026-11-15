@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore, type Dispatch, type ReactNode } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore, type Dispatch, type ReactNode } from 'react';
 import { ArrowRight, Check, ClipboardList, MessageSquareWarning, Music, VolumeX } from 'lucide-react';
 import { atHub, board as selectBoard, truth as selectTruth, type Action, type Model, type View } from '../state/game';
 import { armState, armVersion, subscribeArm } from '../arm/state';
@@ -11,8 +11,8 @@ import { HandControl, handsOn } from './play/HandControl';
 import { ArmScanner } from './play/ArmScanner';
 import { NightTablet, PlanTablet } from './play/Tablet';
 import { TruthScreen } from './play/TruthScreen';
-import { JumpButton, RideButton, WalkStick } from './play/WalkStick';
-import { CornerButtons, HelpPanel, Kbd, MapPanel, makeApply, touchUi, useGameKeys } from './play/Controls';
+import { JumpButton, RideButton, RideHint, WalkStick } from './play/WalkStick';
+import { CornerButtons, HelpPanel, Kbd, KeyHint, MapPanel, keyHints, makeApply, touchUi, useGameKeys } from './play/Controls';
 import { ResourceBar } from './play/ResourceBar';
 import { HomeBar } from './play/HomeBar';
 import { DayTasks } from './play/DayTasks';
@@ -75,7 +75,7 @@ function TopBar({ lang, setLang, sound, setSound, tr }: Pick<Props, 'lang' | 'se
           {l.toUpperCase()}
         </Btn>
       ))}
-      <Btn data-testid="sound" className="solid" active={sound} onClick={() => setSound(!sound)} aria-label={tr('ui.hud.sound')}>
+      <Btn data-testid="sound" className="solid icon-btn" active={sound} onClick={() => setSound(!sound)} aria-label={tr('ui.hud.sound')}>
         {sound ? <Music size={20} aria-hidden="true" /> : <VolumeX size={20} aria-hidden="true" />}
       </Btn>
     </div>
@@ -220,10 +220,30 @@ export function Hud({ model, view, dispatch, lang, setLang, sound, setSound, onS
   useSyncExternalStore(subscribeArm, armVersion);
   const armCorner = armScan && (armState.near || armState.on);
 
+  // The thumb controls on an upright phone or tablet sit just above the bottom dock (radio, batteries, the "go"):
+  // its height changes (the radio folds, a tablet opens), so it is measured, not guessed (src/index.css --dock-h).
+  const rootRef = useRef<HTMLDivElement>(null);
+  const dockRef = useRef<HTMLDivElement>(null);
+  const docked = playing && !overlay;
+  useLayoutEffect(() => {
+    const root = rootRef.current;
+    const dock = dockRef.current;
+    if (!root || !dock || typeof ResizeObserver === 'undefined') return;
+    const ro = new ResizeObserver(() => root.style.setProperty('--dock-h', `${Math.round(dock.offsetHeight)}px`));
+    ro.observe(dock);
+    return () => {
+      ro.disconnect();
+      root.style.removeProperty('--dock-h');
+    };
+  }, [docked]);
+
   return (
     <div
+      ref={rootRef}
       className="pointer-events-none fixed inset-0 flex flex-col justify-between gap-2 p-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-[max(1rem,env(safe-area-inset-top))]"
       data-tablet={showList ? 'open' : 'closed'}
+      data-touch={touchUi ? 'on' : 'off'}
+      data-sides={sides ? 'on' : 'off'}
       onPointerDown={() => audio.unlock()}
     >
       <div className="relative z-20 flex shrink-0 flex-col gap-2">
@@ -234,15 +254,18 @@ export function Hud({ model, view, dispatch, lang, setLang, sound, setSound, onS
           <TopBar lang={lang} setLang={setLang} sound={sound} setSound={setSound} tr={tr} />
           {playing && !overlay && view.res && (features.homeStory ? <HomeBar res={view.res} batteries={view.batteries} tr={tr} /> : <ResourceBar res={view.res} tr={tr} />)}
         </div>
-        {/* (home story: from Day 2, or once the Day 1 tutorial is done, the plan shows Today's 5 instead of one line) */}
-        {playing && !overlay && features.homeStory && phase === 'plan' && !task?.step ? (
-          <DayTasks model={model} tr={tr} />
-        ) : (
-          playing &&
-          !overlay &&
-          task &&
-          (phase === 'morning' || phase === 'plan') && <TaskLine task={task} tr={tr} onSkip={task.step ? skip : undefined} />
-        )}
+        {/* (home story: from Day 2, or once the Day 1 tutorial is done, the plan shows Today's 5 instead of one line;
+            `.hud-task` lets a phone held sideways pin it to the left edge, out of the column) */}
+        <div className="hud-task flex flex-col items-start empty:hidden">
+          {playing && !overlay && features.homeStory && phase === 'plan' && !task?.step ? (
+            <DayTasks model={model} tr={tr} />
+          ) : (
+            playing &&
+            !overlay &&
+            task &&
+            (phase === 'morning' || phase === 'plan') && <TaskLine task={task} tr={tr} onSkip={task.step ? skip : undefined} />
+          )}
+        </div>
         {/* (the Sun photo steps aside while the robot arm's scanner has the upper-left corner: near the arm) */}
         {playing && !overlay && (phase === 'morning' || phase === 'plan') && !armCorner && (
           <div className="hud-sun pointer-events-none self-start">
@@ -323,7 +346,7 @@ export function Hud({ model, view, dispatch, lang, setLang, sound, setSound, onS
         </ContextButton>
       )}
 
-      {sides && <RideButton ride={ride} />}
+      {sides && <RideButton ride={ride} tr={tr} />}
 
       {dialog && board && (
         <Decision
@@ -339,7 +362,7 @@ export function Hud({ model, view, dispatch, lang, setLang, sound, setSound, onS
       )}
 
       {playing && !overlay && (
-        <div className="hud-center flex min-h-0 flex-col gap-2 [&>*]:shrink-0" data-phase={phase}>
+        <div ref={dockRef} className="hud-center flex min-h-0 flex-col gap-2 [&>*]:shrink-0" data-phase={phase}>
           {(phase === 'morning' || phase === 'plan') && (
             <CapcomHolo textKey={task?.radio ?? null} tr={tr} lang={lang} sound={sound} collapsible />
           )}
@@ -347,14 +370,21 @@ export function Hud({ model, view, dispatch, lang, setLang, sound, setSound, onS
           {phase === 'night' && <NightTablet model={model} before={planRes.current} after={view.res} tr={tr} />}
           {features.homeStory && phase === 'night' && <NightFact model={model} tr={tr} lang={lang} />}
           {showList && !dialog && <PlanTablet board={board} model={model} dispatch={act} tr={tr} onFold={() => setListOpen(false)} />}
+          {sides && <RideHint ride={ride} tr={tr} />}
           {planning && ctx && !dialog && !showList && <ContextPrompt ctx={ctx} tr={tr} />}
           {planning && (
-            <div className="flex items-end justify-between gap-2">
+            <div className="hud-dock-row flex items-end justify-between gap-2">
               {!board.info.forced ? (
                 <Inventory hands={view.hands ?? 0} free={atHub(model)} total={view.batteries?.total ?? 0} tr={tr} />
               ) : (
                 <span />
               )}
+              {keyHints ? (
+                <div className="hud-btns hud-keys flex flex-col items-end gap-2">
+                  {hasDecision && <KeyHint data-testid="decision-open" k="H" label={tr('ui.decide.open')} onClick={() => setDecisionOpen(true)} />}
+                  <KeyHint data-testid="tablet-open" k="Tab" label={tr('ui.plan.open')} active={listOpen} onClick={() => setListOpen((v) => !v)} />
+                </div>
+              ) : (
               <div className="hud-btns flex flex-col items-end gap-2">
                 {hasDecision && (
                   <Btn data-testid="decision-open" className="solid pointer-events-auto text-sm" onClick={() => setDecisionOpen(true)}>
@@ -363,9 +393,9 @@ export function Hud({ model, view, dispatch, lang, setLang, sound, setSound, onS
                 )}
                 <Btn data-testid="tablet-open" active={listOpen} className="solid pointer-events-auto text-sm" onClick={() => setListOpen((v) => !v)}>
                   <ClipboardList size={18} aria-hidden="true" /> {tr('ui.plan.open')}
-                  <Kbd k="Tab" />
                 </Btn>
               </div>
+              )}
             </div>
           )}
           <Btn

@@ -217,9 +217,13 @@
   --cut: 16px;
 }
 
-/* icon-only buttons (map, help, sound, speaker): all four corners cut, an octagon frame */
-.abtn:has(> svg:only-child),
-.abtn.\!p-0 {
+/* icon-only buttons (map, help, sound, speaker, close): all four corners cut, an octagon frame. Marked with
+   `icon-btn` in the markup: the old guess `:has(> svg:only-child)` also caught "Start the day ✓" and "Next →" on
+   touch screens (no key badge there, text nodes do not count as children), and painted the one "go" navy with navy
+   words — the "black buttons" of 15 Nov. */
+.abtn.icon-btn {
+  min-width: 48px;
+  min-height: 48px;
   --cut: 9px;
   padding-left: 0;
   padding-right: 0;
@@ -234,7 +238,7 @@
     radial-gradient(circle, rgba(94, 224, 255, 0.16), transparent 70%),
     linear-gradient(180deg, rgba(14, 34, 72, 0.94), rgba(7, 16, 40, 0.96));
 }
-.abtn.on:has(> svg:only-child) {
+.abtn.on.icon-btn {
   background:
     linear-gradient(135deg, transparent 50%, var(--frame) 50%, var(--frame) calc(50% + 1.5px), transparent calc(50% + 1.5px)) 0 0 / var(--cut) var(--cut) no-repeat border-box,
     linear-gradient(225deg, transparent 50%, var(--frame) 50%, var(--frame) calc(50% + 1.5px), transparent calc(50% + 1.5px)) 100% 0 / var(--cut) var(--cut) no-repeat border-box,
@@ -440,45 +444,236 @@
  * stay bottom-left. Phones and tablets keep the centre column (their thumbs own the corners: walk stick, action and
  * jump buttons), only more compact.
  * ======================================================================================================== */
-@media (min-width: 1024px) and (hover: hover) and (pointer: fine) {
+@media (min-width: 1024px) {
   /* the centre column: subtitles and passing prompts only, narrower */
-  .hud-center {
+  [data-touch='off'] .hud-center {
     max-width: 30rem;
     padding-bottom: 0.25rem;
   }
   /* the "go": a compact bar in the bottom-right corner */
-  .hud-center > .abtn.big {
+  [data-touch='off'] .hud-center > .abtn.big {
     position: fixed;
     right: max(1rem, env(safe-area-inset-right));
     bottom: max(1rem, env(safe-area-inset-bottom));
     width: auto;
-    min-width: 13rem;
-    min-height: 50px;
+    min-width: 14rem;
+    min-height: 56px;
     z-index: 6;
   }
   /* Decision and Plan list: stacked above it, right-aligned, same width */
-  .hud-center .hud-btns {
+  [data-touch='off'] .hud-center .hud-btns {
     position: fixed;
     right: max(1rem, env(safe-area-inset-right));
-    bottom: calc(max(1rem, env(safe-area-inset-bottom)) + 50px + 0.6rem);
+    bottom: calc(max(1rem, env(safe-area-inset-bottom)) + 56px + 0.75rem);
     z-index: 6;
     align-items: stretch;
-    min-width: 13rem;
+    min-width: 14rem;
     gap: 0.5rem;
   }
-  .hud-center .hud-btns > .abtn {
+  [data-touch='off'] .hud-center .hud-btns > .abtn {
     justify-content: flex-start;
-    min-height: 44px;
   }
 }
 
-/* every screen: the steady buttons are compact (44 px targets kept) */
+/* every screen: the steady buttons are compact, never under 48 px (docs: tap targets ≥ 48 px) */
 .hud-btns > .abtn {
-  min-height: 44px;
+  min-height: 48px;
   font-size: 0.85rem;
   letter-spacing: 0.02em;
+  white-space: nowrap;
 }
 .hud-center > .abtn.big {
-  min-height: 50px;
-  font-size: 0.95rem;
+  min-height: 52px;
+  font-size: 1rem;
+}
+/* touch: the "go" is a full thumb wide and tall */
+[data-touch='on'] .hud-center > .abtn.big {
+  min-height: 56px;
+}
+@media (orientation: landscape) and (max-height: 540px) {
+  [data-touch='on'] .hud-center > .abtn.big,
+  .hud-center > .abtn.big {
+    min-height: 48px;
+  }
+}
+
+/* ==========================================================================================================
+ * THUMB KIT (touch): the walk stick, the action button, jump, and the rover/door offer, in the same frame
+ * language — cyan hairlines on deep glass, reticle ticks, the one ice-cyan "go" for the action. Places and sizes:
+ * src/index.css ("Thumb controls"). Round, because a thumb is round and the stick turns.
+ * ======================================================================================================== */
+.hud-stick {
+  position: fixed;
+  border-radius: 999px;
+  border: 2px solid rgba(94, 224, 255, 0.55);
+  background:
+    radial-gradient(circle, transparent 55%, rgba(94, 224, 255, 0.2) 55.5%, rgba(94, 224, 255, 0.2) 57%, transparent 57.5%),
+    radial-gradient(circle, rgba(14, 34, 72, 0.5), rgba(7, 16, 40, 0.78) 72%);
+  box-shadow: inset 0 0 24px rgba(94, 224, 255, 0.16), 0 6px 20px rgba(0, 0, 0, 0.35);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+/* four ticks on the rim (N E S W) */
+.hud-stick::before {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  border-radius: 999px;
+  background: repeating-conic-gradient(from -4deg, rgba(166, 238, 255, 0.85) 0 8deg, transparent 8deg 90deg);
+  -webkit-mask: radial-gradient(closest-side, transparent 84%, #000 85%);
+  mask: radial-gradient(closest-side, transparent 84%, #000 85%);
+  pointer-events: none;
+}
+.hud-knob {
+  border-radius: 999px;
+  background: radial-gradient(circle at 38% 30%, #fff, var(--accent-hi) 42%, var(--accent) 100%);
+  box-shadow: 0 0 0 3px rgba(7, 16, 40, 0.55), 0 0 18px rgba(94, 224, 255, 0.55), inset 0 -3px 0 rgba(3, 32, 54, 0.25);
+}
+
+/* the action button: the ice-cyan "go" as a disc; idle it turns to glass (still visible, never black) */
+.abtn.pad-use {
+  --cut: 0px;
+  clip-path: none;
+  border-radius: 999px !important;
+  border: 2px solid rgba(230, 250, 255, 0.95);
+  padding: 0;
+  overflow: hidden;
+  color: var(--accent-ink);
+  background:
+    radial-gradient(120% 90% at 50% 0%, rgba(255, 255, 255, 0.55), transparent 55%),
+    linear-gradient(180deg, var(--accent-hi), var(--accent) 62%, #2bb6ec);
+  box-shadow: inset 0 -4px 0 rgba(3, 32, 54, 0.25), 0 0 0 5px rgba(94, 224, 255, 0.18), 0 6px 20px rgba(0, 0, 0, 0.35);
+  animation: none;
+}
+.abtn.primary.pad-use:not(:disabled):not(:active) {
+  animation: pad-ready 2.4s ease-in-out infinite;
+}
+@keyframes pad-ready {
+  0%, 100% { box-shadow: inset 0 -4px 0 rgba(3, 32, 54, 0.25), 0 0 0 5px rgba(94, 224, 255, 0.18), 0 6px 20px rgba(0, 0, 0, 0.35); }
+  50% { box-shadow: inset 0 -4px 0 rgba(3, 32, 54, 0.25), 0 0 0 9px rgba(94, 224, 255, 0.08), 0 6px 20px rgba(0, 0, 0, 0.35); }
+}
+.abtn.pad-use:active:not(:disabled) {
+  transform: scale(0.94);
+}
+.abtn.pad-use:disabled {
+  opacity: 0.8;
+  filter: none;
+  color: var(--text-3);
+  border-color: rgba(94, 224, 255, 0.35);
+  background: radial-gradient(circle, rgba(14, 34, 72, 0.72), rgba(7, 16, 40, 0.86));
+  box-shadow: inset 0 0 16px rgba(94, 224, 255, 0.12);
+}
+/* its word (Take, Put in, Back…; ~30 % longer in uz / ru): up to two short lines inside the disc, never cut mid-word */
+.pad-use-label {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  max-width: 80%;
+  overflow: hidden;
+  font-size: 0.68rem;
+  font-weight: 700;
+  line-height: 1.05;
+  text-align: center;
+  overflow-wrap: normal;
+}
+@media (min-width: 744px) and (min-height: 600px) {
+  .pad-use-label {
+    font-size: 0.8rem;
+  }
+}
+
+/* jump and the rover/door offer: round glass keys with a cyan rim */
+.hud-round {
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  border: 2px solid rgba(94, 224, 255, 0.6);
+  color: var(--text-1);
+  background: radial-gradient(circle at 50% 30%, rgba(94, 224, 255, 0.24), rgba(7, 16, 40, 0.84) 72%);
+  box-shadow: inset 0 0 16px rgba(94, 224, 255, 0.2), 0 4px 14px rgba(0, 0, 0, 0.35);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  transition: transform 0.08s ease-out, border-color 0.12s;
+}
+.hud-round:active {
+  transform: scale(0.92);
+  border-color: var(--accent-hi);
+  box-shadow: inset 0 0 26px rgba(94, 224, 255, 0.55);
+}
+/* the rover / door is an offer that comes and goes: its rim breathes (one swell per 1.6 s) */
+.hud-ride {
+  border-color: var(--accent-hi);
+  animation: ride-offer 1.6s ease-in-out infinite;
+}
+@keyframes ride-offer {
+  0%, 100% { box-shadow: inset 0 0 16px rgba(94, 224, 255, 0.25), 0 0 0 0 rgba(94, 224, 255, 0.45); }
+  50% { box-shadow: inset 0 0 22px rgba(94, 224, 255, 0.4), 0 0 0 8px rgba(94, 224, 255, 0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .abtn.primary.pad-use:not(:disabled):not(:active),
+  .hud-ride {
+    animation: none;
+  }
+}
+
+/* ==========================================================================================================
+ * KEY HINTS (mouse and keyboard; 15 Nov: "laptop players don't need the black buttons"). On a laptop the keys are the
+ * controls, so the map, controls list, Decision, Plan list and the rover/door offer are shown as a keycap and a
+ * word on the scene, with no button box. A click on one still works (school touchpads). Touch screens keep buttons.
+ * ======================================================================================================== */
+.key-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 34px;
+  padding: 0.2rem 0.65rem 0.2rem 0.25rem;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: rgba(5, 12, 30, 0.32);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+  color: var(--text-1);
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+.key-hint .kbd {
+  margin: 0;
+  min-width: 1.7rem;
+  justify-content: center;
+  text-shadow: none;
+}
+.key-hint:hover {
+  background: rgba(5, 12, 30, 0.55);
+  border-color: rgba(166, 238, 255, 0.45);
+}
+.key-hint.is-on {
+  border-color: var(--accent);
+}
+.key-hint:focus-visible {
+  outline: 2px solid var(--ice);
+  outline-offset: 2px;
+}
+.hud-keys {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+.hud-center .hud-keys {
+  flex-direction: column;
+  align-items: flex-end;
+}
+@media (min-width: 1024px) {
+  [data-touch='off'] .hud-center .hud-btns.hud-keys {
+    min-width: 0;
+    align-items: flex-end;
+    gap: 0.4rem;
+  }
 }

@@ -139,7 +139,7 @@ export function Quiz({
                 {tr(q.prompt.key, q.prompt.vars)}
               </p>
               {lang !== 'uz' && sound && (
-                <Btn aria-label={tr('quiz.ui.listen')} onClick={speak} className="min-h-10 shrink-0 py-1">
+                <Btn aria-label={tr('quiz.ui.listen')} onClick={speak} className="icon-btn shrink-0">
                   <Volume2 size={18} aria-hidden="true" />
                 </Btn>
               )}

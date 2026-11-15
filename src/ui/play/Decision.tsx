@@ -61,7 +61,7 @@ export function Decision({
       <Panel className="holo-in flex max-h-[88dvh] w-full max-w-lg flex-col gap-3 overflow-y-auto" data-testid="decision" role="dialog" aria-modal="true" aria-label={tr('ui.decide.title')}>
         <div className="flex items-center justify-between gap-2">
           <span className="eyebrow !text-[#c2cbec]">{tr('ui.decide.title')}</span>
-          <Btn data-testid="decision-close" aria-label={tr('ui.controls.close')} onClick={onClose} className="min-h-10 py-1">
+          <Btn data-testid="decision-close" aria-label={tr('ui.controls.close')} onClick={onClose} className="icon-btn">
             <X size={18} aria-hidden="true" />
           </Btn>
         </div>

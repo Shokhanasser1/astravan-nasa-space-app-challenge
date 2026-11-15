@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
 import { invalidate } from '@react-three/fiber';
-import { Car, ChevronsDown, ChevronsUp, DoorOpen } from 'lucide-react';
+import { ArrowBigUpDash, Car, ChevronsDown, ChevronsUp, DoorOpen } from 'lucide-react';
 import { walkInput } from '../../walk/input';
 import { askRide, type Ride } from '../../controls/bus';
-import { Kbd, touchUi } from './Controls';
+import { KeyHint, touchUi } from './Controls';
+import type { Tr } from './kit';
 
 /**
  * The touch stick of the free walk (handoff "first-person walk", section 4): push it the way you want to walk,
@@ -21,14 +22,14 @@ export function JumpButton() {
       type="button"
       data-testid="jump"
       aria-label="Jump"
-      className="hud-side hud-jump pointer-events-auto grid h-16 w-16 touch-none select-none place-items-center rounded-full border-2 border-[#4fb3ff]/70 bg-[#4fb3ff]/10 text-2xl text-white/80"
+      className="hud-round hud-jump pointer-events-auto"
       onPointerDown={(e) => {
         e.preventDefault();
         walkInput.jump = true;
         invalidate();
       }}
     >
-      ⤒
+      <ArrowBigUpDash size={28} aria-hidden="true" />
     </button>
   );
 }
@@ -37,16 +38,18 @@ export function JumpButton() {
  * `?drive` (local preview): beside the crew rover's hatch, climb in and drive; while driving, stop and climb out. E on
  * a keyboard (the badge shows it), a tap on a touch screen. Shown only when it would do something.
  */
-const RIDE_LABEL: Record<Ride, string> = { board: 'Drive the rover', exit: 'Stop and get out', enter: 'Go inside', leave: 'Go outside', up: 'Climb up', down: 'Climb down' };
+/** Its words: ui.ride.<ride> (board, exit, enter, leave, up, down). */
+const rideLabel = (ride: Ride, tr: Tr) => tr(`ui.ride.${ride}`);
 
-export function RideButton({ ride }: { ride: Ride | null }) {
-  if (!ride) return null;
+/** Touch: the round rover / door / ladder key above the right thumb. */
+export function RideButton({ ride, tr }: { ride: Ride | null; tr: Tr }) {
+  if (!ride || !touchUi) return null;
   return (
     <button
       type="button"
       data-testid="ride"
-      aria-label={RIDE_LABEL[ride]}
-      className="hud-side pointer-events-auto fixed left-1/2 top-[22%] z-[5] grid h-16 w-16 -translate-x-1/2 touch-none select-none place-items-center rounded-full border-2 border-[#4fd2ff]/80 bg-[#4fd2ff]/15 text-white/90"
+      aria-label={rideLabel(ride, tr)}
+      className="hud-side hud-round hud-ride pointer-events-auto"
       onPointerDown={(e) => {
         e.preventDefault();
         askRide();
@@ -62,10 +65,25 @@ export function RideButton({ ride }: { ride: Ride | null }) {
       ) : (
         <DoorOpen size={30} aria-hidden="true" />
       )}
-      <span className="absolute -bottom-2">
-        <Kbd k="E" />
-      </span>
     </button>
+  );
+}
+
+/** Keyboard: "E  Go inside" as a hint in the prompt place (no round button on a laptop). */
+export function RideHint({ ride, tr }: { ride: Ride | null; tr: Tr }) {
+  if (!ride || touchUi) return null;
+  return (
+    <div className="flex justify-center">
+      <KeyHint
+        data-testid="ride"
+        k="E"
+        label={rideLabel(ride, tr)}
+        onClick={() => {
+          askRide();
+          invalidate();
+        }}
+      />
+    </div>
   );
 }
 
@@ -105,7 +123,7 @@ export function WalkStick() {
       ref={base}
       data-testid="walk-stick"
       aria-hidden="true"
-      className="hud-side hud-stick pointer-events-auto grid touch-none select-none place-items-center rounded-full border-2 border-[#4fb3ff]/70 bg-[#4fb3ff]/10"
+      className="hud-side hud-stick pointer-events-auto grid touch-none select-none place-items-center"
       onPointerDown={(e) => {
         e.currentTarget.setPointerCapture(e.pointerId);
         move(e);
@@ -117,7 +135,7 @@ export function WalkStick() {
       onPointerCancel={end}
       onLostPointerCapture={end}
     >
-      <span className="block rounded-full bg-white/70" style={{ width: `${KNOB * 100}%`, height: `${KNOB * 100}%`, transform: `translate(${knob.x}px, ${knob.y}px)` }} />
+      <span className="hud-knob block" style={{ width: `${KNOB * 100}%`, height: `${KNOB * 100}%`, transform: `translate(${knob.x}px, ${knob.y}px)` }} />
     </div>
   );
 }

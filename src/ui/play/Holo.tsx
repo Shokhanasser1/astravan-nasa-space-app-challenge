@@ -148,7 +148,7 @@ export function CapcomHolo({
         )}
       </div>
       {lang !== 'uz' && (
-        <button type="button" className="abtn ml-auto !rounded-full !p-0" aria-label={tr('ui.capcom.speak')} onClick={() => void say()}>
+        <button type="button" className="abtn icon-btn ml-auto" aria-label={tr('ui.capcom.speak')} onClick={() => void say()}>
           <Volume2 size={20} aria-hidden="true" />
         </button>
       )}

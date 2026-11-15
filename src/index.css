@@ -200,18 +200,49 @@ body,
 }
 
 /*
- * Controls layer placement (docs/specs/2026-11-14-controls-guide.html). Phones: the walk stick left and the action
- * pad right, at thumb height above the bottom panel; folded away while the wrist tablet is open in portrait (there
- * the tablet needs the width). Landscape phones: both in the bottom corners, the panel narrowed between them.
- * Tablets: bigger, at the middle of the sides, where thumbs reach when two hands hold the tablet.
- * Sizes: ≥ 48 px everywhere, ~2 cm on a tablet; ≥ 16 px from the edges and the notch.
+ * Thumb controls (touch only; 15 Nov "button master" pass, src/ui/flight-deck.css draws them). Where thumbs rest:
+ * the walk stick in the bottom-left corner, the action button in the bottom-right with the jump button on its
+ * upper-left (the 10 o'clock arc every phone game uses) and the rover/door offer above it. Held sideways (phone or
+ * tablet) the two clusters take the bottom corners and the dock (radio, batteries, the "go") sits between them;
+ * held upright they stand just above the dock, whose height is measured (Hud.tsx sets --dock-h).
+ * Sizes (Fitts; ~2 cm for small children): phone stick 120, action 84, jump 60, ride 64 px; tablet 168/120/76/76.
+ * ≥ 16 px from the edges and the notch.
  */
 :root {
-  --stick: 112px;
-  --pad-use: 88px;
-  --pad-small: 56px;
+  --stick: 120px;
+  --pad-use: 84px;
+  --pad-small: 60px;
+  --pad-ride: 64px;
   --hud-edge: max(1rem, env(safe-area-inset-left));
   --hud-edge-r: max(1rem, env(safe-area-inset-right));
+  --hud-floor: max(1rem, env(safe-area-inset-bottom));
+  /* the wider of the two thumb clusters: the action button with the jump button hanging off its upper-left */
+  --thumbs: max(var(--stick), calc(var(--pad-use) + var(--pad-small) - 0.12 * var(--pad-use)));
+}
+@media (min-width: 744px) and (min-height: 600px) {
+  :root {
+    --stick: 168px;
+    --pad-use: 120px;
+    --pad-small: 76px;
+    --pad-ride: 76px;
+    --hud-edge: max(1.5rem, env(safe-area-inset-left));
+    --hud-edge-r: max(1.5rem, env(safe-area-inset-right));
+    --hud-floor: max(1.5rem, env(safe-area-inset-bottom));
+  }
+}
+
+/* upright: above the dock */
+[data-touch='on'] {
+  --thumb-bottom: calc(max(1rem, env(safe-area-inset-bottom)) + var(--dock-h, 0px) + 0.75rem);
+}
+/* sideways: the bottom corners, the dock narrowed between them */
+@media (orientation: landscape) {
+  [data-touch='on'] {
+    --thumb-bottom: var(--hud-floor);
+  }
+  [data-touch='on'] .hud-center {
+    max-width: min(36rem, calc(100vw - 2 * (var(--hud-edge) + var(--thumbs) + 1rem)));
+  }
 }
 
 .hud-stick {
@@ -220,23 +251,43 @@ body,
   width: var(--stick);
   height: var(--stick);
   left: var(--hud-edge);
-  top: 40%;
+  bottom: var(--thumb-bottom);
 }
 .hud-pad {
   position: fixed;
   z-index: 5;
-  right: var(--hud-edge-r);
-  /* bottom edge level with the stick's bottom edge */
-  top: calc(40% + var(--stick));
-  transform: translateY(-100%);
-}
-.pad-use {
   width: var(--pad-use);
   height: var(--pad-use);
+  right: var(--hud-edge-r);
+  bottom: var(--thumb-bottom);
 }
-.pad-small {
+.pad-use {
+  width: 100%;
+  height: 100%;
+}
+/* the jump hangs off the action button's upper-left, ~16 px clear of it */
+.hud-pad .hud-jump {
+  position: absolute;
   width: var(--pad-small);
   height: var(--pad-small);
+  right: calc(100% - 0.12 * var(--pad-use));
+  bottom: calc(100% - 0.12 * var(--pad-use));
+}
+/* the rover / door / ladder offer: on touch above the right thumb, clear of the jump; with a mouse, top centre */
+.hud-ride {
+  position: fixed;
+  z-index: 5;
+  width: var(--pad-ride);
+  height: var(--pad-ride);
+}
+[data-touch='on'] .hud-ride {
+  right: calc(var(--hud-edge-r) + (var(--pad-use) - var(--pad-ride)) / 2);
+  bottom: calc(var(--thumb-bottom) + var(--pad-use) + 0.6 * var(--pad-small) + 1rem);
+}
+[data-touch='off'] .hud-ride {
+  left: 50%;
+  top: 22%;
+  translate: -50% 0;
 }
 .hud-center {
   width: 100%;
@@ -251,23 +302,11 @@ body,
   }
 }
 
-/* Landscape phone: thumbs in the bottom corners; the panel sits between them and never covers them. */
+/* Landscape phone: the dock between the thumbs; the radio line and the gauges get compact (360 px of height). */
 @media (orientation: landscape) and (max-height: 540px) {
-  .hud-stick {
-    top: auto;
-    bottom: max(1.25rem, env(safe-area-inset-bottom));
-  }
-  .hud-pad {
-    top: auto;
-    bottom: max(1.25rem, env(safe-area-inset-bottom));
-    transform: none;
-  }
-  /* the panel fits between the stick and the pad (the pad is the wider of the two) */
   .hud-center {
-    max-width: min(36rem, calc(100vw - 2 * (var(--pad-use) + var(--pad-small) + 2.5rem)));
     min-height: 0;
   }
-  /* 360 px of height: the wrist tablet shrinks and scrolls; the radio line and the gauges get compact */
   .hud-tablet {
     min-height: 5rem;
     max-height: none !important;
@@ -287,27 +326,98 @@ body,
   .hud-corner {
     flex-direction: row;
   }
+  /* one row at the bottom: Decision · Plan list · the "go" (the column used to push "go" off a 390 px screen) */
+  .hud-center {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: end;
+    column-gap: 0.5rem;
+  }
+  .hud-center > * {
+    grid-column: 1 / -1;
+  }
+  .hud-center > .hud-dock-row {
+    grid-column: 1;
+  }
+  .hud-center > .abtn.big {
+    grid-column: 2;
+  }
+  /* Today's 5 / the task line: pinned under the top row on the left, out of the column, above the walk stick */
+  .hud-task {
+    position: fixed;
+    left: var(--hud-edge);
+    top: 4.75rem;
+    z-index: 4;
+  }
+  .hud-task .day-tasks {
+    width: min(16rem, calc(50vw - 2rem));
+    padding: 6px 10px 8px;
+  }
+  .hud-task .day-task {
+    padding: 2px 6px;
+    font-size: 0.8rem;
+  }
 }
 
-/* Tablet (and a big phone held sideways is not one: it fails the height test). */
-@media (min-width: 744px) and (min-height: 600px) {
-  :root {
-    --stick: 168px;
-    --pad-use: 128px;
-    --pad-small: 80px;
+/* landscape phone: the "go" never wraps; Decision and Plan list give it the width */
+@media (orientation: landscape) and (max-height: 540px) {
+  .hud-center > .abtn.big {
+    white-space: nowrap;
+    padding-left: calc(10px + var(--cut));
+    padding-right: calc(10px + var(--cut));
   }
-  .hud-stick {
-    left: max(1.5rem, env(safe-area-inset-left));
-    top: 48%;
-  }
-  .hud-pad {
-    right: max(1.5rem, env(safe-area-inset-right));
-    top: calc(48% + var(--stick));
+  .hud-center .hud-btns > .abtn {
+    padding-left: calc(8px + var(--cut));
+    padding-right: calc(8px + var(--cut));
+    font-size: 0.8rem;
   }
 }
-@media (min-width: 744px) and (min-height: 600px) and (orientation: landscape) {
-  .hud-center {
-    max-width: min(36rem, calc(100vw - 2 * (var(--pad-use) + var(--pad-small) + 3rem)));
+/* upright phones: Today's 5 leaves the right edge to the rover/door offer and the jump */
+@media (orientation: portrait) and (max-width: 520px) {
+  [data-sides='on'] .day-tasks {
+    width: min(17.5rem, calc(100vw - 2rem - var(--pad-ride) - 0.75rem));
+  }
+}
+/* short upright phones (360 × 640): smaller thumb keys (still ≥ 56 px), Today's 5 shows its header and the one lit
+   task, the radio drops its "who" line, so the stick clears the list */
+@media (orientation: portrait) and (max-height: 700px) {
+  :root {
+    --stick: 108px;
+    --pad-use: 76px;
+    --pad-small: 56px;
+    --pad-ride: 56px;
+  }
+  [data-sides='on'] .day-task:not(.is-current) {
+    display: none;
+  }
+  [data-sides='on'] .hud-center [data-testid='radio'] .eyebrow {
+    display: none;
+  }
+  /* the dock row in one line: the batteries (no heading) and Decision / Plan list as two tiles, icon over word */
+  .hud-inv > span:first-child {
+    display: none;
+  }
+  .hud-center .hud-btns {
+    flex-direction: row;
+    align-items: stretch;
+  }
+  .hud-center .hud-btns > .abtn {
+    flex-direction: column;
+    justify-content: center;
+    gap: 2px;
+    width: 5.25rem;
+    min-height: 60px;
+    padding: 6px calc(4px + var(--cut));
+    font-size: 0.7rem;
+    line-height: 1.1;
+    text-align: center;
+    white-space: normal;
+  }
+}
+/* phones: the Sun photo was seen in the morning; while the thumbs are out it gives them the side */
+@media (orientation: portrait) and (max-width: 520px), (orientation: landscape) and (max-height: 540px) {
+  [data-sides='on'] .hud-sun {
+    display: none;
   }
 }
 
@@ -420,9 +530,10 @@ body,
 @media (prefers-reduced-motion: reduce) {
   .abtn.glow, .task-idle { animation: none; }
 }
-/* Laptops and tablets: the carried batteries sit in the bottom-left corner, out of the centre column. */
+/* Laptops: the carried batteries sit in the bottom-left corner, out of the centre column (touch tablets keep them
+   in the dock: the walk stick owns that corner). */
 @media (min-width: 1024px) {
-  .hud-inv {
+  [data-touch='off'] .hud-inv {
     position: fixed;
     left: max(1rem, env(safe-area-inset-left));
     bottom: max(1rem, env(safe-area-inset-bottom));
@@ -445,10 +556,11 @@ body,
   .hud-top { flex-wrap: nowrap; }
   .hud-top > .hud-res { order: 3; flex-basis: auto; width: auto; }
   .hud-top > .hud-topbar { order: 4; }
+  /* the batteries: top right under the language and sound buttons (the left belongs to Today's 5 and the stick) */
   .hud-inv {
     position: fixed;
-    left: var(--hud-edge);
-    top: 8.5rem;
+    right: var(--hud-edge-r);
+    top: 5rem;
   }
   .hud-inv > span:first-child { display: none; }
   .hud-sun {
@@ -457,7 +569,6 @@ body,
     top: 5rem;
   }
   .hud-btns { flex-direction: row; }
-  .abtn.big { min-height: 48px; }
 }
 /* The day badge takes the room between the corner buttons and the language buttons (it shrinks before it wraps). */
 .hud-top > [data-testid='day-badge'] { flex: 1 1 0; max-width: 13rem; min-width: 0; }
@@ -1430,26 +1541,6 @@ svg.entry-day-home {
   }
 }
 
-/* the jump button (touch): straight above the walk stick, same edge, never on top of it */
-.hud-jump {
-  position: fixed;
-  z-index: 5;
-  left: calc(var(--hud-edge) + (var(--stick) - 4rem) / 2);
-  top: calc(40% - 4rem - 0.9rem);
-}
-@media (orientation: landscape) and (max-height: 540px) {
-  .hud-jump {
-    top: auto;
-    bottom: calc(max(1.25rem, env(safe-area-inset-bottom)) + var(--stick) + 0.75rem);
-  }
-}
-@media (min-width: 744px) and (min-height: 600px) {
-  .hud-jump {
-    left: calc(max(1.5rem, env(safe-area-inset-left)) + (var(--stick) - 4rem) / 2);
-    top: calc(48% - 4rem - 1rem);
-  }
-}
-
 /* the Sun photo of the day: on a portrait phone the open wrist tablet needs that space; it comes back when folded */
 @media (max-width: 520px) and (orientation: portrait) {
   [data-tablet='open'] .hud-sun {
@@ -1573,6 +1664,6 @@ svg.entry-day-home {
     font-size: 1rem;
   }
   .hud-center .abtn.big {
-    min-height: 44px;
+    min-height: 48px;
   }
 }

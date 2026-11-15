@@ -71,16 +71,36 @@ export function Kbd({ k }: { k: string }) {
   );
 }
 
-/** Top-left: the base map (in the game) and the list of controls (always). */
+/**
+ * With a mouse and keyboard (15 Nov: "laptop players don't need the black buttons"): a key and its word, no button
+ * box — the key is the control; a click on the hint still does the same (school touchpads).
+ */
+export function KeyHint({ k, label, onClick, active, ...rest }: { k: string; label: string; onClick: () => void; active?: boolean; 'data-testid'?: string }) {
+  return (
+    <button type="button" {...rest} className={`key-hint pointer-events-auto ${active ? 'is-on' : ''}`} aria-pressed={active} onClick={onClick}>
+      <kbd className="kbd">{k}</kbd>
+      <span>{label}</span>
+    </button>
+  );
+}
+
+/** Top-left: the base map (in the game) and the list of controls (always). Keyboard: their keys, no buttons. */
 export function CornerButtons({ map, open, tr }: { map: boolean; open: (o: UiOp) => void; tr: Tr }) {
+  if (keyHints)
+    return (
+      <div className="hud-corner hud-keys">
+        {map && <KeyHint data-testid="open-map" k="M" label={tr('ui.controls.map')} onClick={() => open('map')} />}
+        <KeyHint data-testid="open-help" k="F1" label={tr('ui.controls.help')} onClick={() => open('help')} />
+      </div>
+    );
   return (
     <div className="hud-corner pointer-events-auto flex gap-2">
       {map && (
-        <Btn data-testid="open-map" aria-label={tr('ui.controls.map')} onClick={() => open('map')} className="text-xl">
+        <Btn data-testid="open-map" aria-label={tr('ui.controls.map')} onClick={() => open('map')} className="icon-btn text-xl">
           <MapIcon size={22} aria-hidden="true" />
         </Btn>
       )}
-      <Btn data-testid="open-help" aria-label={tr('ui.controls.help')} onClick={() => open('help')} className="text-xl">
+      <Btn data-testid="open-help" aria-label={tr('ui.controls.help')} onClick={() => open('help')} className="icon-btn text-xl">
         <HelpCircle size={22} aria-hidden="true" />
       </Btn>
     </div>
