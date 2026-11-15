@@ -44,6 +44,14 @@ export default defineConfig({
             handler: 'CacheFirst',
             options: { cacheName: 'week-media', expiration: { maxEntries: 60 } },
           },
+          // Music and recorded voices (mp3, ~3.5 MB, not in globPatterns): cached the first time each plays, so they
+          // work offline after that (venue Wi-Fi) without making the first visit heavier. fetch() + decodeAudioData,
+          // no Range requests, so CacheFirst is enough (15 Nov perf).
+          {
+            urlPattern: ({ url }) => url.pathname.includes('/audio/') && url.pathname.endsWith('.mp3'),
+            handler: 'CacheFirst',
+            options: { cacheName: 'audio', expiration: { maxEntries: 200 } },
+          },
         ],
         maximumFileSizeToCacheInBytes: 8 * 1024 * 1024,
         cleanupOutdatedCaches: true,
