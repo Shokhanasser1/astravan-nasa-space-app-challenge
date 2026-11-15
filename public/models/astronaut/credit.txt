@@ -45,6 +45,9 @@ scripts/models/pose_fix.mjs on the clips (mesh untouched): the upper arms turned
 Walk, Run and the jump (were 31-46 deg, held out for the old bulky suit), gestures blended back to Idle at their ends;
 the arm swing widened (walk -14..18 deg, lope -18..26 deg, was +-10 / +-6) with elbows bent 10-15 deg more; the legs
 turned in 2 deg so they are parallel (ankle 2.5 cm outside the hip). Climb re-made after it (climb_kid.mjs, same P).
+~22:50: Climb re-made with P={"behind":0.42,"hipy":0.62,"lean":15}: the game hangs the body 0.42 m behind the rungs
+(src/walk/rooms.ts BODY_BEHIND, src/scene/boarding.ts BEHIND); at 0.30 the body slid 12 cm onto the ladder as it
+gripped. Boots and gloves on the rungs, IK error 0.
 
 15 Nov 2026 ~22:20 (Shoxjahon aka: "the torso wider and more natural, the shoulders a little wider, the bag bigger and not
 moving, take it from the old model"): body rebuilt from the same Meshy file with a broader suit (scripts/models/meshy_rig.mjs

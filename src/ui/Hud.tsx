@@ -55,7 +55,12 @@ const ArmScanner = lazyScreen(() => import('./play/ArmScanner').then((m) => ({ d
 const LANGS: Lang[] = ['en', 'uz', 'ru'];
 /** The robot arm's hand scanner (it needs the walking astronaut). */
 const armScan = features.robotArm && features.character;
-const LAUNCH_MS = 4000;
+/**
+ * How long the liftoff plays before the truth screen covers it (after the boarding, BOARD_S). Was 4 s: the panel came
+ * while the ship had barely risen, so its plume and regolith blast were never seen (the lead, 15 Nov ~22:45: "why is
+ * the launch not shown?"). 8 s: ignition, the blast, the climb on its flame to ~130 m. The main button still skips.
+ */
+const LAUNCH_MS = 8000;
 
 interface Props {
   model: Model;
