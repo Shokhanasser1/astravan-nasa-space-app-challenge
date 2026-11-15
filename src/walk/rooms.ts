@@ -8,13 +8,33 @@
  * Numbers in each building's model frame, native metres (blender/interiors/<b>/HANDOFF.md, walk.json): the floor, the
  * headroom, where E outside goes in (`out`, also where the astronaut comes back out), where it stands inside
  * (`spawn`), and where E inside goes out (`exit`). Facing: 0 = model +z.
+ *
+ * `?hdu` (layout.ts HDU_HABITAT): the base core is NASA's HDU complex instead, three walk-in modules at real size
+ * (k 1), two floors each with a ladder between (hduSpecs below); ASTRA's lander stays.
  */
-import { DOOR_AZ, HDU, HDU_HABITAT, LAYOUT, ASTRA_SCALE } from '../scene/layout';
+import {
+  ASTRA_SCALE,
+  HDU,
+  HDU_COMPLEX,
+  HDU_HABITAT,
+  HDU_MODULES,
+  HDU_MODULE_X,
+  basePlan,
+  moduleToGame,
+  type BasePlan,
+  type HduModule,
+} from '../scene/layout';
 import type { Area, Solid, XZ } from './collide';
 import ROOM_BOXES from './rooms.json';
 import ROOM_BOXES_HDU from './rooms_hdu.json';
 
-export type RoomId = 'habitat' | 'habitat_up' | 'greenhouse' | 'lab' | 'lander';
+/** The rooms both bases have (ASTRA: the habitat's two floors, the greenhouse, the lab, the lander cabin). */
+type CoreRoomId = 'habitat' | 'habitat_up' | 'greenhouse' | 'lab' | 'lander';
+/** The rooms only the HDU complex (`?hdu`) has: the greenhouse module's and the lab module's lofts. */
+type HduRoomId = 'greenhouse_up' | 'lab_up';
+export type RoomId = CoreRoomId | HduRoomId;
+/** The building a room belongs to: its interior model and its door (an upper floor belongs to its module). */
+export type BuildingId = Exclude<RoomId, `${string}_up`>;
 
 type Box = (string | number)[];
 
@@ -60,7 +80,8 @@ const RUNGS_Z = 0.212;
 /** The body hangs this far behind the rungs on the Climb clip (clips/climb.py meta body_behind_root). */
 const BODY_BEHIND = 0.42;
 
-const ASTRA_SPECS: Record<RoomId, Spec> = {
+/** ASTRA's rooms on a plan (the ASTRA plan for the ASTRA base; the HDU base keeps only its lander). */
+const astraSpecs = ({ LAYOUT, DOOR_AZ }: BasePlan): Record<CoreRoomId, Spec> => ({
   // ground floor (deck 0.5, ceiling 3.1); the door is the airlock at +z; jumps allowed (2.6 m of headroom)
   habitat: {
     at: LAYOUT.habitat, turn: DOOR_AZ, k: ASTRA_SCALE.habitat, floor: 0.5, headroom: 2.6, bounds: 4.85,
@@ -91,27 +112,54 @@ const ASTRA_SPECS: Record<RoomId, Spec> = {
     extra: [['hatch', 0, 1.2, 0.38, 0.03, 0]],
     spawn: [0, 0.55, Math.PI], out: [0, 4.9, 0], exit: (_x, z) => z > 0.5, jump: false,
   },
-};
+});
 
 /**
- * The main habitat as NASA's HDU at 1.5x (`?hdu`, layout.ts HDU): game metres (k 1, the furniture is real size),
- * eight sections round an open middle with the ladder at the centre (rungs along x in the plane z = 0, climbed from
- * the door side), the crew loft above (oy-karvonsaroyi-3d/hb7/hdu_base/build_game_habitat.py, rooms_hdu.json).
+ * The HDU complex (`?hdu`, layout.ts HDU): three modules at real NASA size (r 2.1 m), each walk-in, built alike
+ * (oy-karvonsaroyi-3d/hb7/hdu_base/build_game_complex.py, rooms_hdu.json): game metres (k 1), in each module's frame
+ * (its centre, the door at +z through the shell, front face HDU.front). Ground floor HDU.floor up: eight sections
+ * round an open middle, the entry section with the two EVA suits (±0.62, 1.62) at the door; the loft deck HDU.deck
+ * up, its wall to HDU.loftTop, the dome to HDU.top. The ladder at the centre: rungs along x in the plane z = 0 (first
+ * rung 0.2825 above the floor, then every 0.30), climbed from the door side (the climber at z 0.42 facing −z); on
+ * the loft a rail round its well (well_guard, well_front) opens toward +z, where you step on and off.
  */
-const HDU_SPECS: Pick<Record<RoomId, Spec>, 'habitat' | 'habitat_up'> = {
-  // ground floor (0.675 up, ceiling 4.2): the door at +z through the shell, the entry section with the suits
-  habitat: {
-    at: LAYOUT.habitat, turn: DOOR_AZ, k: 1, floor: HDU.floor, headroom: 3.5, bounds: HDU.lining - 0.05,
-    spawn: [0, 2.3, Math.PI], out: [0, HDU.shell + 1.6, 0], exit: (x, z) => z > 2.2 && Math.abs(x) < 0.6, jump: true,
-    rungsZ: 0, ladder: { to: 'habitat_up', at: [0, 0.42], reach: 0.9, arrive: [0, 1.0, 0] },
-  },
-  // the loft (4.275 up, its straight wall to 7.1): four sleep pods, lockers, a rail round the ladder well open to +z
-  habitat_up: {
-    at: LAYOUT.habitat, turn: DOOR_AZ, k: 1, floor: HDU.deck, headroom: 2.85, bounds: HDU.lining - 0.05,
-    spawn: [0, 1.0, 0], out: [0, HDU.shell + 1.6, 0], exit: () => false, jump: true, noDoor: true,
-    rungsZ: 0, ladder: { to: 'habitat', at: [0, 0.85], reach: 1.1, arrive: [0, 0.75, 0] },
-  },
-};
+const HDU_SITE = { habitat: 'habitat', greenhouse: 'garden', lab: 'workshop' } as const satisfies Record<HduModule, keyof BasePlan['LAYOUT']>;
+const HDU_UP = { habitat: 'habitat_up', greenhouse: 'greenhouse_up', lab: 'lab_up' } as const satisfies Record<HduModule, RoomId>;
+/**
+ * Headroom on both floors: the ground floor's ceiling is the deck's underside (its top less an 8 cm slab), 2.32 m
+ * up; the loft's the same 2.32 m, where the dome (5.82 in the middle, 4.75 at the lining) still stands over the
+ * farthest the body reaches (r 1.65). A suit (1.86 m) plus a standing Moon jump (1.2²/(2·1.62) = 0.44 m) fit.
+ */
+const HDU_HEADROOM = HDU.deck - 0.08 - HDU.floor;
+/** Inside the lining, less a little. */
+const HDU_BOUNDS = HDU.lining - 0.05;
+/** E outside: in front of the door, clear of the module's hitbox (disc r 3.3 round (0, −0.3), src/walk/world.ts). */
+const HDU_OUT: [number, number, number] = [0, 4.0, 0];
+/** Where you stand on the ground floor at its ladder (arriving down, facing the door) and on the loft (facing +z). */
+const HDU_GROUND_ARRIVE: [number, number, number] = [0, 0.75, 0];
+const HDU_LOFT_ARRIVE: [number, number, number] = [0, 0.85, 0];
+
+function hduSpecs(plan: BasePlan): Partial<Record<RoomId, Spec>> {
+  const out: Partial<Record<RoomId, Spec>> = {};
+  for (const m of HDU_MODULES) {
+    const at = plan.LAYOUT[HDU_SITE[m]];
+    const up = HDU_UP[m];
+    // ground floor: in at the door (just inside it, facing in), out by E in the entry section; the ladder from its
+    // door side (E within 0.6 m of the climbing spot, not from behind the rungs)
+    out[m] = {
+      at, turn: HDU_COMPLEX.turn, k: 1, floor: HDU.floor, headroom: HDU_HEADROOM, bounds: HDU_BOUNDS,
+      spawn: [0, 1.4, Math.PI], out: HDU_OUT, exit: (x, z) => z > 1.3 && Math.abs(x) < 0.45, jump: true,
+      rungsZ: 0, ladder: { to: up, at: [0, 0.42], reach: 0.6, arrive: HDU_LOFT_ARRIVE },
+    };
+    // the loft: no door of its own; E at the open side of the well climbs back down
+    out[up] = {
+      at, turn: HDU_COMPLEX.turn, k: 1, floor: HDU.deck, headroom: HDU_HEADROOM, bounds: HDU_BOUNDS,
+      spawn: HDU_LOFT_ARRIVE, out: HDU_OUT, exit: () => false, jump: true, noDoor: true,
+      rungsZ: 0, ladder: { to: m, at: [0, 0.85], reach: 0.7, arrive: HDU_GROUND_ARRIVE },
+    };
+  }
+  return out;
+}
 
 export interface Room {
   id: RoomId;
@@ -196,21 +244,52 @@ function build(id: RoomId, p: Spec, roomBoxes: Box[]): Room {
   };
 }
 
-/** Every room, with the ASTRA habitat or (hdu) the NASA HDU habitat. Exported for the tests of both. */
-export function makeRooms(hdu: boolean): Record<RoomId, Room> {
-  const specs: Record<RoomId, Spec> = hdu ? { ...ASTRA_SPECS, ...HDU_SPECS } : ASTRA_SPECS;
-  const boxes: Record<RoomId, Box[]> = hdu
-    ? { ...(ROOM_BOXES as Record<RoomId, Box[]>), ...(ROOM_BOXES_HDU as Record<'habitat' | 'habitat_up', Box[]>) }
-    : (ROOM_BOXES as Record<RoomId, Box[]>);
-  const ids: RoomId[] = ['habitat', 'habitat_up', 'greenhouse', 'lab', 'lander'];
-  return Object.fromEntries(ids.map((id) => [id, build(id, specs[id], boxes[id])])) as Record<RoomId, Room>;
+/** A base's rooms: ASTRA's five, or the HDU complex's seven (its three modules' two floors and the lander). */
+export type Rooms = Readonly<Record<CoreRoomId, Room>> & Readonly<Partial<Record<HduRoomId, Room>>>;
+const ASTRA_IDS: readonly CoreRoomId[] = ['habitat', 'habitat_up', 'greenhouse', 'lab', 'lander'];
+const HDU_IDS: readonly RoomId[] = ['habitat', 'habitat_up', 'greenhouse', 'greenhouse_up', 'lab', 'lab_up', 'lander'];
+
+/**
+ * Every room of the ASTRA base, or (hdu) of the HDU complex: its three modules (two floors each, ladders between)
+ * and ASTRA's lander, all on that base's plan (layout.ts basePlan). Exported for the tests of both.
+ */
+export function makeRooms(hdu: true): Readonly<Record<RoomId, Room>>;
+export function makeRooms(hdu: boolean): Rooms;
+export function makeRooms(hdu: boolean): Rooms {
+  const plan = basePlan(hdu);
+  const specs: Partial<Record<RoomId, Spec>> = hdu ? { ...hduSpecs(plan), lander: astraSpecs(plan).lander } : astraSpecs(plan);
+  const boxes = (hdu ? { lander: ROOM_BOXES.lander, ...ROOM_BOXES_HDU } : ROOM_BOXES) as Partial<Record<RoomId, Box[]>>;
+  const ids = hdu ? HDU_IDS : ASTRA_IDS;
+  return Object.fromEntries(ids.map((id) => [id, build(id, specs[id]!, boxes[id]!)])) as unknown as Rooms;
 }
 
-export const ROOMS: Record<RoomId, Room> = makeRooms(HDU_HABITAT);
+/** The rooms of the base the game is played on (the flag's: layout.ts HDU_HABITAT). */
+export const ROOMS: Rooms = makeRooms(HDU_HABITAT);
+/** Its rooms' ids (ASTRA has no greenhouse_up or lab_up). */
 export const ROOM_IDS = Object.keys(ROOMS) as RoomId[];
+const ROOM_LIST: readonly Room[] = ROOM_IDS.map((id) => ROOMS[id]!);
 
-/** The building a room belongs to (its interior model and its door). */
-export const buildingOf = (id: RoomId): Exclude<RoomId, 'habitat_up'> => (id === 'habitat_up' ? 'habitat' : id);
+/**
+ * A room of the game's base, by id. The ids the game passes come from its rooms (a door, a ladder, the room the
+ * astronaut is in), so it is always there; asking for a room this base has not (greenhouse_up on ASTRA) is a bug.
+ */
+export function getRoom(id: RoomId): Room {
+  const r = ROOMS[id];
+  if (!r) throw new Error(`no room ${id} on this base`);
+  return r;
+}
+
+const BUILDING: Readonly<Record<RoomId, BuildingId>> = {
+  habitat: 'habitat',
+  habitat_up: 'habitat',
+  greenhouse: 'greenhouse',
+  greenhouse_up: 'greenhouse',
+  lab: 'lab',
+  lab_up: 'lab',
+  lander: 'lander',
+};
+/** The building a room belongs to (its interior model and its door): an upper floor's is its module's. */
+export const buildingOf = (id: RoomId): BuildingId => BUILDING[id];
 
 /** The room the astronaut walks in now (null: outside). Written by the Rig, read by Interiors and Astronaut. */
 export const roomState = { id: null as RoomId | null };
@@ -221,12 +300,36 @@ export const ROOM_BODY = 0.25;
 /** E reaches a door from this far (m, in the game) from its `out` spot. */
 export const DOOR_REACH = 1.3;
 
-/** The room whose door the astronaut stands at, outside (null: none). */
-export function doorAt(p: XZ): RoomId | null {
-  for (const id of ROOM_IDS) {
-    if (ROOMS[id].noDoor) continue;
-    const o = ROOMS[id].out;
-    if (Math.hypot(p.x - o.x, p.z - o.z) < DOOR_REACH) return id;
+/** The room whose door the astronaut stands at, outside (null: none); of the game's rooms, or of `rooms` (tests). */
+export function doorAt(p: XZ, rooms: readonly Room[] = ROOM_LIST): RoomId | null {
+  for (const r of rooms) {
+    if (r.noDoor) continue;
+    if (Math.hypot(p.x - r.out.x, p.z - r.out.z) < DOOR_REACH) return r.id;
   }
   return null;
+}
+
+/** The HDU complex's module centres along its length (game x, z), for inHduComplex. */
+const HDU_CENTRES: readonly (readonly [number, number])[] = [...HDU_MODULES]
+  .sort((a, b) => HDU_MODULE_X[a] - HDU_MODULE_X[b])
+  .map((m) => moduleToGame(m, 0, 0));
+
+/**
+ * (x, y, z) in the game is within `m` of the HDU complex's solid outside (`?hdu`): a module's shell (radius
+ * HDU.shell up to its dome top HDU.top) or a pressurised tunnel between neighbouring modules (a level cylinder of
+ * radius HDU.tunnelR, its axis HDU.tunnelY up). For the outside follow camera (src/scene/Rig.tsx), so it never
+ * swings into a dome or a tunnel. No allocation.
+ */
+export function inHduComplex(x: number, y: number, z: number, m = 0): boolean {
+  for (let i = 0; i < HDU_CENTRES.length; i++) {
+    const c = HDU_CENTRES[i];
+    if (y < HDU.top + m && Math.hypot(x - c[0], z - c[1]) < HDU.shell + m) return true;
+    if (i === 0) continue;
+    const a = HDU_CENTRES[i - 1];
+    const dx = c[0] - a[0], dz = c[1] - a[1];
+    const t = Math.max(0, Math.min(1, ((x - a[0]) * dx + (z - a[1]) * dz) / (dx * dx + dz * dz)));
+    const side = Math.hypot(x - a[0] - dx * t, z - a[1] - dz * t);
+    if (Math.hypot(side, y - HDU.tunnelY) < HDU.tunnelR + m) return true;
+  }
+  return false;
 }

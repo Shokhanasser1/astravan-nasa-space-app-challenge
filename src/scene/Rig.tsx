@@ -14,7 +14,7 @@ import { heading } from '../walk/move';
 import { createWalker, walkDebug } from '../walk/walker';
 import { HAB_ROOM, ROOM_K } from '../walk/habitatRoom';
 import { habitatDoor, interiorDoors } from './Interiors';
-import { ROOMS, ROOM_BODY, buildingOf, doorAt, roomState, type RoomId } from '../walk/rooms';
+import { ROOMS, ROOM_BODY, buildingOf, doorAt, getRoom, inHduComplex, roomState, type RoomId } from '../walk/rooms';
 import { climbDuration, climbPhase, climbPose, climbState, type ClimbPose, type LadderClimb } from '../walk/ladder';
 import { astraLook } from './AstraBase';
 import { clearance, fits, type Solid, type XZ } from '../walk/collide';
@@ -107,8 +107,12 @@ function roomBlocked(a: { solids: readonly Solid[]; bounds: Solid }, x: number, 
   if (furniture) for (const o of a.solids) if (clearance(o, x, z, m) < 0) return true;
   return false;
 }
-/** Standing by the airlock in the habitat's room: more than 2 m towards the door from its middle (model frame). */
+/**
+ * Standing by the airlock in the habitat's room: more than 2 m towards the door from its middle (model frame). (The
+ * HDU habitat, `?hdu`, is 1.95 m round inside: by its door is where E goes out with the astronaut, rooms.ts exit.)
+ */
 function byAirlock(p: XZ): boolean {
+  if (HDU_HABITAT) return ROOMS.habitat.exit(p.x, p.z);
   const dx = p.x - LAYOUT.habitat[0];
   const dz = p.z - LAYOUT.habitat[1];
   return (dx * Math.sin(DOOR_AZ) + dz * Math.cos(DOOR_AZ)) / ROOM_K > 2.0;
@@ -236,7 +240,7 @@ export function Rig({ view }: { view: View }) {
       if ((r === 'up' || r === 'down') && climb.t < 0) {
         // the ladder: with the astronaut from its room; in first person from the inside point's floor
         const from = roomState.id ?? (fp.floor ? 'habitat_up' : 'habitat');
-        const L = ROOMS[from].ladder;
+        const L = getRoom(from).ladder;
         if (L) {
           climb.to = L.to;
           climb.fp = !roomState.id;
@@ -246,11 +250,11 @@ export function Rig({ view }: { view: View }) {
           P.from.x = climb.fp ? s.to.x : body.x;
           P.from.z = climb.fp ? s.to.z : body.z;
           P.from.facing = climb.fp ? s.yaw + Math.PI : body.facing;
-          P.y0 = ROOMS[from].floorY;
+          P.y0 = getRoom(from).floorY;
           P.foot = L.foot;
           P.rungs = climb.fp ? L.foot : L.rungs; // (the eye stays at the foot spot, not in the rungs)
           P.to = L.arrive;
-          P.y1 = ROOMS[L.to].floorY;
+          P.y1 = getRoom(L.to).floorY;
           climb.T = climbDuration(P);
           climb.t = 0;
         }
@@ -303,7 +307,7 @@ export function Rig({ view }: { view: View }) {
       fp.floor = 0; // (the inside point is on the ground floor)
       // a new phase or the map while in a building: out at its door at once, the float starts from there
       if (roomState.id) {
-        setRoom(null, ROOMS[roomState.id].out);
+        setRoom(null, getRoom(roomState.id).out);
         camera.position.set(body.x, body.y + EYE, body.z);
       }
       // a new phase or the map while in the rover: out at once beside its hatch, and the float starts from there
@@ -441,7 +445,7 @@ export function Rig({ view }: { view: View }) {
       climbState.on = !climb.fp && P.stage === 'climb';
       climbState.vy = P.vy;
       // the Climb clip scrubbed by the height above the lower deck (full size): boots and hands meet the rungs
-      climbState.phase = climbPhase((P.y - Math.min(climb.path.y0, climb.path.y1)) / ROOMS[climb.to].s);
+      climbState.phase = climbPhase((P.y - Math.min(climb.path.y0, climb.path.y1)) / getRoom(climb.to).s);
       // look where you go: at the rungs (a little up or down while on them), then the way you step off
       s.yawT = s.yaw + wrap(P.facing + Math.PI - s.yaw);
       if (climb.fp) {
@@ -459,7 +463,7 @@ export function Rig({ view }: { view: View }) {
         body.windup = -1;
       }
       if (climb.t >= climb.T) {
-        const R = ROOMS[climb.to];
+        const R = getRoom(climb.to);
         if (climb.fp) {
           fp.floor = climb.to === 'habitat_up' ? 1 : 0;
           s.to.set(climb.arrive.x, R.floorY + 1.6 * ROOM_K, climb.arrive.z);
@@ -482,7 +486,7 @@ export function Rig({ view }: { view: View }) {
     if (roomTrip.t >= 0 && roomTrip.room) {
       roomTrip.t += dt;
       if (roomTrip.dir !== 0 && roomTrip.t >= DOOR_GO) {
-        const R = ROOMS[roomTrip.room];
+        const R = getRoom(roomTrip.room);
         setRoom(roomTrip.dir > 0 ? roomTrip.room : null, roomTrip.dir > 0 ? R.spawn : R.out);
         roomTrip.dir = 0;
       }
@@ -531,7 +535,10 @@ export function Rig({ view }: { view: View }) {
     camera.rotation.set(s.pitch, s.yaw, 0, 'YXZ'); // no roll: horizon always level
 
     const [hx, hz] = LAYOUT.habitat;
-    camState.inside = Math.hypot(camera.position.x - hx, camera.position.z - hz) < 1.6 && camera.position.y < 3;
+    // (the HDU habitat, `?hdu`: inside its lining, on either floor)
+    camState.inside = HDU_HABITAT
+      ? Math.hypot(camera.position.x - hx, camera.position.z - hz) < HDU.lining && camera.position.y < HDU.top
+      : Math.hypot(camera.position.x - hx, camera.position.z - hz) < 1.6 && camera.position.y < 3;
     // E / ✋: which building is in front (stored only when it changes; nothing while floating or lifting off).
     if (features.controls) setAim(s.t < 1 || launching ? null : pickAim(camera.position.x, camera.position.z, s.yaw, AIM));
     // in the habitat's room, by the airlock (model z > 2 m): E goes out
@@ -550,7 +557,7 @@ export function Rig({ view }: { view: View }) {
   /** In a room (or out of it, null) at a spot: the body at the room's scale, the camera straight behind it. */
   function setRoom(id: RoomId | null, at: { x: number; z: number; facing: number }) {
     roomState.id = id;
-    const R = id ? ROOMS[id] : null;
+    const R = id ? getRoom(id) : null;
     body.scale = R ? R.s : 1;
     roomFloor.y = R ? R.floorY : 0;
     body.x = at.x;
@@ -834,7 +841,7 @@ export function Rig({ view }: { view: View }) {
       s.yawT -= c.ax.turn * MAX_TURN * dt; // → turns right (yaw grows to the left)
       c.acc = Math.min(c.acc + dt, 0.1);
       // in a building: its room, its floor, the body at its scale (src/walk/rooms.ts)
-      const R = roomState.id ? ROOMS[roomState.id] : null;
+      const R = roomState.id ? getRoom(roomState.id) : null;
       while (c.acc >= STEP) {
         c.acc -= STEP;
         const air = !body.onGround;
@@ -877,9 +884,9 @@ export function Rig({ view }: { view: View }) {
     // (on the ladder: the room the head is in, between the two floors' floor and ceiling)
     const climbing = climb.t >= 0 && climb.to !== null && roomState.id !== null;
     const room = climbing
-      ? ROOMS[(body.y - climb.path.y0) / (climb.path.y1 - climb.path.y0 || 1) > 0.5 ? climb.to! : roomState.id!]
+      ? getRoom((body.y - climb.path.y0) / (climb.path.y1 - climb.path.y0 || 1) > 0.5 ? climb.to! : roomState.id!)
       : roomState.id
-        ? ROOMS[roomState.id]
+        ? getRoom(roomState.id)
         : null;
     const tilt = room ? ROOM_TILT : CAM_TILT + (CAR_TILT - CAM_TILT) * kc;
     const pitch = Math.max(-MAX_PITCH - tilt, s.pitch - tilt);
@@ -909,8 +916,9 @@ export function Rig({ view }: { view: View }) {
         const py = hy - fy * d;
         const pz = hz - fz * d;
         // (the rover's camera rides higher, so taller things count; and it never pulls in under the rover's own roof)
-        // (the HDU habitat, `?hdu`, is 8.6 m tall: the camera must not swing into its loft dome either)
-        const tall = HDU_HABITAT && py < HDU.top + 0.3 && Math.hypot(px - LAYOUT.habitat[0], pz - LAYOUT.habitat[1]) < HDU.shell + 0.3;
+        // (the HDU complex, `?hdu`: its modules are 5.8 m tall, its tunnels 2.6 m: the camera must not swing into a
+        // dome or a tunnel either, rooms.ts inHduComplex)
+        const tall = HDU_HABITAT && inHduComplex(px, py, pz, 0.3);
         if (!scripted && ((py < (inCar ? 5 : 3.2) && blocked(solids, px, pz)) || tall)) {
           dist = Math.max(0.8 + 2.2 * kc, d - 0.3);
           break;
@@ -919,7 +927,7 @@ export function Rig({ view }: { view: View }) {
     }
     camera.position.set(hx - fx * dist, hy - fy * dist, hz - fz * dist);
     if (climbing) {
-      const a = ROOMS[roomState.id!], b = ROOMS[climb.to!];
+      const a = getRoom(roomState.id!), b = getRoom(climb.to!);
       camera.position.y = Math.min(Math.max(camera.position.y, Math.min(a.floorY, b.floorY) + 0.3 * a.s), Math.max(a.ceilY, b.ceilY) - 0.1 * a.s);
     } else if (room) camera.position.y = Math.min(Math.max(camera.position.y, room.floorY + 0.3 * room.s), room.ceilY - 0.1 * room.s);
     else camera.position.y = Math.max(camera.position.y, ground(camera.position.x, camera.position.z) + 0.3);
@@ -950,7 +958,7 @@ export function Rig({ view }: { view: View }) {
     if (!ride && onFoot && doorTrip.t < 0 && roomTrip.t < 0) {
       if (room && climb.t < 0) {
         if (room.exit(body.x, body.z)) ride = 'leave';
-        else if (room.ladder?.near(body.x, body.z)) ride = ROOMS[room.ladder.to].floorY > room.floorY ? 'up' : 'down';
+        else if (room.ladder?.near(body.x, body.z)) ride = getRoom(room.ladder.to).floorY > room.floorY ? 'up' : 'down';
       }
       else if (nearDoor.id) ride = 'enter';
     }
@@ -980,7 +988,8 @@ export function Rig({ view }: { view: View }) {
       })(),
     [],
   );
-  const door: Vec3 = [LAYOUT.habitat[0] + Math.sin(DOOR_AZ) * DOOR_R, 1.1, LAYOUT.habitat[1] + Math.cos(DOOR_AZ) * DOOR_R];
+  // (the HDU habitat's door, `?hdu`: 1.0 × 2.0 m from its floor, HDU.floor up)
+  const door: Vec3 = [LAYOUT.habitat[0] + Math.sin(DOOR_AZ) * DOOR_R, HDU_HABITAT ? HDU.floor + HDU.door.h / 2 : 1.1, LAYOUT.habitat[1] + Math.cos(DOOR_AZ) * DOOR_R];
   const hideMarkers = launching || view.phase === 'truth' || title;
 
   const astronaut = character ? <Astronaut body={body} visible={point !== 'inside'} hands={view.hands ?? 0} view={view} /> : null;

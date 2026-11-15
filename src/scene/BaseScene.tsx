@@ -1,6 +1,6 @@
 import { Instance, Instances } from '@react-three/drei';
 import type { Machine, View } from '../state/game';
-import { LAYOUT, RADIUS } from './layout';
+import { HDU_HABITAT, LAYOUT, RADIUS } from './layout';
 import { Terrain } from './Terrain';
 import { Decor } from './Decor';
 import { Outpost } from './Outpost';
@@ -23,12 +23,20 @@ import { getAim, useAim, type AimId } from '../controls/bus';
 import { Batteries } from './Batteries';
 import { Beacon } from './Beacon';
 import { AstraMerge, AstraPads, astraLook, faceCentre } from './AstraBase';
+import { HduComplex } from './HduComplex';
 
-/** ASTRA's hexagonal pads under the outer buildings (width in metres, about the building's footprint). */
+/**
+ * ASTRA's hexagonal pads under the outer buildings (width in metres, about the building's footprint). The HDU complex
+ * (`?hdu`) stands on its own skids: no pads under its greenhouse and lab modules.
+ */
 const PADS = (
   [
-    [LAYOUT.garden, 3.8],
-    [LAYOUT.workshop, 4.0],
+    ...(HDU_HABITAT
+      ? []
+      : ([
+          [LAYOUT.garden, 3.8],
+          [LAYOUT.workshop, 4.0],
+        ] as const)),
     [LAYOUT.lander, 4.8],
     [LAYOUT.scout, 3.4],
   ] as const
@@ -48,6 +56,8 @@ const tapAimed = (k: AimId) =>
     if (getAim() === k) pressUse();
   });
 const TAP = { hub: tapAimed('hub'), ls: tapAimed('ls'), gh: tapAimed('gh'), ws: tapAimed('ws'), sc: tapAimed('sc'), launch: tapAimed('launch') };
+/** The HDU complex's modules (`?hdu`) are Life Support, the garden and the workshop. */
+const HDU_TAP = { habitat: TAP.ls, greenhouse: TAP.gh, lab: TAP.ws };
 
 /**
  * Lane C (Shoxjahon aka). The 3D base: renders a View, reports taps. NEVER computes game numbers.
@@ -64,9 +74,13 @@ export function BaseScene({ view }: { view: View; onTap?: (k: Machine) => void; 
       {OUTPOST_ON && <Outpost />}
       {astraLook && <AstraPads pads={PADS} />}
       {astraLook && <AstraMerge />}
-      <Habitat on={a.ls > 0} wall={view.wall} tap={TAP.ls} />
-      <Garden on={a.gh > 0} plant={view.plant} tap={TAP.gh} />
-      <Workshop on={a.ws > 0} tap={TAP.ws} />
+      {/* the HDU complex (`?hdu`) is the habitat, the garden and the workshop in one */}
+      {HDU_HABITAT && (
+        <HduComplex on={{ habitat: a.ls > 0, greenhouse: a.gh > 0, lab: a.ws > 0 }} wall={view.wall} plant={view.plant} taps={HDU_TAP} />
+      )}
+      {!HDU_HABITAT && <Habitat on={a.ls > 0} wall={view.wall} tap={TAP.ls} />}
+      {!HDU_HABITAT && <Garden on={a.gh > 0} plant={view.plant} tap={TAP.gh} />}
+      {!HDU_HABITAT && <Workshop on={a.ws > 0} tap={TAP.ws} />}
       <Scout on={a.sc > 0} tap={TAP.sc} />
       <Lander on={a.launch > 0} phase={view.phase} tap={TAP.launch} />
       {rich ? <SolarArrays view={view} /> : <SolarWing />}
