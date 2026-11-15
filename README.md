@@ -66,11 +66,21 @@ Following the Space Apps 2026 Project Submission Guide, SI use is acknowledged i
 - **Code:** parts of the code, tests and build scripts were written with Claude Code (Anthropic) and reviewed by the team.
   Log: `docs/AI-USE.md`.
 - **Data:** NASA data files are downloaded and converted by scripts (some SI-assisted); the measurements themselves are
-  unchanged NASA records (LRO CRaTER via RadLab and iSWA, DONKI, SDO, GIBS).
+  unchanged NASA records (LRO CRaTER via RadLab, DONKI, SDO, GIBS, EPIC, SVS, JPL Horizons, LOLA).
+- **Text:** English game text and the Uzbek and Russian lines were first drafted with Claude Code and are edited by
+  the team (Aminjon). The idea and the game design are the team's.
+- **3D models:** the furnished building interiors (`public/models/interiors`) and the astronaut's compact backpack
+  were built in Blender by SI-written scripts (AI-made models, marked in `CREDITS.md`); so was the lunar lander v2 in
+  `blender/lander_v2/` (not in the game). The NASA models themselves are NASA's.
 - **Audio:** English and Russian narration uses the device's text-to-speech (`speechSynthesis`); Uzbek lines are
-  recorded by adult team members.
+  shown as text (no recorded voice yet). Sounds (dosimeter, Quindar tones) are generated in code.
 - **Images and video:** any SI-generated image or video carries a visible "AI" mark and contains no NASA logos,
   flags or mission identifiers, and no likeness of anyone under 18.
+
+## Languages
+
+The game, this README, `CREDITS.md`, `docs/AI-USE.md` and the project page are in English. Team working notes in
+`docs/` and `blender/` are partly in Uzbek and Russian.
 
 ## Licence
 

@@ -2,13 +2,14 @@
 
 Space Apps rules: "all resources, even open source resources, must be cited". Every third-party file has a row
 here (use the `add-asset` skill). This project is not an official NASA product and is not endorsed by NASA.
+Our own code is under the MIT licence (`LICENSE`); third-party parts keep the licences named below.
 
 ## NASA and agency data (`public/data/`)
 
 | Dataset | Dates | What it drives in the game | Link |
 |---|---|---|---|
 | NASA LRO CRaTER via RadLab (OSDR) | 2009-06-26 → 2024-06-18, hourly | Dose level each day, dosimeter clicks, truth curve | https://visualization.osdr.nasa.gov/radlab/ |
-| NASA DONKI (FLR notifications, SEP) | per week | Flare alerts and particle arrival times | https://ccmc.gsfc.nasa.gov/tools/DONKI/ |
+| NASA DONKI (flares FLR, solar energetic particles SEP, coronal mass ejections CME) | per week | Flare alerts, particle arrival times, the storm-watch radio call (fast CMEs) | https://ccmc.gsfc.nasa.gov/tools/DONKI/ |
 | NASA SDO (AIA 131 Å browse, cropped and resized) | 2016–2024 weeks | The real Sun photo on the tablet and in the truth sequence | https://sdo.gsfc.nasa.gov/ |
 | NASA SDO AIA 131 Å rendered by Helioviewer.org (NASA/ESA Helioviewer Project) | 2012–2014 weeks (the SDO browse archive starts in 2016) | Same as above | https://api.helioviewer.org/docs/v2/ |
 | NASA EOSDIS GIBS (VIIRS SNPP true colour from 2016; MODIS Terra with gaps filled from MODIS Aqua before) | per day, all 14 weeks | The Earth of that day on the globe | https://nasa-gibs.github.io/gibs-api-docs/ |
@@ -28,6 +29,9 @@ Helioviewer.org."). Each week's exact request URLs are in `public/data/media/<we
 | three.js 0.187.0 | MIT | https://github.com/mrdoob/three.js |
 | React Three Fiber 9.8.2, drei 10.7.9, @react-three/postprocessing 3.2.2 | MIT | https://github.com/pmndrs |
 | postprocessing 6.39.6 | Zlib | https://github.com/pmndrs/postprocessing |
+| Draco decoder (copied from three.js into /draco/) | Apache-2.0 (Google) | https://github.com/google/draco |
+| Lexend variable font (`@fontsource-variable/lexend` 5.2.11) | OFL-1.1 | https://github.com/googlefonts/lexend |
+| Lucide icons (`lucide-react` 0.468.0) | ISC | https://lucide.dev |
 | Tailwind CSS 4.3.5 (generated CSS) | MIT | https://github.com/tailwindlabs/tailwindcss |
 | Workbox via vite-plugin-pwa 2.0.0 (service worker) | MIT | https://github.com/vite-pwa/vite-plugin-pwa |
 | ASTRA - Junior Astronaut Mission Trainer (procedural models: habitat with its regolith shield, greenhouse, lab, lander, hexagonal pads, equipment cabinet, sun-tracking solar arrays, battery bank, ice drill, science scout, their material kit and surface detail, and their Moon light recipe; `src/vendor/astra/`, commit 843d779), taken at the team lead's request, marked changes `HB7:` | MIT, (c) 2026 ASTRA contributors (`src/vendor/astra/LICENSE`) | https://github.com/HamzaAli0911/astra-mission-trainer |
@@ -58,13 +62,10 @@ Helioviewer.org."). Each week's exact request URLs are in `public/data/media/<we
 | What | Licence | Link |
 |---|---|---|
 | Vite 8, Vitest 5, TypeScript 7, Playwright 1.65, gltf-transform 4.5, gltfjsx 6.5, r3f-perf, leva | MIT / Apache-2.0 | npm |
-| Draco decoder (copied from three.js into /draco/) | Apache-2.0 (Google) | https://github.com/google/draco |
 | PocketBase 0.40.6 | MIT | https://github.com/pocketbase/pocketbase |
 | Caddy 2 | Apache-2.0 | https://github.com/caddyserver/caddy |
 | Claude Code skills `systematic-debugging`, `verification-before-completion` | MIT (Jesse Vincent, superpowers) | https://github.com/obra/superpowers |
 | Claude Code skill `webapp-testing` | Apache-2.0 (Anthropic) | https://github.com/anthropics/skills |
 | Claude Code skills `react-performance`, `vite-patterns`, `e2e-testing`, `ui-demo`, `i18n-sync` | MIT (Affaan Mustafa, ECC) | `.claude/skills/*/LICENSE` |
 | three.js guidelines in `.claude/rules/three.md` (adapted) | MIT (ui-ux-pro-max) | https://github.com/nextlevelbuilder/ui-ux-pro-max-skill |
-| Lexend variable font (`@fontsource-variable/lexend` 5.2.11) | OFL-1.1 | https://github.com/googlefonts/lexend |
-| Lucide icons (`lucide-react` 0.468.0) | ISC | https://lucide.dev |
 | Interface style (colours, type, panels, buttons, icon style) adapted from ASTRA by HamzaAli0911; no text, names or images taken | MIT | https://github.com/HamzaAli0911/astra-mission-trainer |

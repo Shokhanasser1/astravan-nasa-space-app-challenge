@@ -7,5 +7,7 @@ painted over; skeleton (Mixamo-style names + BagSocket) and the nine animation c
 Credit line: "Astronaut model: NASA 3D Resources, rigged and animated by the team. Not endorsed by NASA."
 Model pages: https://science.nasa.gov/3d-resources/astronaut/ , https://github.com/nasa/NASA-3D-Resources/tree/master/3D%20Models/Astronaut
 Modified by Samandar (team) in Blender, 2026-11-14 (logos painted over, rig, clips); clips re-made 2026-11-15.
-Blender Python scripts written with Claude Code (Claude Opus 5.5); the model is NASA-derived, not AI-generated.
+Blender Python scripts written with Claude Code (Claude Opus 5.5); the model is NASA-derived. Exception: on 2026-11-15
+the backpack was replaced by a compact one built by an AI-written script (scripts/models/astronaut_plss.mjs) — that
+part is AI-made (disclosed in CREDITS.md and docs/AI-USE.md).
 Not endorsed by NASA.
