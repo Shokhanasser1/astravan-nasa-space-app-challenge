@@ -12,7 +12,7 @@ export function DayBadge({ view, board, tr }: { view: View; board: Board | null;
   const level = board?.info.level ?? view.level;
   return (
     <div className="glass pointer-events-none flex min-w-0 shrink flex-col items-center gap-1 rounded-[18px] px-2 py-1.5 text-center" data-testid="day-badge">
-      <span className="flex items-center gap-1.5 whitespace-nowrap text-sm font-semibold uppercase tracking-wider text-[#f3f6ff]">
+      <span className="flex items-center justify-center gap-1.5 whitespace-nowrap text-sm font-semibold uppercase leading-tight tracking-wide text-[#f3f6ff]">
         <CalendarDays size={16} aria-hidden="true" className="text-measured" />
         {tr('ui.hud.dayOf', { day: view.day, total: 7 })}
       </span>

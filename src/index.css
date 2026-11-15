@@ -406,3 +406,8 @@ body,
   .hud-btns { flex-direction: row; }
   .abtn.big { min-height: 48px; }
 }
+/* The day badge takes the room between the corner buttons and the language buttons (it shrinks before it wraps). */
+.hud-top > [data-testid='day-badge'] { flex: 1 1 0; max-width: 13rem; min-width: 0; }
+@media (max-width: 380px) {
+  [data-testid='day-badge'] > span:first-child { font-size: 0.75rem; letter-spacing: 0.02em; }
+}
