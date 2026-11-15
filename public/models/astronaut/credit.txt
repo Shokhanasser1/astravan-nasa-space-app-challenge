@@ -1,8 +1,7 @@
 astronaut.glb — the playable kid astronaut (skinned, 23 bones, 15 clips: Idle/Walk/Run/Carry/Pour/Jump/JumpStart/JumpAir/
 JumpLand/Insert/Wrist/LookAround/Climb/Seated/SeatedSteer) and a small Battery prop in the right glove.
-Body (15 Nov 2026): a kid in a white suit with gold bands, chest pack and hoses, gold-visor bubble helmet and a compact
-backpack, modelled from scratch in Blender 5.3 by script (blender/kid_astronaut/build_kid.py) after the team's concept
-picture, and skinned onto the team's rig by scripts/models/astronaut_kid.mjs. AI-made (Claude Code), team-directed.
-No NASA mesh, texture, insignia, flag or text in it.
-Skeleton and clips: made by the team (blender/game3d/characters/, anim/), first fitted to NASA 3D Resources'
-"Astronaut" model, which this file no longer contains.
+Body (15 Nov 2026): an AI-generated, textured 3D model — Meshy multi-image-to-3D, run on Higgsfield — made from the
+team's concept picture (front, side and back views of a kid astronaut). The team's rig was fitted to its proportions
+and the body skinned in Blender (scripts/models/astronaut_ai.mjs, blender/kid_astronaut/bind_ai.py). AI-made, disclosed
+in docs/AI-USE.md. No NASA mesh, texture, insignia or flag.
+Skeleton and clips: made by the team (blender/game3d/characters/, anim/).

@@ -10,6 +10,22 @@ import { MOVE } from './physics.js';
  * Run is an Apollo-style alternate-foot lope. An older astronaut.glb without JumpStart uses LEGACY_SPEED.
  */
 export const CLIP_SPEED = { Walk: 1.0, Run: 2.0, Carry: 0.8 };
+/** Thigh + shin (m) of the rig the clips were made on (blender/game3d/characters, 1.86 m suit). */
+const CLIP_LEG = 0.68;
+
+/** The model's leg length against CLIP_LEG (1 when it is the same rig, or the bones are not found). */
+function legScale(model) {
+  const up = model.getObjectByName('LeftUpLeg');
+  const knee = model.getObjectByName('LeftLeg');
+  const ankle = model.getObjectByName('LeftFoot');
+  if (!up || !knee || !ankle) return 1;
+  model.updateMatrixWorld(true);
+  const a = up.getWorldPosition(new THREE.Vector3());
+  const b = knee.getWorldPosition(new THREE.Vector3());
+  const c = ankle.getWorldPosition(new THREE.Vector3());
+  const k = (a.distanceTo(b) + b.distanceTo(c)) / CLIP_LEG;
+  return Math.abs(k - 1) < 0.03 ? 1 : k;
+}
 const LEGACY_SPEED = { Walk: MOVE.walk, Run: MOVE.run, Carry: MOVE.walk };
 
 /**
@@ -68,6 +84,12 @@ export class AnimController {
     }
     this.split = !!(this.actions.JumpStart && this.actions.JumpAir);
     this.speeds = this.split ? CLIP_SPEED : LEGACY_SPEED;
+    // A rig refitted to shorter legs (the kid astronaut, 15 Nov) takes shorter steps: its clips are planted for ground
+    // speeds scaled by its leg length against the rig the clips were made on, so its boots stay planted.
+    this.legK = legScale(model);
+    if (this.split && this.legK !== 1) {
+      this.speeds = Object.fromEntries(Object.entries(CLIP_SPEED).map(([k, v]) => [k, v * this.legK]));
+    }
     this.k = 1;          // carry factor from the last update
     this.landing = 0;    // s left of JumpLand
     this.wasAir = false;
