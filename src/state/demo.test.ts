@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { PLAN_A } from '../engine/golden';
-import { board, reducer, toView } from './game';
+import { board, reducer, selfCharge, toView } from './game';
+import { launchWarning } from './launch';
 import { demoModel, isDemoKind } from './demo';
 
 // Judge links: Plan A through the real reducer, stopped at a morning. The numbers are Plan A's (golden.ts).
@@ -19,7 +20,7 @@ describe('judge links (?demo=)', () => {
     expect(board(reducer(m, { type: 'NEXT' }))?.info).toMatchObject({ storm: 'alert', choice: true });
   });
 
-  it('launch opens the morning of Day 7 with Plan A days 1–6 behind it, Launch filled on the board', () => {
+  it('launch opens the morning of Day 7 with Plan A days 1–6 behind it, the ship to charge (home story) or filled', () => {
     const m = demoModel('launch')!;
     expect(m.game?.day).toBe(7);
     expect(toView(m)).toMatchObject({ day: 7, phase: 'morning' });
@@ -28,7 +29,12 @@ describe('judge links (?demo=)', () => {
     expect(m.game?.extra).toBeCloseTo(day6.extra, 2);
     expect(toView(m).res?.crew).toBeGreaterThanOrEqual(5);
     expect(m.game?.days.map((d) => d.shelter)).toEqual(['none', 'none', 'none', 'half', 'full', 'half']);
-    expect(reducer(m, { type: 'NEXT' }).alloc.launch).toBe(4);
+    const plan = reducer(m, { type: 'NEXT' });
+    expect(plan.alloc.launch).toBe(selfCharge ? 4 : 0);
+    // the same flow as a played week: the launch button warns, carrying four batteries charges the ship
+    expect(launchWarning(plan)).toEqual(selfCharge ? { key: 'ui.launch.notReady', n: 86 } : { key: 'engine.warn.noLaunch' });
+    expect(toView(plan).res?.ship).toBe(86); // Plan A's 12 of 14 parts after Day 6
+    expect(toView(plan).launched).toBe(false);
   });
 
   it('is deterministic and accepts only the two kinds', () => {
