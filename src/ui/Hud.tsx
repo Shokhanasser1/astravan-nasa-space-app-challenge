@@ -18,7 +18,7 @@ import { TaskLine, useTask } from './play/Task';
 import { freeWalk } from '../walk/enabled';
 import { releaseAll, walkInput } from '../walk/input';
 import { features } from '../config/features';
-import { canTravel, type Overlay } from '../controls/act';
+import { canTravel, resolve, type Ctx, type Overlay } from '../controls/act';
 import { useAim } from '../controls/bus';
 
 /**
@@ -48,7 +48,7 @@ function TopBar({ lang, setLang, sound, setSound, tr }: Pick<Props, 'lang' | 'se
   // With the controls on, one language button cycles EN → UZ → RU, so the top bar fits a 360 px phone with the map.
   const langs = features.controls ? [lang] : LANGS;
   return (
-    <div className="pointer-events-auto flex gap-2 self-start">
+    <div className="hud-topbar pointer-events-auto flex gap-2 self-start">
       {langs.map((l) => (
         <Btn
           key={l}
@@ -123,7 +123,13 @@ export function Hud({ model, view, dispatch, lang, setLang, sound, setSound, onS
       }),
     [act],
   );
-  useGameKeys({ screen, phase, board, aim, overlay, hands: view.hands }, features.controls ? apply : () => {});
+  const keyCtx: Ctx = { screen, phase, board, aim, overlay, hands: view.hands };
+  useGameKeys(keyCtx, features.controls ? apply : () => {});
+  /** The touch action button presses E or Q: the same `resolve` as the keys and the scene taps. */
+  const press = (kind: 'use' | 'undo') => {
+    const effect = resolve({ kind }, keyCtx);
+    if (effect) apply(effect);
+  };
 
   // The day runs by itself and the lander lifts off by itself; the main button skips.
   useEffect(() => {
@@ -165,17 +171,18 @@ export function Hud({ model, view, dispatch, lang, setLang, sound, setSound, onS
       onPointerDown={() => audio.unlock()}
     >
       <div className="flex shrink-0 flex-col gap-2">
-        <div className="flex items-start justify-between gap-2">
+        {/* Portrait: buttons and the day on one row, the gauges below. Landscape phone: all on one row (CSS). */}
+        <div className="hud-top flex flex-wrap items-start justify-between gap-2">
           {features.controls ? <CornerButtons map={canTravel({ screen, phase })} open={(ui) => apply({ ui })} tr={tr} /> : null}
           {playing ? <DayBadge view={view} board={board} tr={tr} /> : <span />}
           <TopBar lang={lang} setLang={setLang} sound={sound} setSound={setSound} tr={tr} />
+          {playing && !overlay && view.res && <ResourceBar res={view.res} tr={tr} />}
         </div>
-        {playing && !overlay && view.res && <ResourceBar res={view.res} tr={tr} />}
         {playing && !overlay && task && (phase === 'morning' || phase === 'plan') && (
           <TaskLine task={task} tr={tr} onSkip={task.step ? skip : undefined} />
         )}
         {playing && !overlay && (phase === 'morning' || phase === 'plan') && (
-          <div className="pointer-events-none self-start">
+          <div className="hud-sun pointer-events-none self-start">
             <SunToday weekId={view.weekId} date={view.mediaDate} tr={tr} />
           </div>
         )}
@@ -218,13 +225,14 @@ export function Hud({ model, view, dispatch, lang, setLang, sound, setSound, onS
 
       {freeWalk && sides && <WalkStick />}
       {features.controls && touchUi && sides && (
-        <ContextButton ctx={ctx} dispatch={act} tr={tr}>
+        <ContextButton ctx={ctx} press={press} tr={tr}>
           {freeWalk && features.character && <JumpButton />}
         </ContextButton>
       )}
 
       {dialog && board && (
         <Decision
+          shelterPicked={shelterPicked}
           board={board}
           model={model}
           dispatch={act}
@@ -250,7 +258,7 @@ export function Hud({ model, view, dispatch, lang, setLang, sound, setSound, onS
               ) : (
                 <span />
               )}
-              <div className="flex flex-col items-end gap-2">
+              <div className="hud-btns flex flex-col items-end gap-2">
                 {hasDecision && (
                   <Btn data-testid="decision-open" className="solid pointer-events-auto text-sm" onClick={() => setDecisionOpen(true)}>
                     <MessageSquareWarning size={18} aria-hidden="true" /> {tr('ui.decide.open')}

@@ -32,8 +32,10 @@ function Chip({ icon: I, tone, children }: { icon: Icon; tone: string; children:
 }
 
 export function Decision({
-  board, model, dispatch, tr, hint, onHint, onClose,
+  board, model, dispatch, tr, hint, onHint, onClose, shelterPicked,
 }: {
+  /** The shelter was chosen today (until then no button looks pressed: 'none' is only the default). */
+  shelterPicked: boolean;
   board: Board;
   model: Model;
   dispatch: Dispatch<Action>;
@@ -99,7 +101,7 @@ export function Decision({
                     type="button"
                     key={value}
                     data-testid={`shelter-${value}`}
-                    className={`abtn choice flex flex-row items-center gap-2 text-left min-[420px]:flex-col min-[420px]:items-start ${board.alloc.shelter === value ? 'on' : ''}`}
+                    className={`abtn choice flex flex-row items-center gap-2 text-left min-[420px]:flex-col min-[420px]:items-start ${shelterPicked && board.alloc.shelter === value ? 'on' : ''}`}
                     onClick={() => dispatch({ type: 'CHOOSE', shelter: value })}
                   >
                     <I size={28} aria-hidden="true" className="shrink-0" />

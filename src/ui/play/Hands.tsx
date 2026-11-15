@@ -122,9 +122,13 @@ export function Inventory({ hands, free, total, tr }: { hands: number; free: num
   );
 }
 
-/** Touch: the one big action button (its label follows the prompt). */
-export function ContextButton({ ctx, dispatch, tr, children }: { ctx: Context | null; dispatch: (a: Action) => void; tr: Tr; children?: ReactNode }) {
-  const action = ctx?.act ?? ctx?.back ?? null;
+/**
+ * Touch: the one big action button (its label follows the prompt). It presses the same commands as E and Q, so it
+ * goes through `resolve` (src/controls/act.ts) like the keys and the scene taps: E when there is a main action,
+ * else Q (take back / put all back).
+ */
+export function ContextButton({ ctx, press, tr, children }: { ctx: Context | null; press: (kind: 'use' | 'undo') => void; tr: Tr; children?: ReactNode }) {
+  const kind = ctx?.act ? 'use' : ctx?.back ? 'undo' : null;
   const label = ctx ? tr(ctx.act ? ctx.label : ctx.back?.type === 'DROP' ? 'ui.act.drop' : 'ui.act.back') : tr('ui.controls.use');
   return (
     <div className="hud-side hud-pad flex flex-col-reverse items-center gap-3" data-testid="action-pad">
@@ -132,15 +136,15 @@ export function ContextButton({ ctx, dispatch, tr, children }: { ctx: Context | 
         type="button"
         data-testid="pad-use"
         aria-label={label}
-        disabled={!action}
+        disabled={!kind}
         onPointerDown={(e) => {
           // React on touch-down (kids press and slide off): the action fires once, at the press.
           e.preventDefault();
-          if (action) dispatch(action);
+          if (kind) press(kind);
         }}
         className="pad-use abtn primary pointer-events-auto flex flex-col items-center justify-center !gap-0 !rounded-full !p-0 font-semibold leading-tight disabled:opacity-35"
       >
-        {ctx && !ctx.act && ctx.back ? <Undo2 size={30} aria-hidden="true" /> : <Hand size={32} aria-hidden="true" />}
+        {kind === 'undo' ? <Undo2 size={30} aria-hidden="true" /> : <Hand size={32} aria-hidden="true" />}
         <span className="max-w-full truncate px-1 text-xs">{label}</span>
       </button>
       {children}

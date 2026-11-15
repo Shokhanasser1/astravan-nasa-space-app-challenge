@@ -60,7 +60,7 @@ export function ResourceBar({ res, tr }: { res: Res; tr: Tr }) {
   const [open, setOpen] = useState<Key | null>(null);
   const g = open ? GAUGES.find((x) => x.k === open)! : null;
   return (
-    <div className="pointer-events-none flex w-full flex-col items-center gap-2">
+    <div className="hud-res pointer-events-none flex w-full flex-col items-center gap-2">
       <div className="res-bar glass pointer-events-auto flex max-w-full items-stretch rounded-[18px] px-1" data-testid="resources">
         {GAUGES.map((x) => {
           const after = x.after?.(res) ?? null;

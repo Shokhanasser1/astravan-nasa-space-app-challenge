@@ -379,3 +379,30 @@ body,
 .abtn.solid:not(.on) {
   background: var(--glass);
 }
+
+/* Top row order: portrait = map/help · day · language/sound, the gauges on their own row below. */
+.hud-top > .hud-corner { order: 1; }
+.hud-top > [data-testid='day-badge'] { order: 2; }
+.hud-top > .hud-topbar { order: 3; }
+.hud-top > .hud-res { order: 4; flex-basis: 100%; }
+
+/* Landscape phone (≤ 540 px high): one top row, the batteries and the Sun photo move to the sides, so the
+   prompt and the Confirm button keep their place between the walk stick and the action button. */
+@media (orientation: landscape) and (max-height: 540px) {
+  .hud-top { flex-wrap: nowrap; }
+  .hud-top > .hud-res { order: 3; flex-basis: auto; width: auto; }
+  .hud-top > .hud-topbar { order: 4; }
+  .hud-inv {
+    position: fixed;
+    left: var(--hud-edge);
+    top: 8.5rem;
+  }
+  .hud-inv > span:first-child { display: none; }
+  .hud-sun {
+    position: fixed;
+    right: var(--hud-edge-r);
+    top: 5rem;
+  }
+  .hud-btns { flex-direction: row; }
+  .abtn.big { min-height: 48px; }
+}
