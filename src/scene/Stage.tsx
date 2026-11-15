@@ -1,7 +1,8 @@
 import { Component, Suspense, lazy, useState, type ReactNode } from 'react';
 import { Canvas, useThree, useFrame } from '@react-three/fiber';
 import { PerformanceMonitor, Preload, Stars, useGLTF } from '@react-three/drei';
-import { Bloom, EffectComposer, Vignette } from '@react-three/postprocessing';
+import { Bloom, EffectComposer, ToneMapping, Vignette } from '@react-three/postprocessing';
+import { ToneMappingMode } from 'postprocessing';
 import * as THREE from 'three';
 import type { Machine, View } from '../state/game';
 import { features } from '../config/features';
@@ -25,6 +26,16 @@ const params = new URLSearchParams(location.search);
 const showPerf = params.has('perf');
 // Fallback camera (developer guide view from outside): ?cam=overview. Default is first person (Rig).
 const overview = params.get('cam') === 'overview';
+
+/**
+ * Tone mapping: Neutral (Khronos PBR Neutral), not ACES or AgX. It is linear up to ~0.8 and rolls highlights off
+ * gently, so a white habitat in full Sun keeps its shading instead of clipping flat, and it keeps colours true (gold
+ * foil, blue markers, warm windows); AgX looked greyer and washed the colours out. Exposure 3.3 because the Sun is
+ * kept low for Bloom (Light.tsx); it is applied after Bloom, so glowing parts look ~3× brighter than their values.
+ * (Before 15 Nov the composer silently switched the renderer's ACES off on the pc and phone tiers.)
+ */
+const TONE = { three: THREE.NeutralToneMapping, post: ToneMappingMode.NEUTRAL };
+const EXPOSURE = 3.3;
 
 /** Dev/shot only: exposes renderer.info (calls, triangles) for scripts/shot.mjs and agents. */
 function Probe() {
@@ -80,8 +91,10 @@ export function Stage({ view, onTap, onUndo }: { view: View; onTap: (k: Machine)
         camera={{ fov: 50, near: 0.1, far: 3000, position: [8, 5, 14] }}
         gl={{ antialias: false, powerPreference: 'high-performance' }}
         onCreated={({ gl, camera }) => {
-          gl.toneMapping = THREE.ACESFilmicToneMapping;
-          gl.toneMappingExposure = 1.32; // ASTRA's Moon exposure (Light.tsx)
+          // Tiers without post effects: the renderer tone-maps. With them, EffectComposer forces NoToneMapping and
+          // the <ToneMapping> effect below does the same curve; the exposure is read from here in both cases.
+          gl.toneMapping = TONE.three;
+          gl.toneMappingExposure = EXPOSURE;
           gl.outputColorSpace = THREE.SRGBColorSpace;
           if (overview) camera.lookAt(0, 1, 0);
         }}
@@ -108,6 +121,8 @@ export function Stage({ view, onTap, onUndo }: { view: View; onTap: (k: Machine)
         {(q.bloom || q.vignette) && (
           <EffectComposer multisampling={tier === 'pc' ? 4 : 0} resolutionScale={tier === 'pc' ? 1 : 0.5}>
             {q.bloom ? <Bloom mipmapBlur luminanceThreshold={1} luminanceSmoothing={0.2} intensity={0.9} /> : <></>}
+            {/* After Bloom (which reads the scene's HDR values), merged into the same pass: no extra draw call. */}
+            <ToneMapping mode={TONE.post} />
             {q.vignette ? <Vignette eskil={false} offset={0.2} darkness={0.75} /> : <></>}
           </EffectComposer>
         )}

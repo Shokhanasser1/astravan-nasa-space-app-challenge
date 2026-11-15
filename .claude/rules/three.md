@@ -52,6 +52,12 @@ ui-ux-pro-max three.js guidelines (MIT). Positions: `docs/layout.md`.
   #fff4e2 × 3, sky hemisphere #b9c6ff/#2a2a30 × 0.4, cool fill × 0.25, a code-made environment × 0.42, ACES exposure
   1.32 — and the base models are ASTRA's (`src/scene/AstraBase.tsx`, baked by `src/scene/astra/bake.ts`; `?lite` =
   the old shapes). The concept recipe below is kept for `?sunel=1.5` and the record.
+- **Superseded again 15 Nov (branch `shoxjahon/moon-light`, "cold Moon, warm home"):** Sun × 4 (`SUN_I`, kept low
+  so only glowing parts pass the Bloom threshold 1), ground-bounce hemisphere #8a93a8/#5c534a × 0.1, blue earthshine
+  fill × 0.055, environment × 0.045; **Neutral** tone mapping at exposure 3.3 (`Stage.tsx` `TONE`/`EXPOSURE`), done
+  by a `<ToneMapping>` effect inside the EffectComposer (the composer switches the renderer's tone mapping off).
+  Regolith ~16 % albedo (`ALBEDO_GAIN`, `src/look/terrain.js`). Habitat windows glow amber when powered
+  (`WINDOW_GLOW`, `AstraBase.tsx`). Change the lights together: they are scaled to the Sun.
 - One directional Sun at **1.5°** elevation, azimuth from `sky.json` (~12°/day); colour #fff1dc, intensity ~6;
   hemisphere ≤ 0.06 (earthshine); background #020308; ACES tone mapping; sRGB output.
 - Shadows: only the Sun; only big bodies cast; map 1024 phone / 2048 pc; shadow camera ±150 m (shadows are

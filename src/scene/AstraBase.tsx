@@ -41,7 +41,9 @@ export function astraModule(build: (v: ModuleView) => void): ModuleView {
   const view: ModuleView = { group: g, status: light('#3ee39a'), glow: [], spin: [], blink: [], top: 2.5 };
   build(view);
   finalize(g);
-  const keep: THREE.Object3D[] = [...view.spin, ...(view.windowGlow ?? [])];
+  // The habitat's lit window panes are not kept apart (our inside view is its own room, Habitat.tsx Interior): they
+  // bake into one mesh with their shared live material, one draw call for all eleven windows instead of eleven.
+  const keep: THREE.Object3D[] = [...view.spin];
   if (view.yaw) keep.push(view.yaw);
   if (view.tilt) keep.push(view.tilt);
   if (view.shield) keep.push(view.shield);
@@ -58,9 +60,17 @@ export function astraModule(build: (v: ModuleView) => void): ModuleView {
 }
 
 /**
+ * The habitat's windows: "cold Moon, warm home". With batteries the rooms shine amber past the bloom threshold, so
+ * they halo softly; without, a dim ember below it (someone lives there, on low power) instead of ASTRA's near-black,
+ * so the home still reads warm while "powered" stays plainly brighter (the gameplay signal).
+ */
+export const WINDOW_GLOW = { on: 4, off: 0.12 } as const;
+
+/**
  * ASTRA's power look (World.tsx), made plainer to read from across the base (15 Nov): a powered building's lights
- * glow past the bloom threshold (0.08 + 2.6 × power, ASTRA had 1.9) and its windows shine warm (2.4, ASTRA 1.6);
- * without power they go nearly dark (0.03 / 0.05) and the status lamp turns amber. Materials only: no draw calls.
+ * glow past the bloom threshold (0.08 + 2.6 × power, ASTRA had 1.9) and its windows shine warm (WINDOW_GLOW,
+ * ASTRA 1.6); without power the lights go nearly dark (0.03), the windows dim to an ember and the status lamp turns
+ * amber. Materials only: no draw calls.
  */
 export function setPower(v: ModuleView, on: boolean): void {
   for (const m of v.glow) m.emissiveIntensity = on ? 0.08 + 2.6 * ((m.userData.glow as number | undefined) ?? 1) : 0.03;
@@ -68,7 +78,7 @@ export function setPower(v: ModuleView, on: boolean): void {
   v.status.color.set(lamp);
   v.status.emissive.set(lamp);
   v.status.emissiveIntensity = on ? 1.4 : 0.4;
-  if (v.windows) v.windows.emissiveIntensity = on ? 2.4 : 0.05;
+  if (v.windows) v.windows.emissiveIntensity = on ? WINDOW_GLOW.on : WINDOW_GLOW.off;
   const glazing = v.group.userData.glazing as THREE.MeshPhysicalMaterial[] | undefined;
   for (const m of glazing ?? []) m.emissiveIntensity = on ? 0.9 : 0;
 }

@@ -115,7 +115,9 @@ export function bootPrint(renderer) {
       const i = y * W + x;
       const dx = depth[y * W + Math.min(W - 1, x + 1)] - depth[y * W + Math.max(0, x - 1)];
       const dy = depth[Math.min(H - 1, y + 1) * W + x] - depth[Math.max(0, y - 1) * W + x];
-      const tone = 168 - depth[i] * 34;   // trodden soil is a little darker; the ribs show by their shading
+      // trodden soil is a little darker than the ground (~sRGB 105–115 after regolithMaterial's albedo gain, real
+      // regolith ~12 %); the ribs show by their shading
+      const tone = 112 - depth[i] * 26;
       col.set([tone, tone * 0.98, tone * 0.95, Math.min(255, mask[i] * 175)], i * 4);
       // a pressed-in print: the walls face inward
       const nx = dx * 2.2, ny = -dy * 2.2, l = Math.hypot(nx, ny, 1);
