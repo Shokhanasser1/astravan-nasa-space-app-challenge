@@ -13,9 +13,9 @@ import './day-tasks.css';
 export function DayTasks({ model, tr, seen }: { model: Model; tr: Tr; seen?: Seen }) {
   const tasks = dayTasks(model, seen);
   if (!tasks.length) return null;
-  // (an optional task — Day 7's robot arm — never holds the star or the light; it ticks when it is done)
+  // (an optional task — Day 7's robot arm — never holds the star or the light; it ticks, and counts, when it is done)
   const current = tasks.findIndex((t) => !settled(t));
-  const count = tasks.filter(settled).length;
+  const count = tasks.filter((t) => t.done).length;
   const star = current === -1;
   return (
     <section className="holo day-tasks pointer-events-auto rounded-[16px]" data-testid="day-tasks" data-star={star ? 'true' : 'false'}>
