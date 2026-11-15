@@ -13,7 +13,13 @@ contrast — still valid), NN/g children's UX, Game Accessibility Guidelines. Re
 ## Layout — everything on the visor or on objects, no floating white windows
 1. Day + radiation level, top centre: "DAY 4 OF 7" + the radiation-level badge (0–4) = number + word + colour
    (never colour alone). The ★ difficulty is chosen on the start screen and is never called "level" on screen.
-2. Three gauges along the bottom curve: Energy, Air and water, Dose. **Never a fourth.**
+2. **Superseded 15 Nov ~04:50 (Shoxjahon aka: "no resource indicators, inventory not visible, the tablet is
+   overloaded"):** one compact resource bar at the top (`src/ui/play/ResourceBar.tsx`): crew, air and water, garden,
+   wall, dose, science, with tonight's change while planning; a tap explains each one with its label. Energy is the
+   inventory, bottom-left: batteries in the hands and at the hub (`src/ui/play/Hands.tsx`). Batteries are carried
+   (take at the hub → put into a machine, E / ✋ / a tap on what you face). The wrist tablet is a "Plan list" that
+   opens only on request; the day card and the shelter are their own decision dialog. Old rule, for the record:
+   three gauges along the bottom curve (Energy, Air and water, Dose), never a fourth.
 3. Radio line: who speaks + one sentence, at most two lines; Quindar tone before Houston.
 4. Target rings over tappable things (an offer, not a crosshair).
 5. Batteries are scene objects on the hub (lane C draws them; you show counts and prices). Without WebGL the
