@@ -1,6 +1,7 @@
 import type { Action, Board, Machine, Model } from '../state/game';
 import type { PointId } from '../scene/points';
 import type { Command } from './keys';
+import type { Ride } from './bus';
 
 /**
  * What a command does right now. Pure: the same rules serve the keyboard and the touch buttons, and they are
@@ -16,10 +17,12 @@ export interface Ctx {
   board: Board | null;
   /** The building in front of the astronaut (src/controls/bus.ts), or null. */
   aim: Machine | null;
+  /** `?drive`: E climbs into the crew rover beside the astronaut, or stops it and climbs out (src/controls/bus.ts). */
+  ride?: Ride | null;
   overlay: Overlay;
 }
 
-export type Effect = { action: Action } | { ui: UiOp } | { travel: PointId };
+export type Effect = { action: Action } | { ui: UiOp } | { travel: PointId } | { ride: Ride };
 
 /** The base map, in the order of its number keys: the six standing points, then inside the habitat. */
 export const TRAVEL: PointId[] = ['airlock', 'hub', 'garden', 'workshop', 'hill', 'ladder', 'inside'];
@@ -52,6 +55,8 @@ export function resolve(cmd: Command, c: Ctx): Effect | null {
   const plan = c.phase === 'plan' && c.board !== null;
   switch (cmd.kind) {
     case 'use':
+      // (at the rover's hatch, or driving it, E is for the rover: the battery button ✋ still aims at buildings)
+      if (c.ride && canTravel(c)) return { ride: c.ride };
       return plan && c.aim ? { action: { type: 'SET', k: c.aim } } : null;
     case 'undo':
       return plan && c.aim ? { action: { type: 'SET', k: c.aim, delta: -1 } } : null;

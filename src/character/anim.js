@@ -43,7 +43,7 @@ export class AnimController {
     this.mixer = new THREE.AnimationMixer(model);
     /** @type {Record<string, THREE.AnimationAction>} */
     this.actions = {};
-    for (const name of ['Idle', 'Walk', 'Run', 'Jump', 'Carry', 'Pour', 'JumpStart', 'JumpAir', 'JumpLand', ...GESTURES]) {
+    for (const name of ['Idle', 'Walk', 'Run', 'Jump', 'Carry', 'Pour', 'JumpStart', 'JumpAir', 'JumpLand', ...GESTURES, 'Seated', 'SeatedSteer']) {
       if (clips[name]) this.actions[name] = this.mixer.clipAction(clips[name]);
     }
     if (clips.Pour) {
@@ -51,7 +51,7 @@ export class AnimController {
       hold.name = 'CarryIdle';
       this.actions.CarryIdle = this.mixer.clipAction(hold);   // Pour frame 0 = standing with the bag
     }
-    for (const n of ['Jump', 'JumpStart', 'JumpAir', 'JumpLand', ...GESTURES]) {
+    for (const n of ['Jump', 'JumpStart', 'JumpAir', 'JumpLand', ...GESTURES, 'SeatedSteer']) {
       const a = this.actions[n];
       if (a) {
         a.setLoop(THREE.LoopOnce, 1);
@@ -220,7 +220,7 @@ export class AnimController {
     if (name === 'Idle') this.idleSince = this.now();
   }
 
-  /** s: { onGround, windup, vy, v0, speed, carrying, pouring, running, k } */
+  /** s: { onGround, windup, vy, v0, speed, carrying, pouring, running, k, seated?, steer? (−1 left … 1 right) } */
   update(dt, s) {
     this.k = s.k || 1;
     this.last = s;
@@ -238,6 +238,16 @@ export class AnimController {
 
   updateSplit(dt, s) {
     const A = this.actions;
+    if (s.seated && A.SeatedSteer) {
+      // at the rover's controls: the steer clip scrubbed by the stick (frame 0 full left, middle straight, end right)
+      this.play('SeatedSteer', 0.25);
+      const d = A.SeatedSteer.getClip().duration;
+      A.SeatedSteer.paused = true;
+      A.SeatedSteer.time = Math.min(d - 0.001, Math.max(0, ((s.steer || 0) + 1) / 2) * d);
+      this.wasAir = false;
+      this.airTime = 0;
+      return;
+    }
     const air = !s.onGround;
     if (s.windup >= 0) {
       // crouch and push: JumpStart scrubbed by wind-up progress (its last frame = take-off pose)

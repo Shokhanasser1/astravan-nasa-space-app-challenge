@@ -13,15 +13,18 @@ import { freeWalk } from '../walk/enabled';
 import { axes, listenKeys, running, walkInput, type Axes } from '../walk/input';
 import { heading } from '../walk/move';
 import { createWalker, walkDebug } from '../walk/walker';
-import { clearance, type XZ } from '../walk/collide';
-import { INSIDE, OUTSIDE } from '../walk/world';
+import { clearance, fits, type Solid, type XZ } from '../walk/collide';
+import { INSIDE, OUTSIDE, ROVER_AREA, ROVER_DISC } from '../walk/world';
 import { features } from '../config/features';
 import { pickAim, type AimTarget } from '../controls/aim';
-import { onTravel, setAim } from '../controls/bus';
-import { STEP, createBody, stepBody } from '../character/body';
+import { getRide, onRide, onTravel, setAim, setRide } from '../controls/bus';
+import { STEP, createBody, stepBody, type Body } from '../character/body';
 import { telemetry } from '../character/telemetry';
 import { Astronaut } from './Astronaut';
 import { titleAngles, titlePose, useTitle } from './title';
+import { applyRover, arrival, arrivalCameraSpot, DOOR, DRIVABLE, DRIVE, hatchAt, HOP, HOP_OUT, rover, roverAt, sideKey, stepDoors } from './arrival';
+import { placeOnGround, stepRover } from './roverDrive';
+import { GRAVITY } from '../character/physics.js';
 
 /**
  * First-person rig (final version, Dizayn 2.0). Eye 1.7 m; six standing points + inside; one-finger drag looks
@@ -35,11 +38,29 @@ import { titleAngles, titlePose, useTitle } from './title';
  * Astronaut (features.character, or ?character; src/character/): outside, you see the suited astronaut from behind
  * and walk it (1 m/s, Shift lopes at 2 m/s, Space or the jump button jumps 0.44 m at Moon gravity); a float becomes
  * one long lunar hop to the point. Inside the habitat and in the truth pull-back the camera is first-person as before.
+ *
+ * Crew rover (`?drive`, local preview): E beside its hatch climbs in, W S drive and brake, A D steer (or the stick),
+ * E again stops it and the astronaut hops out (src/scene/roverDrive.ts, src/scene/arrival.ts).
  */
 const character = features.character || (typeof location !== 'undefined' && new URLSearchParams(location.search).has('character'));
 const HEAD = 1.55; // the camera aims at the helmet
+const camSpot = { x: 0, z: 0 };
+const hatch = { x: 0, z: 0, nx: 0, nz: 0 };
 const CAM_DIST = 4.6;
 const CAM_TILT = 0.22; // rad: the follow camera looks a little down on the astronaut
+/** ?drive: on foot, climbing in, driving, braking to get out, hopping out; the hatch used (1 left, −1 right). */
+const seat = { stage: 'walk' as 'walk' | 'board' | 'drive' | 'stop' | 'open' | 'out', t: 0, side: 1 };
+const pedals = { throttle: 0, steer: 0, brake: false };
+const STEER_MAX = 0.45; // rad: the front wheel pairs at full lock (the rear pairs turn the other way)
+const cockpit = new THREE.Matrix4();
+const ckPos = new THREE.Vector3();
+const ckQ = new THREE.Quaternion();
+const ckE = new THREE.Euler();
+const BOARD_REACH = 3.5; // m from a hatch: E climbs in
+// the camera behind the rover: aimed 1.6 m above its middle, 9 m back and 3.5 m up (1.6 + 9.2 · sin 0.21)
+const CAR_DIST = 9.2;
+const CAR_TILT = 0.21;
+const CAR_AIM = 1.6;
 const ground = (x: number, z: number) => groundHeight(x, z);
 const reduced = typeof window !== 'undefined' && Boolean(window.matchMedia?.('(prefers-reduced-motion: reduce)').matches);
 const MAX_PITCH = THREE.MathUtils.degToRad(35);
@@ -60,6 +81,19 @@ const AIM: AimTarget[] = [
 const wrap = (a: number) => Math.atan2(Math.sin(a), Math.cos(a));
 const ease = (t: number) => (t < 0.5 ? 2 * t * t : 1 - (-2 * t + 2) ** 2 / 2);
 const clampAbs = (v: number, m: number) => Math.max(-m, Math.min(m, v));
+/** Something solid where the follow camera would be (a loop, not .some(): no closure per frame). */
+function blocked(solids: readonly Solid[], x: number, z: number): boolean {
+  for (const o of solids) if (clearance(o, x, z, 0.2) < 0) return true;
+  return false;
+}
+/** One step of a hop in Moon gravity, no air: x, z straight on, y on the exact parabola. */
+function fly(b: Body, dt: number) {
+  const g = GRAVITY.moon;
+  b.x += b.vx * dt;
+  b.z += b.vz * dt;
+  b.y += b.vy * dt - 0.5 * g * dt * dt;
+  b.vy -= g * dt;
+}
 
 function anglesTo(from: THREE.Vector3, look: Vec3): [number, number] {
   const dx = look[0] - from.x;
@@ -82,7 +116,7 @@ export function Rig({ view }: { view: View }) {
   const [roaming, setRoaming] = useState(false);
   const walker = useMemo(() => (freeWalk && !character ? createWalker() : null), []);
   const body = useMemo(() => createBody(POINTS.hub.pos[0], POINTS.hub.pos[2], ground), []);
-  const c = useRef({ acc: 0, quiet: 0, shadowT: 0, takeoff: NaN, peak: 0, ax: { ahead: 0, side: 0, turn: 0 } as Axes, wish: { x: 0, z: 0 } as XZ }).current;
+  const c = useRef({ acc: 0, quiet: 0, shadowT: 0, car: 0, ck: 0, takeoff: NaN, peak: 0, ax: { ahead: 0, side: 0, turn: 0 } as Axes, wish: { x: 0, z: 0 } as XZ }).current;
   const s = useRef({
     from: new THREE.Vector3(),
     to: new THREE.Vector3(),
@@ -125,6 +159,20 @@ export function Rig({ view }: { view: View }) {
   // (The building in front means nothing once the rig is gone.)
   useEffect(() => () => setAim(null), []);
 
+  // ?drive: E (or the rover button) beside a hatch climbs in; while driving, it stops the rover to get out.
+  useEffect(() => {
+    if (!DRIVABLE) return;
+    const off = onRide(() => {
+      if (seat.stage === 'drive') seat.stage = 'stop';
+      else if (seat.stage === 'walk' && getRide() === 'board') boardRover();
+      invalidate();
+    });
+    return () => {
+      off();
+      setRide(null);
+    };
+  }, [invalidate]);
+
   // Free walk: the keys. (The scene draws on demand, so every key press asks for a frame.)
   useEffect(() => (walker || character ? listenKeys(invalidate) : undefined), [walker, invalidate]);
 
@@ -145,6 +193,12 @@ export function Rig({ view }: { view: View }) {
       body.y = ground(body.x, body.z);
       body.facing = s.yaw + Math.PI;
     } else {
+      // a new phase or the map while in the rover: out at once beside its hatch, and the float starts from there
+      if (seat.stage !== 'walk') {
+        leaveRover();
+        camera.position.set(body.x, body.y + EYE, body.z);
+      }
+      setRide(null); // (the next frame outside works it out again; inside the habitat E is not for the rover)
       s.from.copy(camera.position);
       s.t = 0;
       s.dur = Math.min(2.4, Math.max(FLOAT_S, s.from.distanceTo(s.to) / 14));
@@ -191,8 +245,11 @@ export function Rig({ view }: { view: View }) {
       gesture.moved = Math.max(gesture.moved, Math.hypot(e.clientX - x0, e.clientY - y0));
       if (!dragging && gesture.moved > TAP_PX) dragging = true;
       if (dragging) {
-        s.yawT += (e.clientX - lx) * DRAG_RAD_PER_PX;
-        s.pitchT = Math.max(-MAX_PITCH, Math.min(MAX_PITCH, s.pitchT + (e.clientY - ly) * DRAG_RAD_PER_PX));
+        // a finger drags the view (the world follows it); a mouse or touchpad looks where it moves, as in games:
+        // right turns right, up looks up
+        const k = e.pointerType === 'mouse' ? -DRAG_RAD_PER_PX : DRAG_RAD_PER_PX;
+        s.yawT += (e.clientX - lx) * k;
+        s.pitchT = Math.max(-MAX_PITCH, Math.min(MAX_PITCH, s.pitchT + (e.clientY - ly) * k));
         invalidate();
       }
       lx = e.clientX;
@@ -212,6 +269,18 @@ export function Rig({ view }: { view: View }) {
       window.removeEventListener('pointercancel', onUp);
     };
   }, [gl, invalidate, s]);
+
+  // C in the rover: chase camera <-> cockpit
+  useEffect(() => {
+    if (!DRIVABLE) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.code !== 'KeyC' || e.repeat || (seat.stage !== 'drive' && seat.stage !== 'stop')) return;
+      rover.cam = rover.cam === 'chase' ? 'cockpit' : 'chase';
+      invalidate();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [invalidate]);
 
   const launching = view.phase === 'launch';
 
@@ -280,9 +349,239 @@ export function Rig({ view }: { view: View }) {
   });
 
   /** The astronaut's frame: hop to a new point, or walk; then the follow camera behind it. */
+  /**
+   * `?arrive` (local preview): ride in the crew rover while it drives to its spot (hidden at its hatch sill, the
+   * camera beside the rover), crouch, hop out onto the ground in a Moon fall, then hand over (src/scene/arrival.ts).
+   */
+  function scriptArrival(dt: number) {
+    arrival.t += dt;
+    roverAt(arrival.t, rover);
+    placeOnGround(rover, ground);
+    const h = hatchAt(rover, hatch);
+    const T0 = DRIVE.T + DRIVE.pause;
+    if (arrival.t < T0 + DOOR.T) {
+      // riding: on the hatch sill, inside, facing out; parked, the hatch door swings open first
+      sit(h);
+      if (arrival.t >= T0) rover.doorWant.L = 1;
+    } else {
+      rover.crew = false;
+      if (hopFromHatch(arrival.t - T0 - DOOR.T, h, dt)) {
+        rover.doorWant.L = 0; // landed: the door closes behind
+        rover.driver = null; // the player has control again
+        s.t = 1;
+        s.pitch = s.pitchT = 0;
+        s.yawT = s.yaw + wrap(body.facing + Math.PI - s.yaw); // swing round behind the astronaut, the short way
+      }
+    }
+    s.to.set(body.x, body.y + EYE, body.z);
+  }
+
+  /** In the rover: on its hatch sill, facing out, still (not drawn while `rover.crew`). */
+  function sit(h: typeof hatch) {
+    body.x = h.x;
+    body.z = h.z;
+    body.y = ground(h.x, h.z) + HOP.sill;
+    body.vx = body.vy = body.vz = 0;
+    body.onGround = true;
+    body.windup = -1;
+    body.facing = Math.atan2(h.nx, h.nz);
+  }
+
+  /** Crouch on the hatch sill, hop out and fall to the ground (t: seconds since the crouch began). True on landing. */
+  function hopFromHatch(t: number, h: typeof hatch, dt: number): boolean {
+    if (t < HOP.crouch) {
+      sit(h);
+      body.windup = t; // the JumpStart clip, scrubbed by the crouch
+      return false;
+    }
+    if (body.onGround) {
+      body.windup = -1;
+      body.onGround = false;
+      body.v0 = body.vy = HOP.up;
+      body.vx = h.nx * HOP.out;
+      body.vz = h.nz * HOP.out;
+      return false;
+    }
+    fly(body, dt);
+    const gy = ground(body.x, body.z);
+    if (body.y > gy || body.vy > 0) return false;
+    body.y = gy;
+    body.vx = body.vz = body.vy = 0;
+    body.onGround = true;
+    return true;
+  }
+
+  /** The side (1 left, −1 right) of the rover's hatch within reach of the astronaut, the nearer one; 0: none. */
+  function nearHatch(): number {
+    hatchAt(rover, hatch, 1);
+    const left = Math.hypot(body.x - hatch.x, body.z - hatch.z);
+    hatchAt(rover, hatch, -1);
+    const right = Math.hypot(body.x - hatch.x, body.z - hatch.z);
+    return Math.min(left, right) > BOARD_REACH ? 0 : left <= right ? 1 : -1;
+  }
+
+  /** Whether the hop out of this side's hatch lands on free ground (not in a building beside the rover). */
+  function landsClear(side: number): boolean {
+    const h = hatchAt(rover, hatch, side);
+    return fits(h.x + h.nx * HOP_OUT, h.z + h.nz * HOP_OUT, OUTSIDE);
+  }
+
+  function boardRover() {
+    seat.side = nearHatch();
+    if (!seat.side) return;
+    seat.stage = 'board';
+    seat.t = 0;
+    body.vx = body.vz = 0;
+  }
+
+  /** Out of the rover at once (a new phase, the map): stopped where it is, the astronaut on the ground by its hatch. */
+  function leaveRover() {
+    rover.speed = 0;
+    rover.driver = null;
+    rover.crew = false;
+    rover.doorWant.L = rover.doorWant.R = 0;
+    rover.steer = rover.steerInput = 0;
+    rover.cam = 'chase';
+    ROVER_DISC.x = rover.x;
+    ROVER_DISC.z = rover.z;
+    const h = hatchAt(rover, hatch, seat.side);
+    body.x = h.x + h.nx * HOP_OUT;
+    body.z = h.z + h.nz * HOP_OUT;
+    body.y = ground(body.x, body.z);
+    body.vx = body.vy = body.vz = 0;
+    body.onGround = true;
+    body.windup = -1;
+    seat.stage = 'walk';
+    setRide(null);
+  }
+
+  /**
+   * ?drive: climb into the crew rover (crouch, then the hop out played backwards, up onto the hatch sill), drive it
+   * with the walk keys or the stick (src/scene/roverDrive.ts), and on E brake to a stop and hop out like the arrival.
+   * Returns true while something moves.
+   */
+  function rideRover(dt: number): boolean {
+    seat.t += dt;
+    walkInput.jump = false; // (no jumping from the driver's seat)
+    let moving = true;
+    const h = hatchAt(rover, hatch, seat.side);
+    if (seat.stage === 'board') {
+      rover.doorWant[sideKey(seat.side)] = 1; // opens while the astronaut crouches (both take ~0.8 s)
+      const sill = ground(h.x, h.z) + HOP.sill;
+      if (seat.t < HOP.crouch) {
+        body.windup = seat.t; // the JumpStart clip, scrubbed by the crouch, facing the hatch
+        body.facing = Math.atan2(h.x - body.x, h.z - body.z);
+      } else if (body.onGround) {
+        // take off on the arc that lands on the sill: the hop out backwards (it arrives falling at HOP.up)
+        const g = GRAVITY.moon;
+        body.v0 = body.vy = Math.sqrt(Math.max(0, HOP.up * HOP.up + 2 * g * (sill - body.y)));
+        const T = (body.vy + HOP.up) / g;
+        body.vx = (h.x - body.x) / T;
+        body.vz = (h.z - body.z) / T;
+        body.windup = -1;
+        body.onGround = false;
+      } else {
+        fly(body, dt);
+        if (body.vy < 0 && body.y <= sill) {
+          sit(h);
+          rover.crew = true;
+          rover.driver = 'player';
+          rover.doorWant[sideKey(seat.side)] = 0; // in: the door closes behind
+          seat.stage = 'drive';
+          s.pitchT = 0; // a level look down the road
+        }
+      }
+    } else if (seat.stage === 'drive' || seat.stage === 'stop') {
+      const braking = seat.stage === 'stop';
+      axes(c.ax);
+      pedals.throttle = braking ? 0 : c.ax.ahead;
+      pedals.steer = braking ? 0 : clampAbs(c.ax.side + c.ax.turn, 1);
+      pedals.brake = braking;
+      moving = stepRover(rover, pedals, ROVER_AREA, ground, dt) || braking;
+      // the wheels follow the stick a little behind it (a steering motor, not a snap)
+      rover.steerInput += (pedals.steer - rover.steerInput) * (1 - Math.exp(-6 * dt));
+      rover.steer = -rover.steerInput * STEER_MAX;
+      moving = moving || Math.abs(pedals.steer - rover.steerInput) > 1e-3;
+      sit(hatchAt(rover, hatch, seat.side));
+      if (braking && rover.speed === 0) {
+        // stopped: its hitbox moves here, and the astronaut gets out on a side with room to land
+        ROVER_DISC.x = rover.x;
+        ROVER_DISC.z = rover.z;
+        seat.side = landsClear(1) || !landsClear(-1) ? 1 : -1;
+        seat.stage = 'open';
+        seat.t = 0;
+        rover.steer = rover.steerInput = 0;
+        rover.cam = 'chase';
+        rover.doorWant[sideKey(seat.side)] = 1;
+      }
+    } else if (seat.stage === 'open') {
+      // the hatch door swings open, then the astronaut steps onto the sill and hops out
+      sit(h);
+      if (seat.t >= DOOR.T) {
+        seat.stage = 'out';
+        seat.t = 0;
+        rover.crew = false;
+      }
+    } else if (hopFromHatch(seat.t, h, dt)) {
+      // out: landed, on foot again; the door closes behind
+      rover.doorWant[sideKey(seat.side)] = 0;
+      seat.stage = 'walk';
+      rover.driver = null;
+      s.yawT = s.yaw + wrap(body.facing + Math.PI - s.yaw); // swing round behind the astronaut, the short way
+    }
+    s.to.set(body.x, body.y + EYE, body.z);
+    return moving;
+  }
+
+  /** Camera for the arrival: on the ground beside the parking spot, eased onto the rover, then onto the astronaut. */
+  function arrivalCamera(dt: number) {
+    const spot = arrivalCameraSpot(camSpot);
+    const cy = ground(spot.x, spot.z) + 1.9;
+    const tx = rover.crew ? rover.x : body.x;
+    const tz = rover.crew ? rover.z : body.z;
+    const ty = rover.crew ? ground(rover.x, rover.z) + 1.3 : body.y + 1.0;
+    const L = arrival.look;
+    if (!Number.isFinite(L.x)) {
+      L.x = tx;
+      L.y = ty;
+      L.z = tz;
+    }
+    const k = 1 - Math.exp(-4 * dt);
+    L.x += (tx - L.x) * k;
+    L.y += (ty - L.y) * k;
+    L.z += (tz - L.z) * k;
+    const dx = L.x - spot.x, dy = L.y - cy, dz = L.z - spot.z;
+    const yaw = Math.atan2(-dx, -dz);
+    const pitch = Math.max(-MAX_PITCH, Math.min(MAX_PITCH, Math.atan2(dy, Math.hypot(dx, dz))));
+    camera.position.set(spot.x, cy, spot.z);
+    camera.rotation.set(pitch, yaw, 0, 'YXZ'); // no roll
+    s.yaw = s.yawT = yaw;
+    camState.inside = false;
+  }
+
   function followAstronaut(dt: number) {
-    let active = false;
-    if (s.t < 1) {
+    let active = stepDoors(dt);
+    // ?arrive: starts once the game screen is up (not under the title), then runs to the end
+    const scripted = rover.driver === 'arrival' && (arrival.t > 0 || walkInput.inGame);
+    if (scripted) {
+      scriptArrival(dt);
+      if (rover.driver === 'arrival') {
+        arrivalCamera(dt);
+        if (features.controls) setAim(null);
+        c.shadowT -= dt;
+        if (c.shadowT <= 0) {
+          c.shadowT = 0.1;
+          gl.shadowMap.needsUpdate = true; // the rover's shadow moves with it
+        }
+        invalidate();
+        return;
+      }
+      active = true;
+    } else if (rover.driver === 'arrival') {
+      // title screen: the astronaut waits in the rover; nothing to step
+    } else if (seat.stage !== 'walk') {
+      active = rideRover(dt);
+    } else if (s.t < 1) {
       // a float is one long lunar hop: glide along the line, a parabola over it, the JumpAir pose scrubbed by it
       s.t = Math.min(1, s.t + dt / s.dur);
       const t = ease(s.t);
@@ -331,27 +630,39 @@ export function Rig({ view }: { view: View }) {
       if (!roaming && Math.hypot(body.x - POINTS[point].pos[0], body.z - POINTS[point].pos[2]) > 1.2) setRoaming(true);
     }
 
+    // in the rover the camera rides behind it (glides there and back in 1.2 s) and swings round behind it as it
+    // drives; standing still you can look all round
+    const inCar = seat.stage === 'drive' || seat.stage === 'stop';
+    c.car = Math.max(0, Math.min(1, c.car + (inCar ? dt : -dt) / 1.2));
+    const kc = ease(c.car);
+    if (inCar) s.yawT += wrap(rover.yaw + Math.PI - s.yawT) * (1 - Math.exp(-2 * dt * Math.min(1, Math.abs(rover.speed))));
+
     const dy = s.yawT - s.yaw;
     const dp = s.pitchT - s.pitch;
     const k = 1 - Math.exp(-6 * dt);
     s.yaw += clampAbs(dy * k, MAX_TURN * dt);
     s.pitch += clampAbs(dp * k, MAX_TURN * dt);
 
-    // follow camera: behind and a little above the helmet, pulled in front of anything solid, never under the ground
-    const pitch = Math.max(-MAX_PITCH - CAM_TILT, s.pitch - CAM_TILT);
+    // follow camera: behind and a little above the helmet (or the rover), pulled in front of anything solid, never
+    // under the ground
+    const tilt = CAM_TILT + (CAR_TILT - CAM_TILT) * kc;
+    const pitch = Math.max(-MAX_PITCH - tilt, s.pitch - tilt);
     const fx = -Math.sin(s.yaw) * Math.cos(pitch);
     const fy = Math.sin(pitch);
     const fz = -Math.cos(s.yaw) * Math.cos(pitch);
-    const hx = body.x;
-    const hy = body.y + HEAD;
-    const hz = body.z;
-    let dist = CAM_DIST;
-    for (let d = 0.6; d <= CAM_DIST; d += 0.2) {
+    const hx = body.x + (rover.x - body.x) * kc;
+    const hy = body.y + HEAD + (rover.y + CAR_AIM - body.y - HEAD) * kc;
+    const hz = body.z + (rover.z - body.z) * kc;
+    const far = CAM_DIST + (CAR_DIST - CAM_DIST) * kc;
+    const solids = inCar ? ROVER_AREA.solids : OUTSIDE.solids;
+    let dist = far;
+    for (let d = 0.6; d <= far; d += 0.2) {
       const px = hx - fx * d;
       const py = hy - fy * d;
       const pz = hz - fz * d;
-      if (py < 3.2 && OUTSIDE.solids.some((o) => clearance(o, px, pz, 0.2) < 0)) {
-        dist = Math.max(0.8, d - 0.3);
+      // (the rover's camera rides higher, so taller things count; and it never pulls in under the rover's own roof)
+      if (!scripted && py < (inCar ? 5 : 3.2) && blocked(solids, px, pz)) {
+        dist = Math.max(0.8 + 2.2 * kc, d - 0.3);
         break;
       }
     }
@@ -359,9 +670,28 @@ export function Rig({ view }: { view: View }) {
     camera.position.y = Math.max(camera.position.y, ground(camera.position.x, camera.position.z) + 0.3);
     camera.rotation.set(pitch, s.yaw, 0, 'YXZ'); // no roll: horizon always level
     camState.inside = false;
+    // the rover model and its steered wheels, in the same frame as the camera (no lag between them)
+    if (seat.stage !== 'walk' || scripted) applyRover();
+    // C in the rover: the cockpit view, from behind the driver's helmet down the road (heading only: level horizon).
+    // It glides in and out in 0.6 s, also when the rover stops to let the astronaut out (no jump of the camera).
+    c.ck = Math.max(0, Math.min(1, c.ck + (inCar && rover.cam === 'cockpit' ? dt : -dt) / 0.6));
+    if (c.ck > 0 && rover.object && rover.camLocal) {
+      rover.object.updateMatrixWorld(true);
+      cockpit.multiplyMatrices(rover.object.matrixWorld, rover.camLocal);
+      ckPos.setFromMatrixPosition(cockpit);
+      ckQ.setFromEuler(ckE.set(-0.2, rover.yaw + Math.PI, 0, 'YXZ')); // 15° down, like the model's sev_cam_cockpit
+      const kk = ease(c.ck);
+      camera.position.lerp(ckPos, kk);
+      camera.quaternion.slerp(ckQ, kk);
+    }
 
     // E / hand button: the building in front of the astronaut (its facing, in the camera's yaw convention)
-    if (features.controls) setAim(s.t < 1 || launching ? null : pickAim(body.x, body.z, body.facing + Math.PI, AIM));
+    if (features.controls) setAim(s.t < 1 || launching || seat.stage !== 'walk' ? null : pickAim(body.x, body.z, body.facing + Math.PI, AIM));
+    // ?drive: what E does at the rover now (stored only when it changes)
+    if (DRIVABLE) {
+      const canBoard = seat.stage === 'walk' && !scripted && s.t >= 1 && walkInput.phaseOk && body.onGround && body.windup < 0;
+      setRide(seat.stage === 'drive' ? 'exit' : canBoard && nearHatch() ? 'board' : null);
+    }
     // the Sun's shadow map is drawn once a day; while the astronaut moves, redraw it ten times a second
     c.shadowT -= dt;
     if (active && c.shadowT <= 0) {
@@ -369,7 +699,7 @@ export function Rig({ view }: { view: View }) {
       gl.shadowMap.needsUpdate = true;
     }
     c.quiet = active ? 0.6 : Math.max(0, c.quiet - dt);
-    if (active || c.quiet > 0 || Math.abs(dy) > 1e-3 || Math.abs(dp) > 1e-3 || launching) invalidate();
+    if (active || c.quiet > 0 || (c.car > 0 && c.car < 1) || (c.ck > 0 && c.ck < 1) || Math.abs(dy) > 1e-3 || Math.abs(dp) > 1e-3 || launching) invalidate();
   }
 
   const go = useMemo(

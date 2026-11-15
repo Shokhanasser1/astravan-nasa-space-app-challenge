@@ -10,6 +10,7 @@ import { buildGreenhouse } from '../vendor/astra/scene/models/life';
 import { buildLander, buildPad } from '../vendor/astra/scene/models/site';
 import { buildLab } from '../vendor/astra/scene/models/works';
 import { bake, mergeWorld } from './astra/bake';
+import { Interior } from './Interiors';
 
 /**
  * The base in ASTRA's look (15 Nov, Shoxjahon aka: the best of ASTRA + the best of ours). ASTRA's procedural models
@@ -30,11 +31,12 @@ setLod(initialTier() === 'pc' && !softwareGl() ? 1 : 0.5);
 /** `?lite` keeps the old shapes (comparison, or a very weak phone). */
 export const astraLook = typeof location === 'undefined' || !new URLSearchParams(location.search).has('lite');
 
-export function astraModule(build: (v: ModuleView) => void): ModuleView {
+export function astraModule(build: (v: ModuleView) => void, prep?: (g: THREE.Group) => void): ModuleView {
   const g = new THREE.Group();
   const view: ModuleView = { group: g, status: light('#3ee39a'), glow: [], spin: [], blink: [], top: 2.5 };
   build(view);
   finalize(g);
+  prep?.(g);
   const keep: THREE.Object3D[] = [...view.spin, ...(view.windowGlow ?? [])];
   if (view.yaw) keep.push(view.yaw);
   if (view.tilt) keep.push(view.tilt);
@@ -67,25 +69,80 @@ function useSpin(v: ModuleView, on: boolean, rate: number) {
   });
 }
 
+const hex = (m: THREE.Material | THREE.Material[]) => (Array.isArray(m) ? '' : ((m as THREE.MeshStandardMaterial).color?.getHexString() ?? ''));
+const box = new THREE.Box3();
+const mid = new THREE.Vector3();
+
+/**
+ * Hide ASTRA's own inside parts where our interior GLB (Interiors.tsx) takes their place: every mesh (model frame,
+ * native metres, before bake) for which `drop(its bounding box, its colour)` is true. Hidden meshes are not baked.
+ */
+function hideParts(g: THREE.Group, drop: (b: THREE.Box3, colour: string, m: THREE.Mesh) => boolean) {
+  g.updateMatrixWorld(true);
+  g.traverse((o) => {
+    const m = o as THREE.Mesh;
+    if (!m.isMesh || !m.visible) return;
+    box.setFromObject(m);
+    if (!box.isEmpty() && drop(box, hex(m.material), m)) m.visible = false;
+  });
+}
+
+/** Greenhouse (interiors/greenhouse/HANDOFF.md): its troughs, plants, LED bars and door panel; not its glass or ribs. */
+function greenhouseInside(g: THREE.Group) {
+  hideParts(g, (b, c, m) => {
+    if (c === 'dff3ff' || (m.material as THREE.Material).transparent) {
+      // the east cap glass: the new doorway goes through it (16 % opaque, barely missed)
+      return b.max.x - b.min.x < 0.02 && b.getCenter(mid).x > 2.1;
+    }
+    if (c === 'd5dae2') return false; // ribs, stringers, cap frames
+    b.getCenter(mid);
+    const inA = mid.x > -2.2 && mid.x < 2.05 && mid.y > 0.24 && mid.y < 1.7 && Math.abs(mid.z) < 0.95;
+    const inB = mid.x > 2.17 && mid.x < 2.4 && mid.y > 0.21 && mid.y < 1.54 && Math.abs(mid.z) < 0.46;
+    return inA || inB;
+  });
+}
+
+/** Habitat: its decks and core inside the lining (ours replace them; the shell, windows and shield stay). */
+function habitatInside(g: THREE.Group) {
+  hideParts(g, (b) => {
+    const r = Math.max(Math.hypot(b.min.x, b.min.z), Math.hypot(b.max.x, b.min.z), Math.hypot(b.min.x, b.max.z), Math.hypot(b.max.x, b.max.z));
+    return r < 4.85 && b.min.y > 0.3 && b.max.y < 6.2;
+  });
+}
+
 /** Turn a model so that its front (+z) faces the middle of the base. */
 export const faceCentre = (x: number, z: number) => Math.atan2(-x, -z);
 
 /** Habitat → Life Support: ASTRA's inflatable habitat; its regolith shield grows with the wall level (0–3). */
 export function AstraHabitat({ on, wall, turn }: { on: boolean; wall: number; turn: number }) {
-  const v = useMemo(() => astraModule((m) => buildHabitat(m, 'moon')), []);
+  const v = useMemo(() => astraModule((m) => buildHabitat(m, 'moon'), habitatInside), []);
   v.group.name = 'astra_hab';
   setPower(v, on);
   v.shieldProgress?.(Math.max(0, Math.min(1, wall / 3)));
-  return <primitive object={v.group} rotation-y={turn} scale={ASTRA_SCALE.habitat} />;
+  return (
+    <>
+      <primitive object={v.group} rotation-y={turn} scale={ASTRA_SCALE.habitat} />
+      <group rotation-y={turn} scale={ASTRA_SCALE.habitat}>
+        <Interior id="habitat" />
+      </group>
+    </>
+  );
 }
 
 /** Garden: ASTRA's greenhouse, grow lights on with batteries. */
 export function AstraGreenhouse({ on, turn }: { on: boolean; turn: number }) {
-  const v = useMemo(() => astraModule(buildGreenhouse), []);
+  const v = useMemo(() => astraModule(buildGreenhouse, greenhouseInside), []);
   v.group.name = 'astra_greenhouse';
   setPower(v, on);
   useSpin(v, on, 3);
-  return <primitive object={v.group} rotation-y={turn} scale={ASTRA_SCALE.greenhouse} />;
+  return (
+    <>
+      <primitive object={v.group} rotation-y={turn} scale={ASTRA_SCALE.greenhouse} />
+      <group rotation-y={turn} scale={ASTRA_SCALE.greenhouse}>
+        <Interior id="greenhouse" />
+      </group>
+    </>
+  );
 }
 
 /** Workshop: ASTRA's lab module. */
@@ -94,7 +151,14 @@ export function AstraLab({ on, turn }: { on: boolean; turn: number }) {
   v.group.name = 'astra_lab';
   setPower(v, on);
   useSpin(v, on, 0.4);
-  return <primitive object={v.group} rotation-y={turn} scale={ASTRA_SCALE.lab} />;
+  return (
+    <>
+      <primitive object={v.group} rotation-y={turn} scale={ASTRA_SCALE.lab} />
+      <group rotation-y={turn} scale={ASTRA_SCALE.lab}>
+        <Interior id="lab" />
+      </group>
+    </>
+  );
 }
 
 /** Lander: ASTRA's lander (the whole craft lifts off on day 7: Lander.tsx moves its group). */
@@ -110,7 +174,14 @@ export function AstraLander({ turn }: { turn: number }) {
     const b = g.userData.beacon as THREE.MeshStandardMaterial | undefined;
     if (b) b.emissiveIntensity = (performance.now() / 1667) % 1 < 0.1 ? 5 : 0.15;
   });
-  return <primitive object={g} rotation-y={turn} scale={ASTRA_SCALE.lander} />;
+  return (
+    <>
+      <primitive object={g} rotation-y={turn} scale={ASTRA_SCALE.lander} />
+      <group rotation-y={turn} scale={ASTRA_SCALE.lander}>
+        <Interior id="lander" />
+      </group>
+    </>
+  );
 }
 
 /** ASTRA's hexagonal landing/build pads under the buildings (`size` = width in metres). */

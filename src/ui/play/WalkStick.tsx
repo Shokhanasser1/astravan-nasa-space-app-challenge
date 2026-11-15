@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
 import { invalidate } from '@react-three/fiber';
+import { Car, DoorOpen } from 'lucide-react';
 import { walkInput } from '../../walk/input';
-import { touchUi } from './Controls';
+import { askRide, type Ride } from '../../controls/bus';
+import { Kbd, touchUi } from './Controls';
 
 /**
  * The touch stick of the free walk (handoff "first-person walk", section 4): push it the way you want to walk,
@@ -27,6 +29,32 @@ export function JumpButton() {
       }}
     >
       ⤒
+    </button>
+  );
+}
+
+/**
+ * `?drive` (local preview): beside the crew rover's hatch, climb in and drive; while driving, stop and climb out. E on
+ * a keyboard (the badge shows it), a tap on a touch screen. Shown only when it would do something.
+ */
+export function RideButton({ ride }: { ride: Ride | null }) {
+  if (!ride) return null;
+  return (
+    <button
+      type="button"
+      data-testid="ride"
+      aria-label={ride === 'board' ? 'Drive the rover' : 'Stop and get out'}
+      className="hud-side pointer-events-auto fixed left-1/2 top-[22%] z-[5] grid h-16 w-16 -translate-x-1/2 touch-none select-none place-items-center rounded-full border-2 border-[#ff8a3d]/80 bg-[#ff8a3d]/15 text-white/90"
+      onPointerDown={(e) => {
+        e.preventDefault();
+        askRide();
+        invalidate();
+      }}
+    >
+      {ride === 'board' ? <Car size={30} aria-hidden="true" /> : <DoorOpen size={30} aria-hidden="true" />}
+      <span className="absolute -bottom-2">
+        <Kbd k="E" />
+      </span>
     </button>
   );
 }

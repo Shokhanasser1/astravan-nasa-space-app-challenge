@@ -10,13 +10,13 @@ import { HandControl, handsOn } from './play/HandControl';
 import { ArmScanner } from './play/ArmScanner';
 import { NightTablet, PlanTablet } from './play/Tablet';
 import { TruthScreen } from './play/TruthScreen';
-import { JumpButton, WalkStick } from './play/WalkStick';
+import { JumpButton, RideButton, WalkStick } from './play/WalkStick';
 import { ActionPad, CornerButtons, HelpPanel, Kbd, MapPanel, makeApply, touchUi, useGameKeys } from './play/Controls';
 import { freeWalk } from '../walk/enabled';
 import { releaseAll, walkInput } from '../walk/input';
 import { features } from '../config/features';
 import { canTravel, type Overlay } from '../controls/act';
-import { useAim } from '../controls/bus';
+import { useAim, useRide } from '../controls/bus';
 import { setTitle } from '../scene/title';
 
 /**
@@ -82,6 +82,7 @@ export function Hud({ model, view, dispatch, lang, setLang, sound, setSound, onS
   // The reception desk shows the base through a slow title camera (src/scene/title.ts).
   const titleShot = Boolean(entry) && screen !== 'game';
   useEffect(() => setTitle(titleShot), [titleShot]);
+  const ride = useRide();
 
   // Windows of the controls layer: the map or the controls list; the wrist tablet open or folded; Houston's hint.
   const [overlay, setOverlay] = useState<Overlay>(null);
@@ -110,7 +111,7 @@ export function Hud({ model, view, dispatch, lang, setLang, sound, setSound, onS
       }),
     [dispatch],
   );
-  useGameKeys({ screen, phase, board, aim, overlay }, features.controls ? apply : () => {});
+  useGameKeys({ screen, phase, board, aim, overlay, ride }, features.controls ? apply : () => {});
 
   // The day runs by itself and the lander lifts off by itself; the main button skips.
   useEffect(() => {
@@ -201,6 +202,7 @@ export function Hud({ model, view, dispatch, lang, setLang, sound, setSound, onS
 
       {freeWalk && sides && <WalkStick />}
       {freeWalk && sides && features.character && <JumpButton />}
+      {sides && <RideButton ride={ride} />}
       {features.controls && touchUi && sides && planning && <ActionPad board={board} aim={aim} apply={apply} tr={tr} />}
 
       {playing && !overlay && (

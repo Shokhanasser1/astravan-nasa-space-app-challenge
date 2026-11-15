@@ -53,7 +53,8 @@ export function Habitat({ on, wall, tap }: { on: boolean; wall: number; tap: Tap
           </>
         )}
       </group>
-      <Interior />
+      {/* (the ASTRA look brings the furnished interior: src/scene/Interiors.tsx) */}
+      {!astraLook && <Interior />}
       {/* ASTRA's habitat brings its own regolith shield (AstraHabitat); our sandbag rings stay for ?lite */}
       {!astraLook && <Sandbags wall={wall} radius={R} />}
     </group>

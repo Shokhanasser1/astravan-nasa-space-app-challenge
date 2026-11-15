@@ -9,4 +9,8 @@ converted for the web (meshopt, WebP textures <= 1024, simplified) with `npm run
                         digging at the rim of the ice crater
 - crew-lock-bag.glb  <- "Crew Lock Bag" (cargo bags by the habitat door)
 
+15 Nov 2026: sev.glb and rassor.glb split into moving parts and animated by Samandar (team) in Blender
+(blender/decor_anim): the crew rover's 12 wheels on 6 rocking bogies with a `Drive` clip (1.0 m/s); RASSOR's two
+drums and arms with `Dig` (8 s) and `Idle` clips. Same size, place and look as before.
+
 3D models: NASA 3D Resources / NASA Science. Not endorsed by NASA.

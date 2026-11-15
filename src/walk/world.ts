@@ -23,6 +23,9 @@ const wing: Solid = {
   r: 0.25,
 };
 
+/** The crew rover's hitbox: it moves to wherever the player parks the rover (`?drive`, src/scene/Rig.tsx). */
+export const ROVER_DISC: Solid = { name: 'rover', x: PARKED_ROVER.x, z: PARKED_ROVER.z, r: PARKED_ROVER.r };
+
 /** How far from the middle of the base you can walk: past the hill (27 m out), short of the far craters. */
 export const EDGE = 60;
 /** Inside the habitat: the floor you can stand on (the shell is 1.7 m in radius; lockers line its wall). */
@@ -41,7 +44,7 @@ export const OUTSIDE: Area = {
     // (Its mast is thin, but the dish hangs at head height. 1.1: the NASA dish model's reflector reaches 1.17 m.)
     disc('dish', LAYOUT.dish, 1.1),
     wing,
-    { name: 'rover', x: PARKED_ROVER.x, z: PARKED_ROVER.z, r: PARKED_ROVER.r },
+    ROVER_DISC,
     // (the battery bank is drawn on computers only: src/scene/rich.ts)
     ...(rich ? [{ name: 'battery', x: BATTERY_BANK[0], z: BATTERY_BANK[1], r: 0.9 }] : []),
     // (the robot arm's pedestal; the arm itself moves above head height or stops at the ground: src/arm/kin.ts)
@@ -49,6 +52,9 @@ export const OUTSIDE: Area = {
   ],
   bounds: { name: 'edge', x: 0, z: 0, r: EDGE },
 };
+
+/** Where the crew rover drives (src/scene/roverDrive.ts): outside, everything but its own hitbox. */
+export const ROVER_AREA: Area = { solids: OUTSIDE.solids.filter((s) => s !== ROVER_DISC), bounds: OUTSIDE.bounds };
 
 /** Inside the habitat: nothing in the way, and its wall all round. */
 export const INSIDE: Area = { solids: [], bounds: { name: 'room', x: LAYOUT.habitat[0], z: LAYOUT.habitat[1], r: ROOM } };

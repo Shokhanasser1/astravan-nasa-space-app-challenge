@@ -30,14 +30,18 @@ export const BODY = 0.35;
 /** Longest piece of a step: half the body, so nothing thinner than the body can be skipped over. */
 const PIECE = BODY / 2;
 
-/** The point of a solid's middle line nearest to (x, z): its centre, or somewhere along the bar. */
+const near: XZ = { x: 0, z: 0 };
+
+/** The point of a solid's middle line nearest to (x, z): its centre, or somewhere along the bar (read it at once). */
 function nearest(s: Solid, x: number, z: number): XZ {
   if (s.bx === undefined || s.bz === undefined) return s;
   const vx = s.bx - s.x;
   const vz = s.bz - s.z;
   const len2 = vx * vx + vz * vz;
   const t = len2 > 0 ? Math.max(0, Math.min(1, ((x - s.x) * vx + (z - s.z) * vz) / len2)) : 0;
-  return { x: s.x + vx * t, z: s.z + vz * t };
+  near.x = s.x + vx * t;
+  near.z = s.z + vz * t;
+  return near;
 }
 
 /** How far (x, z) is from the surface of a solid (negative inside it), for a body of radius `body`. */

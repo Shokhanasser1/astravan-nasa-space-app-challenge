@@ -13,6 +13,7 @@ import { groundHeight } from './ground';
 import { LAYOUT } from './layout';
 import { Remote } from '../arm/remote';
 import { armState } from '../arm/state';
+import { rover } from './arrival';
 
 /** The suited astronaut: NASA EMU model, rigged and animated by Samandar (blender/game3d/characters/), 6k triangles. */
 const URL = `${import.meta.env.BASE_URL}models/astronaut/astronaut.glb`;
@@ -41,6 +42,9 @@ const armOn = (): boolean => armState.on;
  * still for a while → looks round the base and up at the Sun. The calm scene draws on demand, so a playing gesture
  * asks for every frame itself (.claude/rules/three.md).
  */
+const seatM = new THREE.Matrix4();
+const seatS = new THREE.Vector3();
+
 export function Astronaut({ body, visible, view }: { body: Body; visible: boolean; view?: View }) {
   const gltf = useGLTF(URL);
   const scene = useThree((s) => s.scene);
@@ -150,13 +154,23 @@ export function Astronaut({ body, visible, view }: { body: Body; visible: boolea
         turn.current = null;
       }
     }
-    model.visible = visible;
-    model.position.set(body.x, body.y, body.z);
-    model.rotation.y = body.facing;
-    const speed = Math.hypot(body.vx, body.vz);
+    // ?drive: at the controls the astronaut sits in the driver's seat (seen through the windows and from the cockpit
+    // camera); on the arrival it rides inside unseen until it hops out
+    const seated =
+      rover.crew && rover.driver === 'player' && rover.object !== null && rover.seatLocal !== null && !!(anim.actions as Record<string, unknown>).SeatedSteer;
+    model.visible = visible && (!rover.crew || seated);
+    if (seated) {
+      rover.object!.updateMatrixWorld(true);
+      seatM.multiplyMatrices(rover.object!.matrixWorld, rover.seatLocal!);
+      seatM.decompose(model.position, model.quaternion, seatS);
+    } else {
+      model.position.set(body.x, body.y, body.z);
+      model.rotation.set(0, body.facing, 0);
+    }
+    const speed = seated ? 0 : Math.hypot(body.vx, body.vz);
     anim.update(dt, {
       onGround: body.onGround, windup: body.windup, vy: body.vy, v0: body.v0 || 1.2,
-      speed, carrying: false, pouring: false, running: body.running, k: 1,
+      speed, carrying: false, pouring: false, running: body.running, k: 1, seated, steer: rover.steerInput,
     });
     armState.player.x = body.x;
     armState.player.z = body.z;

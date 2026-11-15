@@ -119,6 +119,15 @@ describe('resolve', () => {
     expect(resolve({ kind: 'use' }, ctx(morning, { aim: 'ls' }))).toBeNull();
   });
 
+  it('?drive: E at the rover climbs in, E while driving climbs out — in any phase you can walk in, before the aim', () => {
+    const morning = until((m) => m.phase === 'morning');
+    expect(resolve({ kind: 'use' }, ctx(morning, { ride: 'board' }))).toEqual({ ride: 'board' });
+    expect(resolve({ kind: 'use' }, ctx(plan1, { ride: 'exit', aim: 'ls' }))).toEqual({ ride: 'exit' });
+    expect(resolve({ kind: 'undo' }, ctx(plan1, { ride: 'board', aim: 'ls' }))).toEqual({ action: { type: 'SET', k: 'ls', delta: -1 } });
+    expect(resolve({ kind: 'use' }, ctx(plan1, { ride: 'board', overlay: 'map' }))).toBeNull(); // the map keeps its keys
+    expect(resolve({ kind: 'use' }, { ...ctx(plan1, { ride: 'board' }), phase: 'launch' })).toBeNull();
+  });
+
   it('E through the reducer adds exactly what a tap on the building adds', () => {
     const e = resolve({ kind: 'use' }, ctx(plan1, { aim: 'ls' }));
     const byKey = reducer(plan1, (e as { action: never }).action);
