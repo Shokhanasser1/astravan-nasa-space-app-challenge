@@ -7,6 +7,7 @@ import { BATTERY_BANK, LAYOUT, PARKED_ROVER, RADIUS, ROBOT_ARM, type XZ as Pair 
 import type { Area, Solid } from './collide';
 import { rich } from '../scene/rich';
 import { features } from '../config/features';
+import { STEP_FOOT, STEP_WHEEL, rockSolids } from './rocks';
 
 /** Every hitbox is its visual footprint plus this much (metres). */
 const MARGIN = 0.1;
@@ -49,12 +50,18 @@ export const OUTSIDE: Area = {
     ...(rich ? [{ name: 'battery', x: BATTERY_BANK[0], z: BATTERY_BANK[1], r: 0.9 }] : []),
     // (the robot arm's pedestal; the arm itself moves above head height or stops at the ground: src/arm/kin.ts)
     ...(features.robotArm && features.character ? [disc('robot arm', [ROBOT_ARM.x, ROBOT_ARM.z], ROBOT_ARM.r)] : []),
+    // the rocks too tall to step over (the lower ones are ground: src/walk/rocks.ts)
+    ...rockSolids(STEP_FOOT, EDGE),
   ],
   bounds: { name: 'edge', x: 0, z: 0, r: EDGE },
 };
 
 /** Where the crew rover drives (src/scene/roverDrive.ts): outside, everything but its own hitbox. */
-export const ROVER_AREA: Area = { solids: OUTSIDE.solids.filter((s) => s !== ROVER_DISC), bounds: OUTSIDE.bounds };
+// (its wheels climb rocks up to 0.6 m: only the taller ones stop it)
+export const ROVER_AREA: Area = {
+  solids: [...OUTSIDE.solids.filter((s) => s !== ROVER_DISC && s.name !== 'rock'), ...rockSolids(STEP_WHEEL, EDGE)],
+  bounds: OUTSIDE.bounds,
+};
 
 /** Inside the habitat: nothing in the way, and its wall all round. */
 export const INSIDE: Area = { solids: [], bounds: { name: 'room', x: LAYOUT.habitat[0], z: LAYOUT.habitat[1], r: ROOM } };

@@ -19,6 +19,7 @@ import { ROOMS, doorAt, roomState, type RoomId } from '../walk/rooms';
 import { astraLook } from './AstraBase';
 import { clearance, fits, type Solid, type XZ } from '../walk/collide';
 import { INSIDE, OUTSIDE, ROVER_AREA, ROVER_DISC } from '../walk/world';
+import { footGround, wheelGround } from '../walk/rocks';
 import { features } from '../config/features';
 import { pickAim, type AimTarget } from '../controls/aim';
 import { getRide, onRide, onTravel, setAim, setRide, type Ride } from '../controls/bus';
@@ -99,7 +100,10 @@ const BOARD_REACH = 3.5; // m from a hatch: E climbs in
 const CAR_DIST = 9.2;
 const CAR_TILT = 0.21;
 const CAR_AIM = 1.6;
-const ground = (x: number, z: number) => groundHeight(x, z);
+// the ground under the feet: the terrain and the rocks low enough to step onto; under the rover's wheels: the rocks
+// it climbs (src/walk/rocks.ts)
+const ground = footGround;
+const wheels = wheelGround;
 const reduced = typeof window !== 'undefined' && Boolean(window.matchMedia?.('(prefers-reduced-motion: reduce)').matches);
 const MAX_PITCH = THREE.MathUtils.degToRad(35);
 const MAX_TURN = THREE.MathUtils.degToRad(reduced ? 40 : 60); // rad/s, motion-sickness rule
@@ -470,7 +474,7 @@ export function Rig({ view }: { view: View }) {
   function scriptArrival(dt: number) {
     arrival.t += dt;
     roverAt(arrival.t, rover);
-    placeOnGround(rover, ground);
+    placeOnGround(rover, wheels);
     const h = hatchAt(rover, hatch);
     const T0 = DRIVE.T + DRIVE.pause;
     if (arrival.t < T0 + DOOR.T) {
@@ -494,7 +498,7 @@ export function Rig({ view }: { view: View }) {
   function sit(h: typeof hatch) {
     body.x = h.x;
     body.z = h.z;
-    body.y = ground(h.x, h.z) + HOP.sill;
+    body.y = wheels(h.x, h.z) + HOP.sill;
     body.vx = body.vy = body.vz = 0;
     body.onGround = true;
     body.windup = -1;
@@ -581,7 +585,7 @@ export function Rig({ view }: { view: View }) {
     const h = hatchAt(rover, hatch, seat.side);
     if (seat.stage === 'board') {
       rover.doorWant[sideKey(seat.side)] = 1; // opens while the astronaut crouches (both take ~0.8 s)
-      const sill = ground(h.x, h.z) + HOP.sill;
+      const sill = wheels(h.x, h.z) + HOP.sill;
       if (seat.t < HOP.crouch) {
         body.windup = seat.t; // the JumpStart clip, scrubbed by the crouch, facing the hatch
         body.facing = Math.atan2(h.x - body.x, h.z - body.z);
@@ -611,7 +615,7 @@ export function Rig({ view }: { view: View }) {
       pedals.throttle = braking ? 0 : c.ax.ahead;
       pedals.steer = braking ? 0 : clampAbs(c.ax.side + c.ax.turn, 1);
       pedals.brake = braking;
-      moving = stepRover(rover, pedals, ROVER_AREA, ground, dt) || braking;
+      moving = stepRover(rover, pedals, ROVER_AREA, wheels, dt) || braking;
       // the wheels follow the stick a little behind it (a steering motor, not a snap)
       rover.steerInput += (pedals.steer - rover.steerInput) * (1 - Math.exp(-6 * dt));
       rover.steer = -rover.steerInput * STEER_MAX;
