@@ -20,6 +20,7 @@ import { command } from '../../controls/keys';
 import { TRAVEL, resolve, type Ctx, type Effect, type Overlay, type UiOp } from '../../controls/act';
 import { askRide, travel } from '../../controls/bus';
 import { freeWalk } from '../../walk/enabled';
+import { features } from '../../config/features';
 import { Btn, Panel, type Tr } from './kit';
 
 /**
@@ -61,9 +62,15 @@ export function useGameKeys(ctx: Ctx, apply: (e: Effect) => void) {
   }, []);
 }
 
+/**
+ * Keys for a child (home story; the lead's document p. 5): on screen only the one action key (E), the big button
+ * (Enter: Start the day / Sleep) and Esc inside an open window. Every other key still works and is listed under "?".
+ */
+const KID_KEYS = new Set(['E', 'Enter', 'Esc']);
+
 /** A key name next to a button, only with a mouse and keyboard. */
 export function Kbd({ k }: { k: string }) {
-  if (!keyHints) return null;
+  if (!keyHints || (features.homeStory && !KID_KEYS.has(k))) return null;
   return (
     <kbd className="kbd ml-1">
       {k}
@@ -115,16 +122,17 @@ export function MapPanel({ apply, tr }: { apply: (e: Effect) => void; tr: Tr }) 
 
 /** One row of the controls list: the keys, the touch way, what it does. */
 /** (The touch column uses the same line icons as the buttons themselves: Lucide, 2 px stroke, no emoji.) */
-const HELP: { keys: string[]; touch: LucideIcon; text: string; walk?: boolean }[] = [
-  { keys: ['W', 'A', 'S', 'D'], touch: Gamepad2, text: 'ui.help.walk', walk: true },
+/** (`kid`: the three a child needs first; with the home story they lead the list, the rest under "More keys".) */
+const HELP: { keys: string[]; touch: LucideIcon; text: string; walk?: boolean; kid?: boolean }[] = [
+  { keys: ['W', 'A', 'S', 'D'], touch: Gamepad2, text: 'ui.help.walk', walk: true, kid: true },
   { keys: ['←', '→'], touch: Gamepad2, text: 'ui.help.turn', walk: true },
   { keys: ['Shift'], touch: Footprints, text: 'ui.help.run', walk: true },
   { keys: ['Space'], touch: ArrowUpToLine, text: 'ui.help.jump', walk: true },
   { keys: ['Mouse'], touch: Move, text: 'ui.help.look' },
-  { keys: ['E', 'Click'], touch: Hand, text: 'ui.help.use' },
+  { keys: ['E', 'Click'], touch: Hand, text: 'ui.help.use', kid: true },
   { keys: ['Q'], touch: Undo2, text: 'ui.help.undo' },
   { keys: ['1', '2', '3'], touch: Pointer, text: 'ui.help.pick' },
-  { keys: ['Enter'], touch: RectangleHorizontal, text: 'ui.help.confirm' },
+  { keys: ['Enter'], touch: RectangleHorizontal, text: 'ui.help.confirm', kid: true },
   { keys: ['Tab'], touch: TabletIcon, text: 'ui.help.tablet' },
   { keys: ['H'], touch: Headphones, text: 'ui.help.houston' },
   { keys: ['M'], touch: MapIcon, text: 'ui.help.map' },
@@ -133,7 +141,9 @@ const HELP: { keys: string[]; touch: LucideIcon; text: string; walk?: boolean }[
 ];
 
 export function HelpPanel({ apply, tr }: { apply: (e: Effect) => void; tr: Tr }) {
-  const rows = HELP.filter((r) => freeWalk || !r.walk);
+  const all = HELP.filter((r) => freeWalk || !r.walk);
+  const rows = features.homeStory ? [...all.filter((r) => r.kid), ...all.filter((r) => !r.kid)] : all;
+  const moreAt = features.homeStory ? rows.findIndex((r) => !r.kid) : -1;
   return (
     <Panel className="mx-auto flex max-h-[80dvh] w-full max-w-md flex-col gap-2 overflow-y-auto" data-testid="help" role="dialog" aria-label={tr('ui.controls.help')}>
       <div className="flex items-center justify-between gap-2">
@@ -143,22 +153,53 @@ export function HelpPanel({ apply, tr }: { apply: (e: Effect) => void; tr: Tr })
           <Kbd k="Esc" />
         </Btn>
       </div>
-      {rows.map((r) => (
-        <div key={r.text} className="grid grid-cols-[minmax(5.5rem,auto)_2rem_1fr] items-center gap-2 text-sm">
-          <span className="flex flex-wrap gap-1">
-            {r.keys.map((k) => (
-              <kbd key={k} className="kbd">
-                {k}
-              </kbd>
-            ))}
-          </span>
-          <span className="grid place-items-center text-[var(--accent)]" aria-hidden="true">
-            <r.touch size={18} />
-          </span>
-          <span>{tr(r.text)}</span>
+      {rows.map((r, i) => (
+        <div key={r.text} className="contents">
+          {i === moreAt && i > 0 && (
+            <span className="eyebrow mt-1 border-t border-[var(--line)] pt-2 !text-[#c2cbec]" data-testid="help-more">
+              {tr('ui.help.more')}
+            </span>
+          )}
+          <div className="grid grid-cols-[minmax(5.5rem,auto)_2rem_1fr] items-center gap-2 text-sm">
+            <span className="flex flex-wrap gap-1">
+              {r.keys.map((k) => (
+                <kbd key={k} className="kbd">
+                  {k}
+                </kbd>
+              ))}
+            </span>
+            <span className="grid place-items-center text-[var(--accent)]" aria-hidden="true">
+              <r.touch size={18} />
+            </span>
+            <span>{tr(r.text)}</span>
+          </div>
         </div>
       ))}
     </Panel>
+  );
+}
+
+/**
+ * Keys for a child (home story), keyboard only: where the context prompt stands when nothing is in front of the
+ * astronaut, the three keys a child needs: walk, E, and Enter with the big button's own words. All keys: "?".
+ */
+export function KeyHint({ go, tr }: { go: string; tr: Tr }) {
+  if (!keyHints) return null;
+  return (
+    <p className="holo pointer-events-none mx-auto flex max-w-full flex-wrap items-center justify-center gap-x-3 gap-y-1 rounded-[16px] px-3 py-1.5 text-sm" data-testid="key-hint">
+      <span className="inline-flex items-center gap-1">
+        <kbd className="kbd">W A S D</kbd> {tr('ui.help.walk')}
+      </span>
+      <span className="inline-flex items-center gap-1">
+        <kbd className="kbd">E</kbd> {tr('ui.controls.use')}
+      </span>
+      <span className="inline-flex items-center gap-1">
+        <kbd className="kbd">Enter</kbd> {go}
+      </span>
+      <span className="inline-flex items-center gap-1 text-[var(--text-3)]">
+        <kbd className="kbd">?</kbd> {tr('ui.keys.more')}
+      </span>
+    </p>
   );
 }
 

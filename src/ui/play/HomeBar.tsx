@@ -54,12 +54,34 @@ function After({ k, now, after }: { k: Key; now: number; after?: number }) {
   );
 }
 
+/** Five hearts for health (crew 0–10, one heart = 2): full, half or empty; `tone` colours the filled part. */
+export function HeartRow({ crew, size = 14 }: { crew: number; size?: number }) {
+  const hearts = crew / 2;
+  return (
+    <span className="home-hearts" aria-hidden="true">
+      {Array.from({ length: HEARTS }, (_, i) => {
+        const fill = hearts >= i + 1 ? 'full' : hearts >= i + 0.5 ? 'half' : 'empty';
+        return (
+          <span key={i} className={`home-heart ${fill}`} data-fill={fill}>
+            <Heart size={size} />
+            <Heart size={size} className="home-heart-in" />
+          </span>
+        );
+      })}
+    </span>
+  );
+}
+
 function gauges(res: Res, bat: Bat): Gauge[] {
   const hearts = res.crew / 2;
   const B = bat ? batteryIcon(bat) : Battery;
+  // A drop is noticed (the lead's document pp. 6 and 12): while planning, the food takes the warning look when it falls
+  // tonight (no light in the Greenhouse), the air when tonight's reserve is low (it runs out within a day).
+  const airLow = res.after !== undefined && res.after.air <= P.crewUse;
+  const foodFalls = res.after !== undefined && res.after.plant < res.plant;
   return [
     {
-      k: 'air', icon: Wind, label: 'rule', value: `${res.air} / ${res.airMax}`, warn: res.air <= P.crewUse, hint: 'ui.res.air.how',
+      k: 'air', icon: Wind, label: 'rule', value: `${res.air} / ${res.airMax}`, warn: res.air <= P.crewUse || airLow, hint: 'ui.res.air.how',
       body: (
         <>
           <span className="home-tank" aria-hidden="true">
@@ -70,7 +92,7 @@ function gauges(res: Res, bat: Bat): Gauge[] {
       ),
     },
     {
-      k: 'food', icon: Leaf, label: 'rule', value: `${res.plant} / ${P.maxPlant}`, warn: (P.gardenResult[res.plant]?.crew ?? 0) < 0, hint: 'ui.res.garden.how',
+      k: 'food', icon: Leaf, label: 'rule', value: `${res.plant} / ${P.maxPlant}`, warn: (P.gardenResult[res.plant]?.crew ?? 0) < 0 || foodFalls, hint: 'ui.res.garden.how',
       body: (
         <>
           <span className="home-leaves" aria-hidden="true">
@@ -102,19 +124,7 @@ function gauges(res: Res, bat: Bat): Gauge[] {
     },
     {
       k: 'health', icon: Heart, label: 'computed', value: `${hearts} / ${HEARTS}`, warn: hearts <= 1, hint: 'ui.res.crew.how',
-      body: (
-        <span className="home-hearts" aria-hidden="true">
-          {Array.from({ length: HEARTS }, (_, i) => {
-            const fill = hearts >= i + 1 ? 'full' : hearts >= i + 0.5 ? 'half' : 'empty';
-            return (
-              <span key={i} className={`home-heart ${fill}`} data-fill={fill}>
-                <Heart size={14} />
-                <Heart size={14} className="home-heart-in" />
-              </span>
-            );
-          })}
-        </span>
-      ),
+      body: <HeartRow crew={res.crew} />,
     },
   ];
 }

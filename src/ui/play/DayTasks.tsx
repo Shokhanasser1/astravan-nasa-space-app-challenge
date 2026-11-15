@@ -1,8 +1,19 @@
 import { Check, Circle, Star } from 'lucide-react';
 import type { Model } from '../../state/game';
-import { dayTasks, settled, type Seen } from '../../state/tasks';
+import { dayTasks, settled, type Seen, type TaskId } from '../../state/tasks';
+import { P } from '../../engine/rules';
 import type { Tr } from './kit';
 import './day-tasks.css';
+
+/**
+ * The astronaut's lesson for a task (the lead's document p. 14, "Astronavt darsi (bir qator)"; problem B3: each task
+ * says why an astronaut does it). Shown once, under the task the child is on.
+ */
+const WHY: Partial<Record<TaskId, string>> = {
+  air: 'ui.why.air', greenhouse: 'ui.why.food', harvest: 'ui.why.food', wall: 'ui.why.wall', wallOrRover: 'ui.why.wall',
+  rover: 'ui.why.rover', roverLast: 'ui.why.rover', launch: 'ui.why.launch', arm: 'ui.why.arm', shelter: 'ui.why.shelter',
+  inside: 'ui.why.shelter', save: 'ui.why.save',
+};
 
 /**
  * "Today's 5" (home story, step 3): the day's five tasks from src/state/tasks.ts, ticked by the plan itself — the
@@ -50,7 +61,14 @@ export function DayTasks({ model, tr, seen }: { model: Model; tr: Tr; seen?: See
                 <Circle size={14} aria-hidden="true" />
               )}
             </span>
-            <span className="day-task__text">{tr(`ui.task.${t.id}`, t.n != null ? { n: t.n } : undefined)}</span>
+            <span className="day-task__text">
+              {tr(`ui.task.${t.id}`, t.n != null ? { n: t.n } : undefined)}
+              {i === current && WHY[t.id] && (
+                <span className="day-task__why" data-testid="task-why">
+                  {tr(WHY[t.id]!, { n: P.maxStored })}
+                </span>
+              )}
+            </span>
           </li>
         ))}
       </ol>

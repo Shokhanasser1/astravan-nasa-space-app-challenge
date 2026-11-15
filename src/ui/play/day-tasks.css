@@ -79,6 +79,30 @@
   min-width: 0;
   overflow-wrap: anywhere;
 }
+/* the astronaut's one-line lesson under the current task (home story) */
+.day-task__why {
+  display: block;
+  margin-top: 1px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1.25;
+  color: var(--color-measured);
+}
+/* short screens (360×640 upright, phones on their side): the lesson steps aside, and while the plan list is open it
+   is the list that shows the day, so the big button always stays on screen */
+@media (orientation: portrait) and (max-height: 700px), (orientation: landscape) and (max-height: 540px) {
+  .day-task__why {
+    display: none;
+  }
+  /* one task at a time: the header (count and star) and the task the child is on */
+  .day-task:not(.is-current) {
+    display: none;
+  }
+  [data-tablet='open'] .day-tasks,
+  [data-nudge='on'] .day-tasks {
+    display: none;
+  }
+}
 
 .day-task.is-done {
   color: var(--text-3);

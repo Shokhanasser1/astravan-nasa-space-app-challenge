@@ -41,6 +41,8 @@
   "story.houston.alert.hs": "I don't know its strength yet. Inside is safer. Rover runs bring more parts.",
   "story.houston.storm": "Everyone inside blocks the most. A wall helps too.",
   "story.houston.storm.hs": "Staying inside blocks the most. A wall helps too.",
+  "story.radio.needAir": "Houston: Air runs out tonight! Start the Air Maker.",
+  "story.radio.needLight": "Houston: The Greenhouse needs light! Food falls tonight.",
   "story.radio.callCut": "Houston: Call cut! A flare on the Sun.",
   "story.radio.callCut.hs": "Houston: Call cut! A flare on the Sun. I don't know its strength yet.",
   "story.radio.workshop": "Pilot: Workshop open! A wall level costs two.",

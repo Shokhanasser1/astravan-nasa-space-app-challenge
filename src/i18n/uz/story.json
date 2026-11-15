@@ -41,6 +41,8 @@
   "story.houston.alert.hs": "Kuchini hali bilmayman. Ichkarida xavfsizroq. Rover qatnovi koʻproq qism keltiradi.",
   "story.houston.storm": "Hamma ichkarida boʻlsa, eng koʻp toʻsiladi. Devor ham yordam beradi.",
   "story.houston.storm.hs": "Ichkarida qolsang, eng koʻp toʻsiladi. Devor ham yordam beradi.",
+  "story.radio.needAir": "Xyuston: Bu tun havo tugaydi! Havo qurilmasini yoq.",
+  "story.radio.needLight": "Xyuston: Issiqxonaga yorugʻlik kerak! Bu tun ovqat kamayadi.",
   "story.radio.callCut": "Xyuston: Aloqa uzildi! Quyoshda chaqnash.",
   "story.radio.callCut.hs": "Xyuston: Aloqa uzildi! Quyoshda chaqnash. Kuchini hali bilmayman.",
   "story.radio.workshop": "Uchuvchi: Ustaxona ochiq! Devor qavati ikki batareya.",
