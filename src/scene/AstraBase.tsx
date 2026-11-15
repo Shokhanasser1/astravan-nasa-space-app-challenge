@@ -57,14 +57,39 @@ export function astraModule(build: (v: ModuleView) => void): ModuleView {
   return view;
 }
 
-/** ASTRA's power look (World.tsx): glow 0.08 + 1.9 × power, green or amber status lamp, warm windows. */
+/**
+ * ASTRA's power look (World.tsx), made plainer to read from across the base (15 Nov): a powered building's lights
+ * glow past the bloom threshold (0.08 + 2.6 × power, ASTRA had 1.9) and its windows shine warm (2.4, ASTRA 1.6);
+ * without power they go nearly dark (0.03 / 0.05) and the status lamp turns amber. Materials only: no draw calls.
+ */
 export function setPower(v: ModuleView, on: boolean): void {
-  for (const m of v.glow) m.emissiveIntensity = 0.08 + (on ? 1.9 : 0) * ((m.userData.glow as number | undefined) ?? 1);
+  for (const m of v.glow) m.emissiveIntensity = on ? 0.08 + 2.6 * ((m.userData.glow as number | undefined) ?? 1) : 0.03;
   const lamp = on ? '#3ee39a' : '#ffb340';
   v.status.color.set(lamp);
   v.status.emissive.set(lamp);
-  v.status.emissiveIntensity = on ? 0.9 : 0.4;
-  if (v.windows) v.windows.emissiveIntensity = on ? 1.6 : 0.12;
+  v.status.emissiveIntensity = on ? 1.4 : 0.4;
+  if (v.windows) v.windows.emissiveIntensity = on ? 2.4 : 0.05;
+  const glazing = v.group.userData.glazing as THREE.MeshPhysicalMaterial[] | undefined;
+  for (const m of glazing ?? []) m.emissiveIntensity = on ? 0.9 : 0;
+}
+
+/** The greenhouse's glazing gets its own copy of ASTRA's shared glass, lit pink by the grow lights when powered. */
+function ownGlazing(g: THREE.Object3D): void {
+  const copies = new Map<THREE.Material, THREE.MeshPhysicalMaterial>();
+  g.traverse((o) => {
+    const m = o as THREE.Mesh;
+    const mat = m.material as THREE.MeshPhysicalMaterial | undefined;
+    if (!m.isMesh || !mat || Array.isArray(mat) || !mat.isMeshPhysicalMaterial || !mat.transparent) return;
+    let c = copies.get(mat);
+    if (!c) {
+      c = mat.clone();
+      c.emissive.set('#ff9fe0');
+      c.emissiveIntensity = 0;
+      copies.set(mat, c);
+    }
+    m.material = c;
+  });
+  g.userData.glazing = [...copies.values()];
 }
 
 /** Spinning parts turn while the building works (only while frames are drawn: a calm scene is not redrawn for it). */
@@ -89,7 +114,11 @@ export function AstraHabitat({ on, wall, turn }: { on: boolean; wall: number; tu
 
 /** Garden: ASTRA's greenhouse, grow lights on with batteries; its plants show the garden level (view.plant 0–4). */
 export function AstraGreenhouse({ on, turn, plant }: { on: boolean; turn: number; plant: number }) {
-  const v = useMemo(() => astraModule(buildGreenhouse), []);
+  const v = useMemo(() => {
+    const m = astraModule(buildGreenhouse);
+    ownGlazing(m.group);
+    return m;
+  }, []);
   v.group.name = 'astra_greenhouse';
   setPower(v, on);
   (v.plants?.userData.merged as Plants | undefined)?.setLevel(plant);
