@@ -1,1 +1,19 @@
-{}
+{
+  "engine.warn.chooseCard": "Сначала выбери ответ на карточке.",
+  "engine.warn.noLaunch": "Заполни Старт, иначе полёт домой опоздает.",
+  "engine.warn.reserveEmpty": "Воздух и вода кончатся. Добавь в Жизнеобеспечение.",
+  "engine.warn.gardenFalls": "Ночью сад ослабнет.",
+  "engine.log.emergency": "Воздух и вода кончились. Запасной бак включён!",
+  "engine.log.blocked": "Отражено {pct}% сегодняшней бури.",
+  "engine.log.gardenFell": "Сад ослаб: {from} → {to}.",
+  "engine.log.gardenGrew": "Сад подрос: {from} → {to}.",
+  "engine.log.wallBuilt": "Защитная стена: уровень {level}. Работает с завтра.",
+  "engine.log.reserveFell": "Воздуха и воды меньше: {from} → {to}.",
+  "engine.log.reserveRose": "Воздуха и воды больше: {from} → {to}.",
+  "engine.log.found": "Новых открытий сегодня: {n}.",
+  "engine.title.balanceMaster": "Мастер баланса",
+  "engine.title.boldExplorer": "Смелый исследователь",
+  "engine.title.carefulCommander": "Осторожный командир",
+  "engine.title.cadetInTraining": "Кадет на учёбе",
+  "engine.title.lateRideHome": "Поздний рейс домой"
+}

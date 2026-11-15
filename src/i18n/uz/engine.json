@@ -1,1 +1,19 @@
-{}
+{
+  "engine.warn.chooseCard": "Avval kartadan javob tanla.",
+  "engine.warn.noLaunch": "Uchishni toʻldir, aks holda uyga kech qaytasan.",
+  "engine.warn.reserveEmpty": "Havo va suv tugaydi. Hayot taʼminotiga batareya qoʻy.",
+  "engine.warn.gardenFalls": "Bu tun bogʻ zaiflashadi.",
+  "engine.log.emergency": "Havo va suv tugadi. Zaxira bak yoqildi!",
+  "engine.log.blocked": "Bugungi boʻronning {pct}% ini toʻsding.",
+  "engine.log.gardenFell": "Bogʻ zaiflashdi: {from} → {to}.",
+  "engine.log.gardenGrew": "Bogʻ oʻsdi: {from} → {to}.",
+  "engine.log.wallBuilt": "Himoya devori endi {level}-qavat. Ertadan ishlaydi.",
+  "engine.log.reserveFell": "Havo va suv kamaydi: {from} → {to}.",
+  "engine.log.reserveRose": "Havo va suv koʻpaydi: {from} → {to}.",
+  "engine.log.found": "Bugungi yangi kashfiyotlar: {n}.",
+  "engine.title.balanceMaster": "Muvozanat ustasi",
+  "engine.title.boldExplorer": "Jasur tadqiqotchi",
+  "engine.title.carefulCommander": "Ehtiyotkor komandir",
+  "engine.title.cadetInTraining": "Oʻqiyotgan kursant",
+  "engine.title.lateRideHome": "Uyga kech qaytish"
+}
