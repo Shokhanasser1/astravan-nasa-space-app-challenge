@@ -120,5 +120,19 @@ export function phasePoint(phase: string): PointId | null {
   }
 }
 
+/**
+ * Home story (features.homeStory; the lead's document 15 Nov, pp. 12 and 18): the default point by phase. From Day 2
+ * the morning starts inside (the astronaut slept there; Day 1 still begins outside). The plan goes out at the airlock
+ * with the walking astronaut (`walking`; the first-person rig still goes to the hub), or stays inside when the crew is
+ * inside all day (`indoors`, View.indoors: "Stay inside all day" on a storm day, the backup-tank day) — the day then
+ * runs inside too. Night is inside; null = stay where the child is.
+ */
+export function homePoint(phase: string, day: number, indoors: boolean, walking: boolean): PointId | null {
+  if (phase === 'morning') return day >= 2 ? 'inside' : phasePoint(phase);
+  if (phase === 'plan') return indoors ? 'inside' : walking ? 'airlock' : 'hub';
+  if (phase === 'run') return indoors ? 'inside' : null;
+  return phasePoint(phase);
+}
+
 /** Where the camera turns for view.focus (the event's place). */
 export const FOCUS: Record<string, Vec3> = GAME.FOCUS;

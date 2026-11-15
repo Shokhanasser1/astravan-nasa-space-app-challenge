@@ -9,6 +9,7 @@ import {
   type Alloc, type CardId, type DayInfo, type Limits, type Preview, type Result, type Shelter, type State,
 } from '../engine/rules';
 import type { SkyDay, Week, WeekDay } from '../engine/week';
+import { indoorsToday } from './homeDay';
 
 // ---- the contract with the scene (developer guide §02) ----
 export type Phase = 'morning' | 'plan' | 'run' | 'night' | 'launch' | 'truth';
@@ -42,6 +43,9 @@ export type View = {
   // 15 Nov ~05:00 (Shoxjahon aka: "make it a game" — batteries are carried, resources always visible):
   hands?: number; // batteries the astronaut carries now (plan phase), 0..HANDS_MAX
   res?: Resources; // every gauge of the base, from the engine (see Resources)
+  // 15 Nov home story (src/state/homeDay.ts): the crew stays in the habitat today — "Stay inside all day" on a storm
+  // day, or the backup-tank day (the engine's shelter full); planning and running that day only.
+  indoors?: boolean;
 };
 
 /**
@@ -320,6 +324,7 @@ export function toView(m: Model, sky?: Record<string, SkyDay[]>): View {
     batteries: lim && m.phase === 'plan' ? { left: m.preview?.left ?? lim.available, total: lim.available } : undefined,
     hands: m.phase === 'plan' ? (m.hands ?? 0) : 0,
     res: g && m.week ? resources(m, g, m.week) : undefined,
+    indoors: indoorsToday(m.phase, m.alloc.shelter),
   };
 }
 

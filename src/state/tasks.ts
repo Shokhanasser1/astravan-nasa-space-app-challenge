@@ -15,7 +15,7 @@ import { shownDay, type Model } from './game';
 
 export type TaskId =
   | 'reach' | 'air' | 'greenhouse' | 'rover' | 'sleep' | 'cardShadow' | 'cardIce' | 'card' | 'wall' | 'call'
-  | 'shelter' | 'inside' | 'save' | 'harvest' | 'wallOrRover' | 'roverLast' | 'launch' | 'arm' | 'ladder';
+  | 'shelter' | 'inside' | 'save' | 'harvest' | 'wallOrRover' | 'roverLast' | 'launch' | 'arm' | 'ladder' | 'rest';
 
 /** Where the beacon stands for a task (an ObjectiveTarget of src/state/objective.ts). */
 export type TaskTarget = 'ls' | 'gh' | 'ws' | 'sc' | 'launch' | 'hub';
@@ -80,6 +80,8 @@ export function dayTasks(model: Model): Task[] {
   // The day's content from the engine: its dealt card and whether it is a storm day (forced = an emergency, not content).
   const info = dayInfo({ ...g, day, forced: false }, model.week);
   const played = model.phase === 'run' || model.phase === 'night' || model.phase === 'launch' || model.phase === 'truth';
+  // The backup-tank day (the document, p. 4: "Houston takes over today, and one task inside"): rest while it runs.
+  if (backupDay(model, day, played)) return [{ id: 'rest', done: played }];
   const a = model.alloc;
   const answer = model.cardChoice ?? model.picks?.[day];
   // The wall level today's two Workshop batteries make: the wall this day started with + 1.
@@ -121,6 +123,8 @@ export function dayTasks(model: Model): Task[] {
         return played;
       case 'ladder':
         return played && g.launched;
+      case 'rest': // (the backup-tank day returns before this list; kept so every task has its rule)
+        return played;
     }
   };
 
@@ -133,13 +137,24 @@ export function dayTasks(model: Model): Task[] {
   });
 }
 
+/**
+ * Was the day shown a backup-tank day (the engine's `forced`: the day before ended with air and water at 0)? While it
+ * is planned the engine says so; once it has run, the record of the day before does (its reserve at the end, 0).
+ */
+function backupDay(model: Model, day: number, played: boolean): boolean {
+  const g = model.game!;
+  if (!played) return g.forced;
+  const before = g.days.find((r) => r.day === day - 1);
+  return before !== undefined && before.air <= 0;
+}
+
 /** The first task still open (the beacon follows it), or null when all five are done. */
 export function firstOpen(tasks: readonly Task[]): Task | null {
   return tasks.find((t) => !t.done) ?? null;
 }
 
-/** The day's star: all five tasks done. */
+/** The day's star: all the day's tasks done (five; the backup-tank day has one, rest — a star is never a penalty). */
 export function dayStar(model: Model): boolean {
   const tasks = dayTasks(model);
-  return tasks.length === 5 && tasks.every((t) => t.done);
+  return tasks.length > 0 && tasks.every((t) => t.done);
 }
