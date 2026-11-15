@@ -100,6 +100,7 @@ export function Astronaut({ body, visible, hands = 0, view }: { body: Body; visi
     [model, gltf],
   );
   const fx = useMemo(() => new GroundFx(gl), [gl]);
+  fx.bootScale = anim.legK ?? 1; // a smaller suit leaves a smaller print (the kid astronaut, 15 Nov)
 
   // the carried batteries: a stack of blocks, placed once; only the count and the group's place change
   const cargo = useMemo(() => {

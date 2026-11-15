@@ -151,6 +151,9 @@ export class GroundFx {
     this.up = new THREE.Vector3();
     this.v = new THREE.Vector3();
     this.one = new THREE.Vector3(1, 1, 1);
+    /** The boot against the 1.86 m suit the print is sized for (the kid astronaut's legs: AnimController.legK). */
+    this.bootScale = 1;
+    this.sc = new THREE.Vector3(1, 1, 1);
     this.Y = new THREE.Vector3(0, 1, 0);
     this.qy = new THREE.Quaternion();
   }
@@ -209,7 +212,7 @@ export class GroundFx {
     this.qy.setFromAxisAngle(this.Y, yaw);
     this.q.multiply(this.qy);
     this.v.set(x, y + 0.004, z);
-    this.m.compose(this.v, this.q, this.one);
+    this.m.compose(this.v, this.q, this.sc.set(this.bootScale, 1, this.bootScale));
     marks.prints.push(this.m, x, z, yaw);
     return true;
   }
