@@ -85,5 +85,20 @@
   "ui.hand.private": "Only hand points. No picture is kept or sent.",
   "ui.hand.error": "No camera, or it was not allowed.",
   "ui.help.run": "Hold to lope (Apollo-style run)",
-  "ui.help.jump": "Jump (0.44 m on the Moon)"
+  "ui.help.jump": "Jump (0.44 m on the Moon)",
+  "ui.arm.on": "Robot arm scanner (camera) — K",
+  "ui.arm.off": "Stop the robot arm scanner",
+  "ui.arm.title": "Robot arm",
+  "ui.arm.camera": "Allow the camera…",
+  "ui.arm.loading": "Starting the scanner (first time ~13 MB)…",
+  "ui.arm.noHand": "Show your hand and forearm",
+  "ui.arm.noElbow": "No elbow in view: your hand steers",
+  "ui.arm.ground": "At the ground: it stops here",
+  "ui.arm.denied": "The camera was not allowed.",
+  "ui.arm.error": "The scanner did not start.",
+  "ui.arm.help": "Raise your forearm: the arm lifts. Bend your hand: the wrist turns. Fingertips together: it grips.",
+  "ui.arm.private": "The picture stays in this box: not kept, not sent. Only your hand is sharp.",
+  "ui.arm.angles": "lift {lift}° · elbow {bend}° · wrist {wrist}°",
+  "ui.arm.open": "open",
+  "ui.arm.closed": "gripping"
 }

@@ -11,6 +11,7 @@ import { Earth } from './Earth';
 import { BaseScene } from './BaseScene';
 import { Rig } from './Rig';
 import { WalkDebug } from './WalkDebug';
+import { RobotArm } from './RobotArm';
 import { freeWalk } from '../walk/enabled';
 
 // Draco decoder from our own server (copied by scripts/copy-decoders.mjs), never from Google's CDN:
@@ -27,11 +28,13 @@ const overview = params.get('cam') === 'overview';
 function Probe() {
   const gl = useThree((s) => s.gl);
   const scene = useThree((s) => s.scene);
+  const camera = useThree((s) => s.camera);
   // Post effects render several passes per frame; count the whole frame, not only the last pass.
   gl.info.autoReset = false;
   useFrame(() => {
-    // (scene: for cost checks per object by agents, dev and ?shot only)
-    (window as unknown as { __hb7?: object }).__hb7 = { calls: gl.info.render.calls, triangles: gl.info.render.triangles, scene };
+    // (scene: for cost checks per object by agents; gl and camera: for an agent's still from another view; dev and
+    // ?shot only)
+    (window as unknown as { __hb7?: object }).__hb7 = { calls: gl.info.render.calls, triangles: gl.info.render.triangles, scene, gl, camera };
     gl.info.reset();
   });
   return null;
@@ -92,6 +95,7 @@ export function Stage({ view, onTap, onUndo }: { view: View; onTap: (k: Machine)
         {features.light ? <Light sunAzDeg={sunAzimuth(view)} shadowSize={q.shadow} /> : <ambientLight intensity={0.6} />}
         <Suspense fallback={null}>
           <BaseScene view={view} onTap={onTap} onUndo={onUndo} />
+          {features.robotArm && features.character && <RobotArm />}
           {!overview && <Rig view={view} />}
           {!overview && freeWalk && <WalkDebug />}
           <Preload all />

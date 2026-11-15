@@ -1,0 +1,8 @@
+curiosity-arm.glb - the robot arm on the east edge of the base (src/scene/RobotArm.tsx, features.robotArm).
+
+The robotic arm of NASA's Curiosity rover model (NASA 3D Resources / NASA Science, NASA/JPL-Caltech; the team
+catalog's "curiosity", blender/game3d/assets/curiosity.glb, lettering already painted out), cut out of the rover and
+split into three moving parts (shoulder + upper arm, elbow + forearm, wrist + tool turret) in Blender 5.3 by Claude
+Code on 15 Nov 2026 (scripts/models/curiosity_arm.py), then `npm run glb`-style meshopt + WebP (hierarchy kept).
+Its pedestal and gripper jaws are drawn in code (src/arm/rig.ts). Not AI-generated geometry: NASA's mesh, cut.
+NASA media guidelines; not endorsed by NASA.

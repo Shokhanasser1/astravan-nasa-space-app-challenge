@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from 'react';
-import { useFrame, useThree } from '@react-three/fiber';
+import { invalidate, useFrame, useThree } from '@react-three/fiber';
 import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 import { clone } from 'three/examples/jsm/utils/SkeletonUtils.js';
@@ -8,6 +8,9 @@ import type { Body } from '../character/body';
 import { GRAVITY } from '../character/physics.js';
 import { GroundFx } from '../look/fx.js';
 import { groundHeight } from './ground';
+import { features } from '../config/features';
+import { Remote } from '../arm/remote';
+import { armState } from '../arm/state';
 
 /** The suited astronaut: NASA EMU model, rigged and animated by Samandar (blender/game3d/characters/), 6k triangles. */
 const URL = `${import.meta.env.BASE_URL}models/astronaut/astronaut.glb`;
@@ -49,6 +52,9 @@ export function Astronaut({ body, visible }: { body: Body; visible: boolean }) {
   );
   const fx = useMemo(() => new GroundFx(scene, gl), [scene, gl]);
   useEffect(() => () => fx.dispose(), [fx]);
+  // the robot arm's remote in the right hand while its scanner is on (src/arm/remote.ts)
+  const remote = useMemo(() => (features.robotArm ? new Remote(scene, model) : null), [scene, model]);
+  useEffect(() => () => remote?.dispose(), [remote]);
   useEffect(
     () => () => {
       anim.mixer.stopAllAction();
@@ -72,6 +78,9 @@ export function Astronaut({ body, visible }: { body: Body; visible: boolean }) {
       onGround: body.onGround, windup: body.windup, vy: body.vy, v0: body.v0 || 1.2,
       speed, carrying: false, pouring: false, running: body.running, k: 1,
     });
+    armState.player.x = body.x;
+    armState.player.z = body.z;
+    if (remote && remote.pose(dt, armState.on && visible)) invalidate();
     if (!visible) return;
     look.body.pos[0] = body.x;
     look.body.pos[1] = body.y;

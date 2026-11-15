@@ -16,6 +16,10 @@ export const features = {
   // list (src/controls/, docs/specs/2026-11-14-controls-guide.html). Cut → the HUD as before (tap and buttons only).
   controls: true,
   light: true, // one Sun at 1.5°, long shadows, tone mapping (cut → plain ambient light)
+  // Curiosity's robot arm on the east edge of the base (src/scene/RobotArm.tsx, src/arm/), driven by a camera scan of
+  // the player's forearm and hand (K or the button that shows near the arm), the astronaut holding a remote. Needs
+  // `character`. Cut → no arm, no button, no hitbox.
+  robotArm: true,
   // Pitch answer 5 (Sunday plan): "no account, no names, no date stored, nothing goes to a server".
   // Keep false unless the whole team changes that answer. True = anonymous results go to our PocketBase.
   sendResults: false,

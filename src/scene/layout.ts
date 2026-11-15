@@ -22,6 +22,13 @@ export const BATTERY_BANK = [-9.6, -3.2] as const;
 /** The crew rover (NASA SEV, decor, src/scene/Decor.tsx) parked on the flat pad, nose to the base; r = its hitbox. */
 export const PARKED_ROVER = { x: 10.5, z: 8.2, yaw: -2.3, r: 2.4 } as const;
 
+/**
+ * The robot arm (Curiosity's, src/scene/RobotArm.tsx) on the east edge of the flat pad, between the dish and the
+ * parked rover, reaching north along the edge: out of every walk between standing points and every standing point's
+ * view of its building. r = its pedestal's hitbox; near = how close the astronaut must be for the scanner's button.
+ */
+export const ROBOT_ARM = { x: 12.8, z: 0.5, yaw: 0, r: 0.7, near: 8 } as const;
+
 /** Footprint radius of each tappable building (cable ends, target rings). */
 export const RADIUS = { habitat: 1.7, garden: 1.3, workshop: 1.55, scout: 0.9, lander: 1.6, hub: 0.6 } as const;
 

@@ -7,6 +7,7 @@ import { Btn, makeTr } from './play/kit';
 import { DayBadge, Gauges, radioKey } from './play/Visor';
 import { Briefing, CapcomHolo, PhysicsHolo, SunToday } from './play/Holo';
 import { HandControl, handsOn } from './play/HandControl';
+import { ArmScanner } from './play/ArmScanner';
 import { NightTablet, PlanTablet } from './play/Tablet';
 import { TruthScreen } from './play/TruthScreen';
 import { JumpButton, WalkStick } from './play/WalkStick';
@@ -28,6 +29,8 @@ import { useAim } from '../controls/bus';
  * (portrait, landscape) and a tablet is CSS in src/index.css (`.hud-*`).
  */
 const LANGS: Lang[] = ['en', 'uz', 'ru'];
+/** The robot arm's hand scanner (it needs the walking astronaut). */
+const armScan = features.robotArm && features.character;
 const RUN_MS = 4000; // the day runs (≤ 6 s, skippable)
 const LAUNCH_MS = 4000;
 
@@ -178,6 +181,13 @@ export function Hud({ model, view, dispatch, lang, setLang, sound, setSound, onS
       {handsOn && !overlay && (
         <div className="pointer-events-none absolute left-4 top-1/2">
           <HandControl tr={tr} />
+        </div>
+      )}
+      {/* (the robot arm's scanner: its button shows only near the arm; the panel opens beside it, mid-left, clear of
+          the radio card and the big button at the bottom) */}
+      {armScan && playing && !overlay && (
+        <div className={`pointer-events-none absolute top-1/2 -translate-y-1/2 ${handsOn ? 'right-4' : 'left-4'}`}>
+          <ArmScanner tr={tr} />
         </div>
       )}
 
