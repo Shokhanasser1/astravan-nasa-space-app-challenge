@@ -1,4 +1,11 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+
+// The ASTRA base's expectations (the HDU complex is tested with the flag passed in, makeOutside(true) etc.): run with
+// features.hduHabitat off, as they were written — it is on by default since 15 Nov ~15:40 (`?nohdu` shows ASTRA).
+vi.mock('../config/features', async (load) => {
+  const real = await load<typeof import('../config/features')>();
+  return { ...real, features: { ...real.features, hduHabitat: false } };
+});
 import { CLIMB_V, climbDuration, climbPhase, climbPose, type ClimbPose, type LadderClimb } from './ladder';
 import { ROOMS, getRoom, type RoomId } from './rooms';
 

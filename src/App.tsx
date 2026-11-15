@@ -5,6 +5,7 @@ import { FIRST_WEEK, initialModel, reducer, toView, truth, type Machine, type Mo
 import { SKY, WEEKS, pickWeek } from './engine/week';
 import type { Lang } from './i18n/t';
 import { audio } from './audio/audio';
+import { IntroVideo } from './ui/entry/IntroVideo';
 import { ambienceFor } from './audio/ambience';
 import { HDU_HABITAT } from './scene/layout';
 import { roomState } from './walk/rooms';
@@ -176,6 +177,10 @@ export function App() {
   };
   const onContinue = saved ? () => dispatch({ type: 'RESUME', model: saved }) : undefined;
 
+  // The intro film on entering the site (features.introVideo, src/ui/entry/IntroVideo.tsx): not on a judge link or a
+  // screenshot, which open straight into the game; the 3D base loads behind it.
+  const [intro, setIntro] = useState(() => features.introVideo && !demo && !params.has('shot') && !params.has('view'));
+
   // ---- the reception desk (features.entry) ----
   const checkIn = (id: Who) => {
     setWho(id);
@@ -243,6 +248,7 @@ export function App() {
         onContinue={model.screen === 'game' ? undefined : onContinue}
         entry={entry}
       />
+      {intro && <IntroVideo tr={tr} onDone={() => setIntro(false)} />}
       {import.meta.env.DEV && !WEEKS.length && (
         <div className="fixed bottom-2 right-2 rounded bg-yellow-400 px-2 py-1 text-sm text-black">src/engine/weeks.json is missing</div>
       )}

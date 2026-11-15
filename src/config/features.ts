@@ -36,9 +36,10 @@ export const features = {
   drive: true,
   // The base core as NASA's Habitat Demonstration Unit complex (15 Nov, Samandar, variant A; src/scene/HduComplex.tsx,
   // layout.ts HDU_PLAN): three walk-in modules at real size (habitat, greenhouse, lab: eight sections, a loft, a ladder
-  // each) joined by tunnels, the rest of the base re-laid in front of it; the outpost is off while it is on. Off until
-  // the team looks at it: `?hdu` shows it for one visit. Cut → ASTRA's habitat, greenhouse and lab.
-  hduHabitat: false,
+  // each) joined by tunnels, the rest of the base re-laid in front of it; the outpost is off while it is on. On by
+  // default since 15 Nov ~15:40 (Shoxjahon aka: first person inside the rooms for everyone, as with `?hdu`).
+  // Cut → ASTRA's habitat, greenhouse and lab.
+  hduHabitat: true,
   // The HDU outpost 50 m north (src/scene/outpostSite.ts, Outpost.tsx; 15 Nov, Samandar's proposal): three NASA Habitat
   // Demonstration Unit modules joined by tunnels, somewhere to drive to; exterior and hitboxes only. On computers
   // with a graphics card (Samandar asked ~10:35 to make it live); phones only with `?outpost`. Cut → nothing there.
@@ -56,6 +57,10 @@ export const features = {
   // (src/scene/crash.ts, Wreck.tsx): "IMPACT · SIGNAL LOST", the helmet lamp, "AIR: 7 DAYS", then walk to the base
   // light, E at the door, Houston inside. Next still skips the walk. Only with `homeStory`; off → today's start.
   homeStoryCrash: true,
+  // The team's intro film on entering the site (Shoxjahon aka, 15 Nov ~15:40; src/ui/entry/IntroVideo.tsx,
+  // public/video/intro.mp4, 36 s, AI-made, the "AI-generated" mark burned in): muted autoplay, Sound and Skip always
+  // on screen, then the reception desk. Not on judge links (`?demo=`) or screenshots (`?shot`). Cut → the desk at once.
+  introVideo: true,
   // Pitch answer 5 (Sunday plan): "no account, no names, no date stored, nothing goes to a server".
   // Keep false unless the whole team changes that answer. True = anonymous results go to our PocketBase.
   sendResults: false,

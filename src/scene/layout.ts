@@ -19,7 +19,8 @@ const query = typeof location !== 'undefined' ? new URLSearchParams(location.sea
  * The base core as NASA's HDU complex (`features.hduHabitat` / `?hdu`): three modules at real size (r 2.1 m, 5.8 m
  * tall), interiors in game metres (scale 1). Built by oy-karvonsaroyi-3d/hb7/hdu_base/build_game_complex.py.
  */
-export const HDU_HABITAT = features.hduHabitat || query.has('hdu');
+// (`?nohdu`: ASTRA's base for one visit, to compare; `?hdu`: the complex even with the flag off)
+export const HDU_HABITAT = (features.hduHabitat && !query.has('nohdu')) || query.has('hdu');
 
 /**
  * One HDU module in game metres, real NASA size (build_game_complex.py hdu_complex_numbers.json): shell radius,

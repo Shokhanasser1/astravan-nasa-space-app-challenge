@@ -1,6 +1,13 @@
 // Walking in the habitat's furnished ground floor (ASTRA look): the inside point stands clear, the walker can walk
 // round the ring hall, and the lining and the furniture stop it — all at the room's scale (ROOM_K).
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+
+// The ASTRA base's expectations (the HDU complex is tested with the flag passed in, makeOutside(true) etc.): run with
+// features.hduHabitat off, as they were written — it is on by default since 15 Nov ~15:40 (`?nohdu` shows ASTRA).
+vi.mock('../config/features', async (load) => {
+  const real = await load<typeof import('../config/features')>();
+  return { ...real, features: { ...real.features, hduHabitat: false } };
+});
 import { BODY, fits, walkStep } from './collide';
 import { HAB_ROOM, ROOM_K } from './habitatRoom';
 import { POINTS } from '../scene/points';

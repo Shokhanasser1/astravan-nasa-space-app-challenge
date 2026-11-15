@@ -3,7 +3,14 @@
 // LAYOUT or ROOMS). Real size, in at the door and out again, through the open middle to the ladder, up and down it,
 // every hitbox inside the lining; the outside camera keeps out of the domes and tunnels. (The interior GLBs'
 // contract is tested with the scene.)
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+
+// The ASTRA base's expectations (the HDU complex is tested with the flag passed in, makeOutside(true) etc.): run with
+// features.hduHabitat off, as they were written — it is on by default since 15 Nov ~15:40 (`?nohdu` shows ASTRA).
+vi.mock('../config/features', async (load) => {
+  const real = await load<typeof import('../config/features')>();
+  return { ...real, features: { ...real.features, hduHabitat: false } };
+});
 import { DOOR_REACH, ROOMS, ROOM_BODY, buildingOf, doorAt, inHduComplex, makeRooms, type Room, type RoomId } from './rooms';
 import { fits, walkStep } from './collide';
 import { makeOutside } from './world';

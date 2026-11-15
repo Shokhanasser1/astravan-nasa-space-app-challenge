@@ -2,6 +2,13 @@
 // points — built for the HDU plan whatever the flag (makeOutside(true), makePoints(true)), so it is tested with the
 // flag off too.
 import { describe, expect, it, vi } from 'vitest';
+
+// The ASTRA base's expectations (the HDU complex is tested with the flag passed in, makeOutside(true) etc.): run with
+// features.hduHabitat off, as they were written — it is on by default since 15 Nov ~15:40 (`?nohdu` shows ASTRA).
+vi.mock('../config/features', async (load) => {
+  const real = await load<typeof import('../config/features')>();
+  return { ...real, features: { ...real.features, hduHabitat: false } };
+});
 import { HDU, HDU_MODULES, HDU_PLAN, moduleToGame } from '../scene/layout';
 import { MARKERS, makePoints } from '../scene/points';
 import { BODY, clearance, fits, walkStep, type Area, type Solid } from './collide';

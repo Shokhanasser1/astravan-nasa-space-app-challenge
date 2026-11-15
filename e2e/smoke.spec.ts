@@ -42,6 +42,8 @@ test('loads, starts and plays the first mission to the truth screen', async ({ p
   page.on('pageerror', (e) => errors.push(e.message));
 
   await page.goto('/?week=2021-10-25');
+  // The intro film on entering the site (features.introVideo): Skip is always on screen.
+  if (features.introVideo) await page.getByTestId('intro-skip').click({ timeout: 15_000 }).catch(() => {});
   await expect(page.locator('canvas')).toBeVisible();
   await page.getByTestId('start-mission').click();
 

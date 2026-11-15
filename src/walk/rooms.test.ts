@@ -1,7 +1,14 @@
 // Walking in the buildings with the astronaut (src/walk/rooms.ts): every room's door spot outside is free ground and
 // finds its room, the astronaut stands clear where it comes in, E inside offers the way out there, and it can walk
 // into the room and never through its walls.
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+
+// The ASTRA base's expectations (the HDU complex is tested with the flag passed in, makeOutside(true) etc.): run with
+// features.hduHabitat off, as they were written — it is on by default since 15 Nov ~15:40 (`?nohdu` shows ASTRA).
+vi.mock('../config/features', async (load) => {
+  const real = await load<typeof import('../config/features')>();
+  return { ...real, features: { ...real.features, hduHabitat: false } };
+});
 import { fits, walkStep } from './collide';
 import { OUTSIDE } from './world';
 import { ROOMS, ROOM_BODY, ROOM_IDS, doorAt, getRoom } from './rooms';
