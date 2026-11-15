@@ -14,7 +14,8 @@ import { load } from '../../lib/storage';
  * damages a suit; no invented percentage). Text through t() keys (scene.suit.*). Canvases are redrawn only when the
  * numbers or the language change; the scene asks for frames only while the hologram fades.
  */
-export type SuitData = { air: number; airMax: number; level: number; ratio: number | undefined };
+/** known: false on an alert day before it is lived (the HUD shows "?"; 15 Nov playtest: the suit said "Quiet"). */
+export type SuitData = { air: number; airMax: number; level: number; ratio: number | undefined; known?: boolean };
 
 const CYAN = '#5ee0ff';
 const CYAN_HI = '#a6eeff';
@@ -253,11 +254,12 @@ export class WristTablet {
   /** New numbers (from the View): redraw both screens only when something shown has changed. */
   setData(d: SuitData) {
     const lang = load<Lang>('lang', 'en');
-    const key = `${lang}|${d.air}|${d.airMax}|${d.level}|${d.ratio ?? ''}`;
+    const known = d.known !== false;
+    const key = `${lang}|${d.air}|${d.airMax}|${d.level}|${d.ratio ?? ''}|${known}`;
     if (key === this.key) return false;
     this.key = key;
     const tr = (k: string, vars?: Record<string, string | number>) => t(lang, k, vars);
-    const radTone = d.level > 0 ? AMBER : CYAN;
+    const radTone = d.level > 0 || !known ? AMBER : CYAN;
     const airFrac = d.airMax > 0 ? Math.max(0, Math.min(1, d.air / d.airMax)) : 0;
     const radFrac = Math.max(0.05, Math.min(1, d.level / 4));
 
@@ -311,8 +313,12 @@ export class WristTablet {
     g.fillText(tr('scene.suit.title').toUpperCase(), 44, 50);
     const x = 36, w = W - 72;
     row(g, x, 106, w, `O₂ · ${tr('scene.suit.o2')}`, tr('scene.suit.o2Value', { n: d.air, max: d.airMax }), airFrac, CYAN, tr('ui.label.rule'));
-    const rad = d.ratio !== undefined && d.level > 0 ? `${tr(`ui.level.${d.level}`)} · ${d.ratio.toFixed(1)}×` : tr(`ui.level.${d.level}`);
-    row(g, x, 196, w, tr('scene.suit.rad'), rad, radFrac, radTone, tr('ui.label.measured'));
+    const rad = !known
+      ? `? · ${tr('ui.level.unknown')}`
+      : d.ratio !== undefined && d.level > 0
+        ? `${tr(`ui.level.${d.level}`)} · ${d.ratio.toFixed(1)}×`
+        : tr(`ui.level.${d.level}`);
+    row(g, x, 196, w, tr('scene.suit.rad'), rad, known ? radFrac : 0.05, radTone, tr('ui.label.measured'));
     row(g, x, 286, w, tr('scene.suit.seal'), tr('scene.suit.sealOk'), 1, MINT, tr('ui.label.rule'));
     this.boardTex.needsUpdate = true;
     return true;

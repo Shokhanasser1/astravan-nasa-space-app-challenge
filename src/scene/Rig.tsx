@@ -3,7 +3,7 @@ import { useFrame, useThree, type ThreeEvent } from '@react-three/fiber';
 import * as THREE from 'three';
 import type { View } from '../state/game';
 import { camState, gesture, launchState } from './anim';
-import { DOOR_AZ, DOOR_R, HDU, HDU_COMPLEX, HDU_HABITAT, HDU_MODULES, LAYOUT, moduleToGame, RADIUS, type HduModule } from './layout';
+import { aimNear, DOOR_AZ, DOOR_R, HDU, HDU_COMPLEX, HDU_HABITAT, HDU_MODULES, LAYOUT, moduleToGame, RADIUS, type HduModule } from './layout';
 import { EYE, FOCUS, POINTS, homePoint, phasePoint, type PointId, type Vec3 } from './points';
 import { bedtime } from '../state/homeDay';
 import { GLOW } from './parts/materials';
@@ -302,11 +302,12 @@ const boardLook: Vec3 = [0, 0, 0];
 /** What E (or the ✋ button, or a tap) acts on: the power hub and the machines, at their footprint (src/controls/aim.ts). */
 const AIM: AimTarget[] = [
   { k: 'hub', x: LAYOUT.hub[0], z: LAYOUT.hub[1], r: RADIUS.hub, near: 1.6 },
-  { k: 'ls', x: LAYOUT.habitat[0], z: LAYOUT.habitat[1], r: RADIUS.habitat },
-  { k: 'gh', x: LAYOUT.garden[0], z: LAYOUT.garden[1], r: RADIUS.garden },
-  { k: 'ws', x: LAYOUT.workshop[0], z: LAYOUT.workshop[1], r: RADIUS.workshop },
-  { k: 'sc', x: LAYOUT.scout[0], z: LAYOUT.scout[1], r: RADIUS.scout },
-  { k: 'launch', x: LAYOUT.lander[0], z: LAYOUT.lander[1], r: RADIUS.lander },
+  // (inside a machine's ground ring it counts whichever way the astronaut faces: layout.ts aimNear)
+  { k: 'ls', x: LAYOUT.habitat[0], z: LAYOUT.habitat[1], r: RADIUS.habitat, near: aimNear('ls') },
+  { k: 'gh', x: LAYOUT.garden[0], z: LAYOUT.garden[1], r: RADIUS.garden, near: aimNear('gh') },
+  { k: 'ws', x: LAYOUT.workshop[0], z: LAYOUT.workshop[1], r: RADIUS.workshop, near: aimNear('ws') },
+  { k: 'sc', x: LAYOUT.scout[0], z: LAYOUT.scout[1], r: RADIUS.scout, near: aimNear('sc') },
+  { k: 'launch', x: LAYOUT.lander[0], z: LAYOUT.lander[1], r: RADIUS.lander, near: aimNear('launch') },
 ];
 const wrap = (a: number) => Math.atan2(Math.sin(a), Math.cos(a));
 const ease = (t: number) => (t < 0.5 ? 2 * t * t : 1 - (-2 * t + 2) ** 2 / 2);
@@ -1508,12 +1509,13 @@ export function Rig({ view }: { view: View }) {
   const aboard = boarding && view.launched === true && view.phase === 'truth';
   const astronaut = character ? <Astronaut body={body} visible={point !== 'inside' && !aboard} hands={view.hands ?? 0} view={view} /> : null;
 
-  return hideMarkers ? (
-    astronaut
-  ) : (
+  // One tree shape in every phase: switching between a bare astronaut and a group remounted it (a new model clone,
+  // mixer and wrist tablet at the title → game step and at the launch)
+  return (
     <group>
       {astronaut}
-      {point !== 'inside' &&
+      {!hideMarkers &&
+        point !== 'inside' &&
         hduDoors?.map((d) => (
           <group key={d.id} position={d.pos} rotation-y={HDU_COMPLEX.turn}>
             <mesh scale={[0.68, 1.32, 1]} material={GLOW.marker}>
@@ -1526,7 +1528,7 @@ export function Rig({ view }: { view: View }) {
             </mesh>
           </group>
         ))}
-      {point !== 'inside' && !hduDoors && (
+      {!hideMarkers && point !== 'inside' && !hduDoors && (
         <group position={door} rotation-y={DOOR_AZ}>
           <mesh scale={[0.68, 1.32, 1]} material={GLOW.marker}>
             <ringGeometry args={[0.64, 0.7, 4, 1, Math.PI / 4]} />

@@ -1,6 +1,6 @@
 import { Instance, Instances } from '@react-three/drei';
 import type { Machine, View } from '../state/game';
-import { HDU_HABITAT, LAYOUT, RADIUS } from './layout';
+import { AIM_RING, HDU_HABITAT, LAYOUT, RADIUS } from './layout';
 import { Terrain } from './Terrain';
 import { Decor } from './Decor';
 import { Outpost } from './Outpost';
@@ -111,11 +111,11 @@ export function BaseScene({ view }: { view: View; onTap?: (k: Machine) => void; 
 }
 
 const TARGETS = [
-  { k: 'ls', at: LAYOUT.habitat, r: RADIUS.habitat + 1.1 },
-  { k: 'gh', at: LAYOUT.garden, r: RADIUS.garden + 0.5 },
-  { k: 'ws', at: LAYOUT.workshop, r: RADIUS.workshop + 0.6 },
-  { k: 'sc', at: LAYOUT.scout, r: RADIUS.scout + 0.5 },
-  { k: 'launch', at: LAYOUT.lander, r: RADIUS.lander + 0.7 },
+  { k: 'ls', at: LAYOUT.habitat, r: RADIUS.habitat + AIM_RING.ls },
+  { k: 'gh', at: LAYOUT.garden, r: RADIUS.garden + AIM_RING.gh },
+  { k: 'ws', at: LAYOUT.workshop, r: RADIUS.workshop + AIM_RING.ws },
+  { k: 'sc', at: LAYOUT.scout, r: RADIUS.scout + AIM_RING.sc },
+  { k: 'launch', at: LAYOUT.lander, r: RADIUS.lander + AIM_RING.launch },
 ] as const satisfies readonly { k: Machine; at: readonly [number, number]; r: number }[];
 const SOFT = glowColor('#9fd3ff', 0.35);
 const STRONG = glowColor('#9fd3ff', 0.9);

@@ -4,6 +4,9 @@ import { AIM_REACH, pickAim, type AimTarget } from './aim';
 import { TRAVEL, choices, resolve, type Ctx } from './act';
 import { board, initialModel, reducer, type Model } from '../state/game';
 import { week as realWeek } from '../engine/golden';
+import { AIM_RING, ASTRA_PLAN, aimNear } from '../scene/layout';
+import { makeOutside } from '../walk/world';
+import { BODY } from '../walk/collide';
 
 const key = (code: string, k = '', mods: Partial<{ ctrlKey: boolean; metaKey: boolean; altKey: boolean }> = {}) =>
   command({ code, key: k, ...mods });
@@ -79,6 +82,32 @@ describe('aim: the building in front', () => {
     expect(pickAim(0, 0, 0, [{ ...hub, near: undefined }])).toBeNull(); // without `near` the heading counts
     // a building in front wins over the one beside
     expect(pickAim(0, 0, 0, [hub, { k: 'ls', x: 0, z: -3, r: 1 }])).toBe('ls');
+  });
+
+  it('playtest 15 Nov: walked into a machine and slid along it, facing sideways or away, E still aims at it', () => {
+    const { LAYOUT, RADIUS } = ASTRA_PLAN;
+    const solids = makeOutside(false).solids;
+    const machines = [
+      { k: 'ls', site: LAYOUT.habitat, r: RADIUS.habitat, solid: 'habitat' },
+      { k: 'gh', site: LAYOUT.garden, r: RADIUS.garden, solid: 'garden' },
+      { k: 'ws', site: LAYOUT.workshop, r: RADIUS.workshop, solid: 'workshop' },
+      { k: 'sc', site: LAYOUT.scout, r: RADIUS.scout, solid: 'scout' },
+      { k: 'launch', site: LAYOUT.lander, r: RADIUS.lander, solid: 'lander' },
+    ] as const;
+    for (const m of machines) {
+      const hit = solids.find((s) => s.name === m.solid)!;
+      const touch = hit.r + BODY + 0.05; // the body's centre, pressed against the hitbox
+      expect(touch - 0.05 - m.r, m.k).toBeLessThanOrEqual(AIM_RING[m.k]); // the drawn ring covers the place a walker stops
+      const t: AimTarget = { k: m.k, x: m.site[0], z: m.site[1], r: m.r, near: aimNear(m.k) };
+      for (let i = 0; i < 8; i++) {
+        const a = (i * Math.PI) / 4;
+        const x = m.site[0] + Math.sin(a) * touch;
+        const z = m.site[1] + Math.cos(a) * touch;
+        // forward is (−sin yaw, −cos yaw): yaw a − π/2 runs along the wall, yaw a + π faces straight away
+        expect(pickAim(x, z, a - Math.PI / 2, [t]), `${m.k} along`).toBe(m.k);
+        expect(pickAim(x, z, a + Math.PI, [t]), `${m.k} away`).toBe(m.k);
+      }
+    }
   });
 
   it('a building a little off the centre still counts; far off it does not', () => {

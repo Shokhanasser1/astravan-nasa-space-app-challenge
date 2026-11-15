@@ -202,6 +202,17 @@ export const LAYOUT = PLAN.LAYOUT;
 export const RADIUS = PLAN.RADIUS;
 export const BATTERY_BANK = PLAN.BATTERY_BANK;
 export const BATTERY_R = 1.7;
+/**
+ * The glowing ground ring round each machine (BaseScene TARGETS), metres beyond its footprint (RADIUS). Standing inside
+ * it counts as "at" the machine for E whichever way the astronaut faces (src/controls/aim.ts `near`): walked into a
+ * wall, the astronaut slides along it and ends up facing sideways (15 Nov playtest: E did nothing at the Air Maker).
+ * Each ring reaches past the hitbox (+ the body), so touching a building is always inside its ring.
+ */
+export const AIM_RING = { ls: 1.1, gh: 0.5, ws: 0.6, sc: 0.5, launch: 0.7 } as const;
+/** E still counts this far outside a ring's line (a child stops on it, not neatly inside it). */
+export const AIM_RING_SLACK = 0.3;
+/** How far beyond its footprint a machine counts as "beside" for E (src/controls/aim.ts `near`). */
+export const aimNear = (k: keyof typeof AIM_RING): number => AIM_RING[k] + AIM_RING_SLACK;
 export const PARKED_ROVER = PLAN.PARKED_ROVER;
 export const DOOR_AZ = PLAN.DOOR_AZ;
 export const DOOR_R = PLAN.DOOR_R;

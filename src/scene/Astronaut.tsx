@@ -277,7 +277,9 @@ export function Astronaut({ body, visible, hands = 0, view }: { body: Body; visi
     // the suit tablet: standing still a moment (outside, hands free, planning), check the wrist; the hologram rises
     if (suit) {
       const v = live.current.view;
-      if (v?.res && suit.setData({ air: v.res.air, airMax: v.res.airMax, level: v.level, ratio: v.ratio })) state.invalidate();
+      // (an alert day stays unknown until it is lived, as on the HUD's day badge: src/ui/play/Visor.tsx)
+      const known = !(v?.alert && (v.phase === 'morning' || v.phase === 'plan' || v.phase === 'run'));
+      if (v?.res && suit.setData({ air: v.res.air, airMax: v.res.airMax, level: v.level, ratio: v.ratio, known })) state.invalidate();
       const phase = live.current.phase;
       const calm =
         model.visible && k === 1 && !seated && body.onGround && speed < 0.15 && h.hands === 0 && !armOn() && !climbState.on &&
