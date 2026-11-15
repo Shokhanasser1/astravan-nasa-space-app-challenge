@@ -10,6 +10,8 @@ import { buildGreenhouse } from '../vendor/astra/scene/models/life';
 import { buildLander, buildPad } from '../vendor/astra/scene/models/site';
 import { buildLab } from '../vendor/astra/scene/models/works';
 import { bake, mergeWorld } from './astra/bake';
+import { mergePlants, type Plants } from './astra/plants';
+import { LAYOUT, PAD } from './layout';
 
 /**
  * The base in ASTRA's look (15 Nov, Shoxjahon aka: the best of ASTRA + the best of ours). ASTRA's procedural models
@@ -18,8 +20,12 @@ import { bake, mergeWorld } from './astra/bake';
  * small meshes become a few, so phones keep their budget. Power changes only materials (ASTRA's own rule).
  */
 
-/** Scales that keep each model inside our building's footprint (src/scene/layout.ts RADIUS, walk/world.ts). */
-export const ASTRA_SCALE = { habitat: 0.34, greenhouse: 0.45, lab: 0.6, lander: 0.45 } as const;
+/**
+ * Real-ish size next to the 1.85 m astronaut (15 Nov ~05:00, Shoxjahon aka: "the base models are small"; it was
+ * 0.34 / 0.45 / 0.6 / 0.45 to fit the old small plan): habitat 5.8 m tall, 6.3 m across; greenhouse 4.4 m long,
+ * 1.6 m high; lab 3.4 m tall; lander 4.3 m tall. The plan grew with them (src/scene/layout.ts LAYOUT, RADIUS, PAD).
+ */
+export const ASTRA_SCALE = { habitat: 0.6, greenhouse: 0.9, lab: 0.85, lander: 0.7, scout: 0.9, battery: 1.0 } as const;
 
 // Phones build every curved part with half the segments (src/vendor/astra/scene/kit.ts sg): the base stays inside
 // the phone budget (< 100k triangles). Computers keep ASTRA's own detail.
@@ -39,24 +45,51 @@ export function astraModule(build: (v: ModuleView) => void): ModuleView {
   if (view.yaw) keep.push(view.yaw);
   if (view.tilt) keep.push(view.tilt);
   if (view.shield) keep.push(view.shield);
+  if (view.plants) keep.push(view.plants);
   const live: THREE.Material[] = [view.status, ...view.glow, ...view.blink, ...(view.bars ?? [])];
   if (view.windows) live.push(view.windows);
   bake(g, { keep, live });
   // What moves stays its own part, but its own pieces merge too (a solar wing, a fan); the shield is revealed
-  // bag by bag, so it is left as it is.
-  for (const k of keep) if (k !== view.shield) bake(k, { keep: keep.filter((o) => o !== k), live });
+  // bag by bag, so it is left as it is; the plants merge their own way (one mesh that follows the garden level).
+  for (const k of keep) if (k !== view.shield && k !== view.plants) bake(k, { keep: keep.filter((o) => o !== k), live });
   for (const k of keep) k.userData.moves = true; // AstraMerge leaves these alone
+  if (view.plants) view.plants.userData.merged = mergePlants(view.plants);
   return view;
 }
 
-/** ASTRA's power look (World.tsx): glow 0.08 + 1.9 × power, green or amber status lamp, warm windows. */
+/**
+ * ASTRA's power look (World.tsx), made plainer to read from across the base (15 Nov): a powered building's lights
+ * glow past the bloom threshold (0.08 + 2.6 × power, ASTRA had 1.9) and its windows shine warm (2.4, ASTRA 1.6);
+ * without power they go nearly dark (0.03 / 0.05) and the status lamp turns amber. Materials only: no draw calls.
+ */
 export function setPower(v: ModuleView, on: boolean): void {
-  for (const m of v.glow) m.emissiveIntensity = 0.08 + (on ? 1.9 : 0) * ((m.userData.glow as number | undefined) ?? 1);
+  for (const m of v.glow) m.emissiveIntensity = on ? 0.08 + 2.6 * ((m.userData.glow as number | undefined) ?? 1) : 0.03;
   const lamp = on ? '#3ee39a' : '#ffb340';
   v.status.color.set(lamp);
   v.status.emissive.set(lamp);
-  v.status.emissiveIntensity = on ? 0.9 : 0.4;
-  if (v.windows) v.windows.emissiveIntensity = on ? 1.6 : 0.12;
+  v.status.emissiveIntensity = on ? 1.4 : 0.4;
+  if (v.windows) v.windows.emissiveIntensity = on ? 2.4 : 0.05;
+  const glazing = v.group.userData.glazing as THREE.MeshPhysicalMaterial[] | undefined;
+  for (const m of glazing ?? []) m.emissiveIntensity = on ? 0.9 : 0;
+}
+
+/** The greenhouse's glazing gets its own copy of ASTRA's shared glass, lit pink by the grow lights when powered. */
+function ownGlazing(g: THREE.Object3D): void {
+  const copies = new Map<THREE.Material, THREE.MeshPhysicalMaterial>();
+  g.traverse((o) => {
+    const m = o as THREE.Mesh;
+    const mat = m.material as THREE.MeshPhysicalMaterial | undefined;
+    if (!m.isMesh || !mat || Array.isArray(mat) || !mat.isMeshPhysicalMaterial || !mat.transparent) return;
+    let c = copies.get(mat);
+    if (!c) {
+      c = mat.clone();
+      c.emissive.set('#ff9fe0');
+      c.emissiveIntensity = 0;
+      copies.set(mat, c);
+    }
+    m.material = c;
+  });
+  g.userData.glazing = [...copies.values()];
 }
 
 /** Spinning parts turn while the building works (only while frames are drawn: a calm scene is not redrawn for it). */
@@ -79,11 +112,16 @@ export function AstraHabitat({ on, wall, turn }: { on: boolean; wall: number; tu
   return <primitive object={v.group} rotation-y={turn} scale={ASTRA_SCALE.habitat} />;
 }
 
-/** Garden: ASTRA's greenhouse, grow lights on with batteries. */
-export function AstraGreenhouse({ on, turn }: { on: boolean; turn: number }) {
-  const v = useMemo(() => astraModule(buildGreenhouse), []);
+/** Garden: ASTRA's greenhouse, grow lights on with batteries; its plants show the garden level (view.plant 0–4). */
+export function AstraGreenhouse({ on, turn, plant }: { on: boolean; turn: number; plant: number }) {
+  const v = useMemo(() => {
+    const m = astraModule(buildGreenhouse);
+    ownGlazing(m.group);
+    return m;
+  }, []);
   v.group.name = 'astra_greenhouse';
   setPower(v, on);
+  (v.plants?.userData.merged as Plants | undefined)?.setLevel(plant);
   useSpin(v, on, 3);
   return <primitive object={v.group} rotation-y={turn} scale={ASTRA_SCALE.greenhouse} />;
 }
@@ -119,11 +157,12 @@ export function AstraPads({ pads }: { pads: { x: number; z: number; size: number
   const all = useMemo(() => {
     const root = new THREE.Group();
     for (const d of pads) {
+      const size = padSize(d.x, d.z) ?? d.size;
       const p = buildPad('moon', 'base');
       finalize(p);
       p.position.set(d.x, 0.005, d.z);
       p.rotation.y = d.turn ?? 0;
-      p.scale.setScalar(d.size / 5.7);
+      p.scale.setScalar(size / 5.7);
       root.add(p);
     }
     bake(root, { keep: [], live: [] });
@@ -131,6 +170,15 @@ export function AstraPads({ pads }: { pads: { x: number; z: number; size: number
     return root;
   }, [pads]);
   return <primitive object={all} />;
+}
+
+/** A pad under a building of the layout takes that building's size (layout.ts PAD: it grew with the buildings). */
+function padSize(x: number, z: number): number | undefined {
+  for (const k of Object.keys(PAD) as (keyof typeof PAD)[]) {
+    const [bx, bz] = LAYOUT[k];
+    if (Math.abs(bx - x) < 0.01 && Math.abs(bz - z) < 0.01) return PAD[k];
+  }
+  return undefined;
 }
 
 /**

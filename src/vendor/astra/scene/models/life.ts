@@ -4,7 +4,7 @@
 import * as THREE from "three";
 import type { Planet } from "../../sim/types";
 import { addDetail, DETAIL } from "../surface";
-import { bolts, box, contactShadow, cyl, foil, geo, glass, grille, keep, lathe, light, metal, mesh, paint, pipe, rbox, rng, rubber, shared, strut, torus } from "../kit";
+import { bolts, box, contactShadow, cyl, foil, geo, glass, grille, keep, lathe, light, metal, mesh, paint, pipe, rbox, rng, rubber, sg, shared, strut, torus } from "../kit";
 import { C, cabinet, hazard, label, skid, sphereTank, statusLamp, type ModuleView } from "./common";
 
 /** A stack of electrolysis cells between two end plates, held by tie rods; axis along x. */
@@ -138,7 +138,7 @@ export function buildRecycler(view: ModuleView) {
 /** One leaf: an ellipse, cupped across and curved along its length; its stem is at the origin and it points along +x. */
 function leafGeometry(len: number, width: number, curl: number) {
   return geo(`leaf${len},${width},${curl}`, () => {
-    const g = new THREE.PlaneGeometry(len, width, 6, 3);
+    const g = new THREE.PlaneGeometry(len, width, sg(6, 3), sg(3, 2)); // HB7: detail level (phones: 12 triangles a leaf)
     const p = g.attributes.position;
     for (let i = 0; i < p.count; i++) {
       const u = p.getX(i) / len + 0.5,
@@ -191,7 +191,7 @@ function vine(g: THREE.Object3D, x: number, y: number, z: number, h: number, r: 
   }
   for (let k = 0; k < 3; k++) {
     const t = 0.25 + r() * 0.5;
-    const tomato = mesh(geo("tomato", () => new THREE.SphereGeometry(0.045, 12, 8).scale(1, 0.85, 1)), fruit, g, x + (r() - 0.5) * 0.14, y + t * h, z + (r() - 0.5) * 0.14);
+    const tomato = mesh(geo("tomato", () => new THREE.SphereGeometry(0.045, sg(12, 6), sg(8, 4)).scale(1, 0.85, 1) /* HB7: detail level */), fruit, g, x + (r() - 0.5) * 0.14, y + t * h, z + (r() - 0.5) * 0.14);
     tomato.scale.setScalar(0.8 + r() * 0.4);
   }
 }
@@ -264,11 +264,18 @@ export function buildGreenhouse(view: ModuleView) {
   const greens = [plantMaterial("#4e9b3e"), plantMaterial("#6db24a"), plantMaterial("#3b8236")];
   const red = paint("#d8402f", 0.35, 0);
   const stem = paint("#4a7a34", 0.8, 0);
+  // HB7: each plant in its own kept group (finalize merges it on its own) under view.plants: HOME BY SEVEN shows as
+  // many as the garden level allows and tints them (src/scene/astra/plants.ts).
+  const plants = keep(new THREE.Group());
+  g.add(plants);
+  view.plants = plants;
   for (let i = 0; i < 18; i++) {
     const x = -1.75 + (i % 9) * 0.44,
       z = i < 9 ? -0.62 : 0.62;
-    if (i % 3 === 2) vine(g, x, y0 + 0.59, z, 0.6 + r() * 0.12, r, greens, red, stem);
-    else rosette(g, x + (r() - 0.5) * 0.06, y0 + 0.59, z + (r() - 0.5) * 0.06, 0.26 + r() * 0.05, r, greens);
+    const p = keep(new THREE.Group());
+    plants.add(p);
+    if (i % 3 === 2) vine(p, x, y0 + 0.59, z, 0.6 + r() * 0.12, r, greens, red, stem);
+    else rosette(p, x + (r() - 0.5) * 0.06, y0 + 0.59, z + (r() - 0.5) * 0.06, 0.26 + r() * 0.05, r, greens);
   }
   view.status = statusLamp(g, 2.3, y0 + 1.42, 0.65);
   view.top = 2.3;

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { LAYOUT } from '../scene/layout';
+import { LAYOUT, RADIUS } from '../scene/layout';
 import { MARKERS, POINTS } from '../scene/points';
 import { BODY, clearance, fits, walkStep } from './collide';
 import { EDGE, INSIDE, OUTSIDE, ROOM } from './world';
@@ -18,10 +18,12 @@ describe("the base's hitboxes", () => {
       expect(fits(x, z, OUTSIDE), id).toBe(true);
       expect(Math.hypot(x, z), id).toBeLessThan(EDGE - 5);
     }
-    // 1.5 m of clear ground somewhere round the hub, and the ladder point within reach of the lander.
+    // The plan point stands close behind the hub (within reach: the player acts there without walking, integrator
+    // 15 Nov) with room to stand; the ladder point within reach of the lander.
     const hub = OUTSIDE.solids.find((s) => s.name === 'hub')!;
     const [hx, , hz] = POINTS.hub.pos;
-    expect(clearance(hub, hx, hz)).toBeGreaterThan(1.5);
+    expect(clearance(hub, hx, hz)).toBeGreaterThan(0.5);
+    expect(Math.hypot(hx - LAYOUT.hub[0], hz - LAYOUT.hub[1]) - RADIUS.hub).toBeLessThan(1.8);
     const [lx, , lz] = POINTS.ladder.pos;
     expect(Math.hypot(lx - LAYOUT.lander[0], lz - LAYOUT.lander[1])).toBeLessThan(3);
   });

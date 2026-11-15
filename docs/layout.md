@@ -5,14 +5,19 @@ south-east. Flat ground for 11 m around the base, craters beyond, a ridge on the
 
 | Object | Code name / file | X, m | Z, m | Machine it powers |
 |---|---|---|---|---|
-| Habitat (Turar modul) | `Habitat` / `hab.glb`, 3.6 m tall | 0.2 | 0.8 | Life Support (`ls`) |
-| Moon garden (Oy bogʻi) | `Garden` / `garden.glb` | −5.6 | −2.4 | Garden (`gh`) |
-| Workshop (Ustaxona) | `Workshop` / `workshop.glb` | 6.0 | 4.2 | Workshop (`ws`) |
-| Lander (Qoʻnish apparati) | `Lander` / `lander.glb` | 5.6 | −8.6 | Launch (`launch`) |
-| Solar wing (Quyosh qanoti) | `SolarWing` (code) | −7.4 | −7.2 | — (bent at landing; "Wing Fixed") |
-| Power hub (Quvvat tuguni) | `Hub` (code) | −3.6 | 4.6 | — (six lights = batteries) |
-| Scout (Skaut) | `Scout` / `scout.glb` | −3.4 | 10.6 | Explore (`sc`) |
-| Antenna / Dish | `Dish` / `dish.glb` | 10.5 | −2.5 | — (module) |
+| Habitat (Turar modul) | `Habitat` (ASTRA, 5.8 m tall, r 3.2) | 0.2 | 0.8 | Life Support (`ls`) |
+| Moon garden (Oy bogʻi) | `Garden` (ASTRA greenhouse 4.4 m) | −9.0 | −3.2 | Garden (`gh`) |
+| Workshop (Ustaxona) | `Workshop` (ASTRA lab, 3.4 m tall) | 8.9 | 5.9 | Workshop (`ws`) |
+| Lander (Qoʻnish apparati) | `Lander` (ASTRA, 4.3 m tall) | 7.6 | −12.4 | Launch (`launch`) |
+| Solar wing (Quyosh qanoti) | `SolarWing` / ASTRA arrays | −11.5 | −12.0 | — (bent at landing; "Wing Fixed") |
+| Power hub (Quvvat tuguni) | `Hub` (code) | −5.5 | 6.5 | — (six lights = batteries) |
+| Scout (Skaut) | `Scout` / `scout.glb` | −5.2 | 15.5 | Explore (`sc`) |
+| Antenna / Dish | `Dish` / `dish.glb` | 15.7 | −4.2 | — (module) |
+| Life-support tanks | `parts/Tanks.tsx` (air/water level bands) | 0.2 | 7.75 | — (shows `res.air`) |
+
+**15 Nov ~05:00 (Shoxjahon aka: "the base models are small"):** ASTRA's buildings at real-ish size next to the
+1.85 m astronaut and the plan spread ~1.5× around the habitat; the numbers live in `src/scene/layout.ts` (LAYOUT,
+RADIUS, PAD, BATTERY_BANK, PARKED_ROVER, TANKS) — code wins over this table. Flat pad 22 m.
 
 Rules (developer guide §03–§06):
 - No free orbit and no free walking: the child looks around with one finger from a standing point (final version);

@@ -2,16 +2,19 @@
  * Ground height (developer guide §04, now on the real ground): NASA LRO LOLA heights of the Shackleton–de Gerlache
  * ridge (public/data/terrain/site.json, scripts/data/moon_terrain.py) + small craters (src/look/terrain.js) + the
  * team's own relief on top: the hill with a view over the base (standing point 5) and the dark crater of the Ice
- * card. Flat for 13.5 m around the base. Pure function: the rig uses it to put the eye 1.7 m above the ground.
+ * card. Flat for 22 m around the base. Pure function: the rig uses it to put the eye 1.7 m above the ground.
  */
 import site from '../../public/data/terrain/site.json';
 import { Heights } from '../look/terrain.js';
 
-// 13.5 m: the whole base is flat, the solar wing's tips (13 m out) and the lander's legs included.
-const FLAT_R = 13.5;
+// 22 m: the whole base is flat (spread on 15 Nov when the buildings grew to real size), the solar arrays (~21 m out),
+// the parked rover and the lander's legs included.
+const FLAT_R = 22;
+const FLAT_BLEND = 10;
 
 export const ICE_CRATER = { x: -34, z: -84 } as const;
-export const HILL = { x: 17, z: 21, r: 8, h: 3.2 } as const;
+// (beyond the pad's blend, FLAT_R + FLAT_BLEND, or the pad would flatten it)
+export const HILL = { x: 22, z: 28, r: 8, h: 3.2 } as const;
 const ICE = { r: 26, d: 5 };
 
 /** The team's relief (metres) added on top of the real ground. */
@@ -32,7 +35,7 @@ const phi = (site.frame.rotation_deg * Math.PI) / 180;
 const FRAME: [number, number, number, number] = [Math.cos(phi), -Math.sin(phi), -Math.sin(phi), -Math.cos(phi)];
 
 export const GROUND = new Heights(site, 2026, {
-  pad: { x: 0, z: 0, rx: FLAT_R, rz: FLAT_R, blend: 12 },
+  pad: { x: 0, z: 0, rx: FLAT_R, rz: FLAT_R, blend: FLAT_BLEND },
   extra: teamRelief,
   frame: FRAME,
   color: '#a3a5ad',

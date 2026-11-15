@@ -1,7 +1,7 @@
 import { useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import type * as THREE from 'three';
-import { LAYOUT } from '../layout';
+import { LAYOUT, RADIUS } from '../layout';
 import { GLOW, MAT } from './materials';
 import type { TapHandler } from './tap';
 import { Shell, type NodeRef } from '../models/Shell';
@@ -28,7 +28,7 @@ export function Workshop({ on, tap }: { on: boolean; tap: TapHandler }) {
       {astraLook ? (
         <AstraLab on={on} turn={faceCentre(x, z)} />
       ) : (
-        <>
+        <group scale={RADIUS.workshop / 1.55}>
       {/* the model's front (+Z) turns to the door side (−X) */}
       <Shell
         name="workshop"
@@ -51,7 +51,7 @@ export function Workshop({ on, tap }: { on: boolean; tap: TapHandler }) {
       <mesh position={[-0.6, 2.02, 0.6]} material={on ? GLOW.cableOn : GLOW.dark}>
         <boxGeometry args={[0.3, 0.2, 0.3]} />
       </mesh>
-        </>
+        </group>
       )}
     </group>
   );

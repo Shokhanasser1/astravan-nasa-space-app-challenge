@@ -2,7 +2,7 @@ import { useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Instance, Instances } from '@react-three/drei';
 import * as THREE from 'three';
-import { LAYOUT } from '../layout';
+import { LAYOUT, RADIUS } from '../layout';
 import { launchState } from '../anim';
 import { GLOW, MAT } from './materials';
 import type { TapHandler } from './tap';
@@ -65,6 +65,7 @@ export function Lander({ on, phase, tap }: { on: boolean; phase: string; tap: Ta
         {astraLook ? (
           <AstraLander turn={faceCentre(x, z)} />
         ) : (
+        <group scale={RADIUS.lander / 1.6}>
         <Shell
           name="lander"
           nodes={nodes}
@@ -94,6 +95,7 @@ export function Lander({ on, phase, tap }: { on: boolean; phase: string; tap: Ta
             </>
           }
         />
+        </group>
         )}
         <mesh position={[0, 0.55, 0]} material={on || flying ? GLOW.cableOn : GLOW.dark}>
           <cylinderGeometry args={[0.45, 0.6, 0.12, 16]} />

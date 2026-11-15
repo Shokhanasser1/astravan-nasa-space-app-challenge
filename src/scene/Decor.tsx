@@ -2,8 +2,10 @@ import { Component, Suspense, useEffect, useMemo, type ReactNode } from 'react';
 import { useThree } from '@react-three/fiber';
 import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
-import { DOOR_AZ, LAYOUT, PARKED_ROVER as SEV } from './layout';
+import { DOOR_AZ, DOOR_R, LAYOUT, PARKED_ROVER as SEV } from './layout';
 import { ICE_CRATER, groundHeight } from './ground';
+import { initialTier } from './quality';
+import { softwareGl } from './rich';
 
 /**
  * NASA models around the base that are not machines of the week (public/models/nasa-decor, Samandar's catalog,
@@ -13,8 +15,9 @@ import { ICE_CRATER, groundHeight } from './ground';
 const base = `${import.meta.env.BASE_URL}models/nasa-decor/`;
 const toCrater = Math.atan2(ICE_CRATER.x, ICE_CRATER.z);
 const RASSOR = { x: ICE_CRATER.x - Math.sin(toCrater) * 27, z: ICE_CRATER.z - Math.cos(toCrater) * 27, yaw: toCrater };
-const doorX = LAYOUT.habitat[0] + Math.sin(DOOR_AZ) * 2.9;
-const doorZ = LAYOUT.habitat[1] + Math.cos(DOOR_AZ) * 2.9;
+// (just outside the habitat's regolith shield, beside the door)
+const doorX = LAYOUT.habitat[0] + Math.sin(DOOR_AZ) * (DOOR_R + 0.7);
+const doorZ = LAYOUT.habitat[1] + Math.cos(DOOR_AZ) * (DOOR_R + 0.7);
 const BAGS: [number, number, number, number][] = [
   [doorX + Math.cos(DOOR_AZ) * 1.0, 0, doorZ - Math.sin(DOOR_AZ) * 1.0, 0.3],
   [doorX + Math.cos(DOOR_AZ) * 1.5, 0, doorZ - Math.sin(DOOR_AZ) * 1.5, -0.2],
@@ -63,11 +66,15 @@ function One(props: { file: string; at: [number, number, number]; yaw: number; s
   );
 }
 
+// RASSOR (12.6k triangles, ~60 m out by the ASTRA ice drill) on computers with a graphics card only: on a phone it
+// is a few pixels that cost a tenth of the triangle budget (< 100k).
+const farDecor = typeof window !== 'undefined' && initialTier() === 'pc' && !softwareGl();
+
 export function Decor() {
   return (
     <group>
       <One file="sev.glb" at={[SEV.x, groundHeight(SEV.x, SEV.z), SEV.z]} yaw={SEV.yaw} />
-      <One file="rassor.glb" at={[RASSOR.x, groundHeight(RASSOR.x, RASSOR.z), RASSOR.z]} yaw={RASSOR.yaw} />
+      {farDecor && <One file="rassor.glb" at={[RASSOR.x, groundHeight(RASSOR.x, RASSOR.z), RASSOR.z]} yaw={RASSOR.yaw} />}
       {BAGS.map(([x, y, z, yaw], i) => (
         <One key={i} file="crew-lock-bag.glb" at={[x, groundHeight(x, z) + y, z]} yaw={yaw} shadow={false} />
       ))}

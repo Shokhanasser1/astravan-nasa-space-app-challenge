@@ -1,4 +1,4 @@
-import { LAYOUT } from '../layout';
+import { LAYOUT, RADIUS } from '../layout';
 import { MAT } from './materials';
 import type { TapHandler } from './tap';
 import { Shell } from '../models/Shell';
@@ -14,9 +14,9 @@ export function Garden({ on, plant, tap }: { on: boolean; plant: number; tap: Ta
   return (
     <group position={[x, 0, z]} onClick={tap}>
       {astraLook ? (
-        <AstraGreenhouse on={on} turn={faceCentre(x, z)} />
+        <AstraGreenhouse on={on} turn={faceCentre(x, z)} plant={p} />
       ) : (
-        <>
+        <group scale={RADIUS.garden / 1.3}>
       <Shell
         name="garden"
         grey={
@@ -31,7 +31,7 @@ export function Garden({ on, plant, tap }: { on: boolean; plant: number; tap: Ta
         }
       />
       <Crops plant={p} on={on} base={BASE} />
-        </>
+        </group>
       )}
     </group>
   );
