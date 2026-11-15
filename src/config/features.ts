@@ -76,6 +76,11 @@ export const features = {
   // hfArt: AI key art on the finale (the ship lifting off home, all endings but the late one) and the no-WebGL still.
   // (The loading splash in index.html is plain HTML and not behind a flag: delete its block to remove it.)
   hfArt: true,
+  // Day 7 liftoff effects (src/scene/parts/LaunchFx.tsx, src/scene/launchFx.ts; 15 Nov, the lead: "no smoke, no
+  // fire"): a short wide vacuum plume under the engine, a warm ground glow and the regolith blast (flat sheets and
+  // ballistic arcs at 1.62 m/s², one draw call of GPU particles). +3 draw calls only while it plays. Off → the old
+  // fading grey ring.
+  launchFx: true,
   // Pitch answer 5 (Sunday plan): "no account, no names, no date stored, nothing goes to a server".
   // Keep false unless the whole team changes that answer. True = anonymous results go to our PocketBase.
   sendResults: false,
