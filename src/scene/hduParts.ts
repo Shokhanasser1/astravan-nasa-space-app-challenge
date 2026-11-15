@@ -43,6 +43,12 @@ export const PORTS: readonly (readonly [number, number, number])[] = [
 export const RACK_AT = { x: 1.9, z: 3.9 } as const;
 /** Which module holds which machine's rack (Life Support, garden, workshop); the others stay on the line to the hub. */
 export const RACK_MODULE: Partial<Record<Machine, HduModule>> = { ls: 'habitat', gh: 'greenhouse', ws: 'lab' };
+/**
+ * E reaches a machine from anywhere within this many metres of its battery rack, whichever way the astronaut faces: the
+ * rack is where its beacon stands (src/scene/Beacon.tsx), so standing under the beacon must be enough (15 Nov playtest:
+ * the map's "Airlock" lands 1.6 m from the Air Maker's rack, under its beacon, and E did nothing).
+ */
+export const RACK_REACH = 2.0;
 /** Rack size, metres (src/scene/Batteries.tsx draws it): a knee-high box; width = slots × PITCH + 0.12. */
 export const RACK = { pitch: 0.17, h: 0.72, d: 0.14 } as const;
 

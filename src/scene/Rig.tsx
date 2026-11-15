@@ -3,7 +3,8 @@ import { useFrame, useThree, type ThreeEvent } from '@react-three/fiber';
 import * as THREE from 'three';
 import type { View } from '../state/game';
 import { camState, gesture, launchState } from './anim';
-import { aimNear, DOOR_AZ, DOOR_R, HDU, HDU_COMPLEX, HDU_HABITAT, HDU_MODULES, LAYOUT, moduleToGame, RADIUS, type HduModule } from './layout';
+import { aimNear, DOOR_AZ, DOOR_R, HDU, HDU_COMPLEX, HDU_HABITAT, HDU_MODULES, LAYOUT, moduleToGame, PLAN, RADIUS, type HduModule } from './layout';
+import { RACK_REACH, rackSpot } from './hduParts';
 import { EYE, FOCUS, POINTS, homePoint, phasePoint, type PointId, type Vec3 } from './points';
 import { bedtime } from '../state/homeDay';
 import { GLOW } from './parts/materials';
@@ -299,8 +300,11 @@ const lander: Vec3 = [LAYOUT.lander[0], 3, LAYOUT.lander[1]];
 /** Day 7 boarding (home story): what the boarding shot looks at (the astronaut's chest; no allocation per frame). */
 const boardLook: Vec3 = [0, 0, 0];
 
-/** What E (or the ✋ button, or a tap) acts on: the power hub and the machines, at their footprint (src/controls/aim.ts). */
-const AIM: AimTarget[] = [
+/**
+ * What E (or the ✋ button, or a tap) acts on: the power hub and the machines, at their footprint (src/controls/aim.ts),
+ * and each machine's battery rack, where its beacon stands (any facing within RACK_REACH of it).
+ */
+export const AIM: AimTarget[] = [
   { k: 'hub', x: LAYOUT.hub[0], z: LAYOUT.hub[1], r: RADIUS.hub, near: 1.6 },
   // (inside a machine's ground ring it counts whichever way the astronaut faces: layout.ts aimNear)
   { k: 'ls', x: LAYOUT.habitat[0], z: LAYOUT.habitat[1], r: RADIUS.habitat, near: aimNear('ls') },
@@ -308,6 +312,10 @@ const AIM: AimTarget[] = [
   { k: 'ws', x: LAYOUT.workshop[0], z: LAYOUT.workshop[1], r: RADIUS.workshop, near: aimNear('ws') },
   { k: 'sc', x: LAYOUT.scout[0], z: LAYOUT.scout[1], r: RADIUS.scout, near: aimNear('sc') },
   { k: 'launch', x: LAYOUT.lander[0], z: LAYOUT.lander[1], r: RADIUS.lander, near: aimNear('launch') },
+  ...(['ls', 'gh', 'ws', 'sc', 'launch'] as const).map((k): AimTarget => {
+    const at = rackSpot(PLAN, k);
+    return { k, x: at.x, z: at.z, r: 0, near: RACK_REACH };
+  }),
 ];
 const wrap = (a: number) => Math.atan2(Math.sin(a), Math.cos(a));
 const ease = (t: number) => (t < 0.5 ? 2 * t * t : 1 - (-2 * t + 2) ** 2 / 2);
