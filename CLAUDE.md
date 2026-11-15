@@ -87,6 +87,11 @@ Delegate anything that means reading many files or pages; keep your own context 
 
 ## Hard limits — they protect the team, they do not limit your work
 
+- **`main` is frozen, `test` is the working branch (Shoxjahon aka, 15 Nov ~13:40).** `main` = the submitted build
+  and the live link: **nobody pushes to `main` for now.** Into `main` and into `test` goes only work Shoxjahon aka has
+  approved. Everyone works in their own branch `<name>/work`, pushes it and asks him to merge. A Claude session never
+  pushes or merges into `main` or `test` without his approval given in that session.
+
 - **Children:** no names, ages, faces, photos or voices of children are collected, stored or shown; nothing about a
   child leaves the device (`features.sendResults` stays false). No login with a face or a name — a call sign instead.
 - **Secrets:** the NASA key lives only in `scripts/data/.env` (git-ignored); never print, commit or bundle a key.
@@ -107,11 +112,11 @@ Delegate anything that means reading many files or pages; keep your own context 
 
 1. `git pull --rebase` before you start and before every push. Small commits every 30–60 minutes,
    `<type>: <description>` (feat, fix, refactor, docs, test, chore, perf).
-2. `npm run verify` (check + typecheck + tests + build) before every push; red → fix first. CI deploys every green
-   push to the live link, so a broken `main` breaks everyone's phone test.
-3. A lot of local work → your own branch `<name>/work`, push it, tell Shoxjahon aka. Never another repo copied
-   in (see "One repo, one game" above).
-4. Conflicts: keep both sides where you can and run the tests. In a rebase *ours* = upstream `main`.
+2. `npm run verify` (check + typecheck + tests + build) before every push; red → fix first. CI deploys only `main`
+   (every push goes to the live link); `test` is not deployed — try it on a phone with `npm run dev` (LAN address).
+3. Your work → your own branch `<name>/work` from `test`, push it, tell Shoxjahon aka; he decides what goes into
+   `test` and `main` (see "Hard limits"). Never another repo copied in (see "One repo, one game" below).
+4. Conflicts: keep both sides where you can and run the tests. In a rebase *ours* = the upstream branch (`test`).
 
 ## Who mainly works where — tell them when you touch their area
 
