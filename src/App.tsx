@@ -118,7 +118,8 @@ export function App() {
     const t = setInterval(() => setInRoom(roomState.id !== null), 500);
     return () => clearInterval(t);
   }, []);
-  const amb = ambienceFor(model.screen, view.phase, inRoom);
+  // (home story T2: the crash morning is outside, in the suit: its breath, not the habitat's hum)
+  const amb = ambienceFor(model.screen, view.crash ? 'plan' : view.phase, inRoom);
   useEffect(() => audio.setAmbience(amb, view.level), [amb, view.level]);
   // Music (src/audio/music.ts): calm, storm (alert and storm days, stormy hours of the running day), finale.
   const runHour = useRunHour();

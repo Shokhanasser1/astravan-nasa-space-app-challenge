@@ -9,6 +9,7 @@ import {
   type Alloc, type CardId, type DayInfo, type Limits, type Preview, type Result, type Shelter, type State,
 } from '../engine/rules';
 import type { SkyDay, Week, WeekDay } from '../engine/week';
+import { features } from '../config/features';
 
 // ---- the contract with the scene (developer guide §02) ----
 export type Phase = 'morning' | 'plan' | 'run' | 'night' | 'launch' | 'truth';
@@ -42,6 +43,9 @@ export type View = {
   // 15 Nov ~05:00 (Shoxjahon aka: "make it a game" — batteries are carried, resources always visible):
   hands?: number; // batteries the astronaut carries now (plan phase), 0..HANDS_MAX
   res?: Resources; // every gauge of the base, from the engine (see Resources)
+  // 15 Nov home story T2 (features.homeStoryCrash): Day 1 of a first mission opens at the crash site, not at the
+  // airlock; true for that whole morning (src/scene/crash.ts, the rig; the HUD's "Reach the base" step).
+  crash?: boolean;
 };
 
 /**
@@ -320,7 +324,13 @@ export function toView(m: Model, sky?: Record<string, SkyDay[]>): View {
     batteries: lim && m.phase === 'plan' ? { left: m.preview?.left ?? lim.available, total: lim.available } : undefined,
     hands: m.phase === 'plan' ? (m.hands ?? 0) : 0,
     res: g && m.week ? resources(m, g, m.week) : undefined,
+    ...(crashMorning(m) ? { crash: true } : {}),
   };
+}
+
+/** Home story T2: the morning of Day 1 of a first mission, with the crash start on (features.homeStoryCrash). */
+export function crashMorning(m: Model): boolean {
+  return features.homeStory && features.homeStoryCrash && m.screen === 'game' && m.firstMission && m.game?.day === 1 && m.phase === 'morning';
 }
 
 /** The gauges (Resources). `after` only while a plan is on the board. */

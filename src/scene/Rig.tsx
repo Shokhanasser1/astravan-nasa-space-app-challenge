@@ -30,6 +30,8 @@ import { titleAngles, titlePose, useTitle } from './title';
 import { applyRover, arrival, arrivalCameraSpot, DOOR, DRIVABLE, DRIVE, hatchAt, HOP, HOP_OUT, rover, roverAt, sideKey, stepDoors } from './arrival';
 import { placeOnGround, stepRover } from './roverDrive';
 import { GRAVITY } from '../character/physics.js';
+import { reachedBase } from './crash';
+import { getCrashStage, setCrashStage } from '../state/crash';
 
 /**
  * First-person rig (final version, Dizayn 2.0). Eye 1.7 m; six standing points + inside; one-finger drag looks
@@ -247,9 +249,11 @@ export function Rig({ view }: { view: View }) {
   // player walked it: only a phase that needs another camera moves it (inside, the launch ladder, orbit) — a float
   // across the base on every Next looked like a teleport.
   useEffect(() => {
-    const p = phasePoint(view.phase);
+    // (home story T2: Next from the crash morning goes to the airlock as before, wherever the walk had got to)
+    const fromCrash = pointNow.current === 'crash' && view.phase === 'plan';
+    const p = fromCrash ? 'airlock' : phasePoint(view.phase);
     const now = pointNow.current;
-    const stay = character && now !== 'inside' && now !== 'orbit' && p !== 'inside' && p !== 'ladder' && p !== 'orbit';
+    const stay = !fromCrash && character && now !== 'inside' && now !== 'orbit' && p !== 'inside' && p !== 'ladder' && p !== 'orbit';
     if (p && !stay) {
       setPoint(p);
       if (walker || character) setHop((h) => h + 1);
@@ -258,6 +262,25 @@ export function Rig({ view }: { view: View }) {
     // astronaut by themselves (morning airlock, night inside, launch, truth).
     walkInput.phaseOk = view.phase === 'plan';
   }, [view.phase, walker]);
+
+  // Home story T2 (src/scene/crash.ts): the crash morning starts the astronaut at the wreck — a cut, under the black
+  // "IMPACT" screen (src/ui/play/CrashIntro.tsx) — and the walk is on all that morning: reaching the base is its task.
+  // (After the phase effect above, so its walkInput.phaseOk is the one that stands.)
+  const crashOn = useRef(false);
+  const cut = useRef(false);
+  useEffect(() => {
+    walkInput.phaseOk = view.phase === 'plan' || !!view.crash;
+    if (!view.crash) {
+      crashOn.current = cut.current = false;
+      setCrashStage('walk');
+      return;
+    }
+    if (crashOn.current || cut.current) return;
+    setCrashStage('walk');
+    cut.current = true; // (crashOn once the cut is done: until then the body still stands where it was)
+    setPoint('crash');
+    setHop((h) => h + 1);
+  }, [view.crash, view.phase]);
 
   // The base map (M or 🗺) floats to a standing point, exactly like tapping its glowing marker.
   useEffect(
@@ -330,7 +353,24 @@ export function Rig({ view }: { view: View }) {
   useEffect(() => {
     const P = POINTS[point];
     s.to.set(...P.pos);
-    if (!s.started) {
+    // (the crash cut is for the crash point only: on the rig's first mount its first run is still the old point)
+    const crashCut = cut.current && point === 'crash';
+    if (!s.started || crashCut) {
+      if (crashCut) {
+        // the crash start (a new game): out of any building, ladder or the rover at once, standing still
+        if (seat.stage !== 'walk') leaveRover();
+        if (roomState.id) setRoom(null, getRoom(roomState.id).out);
+        doorTrip.t = roomTrip.t = climb.t = -1;
+        doorTrip.to = climb.to = roomTrip.room = null;
+        climbState.on = false;
+        fp.floor = 0;
+        body.vx = body.vy = body.vz = 0;
+        body.onGround = true;
+        body.windup = -1;
+        setRide(null);
+        cut.current = false;
+        crashOn.current = true;
+      }
       s.started = true;
       camera.position.copy(s.to);
       [s.yaw, s.pitch] = anglesTo(s.to, P.look);
@@ -458,6 +498,7 @@ export function Rig({ view }: { view: View }) {
       if (!reduced || tc.t < 0.5) invalidate();
       return;
     }
+    if (crashOn.current && getCrashStage() !== 'in') trackCrash();
     if (doorTrip.t >= 0) {
       doorTrip.t += dt;
       if (doorTrip.to && doorTrip.t >= DOOR_GO) {
@@ -593,6 +634,15 @@ export function Rig({ view }: { view: View }) {
     }
     if (s.t < 1 || Math.abs(dy) > 1e-3 || Math.abs(dp) > 1e-3 || launching || walking) invalidate();
   });
+
+  /** Home story T2: the walk from the crash site — the base reached (within 6 m of its door), then inside it. */
+  function trackCrash() {
+    const st = getCrashStage();
+    const inHab = roomState.id === 'habitat' || roomState.id === 'habitat_up' || pointNow.current === 'inside';
+    const near = st === 'walk' && reachedBase(third ? body.x : s.to.x, third ? body.z : s.to.z);
+    const next = inHab ? 'in' : near ? 'door' : st;
+    if (next !== st) setCrashStage(next);
+  }
 
   /** In a room (or out of it, null) at a spot: the body at the room's scale, the camera straight behind it. */
   function setRoom(id: RoomId | null, at: { x: number; z: number; facing: number }) {
