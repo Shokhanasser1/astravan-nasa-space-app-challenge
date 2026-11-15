@@ -7,7 +7,8 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import * as THREE from 'three';
 import { GLTFLoader, type GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
-import { AnimController, CLIMB_RISE, FIDGET_S, GESTURES, INSERT_HOLD } from './anim.js';
+import { AnimController, CLIMB_RISE, FIDGET_S, GESTURES, INSERT_HOLD, measureSole } from './anim.js';
+import { GroundFx, PRINT_FILL, PRINT_QUAD } from '../look/fx.js';
 
 const GLB = fileURLToPath(new URL('../../public/models/astronaut/astronaut.glb', import.meta.url));
 
@@ -240,5 +241,56 @@ describe('climbing the habitat ladder', () => {
     run(anim, 0.3, { ...still, climb: 0.5, climbV: 0.9 });
     expect(anim.state).toBe('Walk');
     expect(anim.actions.Walk.timeScale).toBeGreaterThan(0);
+  });
+});
+
+describe('boot prints are the size of the boot', () => {
+  it('measures the sole on the model at rest; the print covers exactly that sole', async () => {
+    // a fresh copy at rest (the other tests pose the shared scene)
+    const buf = readFileSync(GLB);
+    const loader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
+    loader.register((parser) => {
+      parser.loadImageSource = () => Promise.resolve(new THREE.Texture());
+      return { name: 'node_no_images' };
+    });
+    const g = await loader.parseAsync(buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength), '');
+    const sole = measureSole(g.scene)!;
+    expect(sole).toBeTruthy();
+    // independently: the left boot's skinned vertices (world, at rest, facing +Z) in the lowest 3 cm
+    g.scene.updateMatrixWorld(true);
+    const foot = g.scene.getObjectByName('LeftFoot')!;
+    const toe = g.scene.getObjectByName('LeftToeBase')!;
+    const pts: THREE.Vector3[] = [];
+    g.scene.traverse((o) => {
+      const m = o as THREE.SkinnedMesh;
+      if (!m.isSkinnedMesh) return;
+      const ids = m.skeleton.bones.flatMap((b, i) => (b === foot || b === toe ? [i] : []));
+      const si = m.geometry.getAttribute('skinIndex'), sw = m.geometry.getAttribute('skinWeight'), pos = m.geometry.getAttribute('position');
+      for (let i = 0; i < pos.count; i++) {
+        let best = -1, bw = 0;
+        for (let k = 0; k < 4; k++) if (sw.getComponent(i, k) > bw) { bw = sw.getComponent(i, k); best = si.getComponent(i, k); }
+        if (!ids.includes(best)) continue;
+        const v = new THREE.Vector3().fromBufferAttribute(pos as THREE.BufferAttribute, i);
+        m.applyBoneTransform(i, v);
+        pts.push(v.applyMatrix4(m.matrixWorld));
+      }
+    });
+    const low = Math.min(...pts.map((p) => p.y));
+    const box = new THREE.Box3().setFromPoints(pts.filter((p) => p.y < low + 0.03));
+    const size = box.getSize(new THREE.Vector3());
+    expect(Math.abs(sole.len - size.z)).toBeLessThan(0.015); // heel to toe
+    expect(Math.abs(sole.wid - size.x)).toBeLessThan(0.015); // across
+    expect(sole.len).toBeGreaterThan(0.18);
+    expect(sole.len).toBeLessThan(0.45);
+    // the print: quad × the part the drawn sole fills × the scale GroundFx.setBoot gives = the sole
+    const fx = { bootScale: { x: 1, z: 1 } };
+    GroundFx.prototype.setBoot.call(fx, sole);
+    expect(PRINT_QUAD.l * PRINT_FILL.l * fx.bootScale.z).toBeCloseTo(sole.len, 6);
+    expect(PRINT_QUAD.w * PRINT_FILL.w * fx.bootScale.x).toBeCloseTo(sole.wid, 6);
+    // and the print's centre is the sole's centre (the boot at rest: ankle + along the boot + beside it)
+    const anim = new AnimController(g.scene, {});
+    const p = anim.bootOnGround('L')!;
+    const c = box.getCenter(new THREE.Vector3());
+    expect(Math.hypot(p.x - c.x, p.z - c.z)).toBeLessThan(0.015);
   });
 });

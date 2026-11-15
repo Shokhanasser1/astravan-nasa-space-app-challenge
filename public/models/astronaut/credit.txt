@@ -26,3 +26,16 @@ helmet is built in their place, skinned to the Head bone: a white shell (KidHelm
 a grey frame (KidHelmetFrame); the suit's normal map is softened. Made by AI-written code (Claude Code) in node with
 @gltf-transform: oy-karvonsaroyi-3d/hb7/hdu_base/tools/astro_helmet.mjs. Mesh of the suit, rig and the 15 clips
 otherwise untouched.
+
+15 Nov 2026 ~21:45 (Shoxjahon aka: "walks like a light model, not a real astronaut"): a NEW BODY with real human
+proportions, because the old kid body's legs were 0.37 m (hips at 0.56 m of 1.70 m) and the game had to play the
+Walk and Run clips 1.85x faster for it (2.8 small steps a second). Now: hips 0.96 m, legs 0.73 m, the same clips at
+0.93x, ~1.6 long steps a second at the Apollo walking speed (1.0 m/s). Made on Higgsfield: a front T-pose view of
+the team's astronaut with an opaque gold visor and no face (GPT Image 2.6, job 71ae58aa, from the team's concept
+pictures) -> Meshy 7 image-to-3D, ultra mode, PBR, auto-rig, 1.70 m (job dd76a53f, 53.5 credits). Meshy's skeleton
+and skin weights moved to the game's 23 joint names (scripts/models/meshy_rig.mjs, no Blender), then the team's
+assemble step (scripts/models/astronaut_ai.mjs assemble: joints to the new places, the 15 clips' translations scaled
+with the legs), simplified to 19,349 triangles, meshopt + WebP 1024 (788 KB); the Climb clip re-made for the new body
+(climb_kid.mjs, P={"behind":0.30,"hipy":0.70}: boots and gloves on the rungs within 0.1 mm). The helmet parts of the
+old body (KidHelmet/KidVisor/KidHelmetFrame) are gone: the new body has its own helmet and gold visor in its texture.
+AI-made, disclosed in docs/AI-USE.md. No NASA mesh, texture, insignia or flag.

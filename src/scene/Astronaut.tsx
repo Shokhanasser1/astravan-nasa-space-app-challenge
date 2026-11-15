@@ -22,7 +22,7 @@ import { ArmTuck, tuckState } from '../character/armTuck';
 /** Seconds of standing still before the astronaut checks the suit tablet and its hologram rises. */
 const SUIT_LOOK_S = 1.5;
 
-/** The suited astronaut: NASA EMU model, rigged and animated by Samandar (blender/game3d/characters/), 6k triangles. */
+/** The astronaut: AI-made body with real proportions (Meshy 7 on Higgsfield, 15 Nov), the team's rig and 15 clips (Samandar), ~19k triangles (credit.txt). */
 const URL = `${import.meta.env.BASE_URL}models/astronaut/astronaut.glb`;
 
 /** Most batteries the hands can hold (game rule HANDS_MAX in src/state/game.ts; drawn only). */
@@ -109,7 +109,7 @@ export function Astronaut({ body, visible, hands = 0, view }: { body: Body; visi
     [model, gltf],
   );
   const fx = useMemo(() => new GroundFx(gl), [gl]);
-  fx.bootScale = anim.legK ?? 1; // a smaller suit leaves a smaller print (the kid astronaut, 15 Nov)
+  fx.setBoot(anim.sole); // each print is exactly the boot's sole, measured on the model (15 Nov)
 
   // the carried batteries: a stack of blocks, placed once; only the count and the group's place change
   const cargo = useMemo(() => {

@@ -11,6 +11,9 @@ import { rng } from './noise.js';
 // phase, a room, a remount), and stored compactly (x, z, heading: 6 bytes a mark) so they come back after a reload.
 const PRINTS = 1000, DUST = 360;   // 1 000 prints ≈ 700 m of walking, 64 KB of matrices
 const FOOT_GAP = 0.14;           // m between the left and the right foot
+/** The print's quad (m) and how much of it the drawn sole fills (textures.js bootPrint), across and along. */
+export const PRINT_QUAD = { w: 0.19, l: 0.37 };
+export const PRINT_FILL = { w: 0.75, l: 0.94 };
 
 /** A ring of marks: matrices for the GPU, a fade per mark, and (x, z, heading) to store. */
 export class MarkRing {
@@ -124,7 +127,7 @@ export class GroundFx {
     });
     // the size of the EVA boot's sole as it touches the ground: ~0.35 m by ~0.14 m (the astronaut's ankle to toe joint is
     // 0.19 m, heel and toe cap beyond); the sole shape fills ~75 % of the width and 94 % of the length of this quad
-    const geo = new THREE.PlaneGeometry(0.19, 0.37).rotateX(-Math.PI / 2);
+    const geo = new THREE.PlaneGeometry(PRINT_QUAD.w, PRINT_QUAD.l).rotateX(-Math.PI / 2);
     this.prints = ringMesh(geo, mat, marks.prints, 'look_prints');
 
     this.pos = new Float32Array(DUST * 3).fill(-1e4);
@@ -151,11 +154,20 @@ export class GroundFx {
     this.up = new THREE.Vector3();
     this.v = new THREE.Vector3();
     this.one = new THREE.Vector3(1, 1, 1);
-    /** The boot against the 1.86 m suit the print is sized for (the kid astronaut's legs: AnimController.legK). */
-    this.bootScale = 1;
+    /** The print's scale across and along the boot against the default quad (setBoot: the model's real sole). */
+    this.bootScale = { x: 1, z: 1 };
     this.sc = new THREE.Vector3(1, 1, 1);
     this.Y = new THREE.Vector3(0, 1, 0);
     this.qy = new THREE.Quaternion();
+  }
+
+  /**
+   * Size the prints to the boot's sole as measured on the model (AnimController.sole: len heel to toe, wid across,
+   * metres), so a print is exactly as big as the boot that made it. null keeps the default EVA-boot size.
+   */
+  setBoot(sole) {
+    this.bootScale.x = sole ? sole.wid / (PRINT_QUAD.w * PRINT_FILL.w) : 1;
+    this.bootScale.z = sole ? sole.len / (PRINT_QUAD.l * PRINT_FILL.l) : 1;
   }
 
   /** Put the prints and the dust into the scene (call from an effect; dispose() takes them out again). */
@@ -212,7 +224,7 @@ export class GroundFx {
     this.qy.setFromAxisAngle(this.Y, yaw);
     this.q.multiply(this.qy);
     this.v.set(x, y + 0.004, z);
-    this.m.compose(this.v, this.q, this.sc.set(this.bootScale, 1, this.bootScale));
+    this.m.compose(this.v, this.q, this.sc.set(this.bootScale.x, 1, this.bootScale.z));
     marks.prints.push(this.m, x, z, yaw);
     return true;
   }

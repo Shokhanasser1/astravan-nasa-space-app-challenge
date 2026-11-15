@@ -34,8 +34,63 @@ const LEGACY_SPEED = { Walk: MOVE.walk, Run: MOVE.run, Carry: MOVE.walk };
  * the boot's real position, so boot prints land exactly under the boots.
  */
 export const STANCE = { Walk: [[0.2, 'L'], [0.7, 'R']], Carry: [[0.2, 'L'], [0.7, 'R']], Run: [[0.25, 'L'], [0.75, 'R']] };
-const BOOT_CENTRE = 0.58;   // the sole's centre lies 58 % of the way from the ankle to the toe joint
+const BOOT_CENTRE = 0.58;   // the sole's centre lies 58 % of the way from the ankle to the toe joint (no mesh to measure)
 const SIDE = { L: 'Left', R: 'Right' };
+/** Vertices this close (m) above the boot's lowest point are its sole (the part that touches the ground). */
+const SOLE_BAND = 0.03;
+
+/**
+ * The left boot's sole measured on the model at rest (bind pose, before any clip plays), so a boot print is exactly
+ * the boot's size: `len` heel to toe and `wid` across (m), and `centre`, the sole's middle as a fraction of the way
+ * from the ankle to the toe joint. The sole = skinned vertices that follow LeftFoot/LeftToeBase most, within
+ * SOLE_BAND of their lowest point. null when the model has no such boot (then the print keeps its default size).
+ */
+export function measureSole(model) {
+  const foot = model.getObjectByName('LeftFoot');
+  const toe = model.getObjectByName('LeftToeBase');
+  if (!foot || !toe) return null;
+  model.updateMatrixWorld(true);
+  const pts = [];
+  const v = new THREE.Vector3();
+  model.traverse((o) => {
+    const m = /** @type {THREE.SkinnedMesh} */ (o);
+    if (!m.isSkinnedMesh) return;
+    const bones = m.skeleton.bones;
+    const ids = new Set(bones.flatMap((b, i) => (b === foot || b === toe ? [i] : [])));
+    if (!ids.size) return;
+    const si = m.geometry.getAttribute('skinIndex');
+    const sw = m.geometry.getAttribute('skinWeight');
+    const pos = m.geometry.getAttribute('position');
+    for (let i = 0; i < pos.count; i++) {
+      let best = -1, bw = 0;
+      for (let k = 0; k < 4; k++) {
+        const w = sw.getComponent(i, k);
+        if (w > bw) { bw = w; best = si.getComponent(i, k); }
+      }
+      if (!ids.has(best)) continue;
+      v.fromBufferAttribute(pos, i);
+      m.applyBoneTransform(i, v);
+      pts.push(v.clone().applyMatrix4(m.matrixWorld));
+    }
+  });
+  if (pts.length < 8) return null;
+  const low = Math.min(...pts.map((p) => p.y));
+  const sole = pts.filter((p) => p.y < low + SOLE_BAND);
+  const a = foot.getWorldPosition(new THREE.Vector3());
+  const b = toe.getWorldPosition(new THREE.Vector3());
+  const fx = b.x - a.x, fz = b.z - a.z;
+  const reach = Math.hypot(fx, fz) || 1;
+  const ux = fx / reach, uz = fz / reach;   // along the boot, on the ground
+  let a0 = Infinity, a1 = -Infinity, c0 = Infinity, c1 = -Infinity;
+  for (const p of sole) {
+    const dx = p.x - a.x, dz = p.z - a.z;
+    const along = dx * ux + dz * uz, across = dx * uz - dz * ux;
+    a0 = Math.min(a0, along); a1 = Math.max(a1, along);
+    c0 = Math.min(c0, across); c1 = Math.max(c1, across);
+  }
+  // side: how far the sole's middle sits beside the ankle→toe line (m; + = the left boot's outer side, mirrored right)
+  return { len: a1 - a0, wid: c1 - c0, centre: (a0 + a1) / 2 / reach, side: (c0 + c1) / 2 };
+}
 
 /**
  * One-shot gestures over Idle (Blender: game3d/characters/anim/clips/gesture_*.py), each from and back to the idle
@@ -87,6 +142,9 @@ export class AnimController {
     // A rig refitted to shorter legs (the kid astronaut, 15 Nov) takes shorter steps: its clips are planted for ground
     // speeds scaled by its leg length against the rig the clips were made on, so its boots stay planted.
     this.legK = legScale(model);
+    /** The boot's sole at rest: { len, wid, centre } or null (measureSole); boot prints take this size. */
+    this.sole = measureSole(model);
+    this.bootCentre = this.sole?.centre ?? BOOT_CENTRE;
     if (this.split && this.legK !== 1) {
       this.speeds = Object.fromEntries(Object.entries(CLIP_SPEED).map(([k, v]) => [k, v * this.legK]));
     }
@@ -192,7 +250,13 @@ export class AnimController {
     b.foot.getWorldPosition(this.va);
     b.toe.getWorldPosition(this.vb);
     const dx = this.vb.x - this.va.x, dz = this.vb.z - this.va.z;
-    return { x: this.va.x + dx * BOOT_CENTRE, z: this.va.z + dz * BOOT_CENTRE, yaw: Math.atan2(dx, dz) };
+    const d = Math.hypot(dx, dz) || 1;
+    const s = (this.sole?.side ?? 0) * (k === 'L' ? 1 : -1) / d;   // beside the ankle→toe line (mirrored on the right)
+    return {
+      x: this.va.x + dx * this.bootCentre + dz * s,
+      z: this.va.z + dz * this.bootCentre - dx * s,
+      yaw: Math.atan2(dx, dz),
+    };
   }
 
   /** Report a footfall when the playing locomotion clip passes a boot's mid-stance. */

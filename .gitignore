@@ -39,3 +39,8 @@ shots/
 __pycache__/
 # MediaPipe WASM, copied from node_modules by scripts/copy-decoders.mjs
 public/mediapipe/
+
+# Raw film sources at the repo root (the game plays the re-encoded public/video/intro.mp4)
+/*.mp4
+# Dev-only walk preview (scripts/models/meshy_rig.mjs work)
+/_walkpreview.*
