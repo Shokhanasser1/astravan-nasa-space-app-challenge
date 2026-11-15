@@ -12,6 +12,7 @@ import { climbDuration, climbPose, type ClimbPose, type LadderClimb } from './la
 import { HDU, HDU_COMPLEX, HDU_MODULES, HDU_PLAN, moduleToGame, type HduModule } from '../scene/layout';
 import { GRAVITY, jumpSpeed } from '../character/physics.js';
 import ROOM_BOXES_HDU from './rooms_hdu.json';
+import { makePoints } from '../scene/points';
 
 const R = makeRooms(true);
 const LIST: readonly Room[] = Object.values(R);
@@ -46,12 +47,13 @@ describe('HDU complex rooms', () => {
     const [cx, cz] = moduleToGame(m, 0, 0);
 
     describe(m, () => {
-      it('is real size, at its module, with headroom for a suit and a jump on both floors', () => {
+      it('is real size, at its module, with headroom for a suit and a jump on both floors (jumps on the ground floor only)', () => {
         expect(HDU_PLAN.LAYOUT[SITE[m]][0]).toBeCloseTo(cx, 9);
         expect(HDU_PLAN.LAYOUT[SITE[m]][1]).toBeCloseTo(cz, 9);
         for (const r of [g, up]) {
           expect(r.s).toBe(1);
-          expect(r.jump).toBe(true);
+          // (D9: no jumping on the lofts, like ASTRA's low rooms)
+          expect(r.jump, r.id).toBe(r === g);
           expect(r.area.bounds.x).toBeCloseTo(cx, 9);
           expect(r.area.bounds.z).toBeCloseTo(cz, 9);
           expect(r.area.bounds.r).toBeCloseTo(HDU.lining - 0.05, 9);
@@ -107,7 +109,7 @@ describe('HDU complex rooms', () => {
         // the climbing spot: 0.42 m in front of the rungs (z 0), facing them (−z)
         const [fx, fz] = toModule(m, L.foot.x, L.foot.z);
         const [rx, rz] = toModule(m, L.rungs.x, L.rungs.z);
-        expect([fx, fz, rx, rz].map((v) => +v.toFixed(6))).toEqual([0, 0.42, 0, 0]);
+        expect([fx, fz, rx, rz].map((v) => +v.toFixed(6) + 0)).toEqual([0, 0.42, 0, 0]); // (+ 0: no −0 after the turn)
         expect(Math.cos(L.foot.facing - (Math.PI + HDU_COMPLEX.turn))).toBeCloseTo(1, 9);
       });
 
@@ -174,6 +176,26 @@ describe('HDU habitat walk (first person, habitatRoom.ts)', () => {
   it('keeps ASTRA as it was', () => {
     expect(makeHabRoom(false)).toEqual(HAB_ROOM);
   });
+
+  it('puts the first-person inside point strictly inside the door\'s exit zone (module z 1.4), facing in', () => {
+    const P = makePoints(true).POINTS.inside;
+    const [mx, mz] = toModule('habitat', P.pos[0], P.pos[2]);
+    expect(mx).toBeCloseTo(0, 9);
+    expect(mz).toBeCloseTo(1.4, 9);
+    expect(R.habitat.exit(P.pos[0], P.pos[2])).toBe(true);
+    // strictly: a step either way along z stays in the zone (not on its 1.3 edge)
+    for (const dz of [-0.05, 0.05]) {
+      const [x, z] = moduleToGame('habitat', mx, mz + dz);
+      expect(R.habitat.exit(x, z), `z ${mz + dz}`).toBe(true);
+    }
+    expect(fits(P.pos[0], P.pos[2], R.habitat.area, ROOM_BODY)).toBe(true);
+    const [, lz] = toModule('habitat', P.look[0], P.look[2]);
+    expect(lz).toBeLessThan(mz);
+  });
+
+  it('has no jumping on any loft (D9)', () => {
+    for (const m of HDU_MODULES) expect(R[UP[m]].jump, UP[m]).toBe(false);
+  });
 });
 
 describe('the outside camera and the HDU complex (Rig.tsx)', () => {
@@ -201,7 +223,8 @@ describe('the outside camera and the HDU complex (Rig.tsx)', () => {
       expect(inHduComplex(x, HDU.tunnelY + HDU.tunnelR + 0.2, z, 0.3)).toBe(true);
       expect(inHduComplex(x, HDU.tunnelY + HDU.tunnelR + 0.5, z, 0.3)).toBe(false);
       const [nx, nz] = moduleToGame(a, 0, HDU.tunnelR + 0.5); // (beside it, toward the doors)
-      expect(inHduComplex(x + (nx - moduleToGame(a, 0, 0)[0]), HDU.tunnelY, nz, 0.3)).toBe(false);
+      const [ox, oz] = moduleToGame(a, 0, 0);
+      expect(inHduComplex(x + (nx - ox), HDU.tunnelY, z + (nz - oz), 0.3)).toBe(false);
     }
     // no tunnel past the end modules
     const [ex, ez] = moduleToGame('greenhouse', -(HDU.shell + 1), 0);

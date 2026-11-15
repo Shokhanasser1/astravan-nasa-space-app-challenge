@@ -1,11 +1,11 @@
-import { LAYOUT } from '../layout';
+import { HDU_HABITAT, LAYOUT, wingTurn } from '../layout';
 import { MAT } from './materials';
 
 /** Solar wing: two vertical panels on a boom (the Sun is low at the pole); one is bent since the landing. */
 export function SolarWing() {
   const [x, z] = LAYOUT.wing;
   return (
-    <group position={[x, 0, z]} rotation-y={0.5}>
+    <group position={[x, 0, z]} rotation-y={wingTurn(HDU_HABITAT)}>
       <mesh position={[0, 1.4, 0]} material={MAT.panel}>
         <cylinderGeometry args={[0.08, 0.1, 2.8, 8]} />
       </mesh>

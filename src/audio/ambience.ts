@@ -9,10 +9,13 @@
  */
 export type AmbienceMode = 'off' | 'suit' | 'inside';
 
-/** Which ambience a phase gets: the plan and the running day are outside, morning and night inside. */
-export function ambienceFor(screen: string, phase: string): AmbienceMode {
+/**
+ * Which ambience a phase gets: the plan and the running day are outside, morning and night inside. `inRoom`: the
+ * astronaut walks in a room of the HDU complex (`?hdu`, camState.inside) — the inside hum then, not the suit.
+ */
+export function ambienceFor(screen: string, phase: string, inRoom = false): AmbienceMode {
   if (screen !== 'game') return 'off';
-  if (phase === 'plan' || phase === 'run') return 'suit';
+  if (phase === 'plan' || phase === 'run') return inRoom ? 'inside' : 'suit';
   if (phase === 'morning' || phase === 'night') return 'inside';
   return 'off';
 }

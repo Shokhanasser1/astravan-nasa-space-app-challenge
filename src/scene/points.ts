@@ -78,8 +78,9 @@ export function makePoints(hdu: boolean): { POINTS: Record<PointId, { pos: Vec3;
     inside: lite
       ? { pos: [LAYOUT.habitat[0], HAB_FLOOR + 1.5, LAYOUT.habitat[1]], look: [LAYOUT.hub[0], 1.2, LAYOUT.hub[1]] }
       : hdu
-        ? // the HDU habitat (game metres): in the entry section by the door, looking past the ladder at the GeoLab
-          { pos: hab(0, HDU.floor + 1.6, 1.3), look: hab(0, HDU.floor + 1.1, -1.6) }
+        ? // the HDU habitat (game metres): in the entry section by the door (module z 1.4: strictly inside the door's
+          // exit zone, rooms.ts z > 1.3), looking past the ladder at the GeoLab
+          { pos: hab(0, HDU.floor + 1.6, 1.4), look: hab(0, HDU.floor + 1.1, -1.6) }
         : // just in from the inner airlock hatch, eye 1.6 m above the deck (0.5), looking at the wardroom table and galley
           { pos: hab(0.3, 2.1, 2.45), look: hab(-3.4, 1.1, 1.6) },
     orbit: { pos: [40, 130, 170], look: [0, 0, 0] },

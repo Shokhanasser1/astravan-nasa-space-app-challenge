@@ -19,6 +19,7 @@ import {
   type BasePlan,
   type HduModule,
   type XZ as Pair,
+  wingTurn,
 } from '../scene/layout';
 import type { Area, Solid } from './collide';
 import { rich } from '../scene/rich';
@@ -26,20 +27,22 @@ import { STEP_FOOT, STEP_WHEEL, rockSolids } from './rocks';
 import { ICE_CRATER } from '../scene/ground';
 import { initialTier } from '../scene/quality';
 import { OUTPOST_ON, outpostSolids } from '../scene/outpostSite';
+import { makePoints } from '../scene/points';
+import { HDU_OUT } from './rooms';
 
 /** Every hitbox is its visual footprint plus this much (metres). */
 const MARGIN = 0.1;
 const disc = (name: string, at: Pair, r: number): Solid => ({ name, x: at[0], z: at[1], r: r + MARGIN });
 
-/** The solar wing: a bar along its two panels (SolarWing.tsx turns it 0.5 rad); on the ASTRA look the bar joins the
- * two sun-tracking arrays (AstraProps.tsx), whose masts and feet it covers (0.9 m round the bar). */
-const WING_TURN = 0.5;
-const wingBar = (at: Pair): Solid => ({
+/** The solar wing: a bar along its two panels (SolarWing.tsx turns it wingTurn: 0.5 rad, + HDU_TURN on the HDU plan);
+ * on the ASTRA look the bar joins the two sun-tracking arrays (AstraProps.tsx), whose masts and feet it covers (0.9 m
+ * round the bar). */
+const wingBar = (at: Pair, turn: number): Solid => ({
   name: 'wing',
-  x: at[0] - Math.sin(WING_TURN) * 2.65,
-  z: at[1] - Math.cos(WING_TURN) * 2.65,
-  bx: at[0] + Math.sin(WING_TURN) * 2.65,
-  bz: at[1] + Math.cos(WING_TURN) * 2.65,
+  x: at[0] - Math.sin(turn) * 2.65,
+  z: at[1] - Math.cos(turn) * 2.65,
+  bx: at[0] + Math.sin(turn) * 2.65,
+  bz: at[1] + Math.cos(turn) * 2.65,
   r: 0.9,
 });
 
@@ -93,15 +96,21 @@ export const HDU_MODULE_HITBOXES: readonly { part: string; x: number; z: number;
   // the door frame and rails either side of the door, joining the porch and the leg to the shell: a straight front
   // (the shell's round front would leave a sharp notch by the porch and the leg where a walker wedges in)
   { part: ' apron', x: -2.3, z: 2.2, bx: 2.3, bz: 2.2, r: 0.6 },
+  // the ramp down from the door sill (D7: 1.1 m wide, x ±0.55, from z 2.26 to the ground at 3.45; finding #19 batch
+  // 1): walked round, not on (its front stops 0.48 m short of the `out` spot (0, 4.0), room for the body's 0.35)
+  { part: ' ramp', x: -0.3, z: 2.9, bx: 0.3, bz: 2.9, r: 0.62 },
 ];
 /** The pressurised tunnels between the module centres: radius 1.05 m, its frame to 1.21 m. */
 export const HDU_TUNNEL_R = 1.25;
-/** Behind each tunnel, between the two modules' back parts: a dead-end pocket narrower than the body at its mouth,
- * closed (the back parts' bar carried across), so nobody wedges in behind the base. */
-const BACK = HDU_MODULE_HITBOXES.find((h) => h.part === ' back')!;
+/**
+ * Behind each tunnel (finding #19): the bay between the two modules' back parts is open ground (4.7 m across); only
+ * its two concave corners, where the tunnel meets each module's side fins and back box, are filled by a small disc
+ * (module frame, the side toward the tunnel), so no walker wedges in the notch.
+ */
+const TUNNEL_CORNER = { x: 4.0, z: -1.7, r: 0.8 } as const;
 
 /** The HDU complex's hitboxes in the game: every module's parts (named `habitat`, `habitat back`, …), the tunnels and
- * the pockets behind them (`tunnel garden-habitat`, `tunnel garden-habitat back`, …). */
+ * the corner discs behind them (`tunnel garden-habitat`, `tunnel garden-habitat corner garden`, …). */
 export function hduComplexSolids(): Solid[] {
   const out: Solid[] = [];
   for (const id of HDU_MODULES) {
@@ -116,9 +125,10 @@ export function hduComplexSolids(): Solid[] {
     const [x, z] = complexToGame(HDU_MODULE_X[a], 0);
     const [bx, bz] = complexToGame(HDU_MODULE_X[b], 0);
     out.push({ name: `tunnel ${HDU_BUILDING[a]}-${HDU_BUILDING[b]}`, x, z, bx, bz, r: HDU_TUNNEL_R });
-    const [fx, fz] = complexToGame(HDU_MODULE_X[a] + BACK.bx!, BACK.bz!);
-    const [fbx, fbz] = complexToGame(HDU_MODULE_X[b] + BACK.x, BACK.z);
-    out.push({ name: `tunnel ${HDU_BUILDING[a]}-${HDU_BUILDING[b]} back`, x: fx, z: fz, bx: fbx, bz: fbz, r: BACK.r });
+    const [ax, az] = moduleToGame(a, TUNNEL_CORNER.x, TUNNEL_CORNER.z);
+    const [cx, cz] = moduleToGame(b, -TUNNEL_CORNER.x, TUNNEL_CORNER.z);
+    out.push({ name: `tunnel ${HDU_BUILDING[a]}-${HDU_BUILDING[b]} corner ${HDU_BUILDING[a]}`, x: ax, z: az, r: TUNNEL_CORNER.r });
+    out.push({ name: `tunnel ${HDU_BUILDING[a]}-${HDU_BUILDING[b]} corner ${HDU_BUILDING[b]}`, x: cx, z: cz, r: TUNNEL_CORNER.r });
   }
   return out;
 }
@@ -146,7 +156,7 @@ export function makeOutside(hdu: boolean, rover: Solid = hdu === HDU_HABITAT ? R
       disc('hub', LAYOUT.hub, RADIUS.hub),
       // (Its mast is thin, but the dish hangs at head height. 1.1: the NASA dish model's reflector reaches 1.17 m.)
       disc('dish', LAYOUT.dish, 1.1),
-      wingBar(LAYOUT.wing),
+      wingBar(LAYOUT.wing, wingTurn(hdu)),
       rover,
       // the HDU outpost's modules, side modules and tunnels, while it is on (src/scene/outpostSite.ts; never with the
       // HDU base, which is the same complex at home)
@@ -168,12 +178,40 @@ export function makeOutside(hdu: boolean, rover: Solid = hdu === HDU_HABITAT ? R
 /** Outside on the plan the game is on (`?hdu` or not), with the game's rover hitbox. */
 export const OUTSIDE: Area = makeOutside(HDU_HABITAT);
 
-/** Where the crew rover drives (src/scene/roverDrive.ts): outside, everything but its own hitbox. */
+/**
+ * HDU (PROMPT_B finding #17): discs only the rover keeps out of (never the walk), round each module door's `out` spot
+ * (rooms.ts HDU_OUT, where E enters and where leaving puts the body) and the airlock standing point, so a parked
+ * rover never covers a door: its footprint (ROVER.r 2.2) then stops ≥ 2.2 + 0.7 from the spot, past its own walk
+ * hitbox (2.4) and the body (0.35). Nothing on the ASTRA plan.
+ */
+export const ROVER_KEEP_CLEAR_R = 0.7;
+export function roverKeepClear(hdu: boolean): Solid[] {
+  if (!hdu) return [];
+  const out: Solid[] = HDU_MODULES.map((id) => {
+    const [x, z] = moduleToGame(id, HDU_OUT[0], HDU_OUT[1]);
+    return { name: `keep clear ${HDU_BUILDING[id]} door`, x, z, r: ROVER_KEEP_CLEAR_R };
+  });
+  const a = makePoints(true).POINTS.airlock.pos;
+  out.push({ name: 'keep clear airlock', x: a[0], z: a[2], r: ROVER_KEEP_CLEAR_R });
+  return out;
+}
+
+/** Where the crew rover drives on a plan: that plan's outside without the rover's own hitbox, the wheel's rocks, and
+ * (HDU) the keep-clear discs. */
 // (its wheels climb rocks up to 0.6 m: only the taller ones stop it)
-export const ROVER_AREA: Area = {
-  solids: [...OUTSIDE.solids.filter((s) => s !== ROVER_DISC && s.name !== 'rock'), ...rockSolids(STEP_WHEEL, EDGE)],
-  bounds: OUTSIDE.bounds,
-};
+export function makeRoverArea(outside: Area, rover: Solid, hdu: boolean): Area {
+  return {
+    solids: [
+      ...outside.solids.filter((s) => s !== rover && s.name !== 'rock'),
+      ...rockSolids(STEP_WHEEL, EDGE),
+      ...roverKeepClear(hdu),
+    ],
+    bounds: outside.bounds,
+  };
+}
+
+/** Where the crew rover drives (src/scene/roverDrive.ts): outside, everything but its own hitbox. */
+export const ROVER_AREA: Area = makeRoverArea(OUTSIDE, ROVER_DISC, HDU_HABITAT);
 
 /**
  * Where the hop out of the rover may land: outside, everything but the rover's own hitbox. (The hop lands 2.58 m

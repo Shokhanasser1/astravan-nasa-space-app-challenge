@@ -3,7 +3,8 @@ import { useFrame, useThree } from '@react-three/fiber';
 import { Instance, Instances } from '@react-three/drei';
 import * as THREE from 'three';
 import type { Machine, View } from '../state/game';
-import { LAYOUT, RADIUS, type XZ } from './layout';
+import { LAYOUT, PLAN } from './layout';
+import { RACK, rackSpot } from './hduParts';
 import { MAT, glowColor } from './parts/materials';
 import { groundHeight } from './ground';
 import { audio } from '../audio/audio';
@@ -22,32 +23,21 @@ import { audio } from '../audio/audio';
 const SLOTS: Record<Machine, number> = { ls: 3, gh: 2, ws: 2, sc: 3, launch: 4 };
 const HUB_SLOTS = { min: 6, max: 10 };
 
-const SITE: Record<Machine, { at: XZ; r: number }> = {
-  ls: { at: LAYOUT.habitat, r: RADIUS.habitat },
-  gh: { at: LAYOUT.garden, r: RADIUS.garden },
-  ws: { at: LAYOUT.workshop, r: RADIUS.workshop },
-  sc: { at: LAYOUT.scout, r: RADIUS.scout },
-  launch: { at: LAYOUT.lander, r: RADIUS.lander },
-};
-const MACHINES = Object.keys(SITE) as Machine[];
+const MACHINES: Machine[] = ['ls', 'gh', 'ws', 'sc', 'launch'];
 
-/** Rack size, metres: a knee-high box a child's astronaut stands at. */
-const PITCH = 0.17;
-const RACK_H = 0.72;
-const RACK_D = 0.14;
+/** Rack size, metres: a knee-high box a child's astronaut stands at (hduParts.ts RACK). */
+const PITCH = RACK.pitch;
+const RACK_H = RACK.h;
+const RACK_D = RACK.d;
 const CELL_Y = 0.48;
 
 /**
- * Where a machine's rack stands: on the line to the hub, just outside the footprint, turned to face the hub
- * (the same line the ground cable runs along, src/scene/parts/Hub.tsx). Also used by the objective beacon.
+ * Where a machine's rack stands (hduParts.ts rackSpot): ASTRA — on the line to the hub, just outside the footprint,
+ * turned to face the hub (the same line the ground cable runs along, src/scene/parts/Hub.tsx); HDU (D8) — the
+ * module's fixed spot, facing out of the door side, the cable running hub → rack. Also used by the objective beacon.
  */
 export function socketSpot(k: Machine, out = 0.35): { x: number; z: number; yaw: number } {
-  const { at, r } = SITE[k];
-  const dx = LAYOUT.hub[0] - at[0];
-  const dz = LAYOUT.hub[1] - at[1];
-  const len = Math.hypot(dx, dz) || 1;
-  const d = Math.min(r + out, len / 2);
-  return { x: at[0] + (dx / len) * d, z: at[1] + (dz / len) * d, yaw: Math.atan2(dx, dz) };
+  return rackSpot(PLAN, k, out);
 }
 
 const LIT = glowColor('#f0b43c', 2.2); // the same orange as a powered cable

@@ -65,6 +65,12 @@ const HDU_TAP = { habitat: TAP.ls, greenhouse: TAP.gh, lab: TAP.ws };
  * Only big bodies cast shadows; repeats use <Instances>.
  * (`onTap` / `onUndo` are no longer used: a building is worked only from next to it, through E or a tap = E.)
  */
+/**
+ * `?hdu&lite`: the HDU complex is NASA's model, so the rest of the base keeps ASTRA's look with it (no mixing models
+ * with grey shapes; three.md "all models or all grey shapes"). Plain `?lite` (ASTRA plan) keeps the old shapes.
+ */
+const look = astraLook || HDU_HABITAT;
+
 export function BaseScene({ view }: { view: View; onTap?: (k: Machine) => void; onUndo?: (k: Machine) => void }) {
   const a = view.alloc;
   return (
@@ -72,8 +78,8 @@ export function BaseScene({ view }: { view: View; onTap?: (k: Machine) => void; 
       <Terrain sunAzDeg={sunAzimuth(view)} />
       <Decor />
       {OUTPOST_ON && <Outpost />}
-      {astraLook && <AstraPads pads={PADS} />}
-      {astraLook && <AstraMerge />}
+      {look && <AstraPads pads={PADS} />}
+      {look && <AstraMerge />}
       {/* the HDU complex (`?hdu`) is the habitat, the garden and the workshop in one */}
       {HDU_HABITAT && (
         <HduComplex on={{ habitat: a.ls > 0, greenhouse: a.gh > 0, lab: a.ws > 0 }} wall={view.wall} plant={view.plant} taps={HDU_TAP} />

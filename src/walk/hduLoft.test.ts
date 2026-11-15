@@ -6,6 +6,7 @@ import { describe, expect, it } from 'vitest';
 import { ROOM_BODY, makeRooms, type Room, type RoomId } from './rooms';
 import { clearance, fits, walkStep, type Solid, type XZ } from './collide';
 import { HDU_COMPLEX, HDU_MODULES, type HduModule } from '../scene/layout';
+import { climbDuration, climbPose, type ClimbPose, type LadderClimb } from './ladder';
 
 const R = makeRooms(true);
 const UP = { habitat: 'habitat_up', greenhouse: 'greenhouse_up', lab: 'lab_up' } as const satisfies Record<HduModule, RoomId>;
@@ -136,6 +137,48 @@ describe('HDU lofts: a walkway round the well', () => {
           }
         }
       });
+    });
+  }
+});
+
+describe('stepping onto the ladder from an HDU loft (finding #15)', () => {
+  /** The loft rail's front posts (module frame), either side of its opening. */
+  const POSTS: [number, number][] = [[0.3685, 0.4605], [-0.3685, 0.4605]];
+  for (const m of HDU_MODULES) {
+    it(`${m}: goes through the rail opening, ≥ 0.25 m from its front posts, from every spot E works`, () => {
+      const up = R[UP[m]]!;
+      const g = R[m]!;
+      const L = up.ladder!;
+      const f = frame(up);
+      // (the stop: module (0, 0.85), then in to the foot spot (0, 0.42))
+      expect(L.foot.via).toBeDefined();
+      const v = f.toModule(L.foot.via!);
+      expect(v.x).toBeCloseTo(0, 9);
+      expect(v.z).toBeCloseTo(0.85, 9);
+      // (going up from the ground floor: no stop, straight to the foot spot)
+      expect(g.ladder!.foot.via).toBeUndefined();
+      const pose = {} as ClimbPose;
+      let n = 0;
+      for (let mx = -1.0; mx <= 1.0; mx += 0.04)
+        for (let mz = -0.2; mz <= 1.7; mz += 0.04) {
+          const p = f.toGame(mx, mz);
+          if (!L.near(p.x, p.z) || !fits(p.x, p.z, up.area, ROOM_BODY * up.s)) continue;
+          n++;
+          const c: LadderClimb = { from: { x: p.x, z: p.z, facing: 0 }, y0: up.floorY, foot: L.foot, rungs: L.rungs, to: L.arrive, y1: g.floorY };
+          const T = climbDuration(c);
+          let least = Infinity;
+          for (let t = 0; t <= T; t += 0.02) {
+            climbPose(c, t, pose);
+            if (pose.stage !== 'on') break;
+            const q = f.toModule(pose);
+            for (const [px, pz] of POSTS) least = Math.min(least, Math.hypot(q.x - px, q.z - pz));
+          }
+          expect(least, `${m} from module (${mx.toFixed(2)}, ${mz.toFixed(2)})`).toBeGreaterThanOrEqual(0.25);
+          // and it ends on the foot spot
+          climbPose(c, T - 1e-6, pose);
+          expect(Math.hypot(pose.x - L.arrive.x, pose.z - L.arrive.z)).toBeLessThan(0.01);
+        }
+      expect(n).toBeGreaterThan(20);
     });
   }
 });

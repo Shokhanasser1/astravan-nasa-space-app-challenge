@@ -8,7 +8,7 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import { DOOR_AZ, HDU, HDU_MODULE_X, HDU_MODULES, moduleToGame } from './layout';
 import { BAG, sandbagSlots, type Slot } from './parts/Sandbags';
-import { HITBOX, PORCH, PORTS, PORT_R, SHIELD, bagCorners, buildExterior, moduleAt, shieldKeep } from './hduParts';
+import { DOOR_FRAME, DOOR_LAMP, GAUGE, HITBOX, PORCH, PORTS, PORT_R, SHIELD, bagCorners, buildExterior, moduleAt, shieldKeep, type GlowPiece } from './hduParts';
 import { inHduModule } from './astra/shellFit';
 
 const EXTERIOR = 'public/models/nasa-outpost/hdu_complex.glb';
@@ -107,7 +107,7 @@ describe('the exterior as the game draws it (hduParts.ts buildExterior)', () => 
       // the shell's cylinder is centred on the module (its side module only reaches back, −z)
       xs.push((box.min.x + box.max.x) / 2);
     }
-    expect(xs.sort((a, b) => a - b).map((x) => Math.round(x))).toEqual([HDU_MODULE_X.greenhouse, HDU_MODULE_X.habitat, HDU_MODULE_X.lab]);
+    expect(xs.sort((a, b) => a - b).map((x) => Math.round(x) + 0)).toEqual([HDU_MODULE_X.greenhouse, HDU_MODULE_X.habitat, HDU_MODULE_X.lab]);
   });
 });
 
@@ -143,6 +143,46 @@ describe('portholes', () => {
         expect(depth, `${id} port ${a.toFixed(2)} ${s} ${t}`).toBeLessThan(-0.005);
         if (s === 0 && t === 0) expect(depth, `${id} port ${a.toFixed(2)}: on the shell`).toBeGreaterThan(-0.06);
       }
+    }
+  });
+});
+
+describe('door lights and the growth gauge (D2, D5)', () => {
+  const sets: [string, readonly GlowPiece[], readonly string[]][] = [
+    ['frame', DOOR_FRAME, HDU_MODULES],
+    ['lamp', DOOR_LAMP, HDU_MODULES],
+    ['gauge', GAUGE, ['greenhouse']],
+  ];
+  it.each(sets)('%s: every piece sits just in front of its own shell, nothing of the model in or before it', (name, pieces, ids) => {
+    const ray = new THREE.Raycaster();
+    const all = meshes();
+    for (const id of ids) {
+      const cx = HDU_MODULE_X[id as keyof typeof HDU_MODULE_X];
+      pieces.forEach((g, n) => {
+        const out = new THREE.Vector3(Math.sin(g.a), 0, Math.cos(g.a));
+        const along = new THREE.Vector3(Math.cos(g.a), 0, -Math.sin(g.a));
+        for (const [s, t] of [[0, 0], [g.w / 2, g.h / 2], [-g.w / 2, g.h / 2], [g.w / 2, -g.h / 2], [-g.w / 2, -g.h / 2]]) {
+          const back = new THREE.Vector3(cx, g.y + t, 0).addScaledVector(out, g.r - g.d / 2).addScaledVector(along, s);
+          ray.set(back.clone().addScaledVector(out, 4), out.clone().negate());
+          const hit = ray.intersectObjects(all, false)[0];
+          const where = `${id} ${name} #${n} (${s.toFixed(2)}, ${t.toFixed(2)})`;
+          expect(hit, where).toBeDefined();
+          const depth = hit.point.clone().sub(back).dot(out); // < 0: the model lies behind the piece's back
+          expect(depth, `${where}: first hit at ${hit.point.toArray().map((v) => v.toFixed(2))}`).toBeLessThan(-0.003);
+          expect(depth, `${where}: on the shell`).toBeGreaterThan(-0.1);
+        }
+      });
+    }
+  });
+
+  it('clear of the door hole and the outer leaf (x ±0.5, up to 2.45 m) and of the ramp in front (z ≥ 2.26)', () => {
+    for (const g of [...DOOR_FRAME, ...DOOR_LAMP, ...GAUGE]) {
+      const x = Math.sin(g.a) * g.r, z = Math.cos(g.a) * g.r;
+      const halfX = (Math.abs(Math.cos(g.a)) * g.w) / 2 + (Math.abs(Math.sin(g.a)) * g.d) / 2;
+      const beside = Math.abs(x) - halfX >= HDU.door.w / 2 + 0.08;
+      const above = g.y - g.h / 2 >= HDU.floor + HDU.door.h + 0.1;
+      expect(beside || above, `piece at a ${g.a.toFixed(2)}, y ${g.y.toFixed(2)}`).toBe(true);
+      expect(z + g.d, 'in front of the ramp').toBeLessThan(HDU.front);
     }
   });
 });

@@ -9,6 +9,11 @@ import { EDGE, HDU_BUILDING, OUTSIDE, ROVER_DISC, makeOutside } from './world';
 
 const W = makeOutside(true);
 const { POINTS } = makePoints(true);
+/** Stops a walk may make on the way: the standing points and spots out in front of the habitat door. */
+const STOPS = [
+  ...MARKERS.map((m) => ({ x: POINTS[m].pos[0], z: POINTS[m].pos[2] })),
+  ...[8, 12, 16].map((r) => ({ x: HDU_PLAN.fromDoor(r)[0], z: HDU_PLAN.fromDoor(r)[1] })),
+];
 const { LAYOUT, RADIUS } = HDU_PLAN;
 const BUILDINGS = ['habitat', 'garden', 'workshop'];
 /** A part of the complex: a module's part (`habitat`, `habitat back`, …) or a tunnel. */
@@ -37,14 +42,34 @@ function walkTo(from: { x: number; z: number }, goal: { x: number; z: number }, 
   return p;
 }
 
+/**
+ * Walk from → goal straight, or (when the complex stands in the straight line: since the plan's turn, D1, the hill is
+ * off its east end) by one stop on the way: a standing point or a spot out in front of the doors. Returns where the
+ * walker ends up nearest the goal.
+ */
+function walkRoute(from: { x: number; z: number }, goal: { x: number; z: number }, area: Area, stops: { x: number; z: number }[]) {
+  let best = walkTo(from, goal, area);
+  for (const v of stops) {
+    if (Math.hypot(goal.x - best.x, goal.z - best.z) < 0.35) break;
+    const mid = walkTo(from, v, area);
+    if (Math.hypot(v.x - mid.x, v.z - mid.z) > 0.35) continue;
+    const p = walkTo(mid, goal, area);
+    if (Math.hypot(goal.x - p.x, goal.z - p.z) < Math.hypot(goal.x - best.x, goal.z - best.z)) best = p;
+  }
+  return best;
+}
+
 describe('the HDU base outside (makeOutside(true))', () => {
   it('has the three modules, their parts and the two tunnels, and every prop of the plan', () => {
     const names = W.solids.map((s) => s.name);
-    for (const b of BUILDINGS) for (const part of ['', ' back', ' side', ' porch', ' leg', ' apron', ' fins left', ' fins right'])
+    for (const b of BUILDINGS) for (const part of ['', ' back', ' side', ' porch', ' leg', ' apron', ' ramp', ' fins left', ' fins right'])
       expect(names).toContain(b + part);
-    for (const t of ['tunnel garden-habitat', 'tunnel habitat-workshop']) {
+    // (behind each tunnel: no bar across the bay any more, finding #19; a small disc in each of its two corners)
+    for (const [t, a, b] of [['tunnel garden-habitat', 'garden', 'habitat'], ['tunnel habitat-workshop', 'habitat', 'workshop']]) {
       expect(names).toContain(t);
-      expect(names).toContain(t + ' back');
+      expect(names).not.toContain(t + ' back');
+      expect(names).toContain(`${t} corner ${a}`);
+      expect(names).toContain(`${t} corner ${b}`);
     }
     for (const k of ['lander', 'scout', 'hub', 'dish', 'wing', 'rover', 'tanks', 'battery']) expect(names).toContain(k);
     // nothing of the ASTRA base and nothing of the outpost 50 m north (the same complex is the base now)
@@ -55,8 +80,10 @@ describe('the HDU base outside (makeOutside(true))', () => {
   it('puts the modules where the plan has them and the props where the HDU plan has them', () => {
     for (const b of BUILDINGS) {
       const s = W.solids.find((o) => o.name === b)!;
-      const at = LAYOUT[b as 'habitat'];
-      expect(Math.hypot(s.x - at[0], s.z - at[1] + 0.3), b).toBeLessThan(1e-9);
+      // (the module's main disc stands at module (0, −0.3): in the game frame, turned with the plan)
+      const id = HDU_MODULES.find((m) => HDU_BUILDING[m] === b)!;
+      const at = moduleToGame(id, 0, -0.3);
+      expect(Math.hypot(s.x - at[0], s.z - at[1]), b).toBeLessThan(1e-9);
     }
     for (const k of ['lander', 'scout', 'hub', 'dish'] as const) {
       const s = W.solids.find((o) => o.name === k)!;
@@ -95,7 +122,7 @@ describe('the HDU base outside (makeOutside(true))', () => {
       // and walk from there to every standing point
       for (const m of MARKERS) {
         const goal = { x: POINTS[m].pos[0], z: POINTS[m].pos[2] };
-        const p = walkTo({ x, z }, goal, W);
+        const p = walkRoute({ x, z }, goal, W, STOPS);
         expect(Math.hypot(goal.x - p.x, goal.z - p.z), `${HDU_BUILDING[id]} door → ${m}`).toBeLessThan(0.35);
       }
     }
@@ -144,7 +171,7 @@ describe('the HDU standing points (makePoints(true))', () => {
       for (const b of MARKERS) {
         if (a === b) continue;
         const goal = { x: POINTS[b].pos[0], z: POINTS[b].pos[2] };
-        const p = walkTo({ x: POINTS[a].pos[0], z: POINTS[a].pos[2] }, goal, W);
+        const p = walkRoute({ x: POINTS[a].pos[0], z: POINTS[a].pos[2] }, goal, W, STOPS);
         expect(Math.hypot(goal.x - p.x, goal.z - p.z), `${a} → ${b}`).toBeLessThan(0.35);
       }
   });
@@ -230,5 +257,67 @@ describe('the arrival preview (`?arrive`) on the HDU base', () => {
     const { arrivalCameraSpot } = await import('../scene/arrival');
     const p = arrivalCameraSpot({ x: 0, z: 0 }, HDU_PLAN.PARKED_ROVER);
     expect(fits(p.x, p.z, W, 0.5)).toBe(true);
+  });
+});
+
+describe('the crew rover keeps the HDU doors clear (finding #17)', () => {
+  it('leaves a standable spot within DOOR_REACH of every door\'s `out` after driving at it from 12 headings', async () => {
+    const { ROVER, stepRover } = await import('../scene/roverDrive');
+    const { DOOR_REACH, HDU_OUT } = await import('./rooms');
+    const { makeRoverArea, roverKeepClear } = await import('./world');
+    const rover: Solid = { name: 'rover', x: HDU_PLAN.PARKED_ROVER.x, z: HDU_PLAN.PARKED_ROVER.z, r: HDU_PLAN.PARKED_ROVER.r };
+    const walk = makeOutside(true, rover);
+    const drive = makeRoverArea(walk, rover, true);
+    // (the keep-clear discs are the rover's only: the walk has none)
+    expect(roverKeepClear(true).length).toBe(HDU_MODULES.length + 1);
+    expect(walk.solids.some((s) => s.name!.startsWith('keep clear'))).toBe(false);
+    expect(roverKeepClear(false)).toEqual([]);
+    const flat = () => 0;
+    let runs = 0;
+    for (const id of HDU_MODULES) {
+      const [ox, oz] = moduleToGame(id, HDU_OUT[0], HDU_OUT[1]);
+      for (let k = 0; k < 12; k++) {
+        const th = (k * Math.PI) / 6;
+        const sx = ox + Math.sin(th) * 14, sz = oz + Math.cos(th) * 14;
+        if (!fits(sx, sz, drive, ROVER.r)) continue;
+        runs++;
+        const r = { x: sx, z: sz, yaw: Math.atan2(ox - sx, oz - sz), speed: 0, y: 0, pitch: 0, roll: 0, steer: 0 };
+        for (let t = 0; t < 20; t += 1 / 30) stepRover(r as never, { throttle: 1, steer: 0, brake: false }, drive, flat, 1 / 30);
+        // park it there: its walk hitbox where it stopped
+        rover.x = r.x;
+        rover.z = r.z;
+        let reach = Infinity;
+        for (let dx = -DOOR_REACH; dx <= DOOR_REACH; dx += 0.05)
+          for (let dz = -DOOR_REACH; dz <= DOOR_REACH; dz += 0.05) {
+            const d = Math.hypot(dx, dz);
+            if (d < reach && fits(ox + dx, oz + dz, walk, BODY)) reach = d;
+          }
+        expect(reach, `${id} door, rover from heading ${k * 30}° stopped at (${r.x.toFixed(2)}, ${r.z.toFixed(2)})`).toBeLessThan(DOOR_REACH);
+      }
+    }
+    expect(runs).toBeGreaterThanOrEqual(HDU_MODULES.length * 4);
+  });
+});
+
+describe('the HDU ramps and the bays behind the tunnels (findings #19, D7)', () => {
+  it('covers each door ramp (x ±0.55, z 2.26…3.45) and keeps the `out` spot (0, 4.0) free for the body', () => {
+    for (const id of HDU_MODULES) {
+      for (const [mx, mz] of [[-0.55, 2.26], [0.55, 2.26], [-0.55, 3.45], [0.55, 3.45], [0, 3.45], [0, 2.9]]) {
+        const [x, z] = moduleToGame(id, mx, mz);
+        expect(W.solids.some((s) => clearance(s, x, z, 0) <= 0), `${id} ramp (${mx}, ${mz})`).toBe(true);
+      }
+      const [ox, oz] = moduleToGame(id, 0, 4.0);
+      expect(fits(ox, oz, W, BODY), id).toBe(true);
+    }
+  });
+
+  it('leaves the bay behind each tunnel open ground', () => {
+    for (const [a, b] of [['greenhouse', 'habitat'], ['habitat', 'lab']] as const) {
+      // the middle of the bay, between the two modules' back boxes, a few metres behind the tunnel
+      const [ax, az] = moduleToGame(a, 6.5, -3.0);
+      expect(fits(ax, az, W, BODY), `${a}-${b}`).toBe(true);
+      const [bx, bz] = moduleToGame(a, 6.5, -2.0);
+      expect(fits(bx, bz, W, BODY), `${a}-${b} by the tunnel`).toBe(true);
+    }
   });
 });

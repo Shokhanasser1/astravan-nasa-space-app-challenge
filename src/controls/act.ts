@@ -58,7 +58,12 @@ export function resolve(cmd: Command, c: Ctx): Effect | null {
   switch (cmd.kind) {
     // Batteries are carried (15 Nov): take at the hub, put into the machine in front, take back with undo.
     case 'use':
-      // (at the rover's hatch, or driving it, E is for the rover: the touch action button still aims at buildings)
+      // (15 Nov, Samandar: D8 — at a door with a machine's battery rack beside it (the HDU modules, ASTRA's habitat),
+      // E with enough batteries in hand while aiming at that machine puts them in; otherwise E is for the door. Away
+      // from a door nothing changes: at the rover's hatch, or driving it, E is for the rover, and the touch action
+      // button still aims at buildings. Tell Shoxjahon aka: shared control code.)
+      if (c.ride === 'enter' && plan && c.aim && c.aim !== 'hub' && (c.hands ?? 0) >= STEP[c.aim])
+        return { action: { type: 'PUT', k: c.aim } };
       if (c.ride && canTravel(c)) return { ride: c.ride };
       if (!plan || !c.aim) return null;
       if (c.aim === 'hub') return { action: { type: 'TAKE' } };

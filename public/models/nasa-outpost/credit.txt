@@ -25,3 +25,12 @@ Made by Samandar (team) with Claude Code in Blender (script: the team's oy-karvo
 build_game_complex.py, SOURCES.md there); web-converted with gltf-transform as in `npm run glb` (meshopt, WebP
 textures <= 1024) plus --join false --flatten false. The game draws it in src/scene/HduComplex.tsx.
 (It replaces hdu_habitat.glb, the single HDU module at 1.5x of the first `?hdu` build, removed 15 Nov.)
+Rebuilt 15 Nov 2026 (prompt B, batch 1): every print on the shell texture painted out by rectangle (all "Segment A..H"
+and "AIRLOCK" lettering, the half project emblems, the icon column, the blotch of the first scrub; a small placard on
+the part 2 texture), filled from the panel colour either side; no tunnel hatch holes in the shells (the far ends are
+closed); the shell's bottom dish cut below the floor; a 1.1 m ramp from the sill to the ground in front of each door
+(part of <M>_frame, its own paint); loose bits on the ground in front of the doors removed; paints shipped matte
+(no transmission, metallic 0).
+Batch 1 wave 2 (15 Nov 2026): a junction collar (sleeve r 1.20) at each tunnel end, its inner edge on the shell, so no
+gap between the flat tunnel end and the round shell; the tunnel floor slab level with the module floors (0.45) and inside
+the tunnel skin; the ramps painted light grey (a flat texel of the part 2 texture). Same script and sources.

@@ -10,7 +10,7 @@
  * 15 Nov ~13:00 (Samandar, variant A; `features.hduHabitat` / `?hdu`, off by default): the base core is NASA's
  * Habitat Demonstration Unit as a complex of three modules at real size joined by pressurised tunnels — C greenhouse
  * (the garden), A habitat (Life Support), B lab (the workshop) — every module walk-in. Its own plan (HDU_PLAN): the
- * complex across the back of the flat pad with its doors to the north, everything else in front of it.
+ * complex across the back of the flat pad with its doors to azimuth 285° (HDU_TURN), everything else in front of it.
  */
 import { features } from '../config/features';
 
@@ -46,10 +46,26 @@ export const HDU_MODULES = Object.keys(HDU_MODULE_X) as HduModule[];
 
 /**
  * Where the complex stands: the habitat module's centre and the turn (three.js rotation-y) of the whole complex.
- * turn 0 = the modules along the game's x, the doors to +z (north, toward the hub and the hill). Its frame (fins,
+ * Base frame (turn 0) = the modules along the game's x, the doors to +z; the game's turn is HDU_TURN. Its frame (fins,
  * legs, side modules, rear masts) spans local x −17.9…16.4, z −9.1…3.7: all inside the flat pad (r 22, ground.ts).
  */
-export const HDU_COMPLEX = { x: 0.75, z: -4.0, turn: 0 } as const;
+/**
+ * 15 Nov (PROMPT_B D1, finding #28): the WHOLE HDU plan is turned rigidly about the pad centre (0, 0) by HDU_TURN
+ * (three.js rotation-y), so the doors face azimuth 285° (sunDirection's frame: from +z through +x) and the first
+ * week's low Sun (sky.json, 2021-10-25: azimuth 304°…232°) is in front of them every day (src/walk/hduSun.test.ts).
+ * (285°, not 300°: the first week's worst day is lit at cos 0.6 instead of 0.37, three weeks of the 14 stay dark all
+ * week instead of five, and from the hill point all three modules and the lander are in view — at 300° the modules
+ * stood in one line seen from the hill and hid each other.)
+ * The numbers written here are the "base frame" (turn 0: doors to +z); hduTurned() carries each one into the game.
+ */
+export const HDU_TURN = (285 * Math.PI) / 180;
+/** A base-frame HDU point (x, z) → the game's, turned by HDU_TURN about (0, 0) like three.js rotation-y. */
+export function hduTurned(x: number, z: number): [number, number] {
+  const c = Math.cos(HDU_TURN), s = Math.sin(HDU_TURN);
+  return [x * c + z * s, -x * s + z * c];
+}
+const HDU_BASE_CENTRE = hduTurned(0.75, -4.0);
+export const HDU_COMPLEX = { x: HDU_BASE_CENTRE[0], z: HDU_BASE_CENTRE[1], turn: HDU_TURN } as const;
 
 /** Complex frame (local x along the modules, z to the doors) → the game's (x, z). */
 export function complexToGame(lx: number, lz: number): [number, number] {
@@ -105,12 +121,13 @@ const HDU_LAYOUT = {
   habitat: complexToGame(HDU_MODULE_X.habitat, 0),
   garden: complexToGame(HDU_MODULE_X.greenhouse, 0),
   workshop: complexToGame(HDU_MODULE_X.lab, 0),
-  lander: [9.5, 11.5],
-  wing: [-13.5, 11.0],
-  hub: [-1.5, 4.5],
+  // (base frame, turned by HDU_TURN with the complex)
+  lander: hduTurned(9.5, 11.5),
+  wing: hduTurned(-13.5, 11.0),
+  hub: hduTurned(-1.5, 4.5),
   // (west of the old spot: the arrival camera, arrival.ts arrivalCameraSpot, stands 7.5 m left of the parked rover)
-  scout: [-7.0, 16.0],
-  dish: [17.0, 8.0],
+  scout: hduTurned(-7.0, 16.0),
+  dish: hduTurned(17.0, 8.0),
 } as const satisfies Record<Site, XZ>;
 
 /**
@@ -126,7 +143,7 @@ const HDU_RADIUS = { habitat: 3.5, garden: 3.5, workshop: 3.5, scout: 1.2, lande
 function makePlan(hdu: boolean): BasePlan {
   const LAYOUT = hdu ? HDU_LAYOUT : ASTRA_LAYOUT;
   const RADIUS = hdu ? HDU_RADIUS : ASTRA_RADIUS;
-  // HDU: the doors face the way the complex is turned (north); ASTRA: the habitat door faces the power hub.
+  // HDU: the doors face the way the complex is turned (azimuth 285°, HDU_TURN); ASTRA: the habitat door faces the power hub.
   const DOOR_AZ = hdu ? HDU_COMPLEX.turn : Math.atan2(LAYOUT.hub[0] - LAYOUT.habitat[0], LAYOUT.hub[1] - LAYOUT.habitat[1]);
   const DOOR_R = hdu ? HDU.front + 0.05 : RADIUS.habitat + 0.05;
   const fromDoor = (r: number): [number, number] => [
@@ -158,13 +175,20 @@ function makePlan(hdu: boolean): BasePlan {
   const TANKS = { x: tanksX, z: tanksZ, yaw: Math.atan2(LAYOUT.hub[0] - tanksX, LAYOUT.hub[1] - tanksZ), r: TANKS_R };
   /** Battery bank (ASTRA model, src/scene/AstraProps.tsx) in the power yard by the solar arrays: out of the walk
    * between the hub and the habitat (walk tests) and out of the way of the camera behind the astronaut at the hub. */
-  const BATTERY_BANK: XZ = hdu ? [-18.5, 3.5] : [-15.5, -5.5];
+  const BATTERY_BANK: XZ = hdu ? hduTurned(-18.5, 3.5) : [-15.5, -5.5];
   /** The crew rover (NASA SEV, decor, src/scene/Decor.tsx) parked on the flat pad, nose to the base; r = its hitbox. */
   const PARKED_ROVER = hdu
-    ? { x: 3.5, z: 16.0, yaw: Math.atan2(-3.5, -16.0), r: 2.4 }
+    ? (() => {
+        const [x, z] = hduTurned(3.5, 16.0);
+        return { x, z, yaw: Math.atan2(-3.5, -16.0) + HDU_TURN, r: 2.4 };
+      })()
     : { x: 14.5, z: 12.0, yaw: -2.3, r: 2.4 };
   return { hdu, LAYOUT, RADIUS, BATTERY_BANK, PARKED_ROVER, DOOR_AZ, DOOR_R, TANKS, fromDoor, towardBase };
 }
+
+/** The solar wing's own turn (rotation-y; SolarWing.tsx, AstraProps.tsx, its hitbox in walk/world.ts): 0.5 rad,
+ * plus HDU_TURN on the HDU plan (it turns with the rest of the plan). */
+export const wingTurn = (hdu: boolean): number => 0.5 + (hdu ? HDU_TURN : 0);
 
 /** Both plans, for tests (the game uses the one the flag picks, below). */
 export const ASTRA_PLAN = makePlan(false);

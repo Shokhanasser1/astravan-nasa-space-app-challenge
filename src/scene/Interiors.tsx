@@ -44,6 +44,15 @@ const at = new THREE.Vector3();
  * wall with no airlock between, so both open together (`DoorOpenOuter` alone would leave the inner door shut in the
  * way of the walk-in, `DoorOpenInner` alone the outer one).
  */
+/**
+ * Is a building's whole interior drawn, not only its door? Inside it (`inside`: its room, the camera within it, the
+ * ASTRA first-person habitat), and with the HDU complex (#10) also while its door is open at all or opening: the
+ * door shows the room behind it, never an empty shell. Pure.
+ */
+export function interiorFull(hdu: boolean, door: { readonly open: number; readonly want: number }, inside: boolean): boolean {
+  return inside || (hdu && (door.open > 0 || door.want > 0));
+}
+
 export const interiorDoors: Record<InteriorId, { open: number; want: number }> = {
   habitat: { open: 0, want: 0 },
   greenhouse: { open: 0, want: 0 },
@@ -126,10 +135,13 @@ function Model({ id, plant }: { id: InteriorId; plant?: number }) {
       // room vanished round the camera, showing ASTRA's shell and shield from inside.) HDU: the same for each module,
       // with the camera inside that module's lining and below its dome.
       const p = camera.position;
-      const full =
+      const full = interiorFull(
+        hdu,
+        d,
         (id === 'habitat' && camState.inside) ||
-        inRoom ||
-        (hdu ? inHduModule(p.x, p.y, p.z) === id : inHabitatRoom(p.x - at.x, p.y - at.y, p.z - at.z, ASTRA_SCALE.habitat));
+          inRoom ||
+          (hdu ? inHduModule(p.x, p.y, p.z) === id : inHabitatRoom(p.x - at.x, p.y - at.y, p.z - at.z, ASTRA_SCALE.habitat)),
+      );
       obj.visible = full || dist < 20;
       if (door) for (const c of door.root.children) c.visible = full || c === door.leaf;
       return;

@@ -61,7 +61,14 @@ interface Spec {
   /**
    * The ladder to another floor: E within `reach` of `at` (model x, z) climbs, arriving at `arrive` there.
    */
-  ladder?: { to: RoomId; at: [number, number]; reach: number; arrive: [number, number, number] };
+  ladder?: {
+    to: RoomId;
+    at: [number, number];
+    reach: number;
+    arrive: [number, number, number];
+    /** A stop (model x, z) on the step from where E was pressed to the foot spot (ladder.ts Spot.via). */
+    via?: [number, number];
+  };
   /** The ladder's rungs plane (model z; default the ASTRA habitat's 0.212). */
   rungsZ?: number;
 }
@@ -134,7 +141,7 @@ const HDU_HEADROOM = HDU.deck - 0.08 - HDU.floor;
 /** Inside the lining, less a little. */
 const HDU_BOUNDS = HDU.lining - 0.05;
 /** E outside: in front of the door, clear of the module's hitbox (disc r 3.3 round (0, −0.3), src/walk/world.ts). */
-const HDU_OUT: [number, number, number] = [0, 4.0, 0];
+export const HDU_OUT: [number, number, number] = [0, 4.0, 0];
 /** Where you stand on the ground floor at its ladder (arriving down, facing the door) and on the loft (facing +z). */
 const HDU_GROUND_ARRIVE: [number, number, number] = [0, 0.75, 0];
 const HDU_LOFT_ARRIVE: [number, number, number] = [0, 0.85, 0];
@@ -154,8 +161,11 @@ function hduSpecs(plan: BasePlan): Partial<Record<RoomId, Spec>> {
     // the loft: no door of its own; E at the open side of the well climbs back down
     out[up] = {
       at, turn: HDU_COMPLEX.turn, k: 1, floor: HDU.deck, headroom: HDU_HEADROOM, bounds: HDU_BOUNDS,
-      spawn: HDU_LOFT_ARRIVE, out: HDU_OUT, exit: () => false, jump: true, noDoor: true,
-      rungsZ: 0, ladder: { to: m, at: [0, 0.85], reach: 0.7, arrive: HDU_GROUND_ARRIVE },
+      // (no jumping on the lofts, D9: like ASTRA's low rooms; a jump by the rail opening would clear the rail)
+      spawn: HDU_LOFT_ARRIVE, out: HDU_OUT, exit: () => false, jump: false, noDoor: true,
+      // (the step onto the ladder goes through the rail's opening: to (0, 0.85) first, then in to the foot spot, so
+      // the body keeps clear of the rail's front posts at (±0.3685, 0.4605); finding #15)
+      rungsZ: 0, ladder: { to: m, at: [0, 0.85], reach: 0.7, arrive: HDU_GROUND_ARRIVE, via: [0, 0.85] },
     };
   }
   return out;
@@ -183,7 +193,7 @@ export interface Room {
     to: RoomId;
     near: (x: number, z: number) => boolean;
     arrive: { x: number; z: number; facing: number };
-    foot: { x: number; z: number; facing: number };
+    foot: { x: number; z: number; facing: number; via?: { x: number; z: number } };
     rungs: { x: number; z: number; facing: number };
   } | null;
 }
@@ -237,7 +247,10 @@ function build(id: RoomId, p: Spec, roomBoxes: Box[]): Room {
             return Math.hypot(mx - p.ladder!.at[0], mz - p.ladder!.at[1]) < p.ladder!.reach;
           },
           arrive: at(p.ladder.arrive),
-          foot: at([0, rz + BODY_BEHIND, Math.PI]),
+          foot: {
+            ...at([0, rz + BODY_BEHIND, Math.PI]),
+            ...(p.ladder.via ? { via: at([p.ladder.via[0], p.ladder.via[1], 0]) } : {}),
+          },
           rungs: at([0, rz, Math.PI]),
         }
       : null,

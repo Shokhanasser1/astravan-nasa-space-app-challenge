@@ -16,3 +16,7 @@ imagery, logos or insignia in them. Web-converted with gltf-transform as in `npm
 Moonwards-Assets' Toilet.blend (MIT, Copyright (c) 2019 Moonwards, github.com/spenxeram/Moonwards-Assets) is credited in
 the same SOURCES.md for the habitat's hygiene section (the first `?hdu` habitat interior used it; this build's script
 models the hygiene section in plain boxes).
+hdu_{habitat,lab,greenhouse}.glb rebuilt 15 Nov 2026 (prompt B, batch 1): the inner door leaf removed from the picture
+(its node <id>_door_inner stays as an empty with the DoorOpen/DoorOpenInner clips); same script and sources as above.
+Batch 1 wave 2 (15 Nov 2026): the ladder rails run to y 4.25 with rungs every 0.30 m up to 4.0325 (above the loft deck
+too), centred on z 0; the door sill is as wide as the jambs and closes the pin-hole at the jamb foot. Same script.

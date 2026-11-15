@@ -34,6 +34,11 @@ export interface Spot {
   x: number;
   z: number;
   facing: number;
+  /**
+   * (The foot spot only.) A stop on the step onto the ladder: from where E was pressed to here, then to the foot spot
+   * (the HDU loft: through the rail's opening, clear of its posts; rooms.ts). Absent: straight to the foot spot.
+   */
+  via?: { x: number; z: number };
 }
 
 export interface LadderClimb {
@@ -72,9 +77,49 @@ export function climbTime(h: number): number {
 
 const stepTime = (a: { x: number; z: number }, b: { x: number; z: number }) => Math.max(STEP_MIN_S, Math.hypot(b.x - a.x, b.z - a.z) / STEP_V);
 
+/**
+ * The step onto the ladder with a `via` stop goes in three straight legs: from where E was pressed straight out or in
+ * (along the line via → foot) to the line through `via` across the ladder (the corner), then along that line to
+ * `via`, then in to the foot spot; so from beside the loft rail the body never cuts the rail's front post. The corner
+ * is written into `out` (no allocation).
+ */
+function viaCorner(c: LadderClimb, out: { x: number; z: number }) {
+  const v = c.foot.via!;
+  let ux = v.x - c.foot.x, uz = v.z - c.foot.z;
+  const l = Math.hypot(ux, uz) || 1;
+  ux /= l;
+  uz /= l;
+  // how far `from` is from `via` across the ladder (along (uz, −ux))
+  const s = (c.from.x - v.x) * uz - (c.from.z - v.z) * ux;
+  out.x = v.x + uz * s;
+  out.z = v.z - ux * s;
+  return out;
+}
+const corner = { x: 0, z: 0 };
+const legTime = (a: { x: number; z: number }, b: { x: number; z: number }) => (Math.hypot(b.x - a.x, b.z - a.z) < 0.01 ? 0 : stepTime(a, b));
+/** The step onto the ladder's legs (s): one (straight to the foot spot) or three (corner, via, foot). */
+function stepOnLegs(c: LadderClimb, out: [number, number, number]): [number, number, number] {
+  const v = c.foot.via;
+  if (!v) {
+    out[0] = stepTime(c.from, c.foot);
+    out[1] = out[2] = 0;
+    return out;
+  }
+  viaCorner(c, corner);
+  out[0] = legTime(c.from, corner);
+  out[1] = legTime(corner, v);
+  out[2] = legTime(v, c.foot);
+  if (out[0] + out[1] + out[2] === 0) out[2] = STEP_MIN_S;
+  return out;
+}
+const legs: [number, number, number] = [0, 0, 0];
+const stepOnTime = (c: LadderClimb) => {
+  stepOnLegs(c, legs);
+  return legs[0] + legs[1] + legs[2];
+};
 /** The whole climb's length (s). */
 export function climbDuration(c: LadderClimb): number {
-  return stepTime(c.from, c.foot) + climbTime(c.y1 - c.y0) + stepTime(c.foot, c.to);
+  return stepOnTime(c) + climbTime(c.y1 - c.y0) + stepTime(c.foot, c.to);
 }
 
 /**
@@ -100,17 +145,39 @@ const turn = (a: number, b: number, u: number) => a + wrap(b - a) * u;
 /** Where the body is `t` s into the climb (writes into `out`, no allocation). */
 export function climbPose(c: LadderClimb, t: number, out: ClimbPose): ClimbPose {
   const Tc = climbTime(c.y1 - c.y0);
-  const STEP_ON_S = stepTime(c.from, c.foot);
+  stepOnLegs(c, legs);
+  const STEP_ON_S = legs[0] + legs[1] + legs[2];
   const STEP_OFF_S = stepTime(c.foot, c.to);
   if (t < STEP_ON_S) {
     const u = Math.max(0, t) / STEP_ON_S;
-    const k = smooth(u), dk = dSmooth(u) / STEP_ON_S;
-    out.x = c.from.x + (c.foot.x - c.from.x) * k;
-    out.z = c.from.z + (c.foot.z - c.from.z) * k;
+    // one leg (from → foot) or three (from → corner → via → foot), each with a soft start and stop
+    const v = c.foot.via;
+    let a: { x: number; z: number } = c.from, b: { x: number; z: number } = c.foot, t0 = 0, T = STEP_ON_S;
+    if (v) {
+      viaCorner(c, corner);
+      const tt = Math.max(0, t);
+      if (tt < legs[0]) {
+        b = corner;
+        T = legs[0];
+      } else if (tt < legs[0] + legs[1]) {
+        a = corner;
+        b = v;
+        t0 = legs[0];
+        T = legs[1];
+      } else {
+        a = v;
+        t0 = legs[0] + legs[1];
+        T = legs[2];
+      }
+    }
+    const ul = Math.min(1, Math.max(0, t - t0) / T);
+    const k = smooth(ul), dk = dSmooth(ul) / T;
+    out.x = a.x + (b.x - a.x) * k;
+    out.z = a.z + (b.z - a.z) * k;
     out.y = c.y0;
     out.facing = turn(c.from.facing, c.foot.facing, Math.min(1, u * 1.6));
-    out.vx = (c.foot.x - c.from.x) * dk;
-    out.vz = (c.foot.z - c.from.z) * dk;
+    out.vx = (b.x - a.x) * dk;
+    out.vz = (b.z - a.z) * dk;
     out.vy = 0;
     out.stage = 'on';
     return out;

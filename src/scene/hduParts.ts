@@ -1,5 +1,6 @@
 import * as THREE from 'three';
-import { HDU, HDU_COMPLEX, HDU_MODULE_X, type HduModule } from './layout';
+import { HDU, HDU_COMPLEX, HDU_MODULE_X, moduleToGame, type BasePlan, type HduModule } from './layout';
+import type { Machine } from '../state/game';
 
 /**
  * The numbers HduComplex.tsx draws by, measured on public/models/nasa-outpost/hdu_complex.glb (15 Nov): no React here,
@@ -32,6 +33,70 @@ export const PORTS: readonly (readonly [number, number, number])[] = [
   [deg(-35), 3.8, SHELL_R.loft + 0.03],
   [0, 3.8, SHELL_R.loft + 0.03],
 ];
+
+/**
+ * D8 (15 Nov): the battery rack of the machine a module holds — and its cable end and objective beacon — stands at
+ * one fixed spot per module, MODULE frame, facing out (+z, the cells on its door side): right of the door, clear of the
+ * ramp (x ±0.55, z 2.26–3.45), the `out` spot (0, 4.0), the fins (r ≤ 3.4) and the habitat's porch (front left).
+ * Tested against the walk solids and the model (src/scene/hduRacks.test.ts).
+ */
+export const RACK_AT = { x: 1.9, z: 3.9 } as const;
+/** Which module holds which machine's rack (Life Support, garden, workshop); the others stay on the line to the hub. */
+export const RACK_MODULE: Partial<Record<Machine, HduModule>> = { ls: 'habitat', gh: 'greenhouse', ws: 'lab' };
+/** Rack size, metres (src/scene/Batteries.tsx draws it): a knee-high box; width = slots × PITCH + 0.12. */
+export const RACK = { pitch: 0.17, h: 0.72, d: 0.14 } as const;
+
+/**
+ * Where a machine's battery rack stands in a plan (game x, z; yaw = the way its cells face). HDU: the module's fixed
+ * spot (RACK_AT); otherwise on the line to the hub, `out` m outside the footprint, facing the hub (the ASTRA rule).
+ */
+export function rackSpot(plan: BasePlan, k: Machine, out = 0.35): { x: number; z: number; yaw: number } {
+  const mod = plan.hdu ? RACK_MODULE[k] : undefined;
+  if (mod) {
+    const [x, z] = moduleToGame(mod, RACK_AT.x, RACK_AT.z);
+    return { x, z, yaw: HDU_COMPLEX.turn };
+  }
+  const site = { ls: 'habitat', gh: 'garden', ws: 'workshop', sc: 'scout', launch: 'lander' } as const;
+  const at = plan.LAYOUT[site[k]];
+  const r = plan.RADIUS[site[k]];
+  const dx = plan.LAYOUT.hub[0] - at[0];
+  const dz = plan.LAYOUT.hub[1] - at[1];
+  const len = Math.hypot(dx, dz) || 1;
+  const d = Math.min(r + out, len / 2);
+  return { x: at[0] + (dx / len) * d, z: at[1] + (dz / len) * d, yaw: Math.atan2(dx, dz) };
+}
+
+/**
+ * D2 / D5 (15 Nov): glowing pieces on the shell round every door (no real lights: one instanced mesh of boxes, like the
+ * portholes, `toneMapped={false}`). Each piece is a box facing out at azimuth `a`, its middle `r` from the module
+ * centre (its back a hair in front of the shell, measured: r 1.98–2.00 between y 0.5 and 2.8 by the door), `w` along
+ * the ring, `h` tall, `d` deep. The door hole is x ±0.5, y 0.45–2.45 (HDU.door); the fins nearest it stand at ±22.5°.
+ * - frame: an outline round the door, 0.12 m outside the hole (clear of the outer leaf's swing and the ramp in front).
+ * - lamp: a bar over the door, above the frame and below the loft step (y 2.85, where the shell steps out to 2.03).
+ * - gauge: the greenhouse's growth gauge (D5), four cells one over another in the bay left of the door (between the fin
+ *   at −22.5° and the porthole at −45°), lit bottom-up by the garden level `view.plant` 1..4.
+ */
+export interface GlowPiece { a: number; y: number; r: number; w: number; h: number; d: number }
+const FRAME_X = HDU.door.w / 2 + 0.12; // the outline's middle line beside the hole
+const FRAME_R = 2.03;
+const FRAME_T = 0.04; // the outline's width
+const FRAME_A = Math.asin(FRAME_X / FRAME_R);
+const FRAME_TOP = HDU.floor + HDU.door.h + 0.17; // 2.62: over the small fixture above the hole (y ≤ 2.55)
+const FRAME_Y0 = HDU.floor + 0.05;
+/** Pieces along an arc from a0 to a1 (rad) at height y (middle), each one a straight box a hair longer than its chord. */
+function arc(a0: number, a1: number, y: number, h: number, r: number, d: number, n: number): GlowPiece[] {
+  const da = (a1 - a0) / n;
+  return Array.from({ length: n }, (_, i) => ({ a: a0 + da * (i + 0.5), y, r, w: 2 * (r - d / 2) * Math.sin(Math.abs(da) / 2) + 0.004, h, d }));
+}
+export const DOOR_FRAME: readonly GlowPiece[] = [
+  { a: -FRAME_A, y: (FRAME_Y0 + FRAME_TOP) / 2, r: FRAME_R, w: FRAME_T, h: FRAME_TOP - FRAME_Y0, d: 0.02 },
+  { a: FRAME_A, y: (FRAME_Y0 + FRAME_TOP) / 2, r: FRAME_R, w: FRAME_T, h: FRAME_TOP - FRAME_Y0, d: 0.02 },
+  ...arc(-FRAME_A, FRAME_A, FRAME_TOP, FRAME_T, FRAME_R, 0.02, 9),
+];
+export const DOOR_LAMP: readonly GlowPiece[] = arc(deg(-12), deg(12), 2.76, 0.07, 2.045, 0.03, 6);
+export const GAUGE: readonly GlowPiece[] = [0, 1, 2, 3].map((i) => ({ a: deg(-31), y: 0.95 + i * 0.16, r: SHELL_R.ground + 0.035, w: 0.16, h: 0.12, d: 0.03 }));
+/** Grow-light magenta for the greenhouse's portholes while it has batteries (D5). */
+export const GROW_LIGHT = '#ff4fd8';
 
 /** Which module a point (game x, z) belongs to: the nearest along the complex (taps on a tunnel go to its nearer end). */
 export function moduleAt(x: number, z: number): HduModule {
