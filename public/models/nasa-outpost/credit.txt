@@ -11,3 +11,7 @@ Made by Samandar (team) with Claude Code in Blender (scripts: the team's oy-karv
 build_base.py, export_outpost.py, SOURCES.md); web-converted with gltf-transform as in `npm run glb` (meshopt, WebP textures <= 1024) plus
 --join false --flatten false: one node per module part and tunnel, so each sits on its own ground.
 The furnished interiors (NASA HDU papers on NTRS; Moonwards-Assets toilet, MIT) stay in the Blender file.
+
+hdu_habitat.glb (15 Nov 2026, `?hdu`): the main habitat as one HDU module at 1.5x its real size, from the same NASA
+"Habitat Demonstration Unit" part 1 (cylinder and loft dome; the side module and airlock bulb left off, a door cut at
+the front, logos and flags painted out). Script: oy-karvonsaroyi-3d/hb7/hdu_base/build_game_habitat.py.
