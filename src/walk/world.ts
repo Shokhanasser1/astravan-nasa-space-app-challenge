@@ -7,6 +7,7 @@ import { BATTERY_BANK, BATTERY_R, LAYOUT, PARKED_ROVER, RADIUS, ROBOT_ARM, TANKS
 import type { Area, Solid } from './collide';
 import { rich } from '../scene/rich';
 import { features } from '../config/features';
+import { STEP_FOOT, STEP_WHEEL, rockSolids } from './rocks';
 
 /** Every hitbox is its visual footprint plus this much (metres). */
 const MARGIN = 0.1;
@@ -23,6 +24,9 @@ const wing: Solid = {
   bz: LAYOUT.wing[1] + Math.cos(WING_TURN) * 2.65,
   r: 0.9,
 };
+
+/** The crew rover's hitbox: it moves to wherever the player parks the rover (`?drive`, src/scene/Rig.tsx). */
+export const ROVER_DISC: Solid = { name: 'rover', x: PARKED_ROVER.x, z: PARKED_ROVER.z, r: PARKED_ROVER.r };
 
 /** How far from the middle of the base you can walk: past the hill (27 m out), short of the far craters. */
 export const EDGE = 60;
@@ -43,14 +47,23 @@ export const OUTSIDE: Area = {
     // (Its mast is thin, but the dish hangs at head height. 1.1: the NASA dish model's reflector reaches 1.17 m.)
     disc('dish', LAYOUT.dish, 1.1),
     wing,
-    { name: 'rover', x: PARKED_ROVER.x, z: PARKED_ROVER.z, r: PARKED_ROVER.r },
+    ROVER_DISC,
     { name: 'tanks', x: TANKS.x, z: TANKS.z, r: TANKS.r },
     // (the battery bank is drawn with the ASTRA look only: src/scene/rich.ts)
     ...(rich ? [{ name: 'battery', x: BATTERY_BANK[0], z: BATTERY_BANK[1], r: BATTERY_R }] : []),
     // (the robot arm's pedestal; the arm itself moves above head height or stops at the ground: src/arm/kin.ts)
     ...(features.robotArm && features.character ? [disc('robot arm', [ROBOT_ARM.x, ROBOT_ARM.z], ROBOT_ARM.r)] : []),
+    // the rocks too tall to step over (the lower ones are ground: src/walk/rocks.ts)
+    ...rockSolids(STEP_FOOT, EDGE),
   ],
   bounds: { name: 'edge', x: 0, z: 0, r: EDGE },
+};
+
+/** Where the crew rover drives (src/scene/roverDrive.ts): outside, everything but its own hitbox. */
+// (its wheels climb rocks up to 0.6 m: only the taller ones stop it)
+export const ROVER_AREA: Area = {
+  solids: [...OUTSIDE.solids.filter((s) => s !== ROVER_DISC && s.name !== 'rock'), ...rockSolids(STEP_WHEEL, EDGE)],
+  bounds: OUTSIDE.bounds,
 };
 
 /** Inside the habitat: nothing in the way, and its wall all round. */

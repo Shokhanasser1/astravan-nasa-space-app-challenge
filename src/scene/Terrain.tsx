@@ -6,6 +6,7 @@ import { initialTier } from './quality';
 import { sunDirection } from './Light';
 import { NEAR_R, bakeSunVis, buildFar, buildNear, regolithMaterial, updateRegolith } from '../look/terrain.js';
 import { buildRocks } from '../look/rocks.js';
+import { rockOptions } from '../walk/rocks';
 import { regolithTextures } from '../look/textures.js';
 
 /** The real skyline (out to 60 km) is pulled in to 1.5–1.95 km along the line of sight: same angles, one camera. */
@@ -32,7 +33,8 @@ export function Terrain({ sunAzDeg }: { sunAzDeg: number }) {
     near.receiveShadow = true;
     const far = new THREE.Mesh(buildFar(GROUND, { azStep: pc ? 1 : 2, sun, compress: SKY }), farMat);
     // rocks stay out of the base and the walking paths: the big blocks start 30 m out
-    const rocks = buildRocks(GROUND, { big: pc ? 40 : 24, boulders: pc ? 180 : 100, pebbles: pc ? 500 : 250, bigMin: 30, play: 0 });
+    // (the same rocks the walk and the rover feel: src/walk/rocks.ts)
+    const rocks = buildRocks(GROUND, { ...rockOptions(pc), play: 0 });
     return { near, far, rocks, tex, nearMat, farMat, sun, bakedAz: firstAz.current };
   }, [gl]);
 

@@ -10,7 +10,7 @@ import { HandControl, handsOn } from './play/HandControl';
 import { ArmScanner } from './play/ArmScanner';
 import { NightTablet, PlanTablet } from './play/Tablet';
 import { TruthScreen } from './play/TruthScreen';
-import { JumpButton, WalkStick } from './play/WalkStick';
+import { JumpButton, RideButton, WalkStick } from './play/WalkStick';
 import { CornerButtons, HelpPanel, Kbd, MapPanel, makeApply, touchUi, useGameKeys } from './play/Controls';
 import { ResourceBar } from './play/ResourceBar';
 import { ContextButton, ContextPrompt, Inventory, contextOf } from './play/Hands';
@@ -20,7 +20,7 @@ import { freeWalk } from '../walk/enabled';
 import { releaseAll, walkInput } from '../walk/input';
 import { features } from '../config/features';
 import { canTravel, resolve, type Ctx, type Overlay } from '../controls/act';
-import { useAim } from '../controls/bus';
+import { useAim, useRide } from '../controls/bus';
 import { setTitle } from '../scene/title';
 
 /**
@@ -83,6 +83,7 @@ export function Hud({ model, view, dispatch, lang, setLang, sound, setSound, onS
   // The reception desk shows the base through a slow title camera (src/scene/title.ts).
   const titleShot = Boolean(entry) && screen !== 'game';
   useEffect(() => setTitle(titleShot), [titleShot]);
+  const ride = useRide();
   const day = model.game?.day;
   const planning = phase === 'plan' && board !== null;
 
@@ -132,11 +133,11 @@ export function Hud({ model, view, dispatch, lang, setLang, sound, setSound, onS
       }),
     [act],
   );
-  const keyCtx: Ctx = { screen, phase, board, aim, overlay, hands: view.hands };
+  const keyCtx: Ctx = { screen, phase, board, aim, overlay, hands: view.hands, ride };
   useGameKeys(keyCtx, features.controls ? apply : () => {});
   /** The touch action button presses E or Q: the same `resolve` as the keys and the scene taps. */
   const press = (kind: 'use' | 'undo') => {
-    const effect = resolve({ kind }, keyCtx);
+    const effect = resolve({ kind }, { ...keyCtx, ride: null }); // (E at the rover is the keyboard's and the 🚙 button's)
     if (effect) apply(effect);
   };
 
@@ -247,6 +248,8 @@ export function Hud({ model, view, dispatch, lang, setLang, sound, setSound, onS
           {freeWalk && features.character && <JumpButton />}
         </ContextButton>
       )}
+
+      {sides && <RideButton ride={ride} />}
 
       {dialog && board && (
         <Decision

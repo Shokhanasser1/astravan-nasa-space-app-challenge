@@ -18,7 +18,7 @@ import {
 import type { Action, Board, Machine } from '../../state/game';
 import { command } from '../../controls/keys';
 import { TRAVEL, resolve, type Ctx, type Effect, type Overlay, type UiOp } from '../../controls/act';
-import { travel } from '../../controls/bus';
+import { askRide, travel } from '../../controls/bus';
 import { freeWalk } from '../../walk/enabled';
 import { Btn, Panel, type Tr } from './kit';
 
@@ -169,6 +169,7 @@ export function makeApply(
 ) {
   return (e: Effect) => {
     if ('action' in e) return dispatch(e.action);
+    if ('ride' in e) return askRide();
     if ('travel' in e) {
       travel(e.travel);
       return ui.setOverlay(() => null);

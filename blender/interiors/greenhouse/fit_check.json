@@ -1,0 +1,63 @@
+{
+ "building": "greenhouse",
+ "units": "ASTRA native metres; Blender frame (x, y, z) = three (x, -z, y)",
+ "method": "every vertex of every exported mesh except the door frame ring + leaf: (1) analytic envelope = intended arch r <= 1.455 about the axis (Blender y 0, z 0.213; rib inner edge 1.475 - 2 cm), |x| <= 2.16 (cap frame bars 2.18 - 2 cm), z >= deck top 0.232 - 2 mm; (2) BVH nearest distance >= 2 cm to every ASTRA shell mesh that stays in the game after the HANDOFF hide/cut rule (deck/skid/contact shadow excluded: furniture stands on the deck)",
+ "game_hide_rule_applied": {
+  "hidden_whole_dump_meshes": [
+   9,
+   12,
+   17,
+   18,
+   19,
+   20,
+   21,
+   22,
+   23,
+   24,
+   25,
+   26
+  ],
+  "faces_cut": {
+   "greenhouse_11_part": 1018,
+   "greenhouse_10_part": 1764
+  },
+  "east_cap": "rebuilt with doorway hole {\"a\": 0.45, \"cb\": 0.65, \"ct\": 1.12, \"zmin\": 0.236}"
+ },
+ "result": {
+  "violations_outside_door_parts": 0,
+  "vertices_tested": 17144,
+  "outside_envelope": 0,
+  "closer_than_2cm_to_shell": 0,
+  "min_clearance_m": 0.0435,
+  "min_between": [
+   "greenhouse_8_part",
+   "greenhouse_racks_steel"
+  ],
+  "door_vertices": 740,
+  "door_min_to_shell_m": 0.088,
+  "door_min_part": "greenhouse_8_part",
+  "samples_env": [],
+  "samples_near": []
+ },
+ "door_open_pose": {
+  "frame": 31,
+  "leaf_vertices_hitting_racks_or_envelope": 0
+ },
+ "tris": 19128,
+ "materials": [
+  "glow_grow",
+  "glow_status",
+  "glow_white",
+  "int_blue",
+  "int_dark",
+  "int_leaf",
+  "int_leaf_light",
+  "int_leaf_red",
+  "int_media",
+  "int_orange",
+  "int_steel",
+  "int_tomato",
+  "int_white",
+  "int_window"
+ ]
+}

@@ -12,7 +12,34 @@ import { finalize } from '../vendor/astra/scene/kit';
 import type { ModuleView } from '../vendor/astra/scene/models/common';
 import { buildBattery, buildSolar } from '../vendor/astra/scene/models/power';
 import { buildIceDrill } from '../vendor/astra/scene/models/works';
-import { buildScout, type ScoutView } from '../vendor/astra/scene/models/scout';
+import { buildScout, poseArm, type ScoutView } from '../vendor/astra/scene/models/scout';
+
+/**
+ * The scout's robotic arm at work (seconds): unfold, lower the tool turret onto a rock and spin it while the wrist
+ * dips, fold back, rest. Pure, so it can be tested: returns ASTRA's poseArm inputs plus a wrist dip (radians).
+ */
+export const ARM_CYCLE = { deploy: 2.5, work: 5, stow: 2.5, rest: 4 };
+export type ArmPose = { deploy: number; spin: number; dip: number };
+/** Writes the pose at time t into `out` (no allocation per frame) and returns it. */
+export function armAt(t: number, out: ArmPose = { deploy: 0, spin: 0, dip: 0 }): ArmPose {
+  const { deploy: a, work: w, stow: s, rest: r } = ARM_CYCLE;
+  const T = a + w + s + r;
+  const u = ((t % T) + T) % T;
+  out.deploy = 0;
+  out.spin = 0;
+  out.dip = 0;
+  if (u < a) out.deploy = u / a;
+  else if (u < a + w) {
+    const k = (u - a) / w;
+    out.deploy = 1;
+    out.spin = k * Math.PI * 2;
+    out.dip = 0.08 * Math.sin(k * Math.PI * 4) * Math.sin(k * Math.PI);
+  } else if (u < a + w + s) {
+    out.deploy = 1 - (u - a - w) / s;
+    out.spin = Math.PI * 2;
+  }
+  return out;
+}
 
 /**
  * Procedural models from the ASTRA trainer (src/vendor/astra, MIT, credited), placed on our base at Shoxjahon aka's
@@ -86,8 +113,12 @@ export function ScoutRover({ on, scale }: { on: boolean; scale: number }) {
   const v = useMemo<ScoutView>(() => {
     const s = buildScout();
     finalize(s.group);
-    // keep what moves: the mast (pan, tilt) and the wheels
-    bake(s.group, { keep: [s.pan, s.tilt, ...s.spin], live: [] });
+    // The arm moves joint by joint: bake each joint's own parts into a few meshes (innermost first) so the arm
+    // costs a handful of draw calls, then keep the whole arm out of the body's bake.
+    for (let i = s.arm.length - 1; i >= 0; i--) bake(s.arm[i], { keep: i + 1 < s.arm.length ? [s.arm[i + 1]] : [], live: [] });
+    // keep what moves: the mast (pan, tilt), the wheels and the arm
+    bake(s.group, { keep: [s.pan, s.tilt, ...s.spin, s.arm[0]], live: [] });
+    poseArm(s, 0, 0); // folded across the front until Explore has batteries
     return s;
   }, []);
   v.group.name = 'astra_scout';
@@ -99,11 +130,19 @@ export function ScoutRover({ on, scale }: { on: boolean; scale: number }) {
     return m;
   }, [v]);
   eye.material = on ? GLOW.eye : GLOW.dark;
+  const arm = useMemo<ArmPose>(() => ({ deploy: 0, spin: 0, dip: 0 }), []);
   useFrame((state) => {
-    if (!on) return;
+    if (!on) {
+      if (v.arm[1].rotation.x !== 0.02) poseArm(v, 0, 0); // folded (STOWED shoulder = 0.02)
+      return;
+    }
     const t = state.clock.elapsedTime;
     v.pan.rotation.y = Math.sin(t * 0.4) * 0.9;
     v.tilt.rotation.x = -0.15 + Math.sin(t * 0.27) * 0.1;
+    // the arm samples a rock in front of the rover, again and again
+    const a = armAt(t, arm);
+    poseArm(v, a.deploy, a.spin);
+    v.arm[3].rotation.x += a.dip;
   });
   return <primitive object={v.group} scale={scale} />;
 }

@@ -1,0 +1,17 @@
+{
+ "lander_9_part": {
+  "deleted_tris": 2,
+  "of": 120,
+  "material": "astra_e8ecf2_1"
+ },
+ "lander_6_part": {
+  "deleted_tris": 960,
+  "of": 1756,
+  "material": "astra_9aa3b4_1"
+ },
+ "lander_14_part": {
+  "deleted_tris": 588,
+  "of": 588,
+  "material": "astra_a9b2c0_1"
+ }
+}

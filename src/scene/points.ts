@@ -3,7 +3,7 @@
  * 1 airlock · 2 power hub (main place) · 3 garden window · 4 workshop · 5 hill · 6 lander ladder · inside the habitat.
  * `orbit` is the truth-screen pull-back, not a marker.
  */
-import { LAYOUT, RADIUS, fromDoor, towardBase } from './layout';
+import { ASTRA_SCALE, DOOR_AZ, LAYOUT, RADIUS, fromDoor, towardBase } from './layout';
 import { HILL, ICE_CRATER, groundHeight } from './ground';
 
 export type PointId = 'airlock' | 'hub' | 'garden' | 'workshop' | 'hill' | 'ladder' | 'inside' | 'orbit';
@@ -13,6 +13,19 @@ export const EYE = 1.7;
 const HAB_FLOOR = 0.2;
 
 const at = (x: number, z: number): Vec3 => [x, groundHeight(x, z) + EYE, z];
+
+/**
+ * Inside the habitat in the ASTRA look (src/scene/Interiors.tsx): its furnished interior is drawn at the shell's scale
+ * (ASTRA_SCALE.habitat), so the eye stands in it at that scale too — a picture is the same at any scale, and the
+ * room looks full size. Model frame (native metres, front +z = the door): just in from the inner airlock hatch, eye
+ * 1.6 m above the deck (0.5), looking at the wardroom table and the galley.
+ */
+const HAB_S = ASTRA_SCALE.habitat;
+const lite = typeof location !== 'undefined' && new URLSearchParams(location.search).has('lite');
+const hab = (mx: number, my: number, mz: number): Vec3 => {
+  const c = Math.cos(DOOR_AZ), s = Math.sin(DOOR_AZ);
+  return [LAYOUT.habitat[0] + (mx * c + mz * s) * HAB_S, my * HAB_S, LAYOUT.habitat[1] + (-mx * s + mz * c) * HAB_S];
+};
 
 // (all from the layout: the base was spread on 15 Nov when its buildings grew to real size)
 const airlock = fromDoor(RADIUS.habitat + 1.4);
@@ -35,7 +48,9 @@ export const POINTS: Record<PointId, { pos: Vec3; look: Vec3 }> = {
   workshop: { pos: at(workshopSpot[0], workshopSpot[1]), look: [LAYOUT.workshop[0], 1.4, LAYOUT.workshop[1]] },
   hill: { pos: at(HILL.x, HILL.z), look: [0, 0.5, 0] },
   ladder: { pos: at(ladderSpot[0], ladderSpot[1]), look: [LAYOUT.lander[0], 2.8, LAYOUT.lander[1]] },
-  inside: { pos: [LAYOUT.habitat[0], HAB_FLOOR + 1.5, LAYOUT.habitat[1]], look: [LAYOUT.hub[0], 1.2, LAYOUT.hub[1]] },
+  inside: lite
+    ? { pos: [LAYOUT.habitat[0], HAB_FLOOR + 1.5, LAYOUT.habitat[1]], look: [LAYOUT.hub[0], 1.2, LAYOUT.hub[1]] }
+    : { pos: hab(0.3, 2.1, 2.45), look: hab(-3.4, 1.1, 1.6) },
   orbit: { pos: [40, 130, 170], look: [0, 0, 0] },
 };
 

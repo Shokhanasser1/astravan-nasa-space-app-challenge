@@ -1,4 +1,86 @@
 {
+ "Wrist": {
+  "frames": 84,
+  "seconds": 2.8,
+  "loop": false,
+  "speed": 0.0,
+  "module": "gesture_idle.py",
+  "sink": -0.0005,
+  "slide": {
+   "L": 0.004,
+   "R": 0.0039
+  },
+  "hips_acc": [
+   -0.4,
+   0.466
+  ],
+  "flight_s": 0.0,
+  "hips_z": [
+   0.804,
+   0.828
+  ],
+  "tap_frames": [
+   37,
+   45
+  ],
+  "note": "checks the left wrist display (forearm across the chest, torso bent forward, helmet down), right glove taps it twice, OK nod, back to idle; from/to idle_params(0.0), boots planted"
+ },
+ "LookAround": {
+  "frames": 144,
+  "seconds": 4.8,
+  "loop": false,
+  "speed": 0.0,
+  "module": "gesture_idle.py",
+  "sink": -0.0004,
+  "slide": {
+   "L": 0.0068,
+   "R": 0.0065
+  },
+  "hips_acc": [
+   -0.177,
+   0.132
+  ],
+  "flight_s": 0.0,
+  "hips_z": [
+   0.816,
+   0.828
+  ],
+  "note": "idle variation: looks round the base to the left (~56 deg: hip yaw + waist twist + head), then right (~52 deg) and ~22 deg up at the low Sun with the right glove shading the visor, back to the front; from/to idle_params(0.0), boots planted"
+ },
+ "Insert": {
+  "frames": 64,
+  "seconds": 2.1333,
+  "loop": false,
+  "speed": 0.0,
+  "module": "gesture_insert.py",
+  "sink": -0.0006,
+  "slide": {
+   "L": 0.0051,
+   "R": 0.0058
+  },
+  "hips_acc": [
+   -1.031,
+   1.36
+  ],
+  "flight_s": 0.0,
+  "hips_z": [
+   0.785,
+   0.828
+  ],
+  "grab_frame": 12,
+  "release_frame": 44,
+  "note": "right hand takes the Battery from a right-thigh pocket (grab_frame), both hands push it into a slot ~0.5 m ahead at chest height, 2.5 cm click, let go (release_frame), back to idle; play backward = pull out and pocket. Battery prop: bone child of RightHand",
+  "battery_centre_release": [
+   -0.0051,
+   -0.5392,
+   1.068
+  ],
+  "battery_front_release": [
+   0.0003,
+   -0.6189,
+   1.0643
+  ]
+ },
  "Idle": {
   "frames": 60,
   "seconds": 2.0,

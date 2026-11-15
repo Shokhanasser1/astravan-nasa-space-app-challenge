@@ -1,5 +1,5 @@
 import { STEP, type Action, type Board, type Model } from '../state/game';
-import type { AimId } from './bus';
+import type { AimId, Ride } from './bus';
 import type { PointId } from '../scene/points';
 import type { Command } from './keys';
 
@@ -17,12 +17,14 @@ export interface Ctx {
   board: Board | null;
   /** The building in front of the astronaut (src/controls/bus.ts), or null. */
   aim: AimId | null;
+  /** `?drive`: E climbs into the crew rover beside the astronaut, or stops it and climbs out (src/controls/bus.ts). */
+  ride?: Ride | null;
   overlay: Overlay;
   /** Batteries in the astronaut's hands (View.hands). */
   hands?: number;
 }
 
-export type Effect = { action: Action } | { ui: UiOp } | { travel: PointId };
+export type Effect = { action: Action } | { ui: UiOp } | { travel: PointId } | { ride: Ride };
 
 /** The base map, in the order of its number keys: the six standing points, then inside the habitat. */
 export const TRAVEL: PointId[] = ['airlock', 'hub', 'garden', 'workshop', 'hill', 'ladder', 'inside'];
@@ -56,6 +58,8 @@ export function resolve(cmd: Command, c: Ctx): Effect | null {
   switch (cmd.kind) {
     // Batteries are carried (15 Nov): take at the hub, put into the machine in front, take back with undo.
     case 'use':
+      // (at the rover's hatch, or driving it, E is for the rover: the touch action button still aims at buildings)
+      if (c.ride && canTravel(c)) return { ride: c.ride };
       if (!plan || !c.aim) return null;
       if (c.aim === 'hub') return { action: { type: 'TAKE' } };
       return (c.hands ?? 0) >= STEP[c.aim] ? { action: { type: 'PUT', k: c.aim } } : null;
