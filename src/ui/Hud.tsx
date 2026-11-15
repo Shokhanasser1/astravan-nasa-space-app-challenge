@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type Dispatch } from 'react';
+import { useEffect, useMemo, useState, type Dispatch, type ReactNode } from 'react';
 import { ArrowRight, Check, Music, Tablet as TabletIcon, VolumeX } from 'lucide-react';
 import { board as selectBoard, truth as selectTruth, type Action, type Model, type View } from '../state/game';
 import type { Lang } from '../i18n/t';
@@ -17,6 +17,7 @@ import { releaseAll, walkInput } from '../walk/input';
 import { features } from '../config/features';
 import { canTravel, type Overlay } from '../controls/act';
 import { useAim } from '../controls/bus';
+import { setTitle } from '../scene/title';
 
 /**
  * Lane D (Asilbek). DOM layer above the Canvas. This is the PLAYABLE G2 wiring (14 Nov): every control dispatches
@@ -44,6 +45,8 @@ interface Props {
   setSound: (s: boolean) => void;
   onStart: () => void;
   onContinue?: () => void;
+  /** The reception desk (features.entry): shown instead of the briefing and start buttons outside the game. */
+  entry?: ReactNode;
 }
 
 function TopBar({ lang, setLang, sound, setSound, tr }: Pick<Props, 'lang' | 'setLang' | 'sound' | 'setSound'> & { tr: (k: string) => string }) {
@@ -70,12 +73,15 @@ function TopBar({ lang, setLang, sound, setSound, tr }: Pick<Props, 'lang' | 'se
   );
 }
 
-export function Hud({ model, view, dispatch, lang, setLang, sound, setSound, onStart, onContinue }: Props) {
+export function Hud({ model, view, dispatch, lang, setLang, sound, setSound, onStart, onContinue, entry }: Props) {
   const tr = useMemo(() => makeTr(lang), [lang]);
   const board = useMemo(() => selectBoard(model), [model]);
   const truth = useMemo(() => selectTruth(model), [model]);
   const { phase, screen } = model;
   const aim = useAim();
+  // The reception desk shows the base through a slow title camera (src/scene/title.ts).
+  const titleShot = Boolean(entry) && screen !== 'game';
+  useEffect(() => setTitle(titleShot), [titleShot]);
 
   // Windows of the controls layer: the map or the controls list; the wrist tablet open or folded; Houston's hint.
   const [overlay, setOverlay] = useState<Overlay>(null);
@@ -137,7 +143,7 @@ export function Hud({ model, view, dispatch, lang, setLang, sound, setSound, onS
       data-tablet={showTablet ? 'open' : 'closed'}
       onPointerDown={() => audio.unlock()}
     >
-      <div className="flex shrink-0 items-start justify-between gap-2">
+      <div className="relative z-20 flex shrink-0 items-start justify-between gap-2">
         {features.controls ? <CornerButtons map={canTravel({ screen, phase })} open={(ui) => apply({ ui })} tr={tr} /> : null}
         {playing ? <DayBadge view={view} board={board} tr={tr} /> : <span />}
         <TopBar lang={lang} setLang={setLang} sound={sound} setSound={setSound} tr={tr} />
@@ -149,7 +155,9 @@ export function Hud({ model, view, dispatch, lang, setLang, sound, setSound, onS
         </div>
       )}
 
-      {screen !== 'game' && !overlay && (
+      {screen !== 'game' && !overlay && entry}
+
+      {screen !== 'game' && !overlay && !entry && (
         <div className="pointer-events-auto flex flex-col items-center gap-4 self-center">
           <Briefing tr={tr} lang={lang} sound={sound} />
           <Btn data-testid="start-mission" className="primary big" onClick={onStart}>

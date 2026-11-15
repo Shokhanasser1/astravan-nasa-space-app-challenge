@@ -12,13 +12,18 @@ export function DayBadge({ view, board, tr }: { view: View; board: Board | null;
   const known = board ? board.info.known : true;
   const level = board?.info.level ?? view.level;
   return (
-    <div className="glass pointer-events-none flex flex-col items-center gap-1 rounded-[18px] px-4 py-2 text-center" data-testid="day-badge">
-      <span className="flex items-center gap-2 text-sm font-semibold uppercase tracking-widest text-[#f3f6ff]">
+    <div className="glass hud-day pointer-events-none" data-testid="day-badge">
+      <span className="hud-day-text">
         <CalendarDays size={16} aria-hidden="true" className="text-measured" />
         {tr('ui.hud.dayOf', { day: view.day, total: 7 })}
       </span>
+      <span className="hud-day-pips" aria-hidden="true">
+        {Array.from({ length: 7 }, (_, i) => (
+          <span key={i} className={i + 1 < view.day ? 'hud-pip hud-pip-done' : i + 1 === view.day ? 'hud-pip hud-pip-now' : 'hud-pip'} />
+        ))}
+      </span>
       <span
-        className={`rounded-full px-3 py-1 text-sm font-bold ${known ? (level > 0 ? 'bg-alert text-[#2a1b00]' : 'bg-white/15') : 'bg-alert text-[#2a1b00]'}`}
+        className={`hud-level ${known ? (level > 0 ? 'hud-level-alert' : '') : 'hud-level-alert'}`}
         data-level={known ? level : '?'}
       >
         {known ? `${level} · ${tr(`ui.level.${level}`)}` : `? · ${tr('ui.level.unknown')}`}
@@ -49,17 +54,17 @@ export function Gauges({ model, board, tr }: { model: Model; board: Board | null
   if (!g) return null;
   const p = board?.preview;
   const total = board?.limits.available ?? 0;
-  const cell = 'glass flex flex-col gap-0.5 rounded-[18px] px-2 py-1.5';
-  const label = 'flex flex-wrap items-center justify-center gap-x-1.5 gap-y-0.5 text-xs font-medium text-[#c2cbec]';
+  const cell = 'hud-stat';
+  const label = 'hud-stat-label';
   return (
-    <div className="pointer-events-none grid grid-cols-3 gap-2 text-center text-sm" data-testid="gauges">
+    <div className="glass hud-stats pointer-events-none" data-testid="gauges">
       <div className={cell}>
         <div className={label}>
           <Zap size={16} aria-hidden="true" className="shrink-0 text-[#ffc94a]" />
           {tr('ui.gauge.energy')}
           <Mark label="rule" tr={tr} />
         </div>
-        <div className="text-lg font-bold tabular-nums" data-testid="gauge-energy">
+        <div className="hud-stat-value tabular-nums" data-testid="gauge-energy">
           {p ? `${p.left} / ${total}` : total || '—'}
         </div>
       </div>
@@ -69,7 +74,7 @@ export function Gauges({ model, board, tr }: { model: Model; board: Board | null
           {tr('ui.gauge.air')}
           <Mark label="rule" tr={tr} />
         </div>
-        <div className="text-lg font-bold tabular-nums" data-testid="gauge-air">
+        <div className="hud-stat-value tabular-nums" data-testid="gauge-air">
           {g.air} / 8{p && p.reserveAfter !== g.air ? ` → ${p.reserveAfter}` : ''}
         </div>
       </div>
@@ -79,7 +84,7 @@ export function Gauges({ model, board, tr }: { model: Model; board: Board | null
           {tr('ui.gauge.dose')}
           <Mark label="computed" tr={tr} />
         </div>
-        <div className="text-lg font-bold tabular-nums" data-testid="gauge-dose">
+        <div className="hud-stat-value tabular-nums" data-testid="gauge-dose">
           {g.extra.toFixed(2)}
           {p && p.doseToday > 0 ? ` +${p.doseToday.toFixed(2)}` : ''}
         </div>

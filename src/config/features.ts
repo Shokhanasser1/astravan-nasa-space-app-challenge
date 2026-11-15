@@ -15,6 +15,10 @@ export const features = {
   // Game keys (E Q Enter Tab M H 1–9 Esc F1), the touch action buttons (✋ ↩ 📟 🎧), the base map and the controls
   // list (src/controls/, docs/specs/2026-11-14-controls-guide.html). Cut → the HUD as before (tap and buttons only).
   controls: true,
+  // Entry (docs/specs/2026-11-15-entry.md): the reception desk — the briefing, what the game is and why, then check
+  // in with a cadet badge (call sign + patch colour, progress kept on this device) or a guest pass (one mission,
+  // nothing saved). Cut → the briefing with Start / Continue and one shared save, as before.
+  entry: true,
   light: true, // one Sun at 1.5°, long shadows, tone mapping (cut → plain ambient light)
   // Curiosity's robot arm on the east edge of the base (src/scene/RobotArm.tsx, src/arm/), driven by a camera scan of
   // the player's forearm and hand (K or the button that shows near the arm), the astronaut holding a remote. Needs
