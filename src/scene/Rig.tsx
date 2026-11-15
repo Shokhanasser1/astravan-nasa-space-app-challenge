@@ -112,8 +112,11 @@ function inAnyModule(x: number, y: number, z: number): boolean {
   for (const [cx, cz] of HDU_CENTRES) if (Math.hypot(x - cx, z - cz) < HDU.lining) return true;
   return false;
 }
-/** D3 (`?hdu`): the HDU modules are real size (1.95 m round inside): there the follow camera rides 1.1 m back. */
-const HDU_ROOM_CAM = 1.1;
+/**
+ * `?hdu` (Samandar, 15 Nov ~14:10: "inside the base, only through the eyes"): in the HDU modules (1.95 m round inside)
+ * the camera is the astronaut's own eyes — no follow distance, no downward tilt, the astronaut not drawn (D3's
+ * HIDE_NEAR hides it at once). Outside and in ASTRA's rooms the follow camera stays as it was.
+ */
 const ROOM_TILT = 0.25;
 /** D3: nearer than this to the head the astronaut is not drawn (the follow view becomes a first-person one). */
 export const HIDE_NEAR = 0.75;
@@ -123,12 +126,13 @@ export const isHduRoom = (room: Room | null, hdu = HDU_HABITAT): boolean => hdu 
 export const astronautShown = (camToHead: number): boolean => camToHead >= HIDE_NEAR;
 /**
  * How far behind the head (along the look −(fx, fz), horizontal parts) the follow camera rides in a room: its
- * full distance (ASTRA's ROOM_CAM, an HDU room's HDU_ROOM_CAM, × the room's scale), pulled in front of the first
+ * full distance (ASTRA's ROOM_CAM × the room's scale; an HDU room: 0, the eyes), pulled in front of the first
  * wall or furniture on the way (on the ladder: only its outer walls). Pure, no allocation.
  */
 export function roomCamDist(room: Room, hx: number, hz: number, fx: number, fz: number, climbing: boolean, hdu = HDU_HABITAT): number {
+  if (isHduRoom(room, hdu)) return 0; // (first person: the eyes)
   const k2 = room.s;
-  const far = (isHduRoom(room, hdu) ? HDU_ROOM_CAM : ROOM_CAM) * k2;
+  const far = ROOM_CAM * k2;
   for (let d = 0.3 * k2; d <= far; d += 0.05 * k2) {
     if (roomBlocked(room.area, hx - fx * d, hz - fz * d, 0.12 * k2, !climbing)) return Math.max(0.25 * k2, d - 0.08 * k2);
   }
@@ -931,7 +935,8 @@ export function Rig({ view }: { view: View }) {
       : roomState.id
         ? getRoom(roomState.id)
         : null;
-    const tilt = room ? ROOM_TILT : CAM_TILT + (CAR_TILT - CAM_TILT) * kc;
+    // (an HDU room is seen through the eyes: level, no follow tilt)
+    const tilt = room ? (isHduRoom(room) ? 0 : ROOM_TILT) : CAM_TILT + (CAR_TILT - CAM_TILT) * kc;
     const pitch = Math.max(-MAX_PITCH - tilt, s.pitch - tilt);
     const fx = -Math.sin(s.yaw) * Math.cos(pitch);
     const fy = Math.sin(pitch);
