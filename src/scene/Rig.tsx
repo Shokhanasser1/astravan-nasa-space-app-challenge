@@ -374,7 +374,7 @@ export function Rig({ view }: { view: View }) {
   const door: Vec3 = [LAYOUT.habitat[0] + Math.sin(DOOR_AZ) * 1.73, 1.1, LAYOUT.habitat[1] + Math.cos(DOOR_AZ) * 1.73];
   const hideMarkers = launching || view.phase === 'truth';
 
-  const astronaut = character ? <Astronaut body={body} visible={point !== 'inside'} /> : null;
+  const astronaut = character ? <Astronaut body={body} visible={point !== 'inside'} view={view} /> : null;
 
   return hideMarkers ? (
     astronaut

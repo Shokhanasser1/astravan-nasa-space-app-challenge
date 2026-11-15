@@ -7,6 +7,10 @@ export const features = {
   // The suited astronaut seen from behind outside (src/character/, src/scene/Astronaut.tsx, the rig): walk, lope,
   // jump at Moon gravity, boot prints and dust. Cut → the first-person rig, as before. ?character = one visit.
   character: true,
+  // The astronaut's one-shot gestures (src/character/anim.js GESTURES, src/scene/Astronaut.tsx): a battery placed
+  // on a building → puts it in from the thigh pocket (taken back → backward); Confirm → checks the wrist tablet;
+  // standing still a while → looks around. Cut → Idle only, as before.
+  gestures: true,
   // NASA-based buildings (public/models/nasa-base/) replace the grey shells, all six or none; ?models = one visit.
   nasaModels: true,
   // Free walking with hitboxes (src/walk/): W A S D, arrows or the touch stick, from the six standing points.

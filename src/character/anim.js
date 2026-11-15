@@ -22,6 +22,18 @@ const BOOT_CENTRE = 0.58;   // the sole's centre lies 58 % of the way from the a
 const SIDE = { L: 'Left', R: 'Right' };
 
 /**
+ * One-shot gestures over Idle (Blender: game3d/characters/anim/clips/gesture_*.py), each from and back to the idle
+ * pose, boots planted: Insert (a battery from the thigh pocket into a building; played backward = take it out and
+ * pocket it), Wrist (check the wrist tablet), LookAround (idle variation: look round the base and up at the sky).
+ * Moving, jumping or carrying ends a gesture at once; an older astronaut.glb without them simply skips them.
+ */
+export const GESTURES = ['Insert', 'Wrist', 'LookAround'];
+/** Seconds into Insert while the battery is in the glove (clip meta grab_frame / release_frame at 30 fps). */
+export const INSERT_HOLD = { from: 12 / 30, to: 44 / 30 };
+/** Idle this long (s, random in the range) → one LookAround. */
+export const FIDGET_S = [14, 24];
+
+/**
  * Animation state machine with cross-fades: Idle / Walk / Run / Carry (+ CarryIdle, Pour) and the jump in three
  * parts: JumpStart (scrubbed by the wind-up), JumpAir (scrubbed by flight progress), JumpLand (played once).
  * Falls back to the single Jump clip when the GLB has no JumpStart/JumpAir.
@@ -29,8 +41,9 @@ const SIDE = { L: 'Left', R: 'Right' };
 export class AnimController {
   constructor(model, clips) {
     this.mixer = new THREE.AnimationMixer(model);
+    /** @type {Record<string, THREE.AnimationAction>} */
     this.actions = {};
-    for (const name of ['Idle', 'Walk', 'Run', 'Jump', 'Carry', 'Pour', 'JumpStart', 'JumpAir', 'JumpLand']) {
+    for (const name of ['Idle', 'Walk', 'Run', 'Jump', 'Carry', 'Pour', 'JumpStart', 'JumpAir', 'JumpLand', ...GESTURES]) {
       if (clips[name]) this.actions[name] = this.mixer.clipAction(clips[name]);
     }
     if (clips.Pour) {
@@ -38,7 +51,7 @@ export class AnimController {
       hold.name = 'CarryIdle';
       this.actions.CarryIdle = this.mixer.clipAction(hold);   // Pour frame 0 = standing with the bag
     }
-    for (const n of ['Jump', 'JumpStart', 'JumpAir', 'JumpLand']) {
+    for (const n of ['Jump', 'JumpStart', 'JumpAir', 'JumpLand', ...GESTURES]) {
       const a = this.actions[n];
       if (a) {
         a.setLoop(THREE.LoopOnce, 1);
@@ -65,7 +78,79 @@ export class AnimController {
     this.phaseOf = '';
     this.va = new THREE.Vector3();
     this.vb = new THREE.Vector3();
+    /** The playing gesture { name, reverse } or null; one more of the same may wait in `queued`. */
+    this.gest = null;
+    this.queued = null;
+    this.last = null;    // the last update's state (speed, ground…): gestures start only while standing
+    this.now = () => (typeof performance !== 'undefined' ? performance.now() : Date.now());
+    this.idleSince = 0;
+    this.fidgetAfter = FIDGET_S[0] + Math.random() * (FIDGET_S[1] - FIDGET_S[0]);
     this.play('Idle', 0);
+  }
+
+  /**
+   * Play gesture `name` once (backward with reverse = true). Only while standing on the ground and not carrying;
+   * the same gesture asked again while it plays waits for it (one at most). Returns true if it plays or waits.
+   */
+  gesture(name, reverse = false) {
+    const a = this.actions[name];
+    if (!a || !this.split) return false;
+    const s = this.last;
+    if (s && (s.speed > 0.15 || !s.onGround || s.windup >= 0 || s.carrying)) return false;
+    if (this.gest && this.current === this.actions[this.gest.name]) {
+      if (this.gest.name === name) {
+        this.queued = { name, reverse };
+        return true;
+      }
+    }
+    if (this.current === a) {
+      a.stop();               // the same clip clamped at its end (= the idle pose): start it over without a fade
+      this.current = null;
+    }
+    this.play(name, 0.2);
+    if (reverse) {
+      a.time = a.getClip().duration;
+      a.setEffectiveTimeScale(-1);
+    }
+    this.gest = { name, reverse };
+    return true;
+  }
+
+  /** Is gesture `name` playing now? */
+  gesturing(name) {
+    return !!this.gest && (!name || this.gest.name === name) && this.current === this.actions[this.gest.name];
+  }
+
+  /** Insert is playing and the battery is in the glove (the scene shows the battery prop). */
+  holdingBattery() {
+    if (!this.gesturing('Insert')) return false;
+    const t = this.actions.Insert.time;
+    return t >= INSERT_HOLD.from && t <= INSERT_HOLD.to;
+  }
+
+  /** Idle variation: after standing still for a while, look around once. `now` in ms. Returns true if it starts. */
+  fidget(now = this.now()) {
+    if (this.state !== 'Idle' || this.gest || !this.actions.LookAround) return false;
+    if (now - this.idleSince < this.fidgetAfter * 1000) return false;
+    this.fidgetAfter = FIDGET_S[0] + Math.random() * (FIDGET_S[1] - FIDGET_S[0]);
+    return this.gesture('LookAround');
+  }
+
+  /** Keep the gesture going; false once it has ended or the player moves (locomotion takes over). */
+  holdGesture(s) {
+    const g = this.gest;
+    if (!g) return false;
+    const a = this.actions[g.name];
+    if (this.current !== a || s.speed > 0.15 || s.carrying) {
+      this.gest = null;
+      this.queued = null;
+      return false;
+    }
+    if (!a.paused) return true;   // LoopOnce + clampWhenFinished pauses on the last (or, backward, first) frame
+    this.gest = null;
+    const q = this.queued;
+    this.queued = null;
+    return q ? this.gesture(q.name, q.reverse) : false;
   }
 
   /** World position and heading of boot k's sole centre (call after the mixer has posed the bones). */
@@ -132,11 +217,17 @@ export class AnimController {
     next.play();
     this.current = next;
     this.state = name;
+    if (name === 'Idle') this.idleSince = this.now();
   }
 
   /** s: { onGround, windup, vy, v0, speed, carrying, pouring, running, k } */
   update(dt, s) {
     this.k = s.k || 1;
+    this.last = s;
+    if (!s.onGround || s.windup >= 0) {
+      this.gest = null;   // a jump or a fall ends any gesture
+      this.queued = null;
+    }
     const landed = this.split && this.wasAir && s.onGround && this.airTime > 0.3;
     if (this.split) this.updateSplit(dt, s);
     else this.updateLegacy(dt, s);
@@ -169,7 +260,7 @@ export class AnimController {
       this.landing -= dt;      // let the knees absorb, unless the player is already moving on
     } else {
       this.landing = 0;
-      this.locomotion(s);
+      if (!this.holdGesture(s)) this.locomotion(s);
     }
     this.airTime = air ? this.airTime + dt : 0;
     this.wasAir = air;
