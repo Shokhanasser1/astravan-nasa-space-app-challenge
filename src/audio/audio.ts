@@ -42,6 +42,27 @@ class AudioEngine {
     o.stop(t + 0.26);
   }
 
+  /**
+   * A short soft blip for the hands' work at the base (15 Nov): 'take' = a battery out of the hub (rising),
+   * 'put' = batteries clicked into a machine (falling, then a click). Generated, zero bytes; the cells flash too.
+   */
+  click(kind: 'take' | 'put') {
+    if (!this.ctx || !this.master) return;
+    const t = this.ctx.currentTime;
+    const o = this.ctx.createOscillator();
+    const g = this.ctx.createGain();
+    o.type = 'triangle';
+    const [f0, f1] = kind === 'take' ? [520, 780] : [700, 440];
+    o.frequency.setValueAtTime(f0, t);
+    o.frequency.exponentialRampToValueAtTime(f1, t + 0.09);
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(0.09, t + 0.015);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + (kind === 'put' ? 0.16 : 0.12));
+    o.connect(g).connect(this.master);
+    o.start(t);
+    o.stop(t + 0.18);
+  }
+
   /** Load a recorded file (OGG with M4A fallback for Safari) once. */
   async load(name: string, url: string) {
     if (!this.ctx || this.buffers.has(name)) return;
