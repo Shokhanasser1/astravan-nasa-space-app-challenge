@@ -31,7 +31,9 @@ for (const l of lines) {
   mkdirSync(join(OUT, l.lang), { recursive: true });
   execFileSync('ffmpeg', [
     '-y', '-v', 'error', '-i', raw,
-    '-af', 'silenceremove=start_periods=1:start_threshold=-45dB:stop_periods=1:stop_threshold=-45dB:stop_duration=0.3,loudnorm=I=-18:TP=-2',
+    // Trim silence at the start, then (reversed) at the end. Not `stop_periods=1`: that cut everything after the
+    // first pause over 0.3 s, so "Impact. Signal lost. See the light?" kept only "Impact." (15 Nov).
+    '-af', 'silenceremove=start_periods=1:start_threshold=-45dB,areverse,silenceremove=start_periods=1:start_threshold=-45dB,areverse,loudnorm=I=-18:TP=-2',
     '-ac', '1', '-ar', '24000', '-b:a', '48k',
     '-metadata', 'comment=AI-generated voice (ElevenLabs v4 through Higgsfield), HOME BY SEVEN, 15 Nov 2026',
     join(OUT, l.lang, `${l.key.toLowerCase()}.mp3`),
