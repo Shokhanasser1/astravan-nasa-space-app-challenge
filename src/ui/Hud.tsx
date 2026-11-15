@@ -200,6 +200,17 @@ export function Hud({ model, view, dispatch, lang, setLang, sound, setSound, onS
             <SunToday weekId={view.weekId} date={view.mediaDate} tr={tr} />
           </div>
         )}
+        {/* The robot arm's scanner: its button shows only near the arm, hung just under this top column (buttons, day,
+            resources, task), so it never sits on them and takes no room in the layout. Phones, upright or on their
+            side: the button stays left, the panel goes to the right edge, clear of the walk stick and the jump button;
+            wide and tall screens keep both together on the left. */}
+        {armScan && playing && !overlay && (
+          <div
+            className={`pointer-events-none absolute top-full mt-2 ${handsOn ? 'right-0' : 'left-0 right-0 sm:[@media(min-height:501px)]:right-auto'}`}
+          >
+            <ArmScanner tr={tr} />
+          </div>
+        )}
       </div>
 
       {overlay && (
@@ -238,18 +249,6 @@ export function Hud({ model, view, dispatch, lang, setLang, sound, setSound, onS
           <HandControl tr={tr} />
         </div>
       )}
-      {/* (the robot arm's scanner: its button shows only near the arm, under the map and help buttons; the panel opens
-          beside it, above the radio card and the big button) */}
-      {armScan && playing && !overlay && (
-        // (phones, upright or on their side: the button stays left, the panel goes to the right edge, clear of the walk
-        // stick, the jump button and the centre column; wide and tall screens keep both together on the left)
-        <div
-          className={`pointer-events-none absolute top-32 ${handsOn ? 'right-4' : 'left-4 right-4 sm:[@media(min-height:501px)]:right-auto'}`}
-        >
-          <ArmScanner tr={tr} />
-        </div>
-      )}
-
       {freeWalk && sides && <WalkStick />}
       {features.controls && touchUi && sides && (
         <ContextButton ctx={ctx} press={press} tr={tr}>
