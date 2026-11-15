@@ -5,6 +5,7 @@ import { useObjective, type ObjectiveTarget } from '../state/objective';
 import { LAYOUT, RADIUS, fromDoor } from './layout';
 import { groundHeight } from './ground';
 import { socketSpot } from './Batteries';
+import { CRASH_ON } from './crash';
 
 /**
  * The objective beacon (15 Nov): a soft vertical beam and a bobbing arrow over the place the current task points at
@@ -15,8 +16,8 @@ import { socketSpot } from './Batteries';
 const BEAM_H = 7;
 const ARROW_Y = 2.3;
 /** Seen from further than this (m), the beam widens and grows with the distance, so it stays a few pixels wide on a
- * phone: Day 1's base light is seen from the crash site, 55 m out (home story T2). */
-const FAR_M = 20;
+ * phone: Day 1's base light is seen from the crash site, 55 m out (home story T2; without it, the beam as before). */
+const FAR_M = CRASH_ON ? 20 : Infinity;
 
 function spot(t: ObjectiveTarget): [number, number] | null {
   switch (t) {
