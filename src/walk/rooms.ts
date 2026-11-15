@@ -5,7 +5,7 @@
  * the room looks full size. `fit` shrinks the astronaut where a room is lower than a suited adult (the greenhouse
  * arch is 1.46 m, the workshop 1.6 m: a child-sized astronaut, the game is for 7–12 year olds).
  *
- * Numbers in each building's model frame, native metres (hb7/interiors/<b>/HANDOFF.md, walk.json): the floor, the
+ * Numbers in each building's model frame, native metres (blender/interiors/<b>/HANDOFF.md, walk.json): the floor, the
  * headroom, where E outside goes in (`out`, also where the astronaut comes back out), where it stands inside
  * (`spawn`), and where E inside goes out (`exit`). Facing: 0 = model +z.
  */

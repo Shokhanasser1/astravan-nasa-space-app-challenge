@@ -1,0 +1,74 @@
+[
+ {
+  "name": "wall_N_cabinet",
+  "x": 0.02,
+  "z": -0.6,
+  "hx": 1.1,
+  "hz": 0.27,
+  "yaw": 0
+ },
+ {
+  "name": "wall_S_cabinet",
+  "x": 0.02,
+  "z": 0.6,
+  "hx": 1.1,
+  "hz": 0.27,
+  "yaw": 0
+ },
+ {
+  "name": "glovebox",
+  "x": 1.29,
+  "z": 0.0,
+  "hx": 0.29,
+  "hz": 0.46,
+  "yaw": 0
+ },
+ {
+  "name": "printer_on_bench",
+  "x": 0.86,
+  "z": -0.56,
+  "hx": 0.165,
+  "hz": 0.18,
+  "yaw": 0
+ },
+ {
+  "name": "hatch_step",
+  "x": -1.515,
+  "z": 0.0,
+  "hx": 0.115,
+  "hz": 0.2,
+  "yaw": 0
+ },
+ {
+  "name": "bulkhead_W",
+  "x": -1.7,
+  "z": 0.0,
+  "hx": 0.02,
+  "hz": 0.71,
+  "yaw": 0
+ },
+ {
+  "name": "bulkhead_E",
+  "x": 1.7,
+  "z": 0.0,
+  "hx": 0.02,
+  "hz": 0.71,
+  "yaw": 0
+ },
+ {
+  "name": "hatch_opening",
+  "x": -1.84,
+  "z": 0.0,
+  "hx": 0.14,
+  "hz": 0.36,
+  "yaw": 0
+ },
+ {
+  "name": "walkway_floor",
+  "x": 0.0,
+  "z": 0.0,
+  "hx": 1.5,
+  "hz": 0.33,
+  "yaw": 0
+ }
+]

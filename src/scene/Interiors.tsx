@@ -7,7 +7,7 @@ import { buildingOf, roomState } from '../walk/rooms';
 
 /**
  * Building interiors (local preview, 15 Nov): furnished insides made in Blender from NASA references
- * (~/dev/oy-karvonsaroyi-3d/hb7/interiors/<b>/: build script, SOURCES.md, HANDOFF.md). Each GLB is in ASTRA's model
+ * (blender/interiors/<b>/: build script, SOURCES.md, HANDOFF.md). Each GLB is in ASTRA's model
  * frame at native metres, so it sits in the same group transform as its ASTRA shell (AstraBase.tsx: rotation-y and
  * ASTRA_SCALE) and fits inside it. Drawn only when it can be seen, to keep phones in budget: the habitat's from its
  * inside point, the others while the camera is near (through glass and windows).

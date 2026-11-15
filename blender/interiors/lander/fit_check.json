@@ -1,0 +1,24 @@
+{
+ "interior_inside_shell_2cm": {
+  "verts": 3359,
+  "bad": 0,
+  "min_clear": 0.0309,
+  "worst": []
+ },
+ "porch_outside_cabin": {
+  "verts": 384,
+  "bad": 0,
+  "min_clear": 0.0058,
+  "worst": []
+ },
+ "door_parts_exempt": [
+  "hatch_frame",
+  "hatch_leaf"
+ ],
+ "door_leaf_min_dist_to_furniture": {
+  "frame_1": 0.1578,
+  "frame_10": 0.0102,
+  "frame_20": 0.0587,
+  "frame_30": 0.0345
+ }
+}

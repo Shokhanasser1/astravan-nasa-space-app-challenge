@@ -1,0 +1,20 @@
+{
+ "triangles": 26212,
+ "materials": [
+  "glow_lamp",
+  "glow_screen",
+  "glow_status",
+  "int_bag",
+  "int_blue",
+  "int_dark",
+  "int_floor",
+  "int_green",
+  "int_orange",
+  "int_panel",
+  "int_steel",
+  "int_wall",
+  "int_water"
+ ],
+ "material_count": 13,
+ "meshes": 54
+}

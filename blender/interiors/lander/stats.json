@@ -1,0 +1,20 @@
+{
+ "triangles": 6516,
+ "materials": [
+  "glow_amber",
+  "glow_lamp",
+  "glow_screen",
+  "int_cream",
+  "int_dark",
+  "int_fabric",
+  "int_floor",
+  "int_glass",
+  "int_grey",
+  "int_orange",
+  "int_panel",
+  "int_steel",
+  "int_white"
+ ],
+ "n_materials": 13,
+ "objects": 30
+}

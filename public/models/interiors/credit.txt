@@ -1,5 +1,5 @@
 Building interiors (habitat, greenhouse, lab/workshop, lander): modelled from scratch in Blender 5.3 by Claude Code
 (AI-made, team-directed), 15 Nov 2026, for HOME BY SEVEN. Layout, sizes and colours from NASA technical reports (NTRS)
 and the NASA Image and Video Library, each fact listed with its API request and document id in
-~/dev/oy-karvonsaroyi-3d/hb7/interiors/<building>/SOURCES.md. No NASA imagery, logos or insignia are in the models.
+blender/interiors/<building>/SOURCES.md. No NASA imagery, logos or insignia are in the models.
 Not endorsed by NASA.

@@ -1,7 +1,7 @@
 /**
  * Walking inside the habitat's furnished interior (src/scene/Interiors.tsx). The room is drawn at the ASTRA shell's
  * scale (0.34), so the walker walks at that scale too: its body and pace are scaled by ROOM_K, and the room looks and
- * feels full size. Hitboxes: the ground-floor footprints the Blender build wrote (hb7/interiors/habitat/walk.json:
+ * feels full size. Hitboxes: the ground-floor footprints the Blender build wrote (blender/interiors/habitat/walk.json:
  * [name, x, z, hx, hz, yaw], model frame, native metres) — each box becomes a bar along its long side — and the
  * lining as the bounds.
  */

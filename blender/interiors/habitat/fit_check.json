@@ -1,0 +1,83 @@
+{
+ "clearance_m": 0.02,
+ "checked": 13264,
+ "fail": [],
+ "door_or_opening_skipped": 1024,
+ "min_clearance_m": 0.0511,
+ "fail_count": 0,
+ "result": "PASS",
+ "path_check": {
+  "astronaut_m": [
+   1.8,
+   0.6
+  ],
+  "from_y_three": 6.6,
+  "to_y_three": 2.2,
+  "frame": 30,
+  "feet_z": 0.5,
+  "body_band_z": [
+   0.926,
+   2.3
+  ],
+  "blocked": [],
+  "walk_over": {
+   "habitat_ground_int_panel": {
+    "hits": 84,
+    "three_z": [
+     2.54,
+     4.603
+    ],
+    "ray_heights": [
+     0.55,
+     0.675
+    ]
+   },
+   "habitat_ground_int_wall": {
+    "hits": 70,
+    "three_z": [
+     2.89,
+     4.95
+    ],
+    "ray_heights": [
+     0.55,
+     0.675,
+     0.8
+    ]
+   },
+   "habitat_4_part": {
+    "hits": 14,
+    "three_z": [
+     5.087,
+     5.17
+    ],
+    "ray_heights": [
+     0.55,
+     0.675
+    ]
+   },
+   "habitat_ground_int_panel_door": {
+    "hits": 28,
+    "three_z": [
+     5.3,
+     5.34
+    ],
+    "ray_heights": [
+     0.675,
+     0.8
+    ]
+   },
+   "habitat_ground_int_steel_door": {
+    "hits": 14,
+    "three_z": [
+     4.86,
+     5.31
+    ],
+    "ray_heights": [
+     0.8
+    ]
+   }
+  },
+  "blocked_count": 0,
+  "result": "CLEAR"
+ }
+}

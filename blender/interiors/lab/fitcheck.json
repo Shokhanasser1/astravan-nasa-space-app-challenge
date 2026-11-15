@@ -1,0 +1,10 @@
+{
+ "checked_vertices": 3939,
+ "min_clearance_m": 0.0325,
+ "violations": 0,
+ "worst": [],
+ "exempt": [
+  "lab_door_leaf",
+  "lab_hatch_frame"
+ ]
+}
