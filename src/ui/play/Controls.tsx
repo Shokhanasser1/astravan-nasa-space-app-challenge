@@ -1,6 +1,21 @@
-import { useEffect, useRef, type Dispatch } from 'react';
-import { HelpCircle, Map as MapIcon, X } from 'lucide-react';
-import type { Action } from '../../state/game';
+import { useEffect, useRef, type Dispatch, type ReactNode } from 'react';
+import {
+  ArrowUpToLine,
+  Footprints,
+  Gamepad2,
+  Hand,
+  Headphones,
+  HelpCircle,
+  Map as MapIcon,
+  Move,
+  Pointer,
+  RectangleHorizontal,
+  Tablet as TabletIcon,
+  Undo2,
+  X,
+  type LucideIcon,
+} from 'lucide-react';
+import type { Action, Board, Machine } from '../../state/game';
 import { command } from '../../controls/keys';
 import { TRAVEL, resolve, type Ctx, type Effect, type Overlay, type UiOp } from '../../controls/act';
 import { travel } from '../../controls/bus';
@@ -89,7 +104,7 @@ export function MapPanel({ apply, tr }: { apply: (e: Effect) => void; tr: Tr }) 
       <div className="grid grid-cols-1 gap-2 min-[420px]:grid-cols-2">
         {TRAVEL.map((p, i) => (
           <Btn key={p} data-testid={`travel-${p}`} onClick={() => apply({ travel: p })} className="flex items-center gap-2 text-left">
-            <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-[#ff8a3d] font-semibold text-[#2a1100] text-sm tabular-nums">{i + 1}</span>
+            <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-[var(--accent)] font-semibold text-[var(--accent-ink)] text-sm tabular-nums">{i + 1}</span>
             <span className="text-sm">{tr(`ui.point.${p}`)}</span>
           </Btn>
         ))}
@@ -99,21 +114,22 @@ export function MapPanel({ apply, tr }: { apply: (e: Effect) => void; tr: Tr }) 
 }
 
 /** One row of the controls list: the keys, the touch way, what it does. */
-const HELP: { keys: string[]; touch: string; text: string; walk?: boolean }[] = [
-  { keys: ['W', 'A', 'S', 'D'], touch: '🕹', text: 'ui.help.walk', walk: true },
-  { keys: ['←', '→'], touch: '🕹', text: 'ui.help.turn', walk: true },
-  { keys: ['Shift'], touch: '🕹', text: 'ui.help.run', walk: true },
-  { keys: ['Space'], touch: '⤒', text: 'ui.help.jump', walk: true },
-  { keys: ['🖱'], touch: '👆', text: 'ui.help.look' },
-  { keys: ['E'], touch: '✋', text: 'ui.help.use' },
-  { keys: ['Q'], touch: '↩', text: 'ui.help.undo' },
-  { keys: ['1', '2', '3'], touch: '👆', text: 'ui.help.pick' },
-  { keys: ['Enter'], touch: '▭', text: 'ui.help.confirm' },
-  { keys: ['Tab'], touch: '📋', text: 'ui.help.tablet' },
-  { keys: ['H'], touch: '🎧', text: 'ui.help.houston' },
-  { keys: ['M'], touch: '🗺', text: 'ui.help.map' },
-  { keys: ['Esc'], touch: '✕', text: 'ui.help.close' },
-  { keys: ['?'], touch: '?', text: 'ui.help.help' },
+/** (The touch column uses the same line icons as the buttons themselves: Lucide, 2 px stroke, no emoji.) */
+const HELP: { keys: string[]; touch: LucideIcon; text: string; walk?: boolean }[] = [
+  { keys: ['W', 'A', 'S', 'D'], touch: Gamepad2, text: 'ui.help.walk', walk: true },
+  { keys: ['←', '→'], touch: Gamepad2, text: 'ui.help.turn', walk: true },
+  { keys: ['Shift'], touch: Footprints, text: 'ui.help.run', walk: true },
+  { keys: ['Space'], touch: ArrowUpToLine, text: 'ui.help.jump', walk: true },
+  { keys: ['Mouse'], touch: Move, text: 'ui.help.look' },
+  { keys: ['E', 'Click'], touch: Hand, text: 'ui.help.use' },
+  { keys: ['Q'], touch: Undo2, text: 'ui.help.undo' },
+  { keys: ['1', '2', '3'], touch: Pointer, text: 'ui.help.pick' },
+  { keys: ['Enter'], touch: RectangleHorizontal, text: 'ui.help.confirm' },
+  { keys: ['Tab'], touch: TabletIcon, text: 'ui.help.tablet' },
+  { keys: ['H'], touch: Headphones, text: 'ui.help.houston' },
+  { keys: ['M'], touch: MapIcon, text: 'ui.help.map' },
+  { keys: ['Esc'], touch: X, text: 'ui.help.close' },
+  { keys: ['?'], touch: HelpCircle, text: 'ui.help.help' },
 ];
 
 export function HelpPanel({ apply, tr }: { apply: (e: Effect) => void; tr: Tr }) {
@@ -136,8 +152,8 @@ export function HelpPanel({ apply, tr }: { apply: (e: Effect) => void; tr: Tr })
               </kbd>
             ))}
           </span>
-          <span className="text-center text-lg" aria-hidden="true">
-            {r.touch}
+          <span className="grid place-items-center text-[var(--accent)]" aria-hidden="true">
+            <r.touch size={18} />
           </span>
           <span>{tr(r.text)}</span>
         </div>

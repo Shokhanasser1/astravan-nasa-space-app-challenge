@@ -11,11 +11,14 @@
 export const SIGNS = ['lochin', 'yulduz', 'humo', 'burgut', 'kamalak', 'shunqor'] as const;
 export type Sign = (typeof SIGNS)[number];
 
-/** Patch colours: the crew stripe colours of the art brief (gold, green, orange, violet). */
-export const PATCHES = ['gold', 'green', 'orange', 'violet'] as const;
+/** Patch colours: the interface's cold family (ice, mint, blue, violet). */
+export const PATCHES = ['ice', 'mint', 'blue', 'violet'] as const;
 export type Patch = (typeof PATCHES)[number];
 
-export const PATCH_HEX: Record<Patch, string> = { gold: '#ffc56b', green: '#5fe0b0', orange: '#ff8a6b', violet: '#b9a2ff' };
+export const PATCH_HEX: Record<Patch, string> = { ice: '#7fe3ff', mint: '#5fe0c0', blue: '#8fb3ff', violet: '#b49bff' };
+
+/** Badges made before the colours turned cold (15 Nov) keep their place in the family. */
+const OLD_PATCH: Record<string, Patch> = { gold: 'ice', green: 'mint', orange: 'blue' };
 
 /** One finished mission: the week (game data, not the child's), the engine's title, the two scores. */
 export interface MissionRecord {
@@ -93,15 +96,17 @@ export function sanitize(raw: unknown): Profile[] {
   const out: Profile[] = [];
   for (const p of raw) {
     if (!p || typeof p !== 'object') continue;
-    const { sign, patch, missions } = p as Partial<Profile>;
-    if (!SIGNS.includes(sign as Sign) || !PATCHES.includes(patch as Patch) || out.some((x) => x.sign === sign)) continue;
+    const { sign, missions } = p as Partial<Profile>;
+    const raw = (p as { patch?: string }).patch ?? '';
+    const patch = (OLD_PATCH[raw] ?? raw) as Patch;
+    if (!SIGNS.includes(sign as Sign) || !PATCHES.includes(patch) || out.some((x) => x.sign === sign)) continue;
     const ok = Array.isArray(missions)
       ? missions.filter(
           (m): m is MissionRecord =>
             !!m && typeof m.weekId === 'string' && typeof m.titleKey === 'string' && Number.isFinite(m.crew) && Number.isFinite(m.science) && Number.isFinite(m.seed),
         )
       : [];
-    out.push({ id: sign as Sign, sign: sign as Sign, patch: patch as Patch, missions: ok });
+    out.push({ id: sign as Sign, sign: sign as Sign, patch, missions: ok });
     if (out.length === MAX_PROFILES) break;
   }
   return out;

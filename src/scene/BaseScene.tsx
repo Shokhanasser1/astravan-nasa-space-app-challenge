@@ -103,7 +103,7 @@ function TargetRings({ strong }: { strong: boolean }) {
   );
 }
 
-const AIMED = glowColor('#ffd98a', 1.6);
+const AIMED = glowColor('#9fe8ff', 1.6);
 
 const HUB_RING = { k: 'hub', at: LAYOUT.hub, r: RADIUS.hub + 0.7 } as const;
 

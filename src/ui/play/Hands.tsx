@@ -109,7 +109,7 @@ export function Inventory({ hands, free, total, tr }: { hands: number; free: num
       <span className="flex gap-1" aria-label={tr('ui.inv.handsN', { n: hands })}>
         {Array.from({ length: HANDS_MAX }, (_, i) =>
           i < hands ? (
-            <BatteryFull key={i} size={24} aria-hidden="true" className="-rotate-90 text-[#ffc94a]" />
+            <BatteryFull key={i} size={24} aria-hidden="true" className="-rotate-90 text-[var(--c-power)]" />
           ) : (
             <Battery key={i} size={24} aria-hidden="true" className="-rotate-90 text-white/25" />
           ),

@@ -1,7 +1,12 @@
 @import 'tailwindcss';
 @import '@fontsource-variable/lexend';
 
-/* Design tokens: the interface follows ASTRA's visual language (navy glass, Lexend, orange primary, cyan focus). */
+/*
+ * Design tokens (15 Nov, Asilbek: "cold colours, it is a space game; minimal; kids must want to play").
+ * One cold family on deep navy: ice cyan is "go", periwinkle, mint and violet tell things apart, cool white text.
+ * The only warm colour is the warning amber (storms, alerts), so a warning is never mistaken for decoration.
+ * Shapes and type stay ASTRA's (navy glass, Lexend, Lucide). Rules for the team: docs/DESIGN.md.
+ */
 @theme {
   --color-space: #050816;
   --color-regolith: #8a8a8a;
@@ -11,10 +16,10 @@
   --color-measured: #5ee0ff;
   --color-computed: #c48bff;
   --color-rule: #c2cbec;
-  --color-story: #ffd59e;
+  --color-story: #a9c4ff;
   --color-navy: #0a1028;
-  --color-accent: #ff8a3d;
-  --color-good: #3ee39a;
+  --color-accent: #4fd2ff;
+  --color-good: #5fe0c0;
   --font-sans: 'Lexend Variable', 'Lexend', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
 }
 
@@ -25,15 +30,21 @@
   --glass: linear-gradient(180deg, rgba(22, 32, 68, 0.88), rgba(12, 18, 42, 0.88));
   --line: rgba(150, 175, 255, 0.16);
   --line-strong: rgba(170, 195, 255, 0.3);
-  --text-2: #c2cbec;
-  --text-3: #8b96c0;
-  --accent: #ff8a3d;
-  --accent-hi: #ffa463;
-  --accent-ink: #2a1100;
+  --text-2: #b9c6ea;
+  --text-3: #8391bd;
+  --accent: #4fd2ff;
+  --accent-hi: #a6eeff;
+  --accent-ink: #032036;
+  --accent-edge: #1a6f99;
+  --ice: #dff7ff;
+  --mint: #5fe0c0;
+  --peri: #8fb3ff;
+  --violet: #b49bff;
+  --text-1: #eef3ff;
   --cyan: #5ee0ff;
-  --c-power: #ffc94a;
+  --c-power: #8fb3ff;
   --c-o2: #5ee0ff;
-  --c-dose: #c48bff;
+  --c-dose: #b49bff;
   --shadow: 0 18px 44px rgba(0, 0, 0, 0.45);
   --blur: blur(16px) saturate(140%);
   color-scheme: dark;
@@ -45,7 +56,7 @@ body {
   font-feature-settings: 'tnum' 1;
 }
 :focus-visible {
-  outline: 3px solid var(--cyan);
+  outline: 3px solid var(--ice);
   outline-offset: 2px;
 }
 
@@ -88,14 +99,14 @@ body {
   background: linear-gradient(180deg, var(--accent-hi), var(--accent));
   border-color: transparent;
   color: var(--accent-ink);
-  box-shadow: 0 4px 0 #b9541a, 0 10px 24px rgba(255, 138, 61, 0.28);
+  box-shadow: 0 4px 0 var(--accent-edge), 0 10px 24px rgba(79, 210, 255, 0.28);
 }
 .abtn.primary:hover:not(:disabled),
 .abtn.on:hover:not(:disabled) {
-  background: linear-gradient(180deg, #ffb57c, #ff9550);
+  background: linear-gradient(180deg, #c4f4ff, #6ddaff);
 }
 .abtn.primary:active:not(:disabled) {
-  box-shadow: 0 2px 0 #b9541a, 0 6px 14px rgba(255, 138, 61, 0.25);
+  box-shadow: 0 2px 0 var(--accent-edge), 0 6px 14px rgba(79, 210, 255, 0.25);
 }
 .abtn.big {
   min-height: 56px;
@@ -126,12 +137,12 @@ body {
 }
 .abtn.primary .kbd,
 .abtn.on .kbd {
-  background: rgba(42, 17, 0, 0.18);
-  border-color: rgba(42, 17, 0, 0.35);
+  background: rgba(3, 32, 54, 0.14);
+  border-color: rgba(3, 32, 54, 0.32);
   color: var(--accent-ink);
 }
 .title-grad {
-  background: linear-gradient(90deg, #ffa463, #ff5470);
+  background: linear-gradient(90deg, #a6eeff, #8fb3ff);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -350,18 +361,18 @@ body,
   justify-content: flex-start;
 }
 @keyframes glow-ring {
-  0%, 100% { box-shadow: 0 0 0 0 rgb(255 138 61 / 0.55); }
-  50% { box-shadow: 0 0 0 8px rgb(255 138 61 / 0); }
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 55%, transparent); }
+  50% { box-shadow: 0 0 0 8px transparent; }
 }
 .abtn.glow {
   animation: glow-ring 1.6s ease-in-out infinite;
 }
 @keyframes task-idle {
-  0%, 100% { box-shadow: var(--shadow), 0 0 0 0 rgb(255 138 61 / 0.6); }
-  50% { box-shadow: var(--shadow), 0 0 0 6px rgb(255 138 61 / 0); }
+  0%, 100% { box-shadow: var(--shadow), 0 0 0 0 color-mix(in srgb, var(--accent) 60%, transparent); }
+  50% { box-shadow: var(--shadow), 0 0 0 6px transparent; }
 }
 .task-idle {
-  border-color: rgb(255 138 61 / 0.8);
+  border-color: color-mix(in srgb, var(--accent) 80%, transparent);
   animation: task-idle 1.4s ease-in-out infinite;
 }
 @media (prefers-reduced-motion: reduce) {
@@ -481,8 +492,8 @@ body,
   font-size: 2.6rem;
 }
 .entry-avatar-new {
-  background: rgba(255, 138, 61, 0.1);
-  border: 2px dashed rgba(255, 138, 61, 0.7);
+  background: rgba(79, 210, 255, 0.1);
+  border: 2px dashed rgba(79, 210, 255, 0.7);
   box-shadow: none;
   color: var(--accent-hi);
   text-shadow: none;
@@ -519,8 +530,8 @@ body,
   gap: 0.75rem;
   border-radius: 18px;
   padding: 0.6rem 0.6rem 0.6rem 1rem;
-  background: rgba(255, 201, 74, 0.1);
-  border: 1px solid rgba(255, 201, 74, 0.4);
+  background: rgba(143, 179, 255, 0.1);
+  border: 1px solid rgba(143, 179, 255, 0.4);
 }
 
 /* badge maker and lobby */
@@ -600,7 +611,7 @@ body,
   background: rgba(150, 175, 255, 0.14);
 }
 .entry-chip-on {
-  background: rgba(255, 138, 61, 0.18);
+  background: rgba(79, 210, 255, 0.18);
   border-color: var(--accent);
   color: #fff;
 }
@@ -751,11 +762,11 @@ body,
   font-weight: 900;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  background: linear-gradient(180deg, #ffd29f 0%, #ffa463 38%, #ff6a3d 72%, #ff4d6d 100%);
+  background: linear-gradient(180deg, #ffffff 0%, #a6eeff 38%, #6fd3ff 72%, #5a8cff 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
-  filter: drop-shadow(0 0 22px rgba(255, 138, 61, 0.35));
+  filter: drop-shadow(0 0 22px rgba(79, 210, 255, 0.35));
 }
 .entry-days {
   display: flex;
@@ -770,7 +781,7 @@ body,
 .entry-day-home {
   border-color: var(--accent);
   background: var(--accent);
-  box-shadow: 0 0 10px rgba(255, 138, 61, 0.8);
+  box-shadow: 0 0 10px rgba(79, 210, 255, 0.8);
 }
 .entry-tagline {
   margin: 0;
@@ -931,7 +942,7 @@ body,
 .hud-pip-now {
   border-color: var(--accent);
   background: var(--accent);
-  box-shadow: 0 0 8px rgba(255, 138, 61, 0.8);
+  box-shadow: 0 0 8px rgba(79, 210, 255, 0.8);
 }
 .hud-level {
   border-radius: 999px;
@@ -1129,15 +1140,16 @@ body,
 }
 
 /*
- * Entry desk, minimal (15 Nov ~07:30): one quiet card, no ornament. One warm family on night blue — cream #fff3dd,
- * gold #ffc56b → #f2a53a, night #0e1533 — so the title, the crew marks and the gold "go" belong together. Only two
+ * Entry desk, minimal (15 Nov ~07:30; cold palette ~08:00): one quiet card, no ornament. Cool white text, ice cyan
+ * "go", night blue — so the title, the crew marks and the "go" belong together. Only two
  * things move: the golden "home" star glows, a crew mark lifts and its orbit turns under the finger.
  */
 .entry-wrap {
-  --cream: #fff3dd;
-  --gold: #ffc56b;
-  --gold-2: #f2a53a;
-  --gold-3: #c97a1e;
+  /* (names kept from the first warm draft; values are the cold family) */
+  --cream: var(--text-1);
+  --gold: #7fe3ff;
+  --gold-2: var(--accent);
+  --gold-3: var(--accent-edge);
 }
 
 /* title: cream "HOME BY", gold "SEVEN", seven stars (six days, one golden: home) */
@@ -1145,10 +1157,10 @@ body,
   color: var(--cream);
 }
 .entry-logo-big {
-  background: linear-gradient(180deg, #fff6e2 0%, #ffd58a 38%, var(--gold-2) 72%, #e0782a 100%);
+  background: linear-gradient(180deg, #ffffff 0%, #c9f3ff 38%, var(--gold-2) 72%, #5a8cff 100%);
   -webkit-background-clip: text;
   background-clip: text;
-  filter: drop-shadow(0 2px 0 rgba(120, 60, 10, 0.5)) drop-shadow(0 0 22px rgba(255, 197, 107, 0.22));
+  filter: drop-shadow(0 2px 0 rgba(10, 40, 90, 0.5)) drop-shadow(0 0 22px rgba(127, 227, 255, 0.22));
 }
 .entry-days {
   align-items: center;
@@ -1161,11 +1173,11 @@ svg.entry-day {
   border-radius: 0;
   background: none;
   box-shadow: none;
-  color: rgba(255, 243, 221, 0.6);
+  color: rgba(238, 243, 255, 0.6);
 }
 svg.entry-day-home {
   color: var(--gold);
-  filter: drop-shadow(0 0 6px rgba(255, 197, 107, 0.8));
+  filter: drop-shadow(0 0 6px rgba(127, 227, 255, 0.8));
   animation: star-glow 3s ease-in-out infinite;
 }
 @keyframes star-glow {
@@ -1174,7 +1186,7 @@ svg.entry-day-home {
   }
 }
 .entry-tagline {
-  color: rgba(255, 243, 221, 0.78);
+  color: rgba(238, 243, 255, 0.78);
 }
 
 /* the card */
@@ -1185,7 +1197,7 @@ svg.entry-day-home {
   gap: 0;
   border-radius: 24px;
   background: rgba(14, 21, 51, 0.82);
-  border: 1px solid rgba(255, 243, 221, 0.1);
+  border: 1px solid rgba(238, 243, 255, 0.1);
   box-shadow: 0 20px 44px rgba(0, 0, 0, 0.42);
   backdrop-filter: blur(16px) saturate(140%);
   -webkit-backdrop-filter: blur(16px) saturate(140%);
@@ -1199,7 +1211,7 @@ svg.entry-day-home {
 }
 .pass-stub {
   padding: 0.5rem;
-  border-top: 1px solid rgba(255, 243, 221, 0.08);
+  border-top: 1px solid rgba(238, 243, 255, 0.08);
 }
 .pass-title {
   margin: 0;
@@ -1274,7 +1286,7 @@ svg.entry-day-home {
 }
 .pass-guest:hover,
 .pass-guest:focus-visible {
-  background: rgba(255, 243, 221, 0.06);
+  background: rgba(238, 243, 255, 0.06);
 }
 .pass-guest:active .pass-guest-icon {
   transform: scale(0.94);
@@ -1286,8 +1298,8 @@ svg.entry-day-home {
   width: 44px;
   height: 44px;
   border-radius: 999px;
-  color: #3a1d00;
-  background: linear-gradient(180deg, #ffe2a8, var(--gold-2));
+  color: #032036;
+  background: linear-gradient(180deg, #c4f4ff, var(--gold-2));
   transition: transform 0.12s;
 }
 .pass-guest-text {
@@ -1302,12 +1314,12 @@ svg.entry-day-home {
 }
 .pass-guest-hint {
   font-size: 0.78rem;
-  color: rgba(255, 243, 221, 0.55);
+  color: rgba(238, 243, 255, 0.55);
 }
 .entry-keep {
   width: 100%;
-  background: rgba(255, 197, 107, 0.1);
-  border-color: rgba(255, 197, 107, 0.35);
+  background: rgba(127, 227, 255, 0.1);
+  border-color: rgba(127, 227, 255, 0.35);
 }
 @media (prefers-reduced-motion: reduce) {
   svg.entry-day-home {
@@ -1352,5 +1364,118 @@ svg.entry-day-home {
   }
   .entry-wrap.entry-at-desk .entry-days {
     display: flex;
+  }
+}
+
+/* the jump button (touch): straight above the walk stick, same edge, never on top of it */
+.hud-jump {
+  position: fixed;
+  z-index: 5;
+  left: calc(var(--hud-edge) + (var(--stick) - 4rem) / 2);
+  top: calc(40% - 4rem - 0.9rem);
+}
+@media (orientation: landscape) and (max-height: 540px) {
+  .hud-jump {
+    top: auto;
+    bottom: calc(max(1.25rem, env(safe-area-inset-bottom)) + var(--stick) + 0.75rem);
+  }
+}
+@media (min-width: 744px) and (min-height: 600px) {
+  .hud-jump {
+    left: calc(max(1.5rem, env(safe-area-inset-left)) + (var(--stick) - 4rem) / 2);
+    top: calc(48% - 4rem - 1rem);
+  }
+}
+
+/* the Sun photo of the day: on a portrait phone the open wrist tablet needs that space; it comes back when folded */
+@media (max-width: 520px) and (orientation: portrait) {
+  [data-tablet='open'] .hud-sun {
+    display: none;
+  }
+}
+
+/* truth screen: the real week as seven bars (log scale); storm days in the warning amber, quiet days periwinkle */
+.truth-chart {
+  display: flex;
+  align-items: stretch;
+  gap: 6px;
+  height: 9rem;
+  /* the reveal panel scrolls: without this the chart was squeezed to nothing (the "missing bars") */
+  flex-shrink: 0;
+  padding: 0.25rem 0.1rem 0;
+}
+.truth-col {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.truth-val {
+  font-size: 0.66rem;
+  font-weight: 600;
+  color: var(--text-2);
+  white-space: nowrap;
+}
+.truth-track {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  align-items: flex-end;
+  border-radius: 8px;
+  background: rgba(150, 175, 255, 0.06);
+}
+.truth-bar {
+  width: 100%;
+  min-height: 4px;
+  border-radius: 8px 8px 4px 4px;
+  background: linear-gradient(180deg, var(--peri), rgba(143, 179, 255, 0.35));
+}
+.truth-bar-storm {
+  background: linear-gradient(180deg, #ffd978, var(--color-alert));
+  box-shadow: 0 0 14px rgba(255, 194, 61, 0.35);
+}
+.truth-day {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-1);
+}
+
+/* phones held sideways (≈ 360–430 px tall): the same column, compact, so the big button always fits */
+@media (orientation: landscape) and (max-height: 540px) {
+  .hud-center {
+    gap: 6px !important;
+  }
+  .hud-center [data-testid='radio'] {
+    padding: 0.3rem 0.6rem;
+  }
+  .hud-center [data-testid='radio'] .eyebrow {
+    display: none;
+  }
+  .hud-center [data-testid='radio'] p {
+    font-size: 0.8rem;
+    line-height: 1.25;
+  }
+  .hud-center [data-testid='radio'] svg {
+    width: 1.75rem;
+    height: 1.75rem;
+  }
+  .hud-center .hud-tablet {
+    min-height: 4.5rem;
+    padding: 0.5rem;
+  }
+  .hud-stats {
+    padding: 0.25rem 0.2rem;
+  }
+  .hud-stat-label {
+    font-size: 0.62rem;
+    gap: 0.2rem;
+  }
+  .hud-stat-value {
+    font-size: 1rem;
+  }
+  .hud-center .abtn.big {
+    min-height: 44px;
   }
 }

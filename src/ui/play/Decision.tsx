@@ -86,7 +86,7 @@ export function Decision({
                       <Kbd k={String(i + 1)} />
                     </span>
                     <span className="flex flex-wrap gap-x-2 gap-y-0.5 text-xs font-normal">
-                      <Chip icon={BatteryFull} tone="text-[#ffc94a]">{tr('ui.decide.left', { n: p.left })}</Chip>
+                      <Chip icon={BatteryFull} tone="text-[var(--c-power)]">{tr('ui.decide.left', { n: p.left })}</Chip>
                       <Chip icon={Wind} tone="text-measured"><Delta from={g.air} to={p.reserveAfter} /></Chip>
                       <Chip icon={Sprout} tone="text-good"><Delta from={g.plant} to={p.gardenAfter} /></Chip>
                       {p.sciToday > 0 && <Chip icon={FlaskConical} tone="text-accent">+{p.sciToday}</Chip>}

@@ -18,32 +18,37 @@ const rec = (seed: number, weekId = '2021-10-25'): MissionRecord => ({ weekId, t
 
 describe('cadet badges', () => {
   it('a badge is a call sign and a patch colour — nothing else about the child', () => {
-    const { list, profile } = createProfile([], 'lochin', 'gold');
-    expect(profile).toEqual({ id: 'lochin', sign: 'lochin', patch: 'gold', missions: [] });
+    const { list, profile } = createProfile([], 'lochin', 'ice');
+    expect(profile).toEqual({ id: 'lochin', sign: 'lochin', patch: 'ice', missions: [] });
     expect(Object.keys(profile!).sort()).toEqual(['id', 'missions', 'patch', 'sign']);
     expect(list).toHaveLength(1);
   });
 
   it('a call sign is worn once per device', () => {
-    const { list } = createProfile([], 'lochin', 'gold');
+    const { list } = createProfile([], 'lochin', 'ice');
     expect(freeSigns(list)).not.toContain('lochin');
-    expect(createProfile(list, 'lochin', 'green').profile).toBeNull();
+    expect(createProfile(list, 'lochin', 'mint').profile).toBeNull();
   });
 
   it('room for one class table of badges, then no more', () => {
     let list: Profile[] = [];
-    for (const s of SIGNS.slice(0, MAX_PROFILES)) list = createProfile(list, s, 'green').list;
+    for (const s of SIGNS.slice(0, MAX_PROFILES)) list = createProfile(list, s, 'mint').list;
     expect(list).toHaveLength(MAX_PROFILES);
     expect(canCreate(list)).toBe(false);
   });
 
   it('unknown call signs and colours are refused', () => {
-    expect(createProfile([], 'bob' as never, 'gold').profile).toBeNull();
+    expect(createProfile([], 'bob' as never, 'ice').profile).toBeNull();
     expect(createProfile([], 'humo', 'pink' as never).profile).toBeNull();
   });
 
+  it('badges made with the first, warm colours keep a matching cold one', () => {
+    const list = sanitize([{ sign: 'lochin', patch: 'gold', missions: [] }, { sign: 'humo', patch: 'orange', missions: [] }]);
+    expect(list.map((p) => p.patch)).toEqual(['ice', 'blue']);
+  });
+
   it('a finished mission is written once, to its own badge', () => {
-    let list = createProfile([], 'lochin', 'gold').list;
+    let list = createProfile([], 'lochin', 'ice').list;
     list = createProfile(list, 'humo', 'violet').list;
     list = recordMission(list, 'lochin', rec(1));
     list = recordMission(list, 'lochin', rec(1)); // the truth screen shown twice
@@ -64,7 +69,7 @@ describe('cadet badges', () => {
   });
 
   it('removing a badge leaves the others', () => {
-    let list = createProfile([], 'lochin', 'gold').list;
+    let list = createProfile([], 'lochin', 'ice').list;
     list = createProfile(list, 'humo', 'violet').list;
     expect(removeProfile(list, 'lochin').map((p) => p.sign)).toEqual(['humo']);
   });
@@ -73,9 +78,9 @@ describe('cadet badges', () => {
     expect(sanitize(null)).toEqual([]);
     expect(sanitize('x')).toEqual([]);
     const raw = [
-      { sign: 'lochin', patch: 'gold', missions: [rec(1), { weekId: 1 }], name: 'should be dropped' },
-      { sign: 'lochin', patch: 'green', missions: [] }, // duplicate sign
-      { sign: 'zz', patch: 'gold' },
+      { sign: 'lochin', patch: 'ice', missions: [rec(1), { weekId: 1 }], name: 'should be dropped' },
+      { sign: 'lochin', patch: 'mint', missions: [] }, // duplicate sign
+      { sign: 'zz', patch: 'ice' },
       { sign: 'humo', patch: 'violet' },
     ];
     const list = sanitize(raw);

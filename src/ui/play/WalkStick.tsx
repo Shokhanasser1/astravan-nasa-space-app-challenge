@@ -19,7 +19,7 @@ export function JumpButton() {
       type="button"
       data-testid="jump"
       aria-label="Jump"
-      className="hud-side pointer-events-auto grid h-16 w-16 touch-none select-none place-items-center rounded-full border-2 border-[#4fb3ff]/70 bg-[#4fb3ff]/10 text-2xl text-white/80"
+      className="hud-side hud-jump pointer-events-auto grid h-16 w-16 touch-none select-none place-items-center rounded-full border-2 border-[#4fb3ff]/70 bg-[#4fb3ff]/10 text-2xl text-white/80"
       onPointerDown={(e) => {
         e.preventDefault();
         walkInput.jump = true;

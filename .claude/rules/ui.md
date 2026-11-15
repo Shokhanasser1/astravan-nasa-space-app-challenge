@@ -7,6 +7,15 @@ paths:
 
 # Interface: the helmet visor, for 7–14-year-olds (lane D)
 
+## Look — read first (Asilbek, 15 Nov ~08:00; full rules and references: `docs/DESIGN.md`)
+- Minimal, **cold colours** (space), very clean. Tokens only from `src/index.css` — never a raw hex in a component.
+- One ice-cyan `--accent` "go" per screen; periwinkle / mint / violet tell things apart; **amber (`--color-alert`)
+  is the only warm colour and only means "warning"**. Text `--text-1/2/3`.
+- Lexend; Lucide icons only (2 px, `currentColor`); **no emoji**. Panels = `Panel`/`.glass`; buttons = `Btn`/`.abtn`
+  (`.primary` for the one "go"); reuse the stat strip (`.hud-stats`), icon rows (`.machine-row`), day pill, crew mark.
+- The centre of the screen is the 3D base; the interface sits at the edges; the big button never leaves the screen.
+  Check 360×640, 844×390, 1024×768, 1280×720.
+
 Sources: Dizayn 2.0 §04 (visor), final version §02 (text rules), §07 (★ levels), design brief (colours, type,
 contrast — still valid), NN/g children's UX, Game Accessibility Guidelines. References: `docs/REFERENCES.md` §6.
 
