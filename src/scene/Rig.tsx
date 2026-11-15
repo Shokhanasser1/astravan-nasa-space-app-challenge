@@ -3,7 +3,7 @@ import { useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import type { View } from '../state/game';
 import { camState, gesture, launchState } from './anim';
-import { DOOR_AZ, LAYOUT, RADIUS } from './layout';
+import { DOOR_AZ, DOOR_R, LAYOUT, RADIUS } from './layout';
 import { EYE, FOCUS, POINTS, phasePoint, type PointId, type Vec3 } from './points';
 import { GLOW } from './parts/materials';
 import { TAP_PX, tapOnly } from './parts/tap';
@@ -363,7 +363,7 @@ export function Rig({ view }: { view: View }) {
       }),
     [],
   );
-  const door: Vec3 = [LAYOUT.habitat[0] + Math.sin(DOOR_AZ) * 1.73, 1.1, LAYOUT.habitat[1] + Math.cos(DOOR_AZ) * 1.73];
+  const door: Vec3 = [LAYOUT.habitat[0] + Math.sin(DOOR_AZ) * DOOR_R, 1.1, LAYOUT.habitat[1] + Math.cos(DOOR_AZ) * DOOR_R];
   const hideMarkers = launching || view.phase === 'truth';
 
   const astronaut = character ? <Astronaut body={body} visible={point !== 'inside'} hands={view.hands ?? 0} /> : null;
