@@ -9,20 +9,25 @@ import type { TapHandler } from './tap';
 import { Shell, type NodeRef } from '../models/Shell';
 import { lift } from '../models/kit';
 import { AstraLander, astraLook, faceCentre } from '../AstraBase';
+import { LIFTOFF_DELAY_S } from '../boarding';
 
 const LEGS = [0, 1, 2, 3].map((i) => (i * Math.PI) / 2 + Math.PI / 4);
 const RISE_S = 3; // launch: ~3 s of lift-off, then it keeps climbing out of view
 const DUST_S = 2.5;
 
-/** Lander → Launch (Day 7). Engine glows when it has batteries; in the launch phase it lifts off with a dust ring. */
-export function Lander({ on, phase, tap }: { on: boolean; phase: string; tap: TapHandler }) {
+/**
+ * Lander → Launch (Day 7). Engine glows when it has batteries; in the launch phase it lifts off with a dust ring —
+ * home story: once the astronaut is on board (LIFTOFF_DELAY_S, src/scene/boarding.ts). `grounded`: it did not fly
+ * (home story, Late Ride Home), so the truth screen keeps it on the ground.
+ */
+export function Lander({ on, phase, tap, grounded = false }: { on: boolean; phase: string; tap: TapHandler; grounded?: boolean }) {
   const [x, z] = LAYOUT.lander;
   const body = useRef<THREE.Group>(null);
   const dust = useRef<THREE.Mesh>(null);
   const t0 = useRef(-1);
   const top = useRef<THREE.Object3D | null>(null); // NASA model: the ascent stage (lander_body); null = grey shapes
   const nodes = useRef<Record<string, NodeRef>>({ lander_body: top }).current;
-  const flying = phase === 'launch' || phase === 'truth';
+  const flying = (phase === 'launch' || phase === 'truth') && !grounded;
 
   useFrame((state) => {
     const g = body.current;
@@ -32,8 +37,8 @@ export function Lander({ on, phase, tap }: { on: boolean; phase: string; tap: Ta
     let t = 0;
     if (flying) {
       if (t0.current < 0) t0.current = state.clock.elapsedTime;
-      t = phase === 'truth' ? 99 : state.clock.elapsedTime - t0.current;
-      h = t < RISE_S ? 30 * (t / RISE_S) ** 2 : 30 + 20 * (t - RISE_S);
+      t = phase === 'truth' ? 99 : state.clock.elapsedTime - t0.current - LIFTOFF_DELAY_S;
+      h = t <= 0 ? 0 : t < RISE_S ? 30 * (t / RISE_S) ** 2 : 30 + 20 * (t - RISE_S);
     } else {
       t0.current = -1;
     }
@@ -49,8 +54,8 @@ export function Lander({ on, phase, tap }: { on: boolean; phase: string; tap: Ta
       g.visible = h < 400;
     }
     launchState.h = h;
-    const k = Math.min(1, t / DUST_S);
-    d.visible = flying && k < 1;
+    const k = Math.min(1, Math.max(0, t) / DUST_S);
+    d.visible = flying && t >= 0 && k < 1;
     d.scale.setScalar(1 + 7 * k);
     (d.material as THREE.MeshBasicMaterial).opacity = 0.55 * (1 - k);
     if (flying && h < 120) {

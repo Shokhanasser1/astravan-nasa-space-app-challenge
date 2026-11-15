@@ -136,6 +136,12 @@ export function TruthScreen({
           <p className="-mt-2 text-center" data-testid="truth-ending" data-ending={r.titleKey.split('.').pop()}>
             {tr(`ui.ending.${r.titleKey.split('.').pop()}`)}
           </p>
+          {/* (the ship flew: the astronaut climbed its ladder on Day 7 and is on board, src/scene/boarding.ts) */}
+          {!r.late && (
+            <p className="-mt-2 text-center text-sm text-white/80" data-testid="truth-aboard">
+              {tr('ui.ending.aboard')}
+            </p>
+          )}
           <div className="grid grid-cols-2 gap-2 text-center [&>div]:rounded-[16px] [&>div]:border [&>div]:border-[rgba(150,175,255,0.16)] [&>div]:bg-[rgba(150,175,255,0.08)] [&>div]:py-2">
             <div data-testid="truth-health" data-crew={r.crew}>
               <div className="text-xs text-white/70">{tr('ui.ending.health')}</div>
