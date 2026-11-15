@@ -8,6 +8,8 @@ import { NEAR_R, bakeSunVis, buildFar, buildNear, regolithMaterial, updateRegoli
 import { buildRocks } from '../look/rocks.js';
 import { rockOptions } from '../walk/rocks';
 import { regolithTextures } from '../look/textures.js';
+import { features } from '../config/features';
+import { loadHfRegolith, loadHfRock } from './hfAssets';
 
 /** The real skyline (out to 60 km) is pulled in to 1.5–1.95 km along the line of sight: same angles, one camera. */
 const SKY = { from: 1500, to: 1950 };
@@ -76,6 +78,65 @@ export function Terrain({ sunAzDeg }: { sunAzDeg: number }) {
     },
     [parts],
   );
+
+  // AI graphics pack: the photo-real regolith (all tiers) and the AI boulders (computers only, triangles), swapped in
+  // once loaded; the code-made look stays if a file is missing.
+  useEffect(() => {
+    if (!features.hfGround) return;
+    let alive = true;
+    let swapped: THREE.Texture[] = [];
+    void loadHfRegolith(gl, initialTier() === 'pc').then((t) => {
+      if (!t) return;
+      const all = [t.albedo, t.slope, t.macro, t.macroSlope];
+      if (!alive) return all.forEach((x) => x.dispose());
+      swapped = all;
+      const u = parts.nearMat.userData.uniforms;
+      u.uDetail.value = t.albedo;
+      u.uDetailN.value = t.slope;
+      u.uMacro.value = t.macro;
+      u.uMacroN.value = t.macroSlope;
+      invalidate();
+    });
+    return () => {
+      alive = false;
+      if (swapped.length) {
+        const u = parts.nearMat.userData.uniforms;
+        u.uDetail.value = u.uMacro.value = parts.tex.albedo;
+        u.uDetailN.value = u.uMacroN.value = parts.tex.slope;
+        swapped.forEach((x) => x.dispose());
+      }
+    };
+  }, [parts, gl, invalidate]);
+
+  useEffect(() => {
+    if (!features.hfRocks || initialTier() !== 'pc') return;
+    let alive = true;
+    const olds: Array<[THREE.InstancedMesh, THREE.BufferGeometry, THREE.Material | THREE.Material[]]> = [];
+    void Promise.all([loadHfRock('boulder-a'), loadHfRock('boulder-b')]).then(([a, b]) => {
+      if (!alive) return;
+      for (const [mesh, rock] of [
+        [parts.rocks.big as unknown as THREE.InstancedMesh, a],
+        [parts.rocks.boulders as unknown as THREE.InstancedMesh, b ?? a],
+      ] as const) {
+        if (!rock) continue;
+        olds.push([mesh, mesh.geometry, mesh.material]);
+        mesh.geometry = rock.geometry;
+        mesh.material = rock.material;
+        mesh.computeBoundingSphere();
+      }
+      gl.shadowMap.needsUpdate = true;
+      invalidate();
+    });
+    return () => {
+      alive = false;
+      for (const [mesh, g, m] of olds) {
+        mesh.geometry.dispose();
+        (mesh.material as THREE.Material).dispose();
+        mesh.geometry = g;
+        mesh.material = m;
+      }
+    };
+  }, [parts, gl, invalidate]);
 
   // the bright patch around your own shadow (opposition surge) follows the view
   useFrame(({ camera }) => {

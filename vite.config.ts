@@ -32,12 +32,18 @@ export default defineConfig({
         // pictures are cached the first time they are shown (runtimeCaching below) and work offline after that.
         // (Also left out: MediaPipe's JS, needed only when a child turns the camera on for the arm or ?hands, and the
         // LRO model, which no screen loads at the moment.)
-        globIgnores: ['draco/**', 'mediapipe/**', 'data/media/**', 'bundle/vision_bundle-*.js', 'models/nasa-lro/**'],
+        globIgnores: ['draco/**', 'mediapipe/**', 'data/media/**', 'hf/**', 'bundle/vision_bundle-*.js', 'models/nasa-lro/**'],
         runtimeCaching: [
           {
             urlPattern: ({ request }) => request.mode === 'navigate',
             handler: 'NetworkFirst',
             options: { cacheName: 'pages', networkTimeoutSeconds: 4, expiration: { maxEntries: 4 } },
+          },
+          {
+            // AI graphics pack (public/hf/): a phone loads only its own sizes, so they are cached when first used
+            urlPattern: ({ url }) => url.pathname.includes('/hf/'),
+            handler: 'CacheFirst',
+            options: { cacheName: 'hf-pack', expiration: { maxEntries: 30 } },
           },
           {
             urlPattern: ({ url }) => url.pathname.includes('/data/media/'),

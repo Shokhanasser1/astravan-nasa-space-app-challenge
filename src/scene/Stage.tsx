@@ -1,8 +1,8 @@
 import { Component, Suspense, lazy, useEffect, useRef, useState, type ReactNode } from 'react';
 import { Canvas, useThree, useFrame } from '@react-three/fiber';
 import { PerformanceMonitor, Preload, Stars, useGLTF } from '@react-three/drei';
-import { Bloom, EffectComposer, ToneMapping, Vignette } from '@react-three/postprocessing';
-import { ToneMappingMode } from 'postprocessing';
+import { Bloom, BrightnessContrast, ChromaticAberration, EffectComposer, Noise, ToneMapping, Vignette } from '@react-three/postprocessing';
+import { BlendFunction, ToneMappingMode } from 'postprocessing';
 import * as THREE from 'three';
 import type { Machine, View } from '../state/game';
 import { features } from '../config/features';
@@ -16,6 +16,7 @@ import { Storm } from './Storm';
 import { Rig } from './Rig';
 import { WalkDebug } from './WalkDebug';
 import { RobotArm } from './RobotArm';
+import { HfSky, HfSun } from './HfSky';
 import { freeWalk } from '../walk/enabled';
 import { SMALL_CASTER_M, trimCasters } from './shadowDiet';
 
@@ -81,8 +82,14 @@ class SceneBoundary extends Component<{ children: ReactNode; fallback: ReactNode
 }
 
 function Fallback() {
-  // Asilbek: one still picture of the base (public/fallback/base.webp). Until then a plain dark background.
-  return <div className="fixed inset-0 bg-[#020308] bg-cover bg-center" style={{ backgroundImage: `url(${import.meta.env.BASE_URL}fallback/base.webp)` }} />;
+  // No WebGL: one still picture of the base (AI key art, public/hf/art/base.webp; was the planned fallback/base.webp).
+  useEffect(() => void window.dispatchEvent(new Event('hb7:ready')), []);
+  if (!features.hfArt) return <div className="fixed inset-0 bg-[#020308]" />;
+  return (
+    <div className="fixed inset-0 bg-[#020308] bg-cover bg-center" style={{ backgroundImage: `url(${import.meta.env.BASE_URL}hf/art/base.webp)` }}>
+      <span className="absolute right-3 bottom-2 rounded border border-white/35 px-1 text-[10px] font-semibold tracking-widest text-white/60">AI</span>
+    </div>
+  );
 }
 
 /** One <Canvas> for the whole game. Lane C. */
@@ -109,6 +116,12 @@ export function Stage({ view, onTap, onUndo }: { view: View; onTap: (k: Machine)
     };
   }, []);
 
+  // The AI sky replaces the point stars once its picture is in (HfSky); until then, or if it fails, the stars stay.
+  const [skyIn, setSkyIn] = useState(false);
+  // AI graphics post effects (features.hfPost): computer tier only, dropped with the tier when FPS falls.
+  const hfPost = features.hfPost && tier === 'pc';
+  const fringe = useState(() => new THREE.Vector2(0.0006, 0.0004))[0];
+
   if (!webgl) return <Fallback />;
 
   return (
@@ -129,6 +142,8 @@ export function Stage({ view, onTap, onUndo }: { view: View; onTap: (k: Machine)
           gl.toneMappingExposure = EXPOSURE;
           gl.outputColorSpace = THREE.SRGBColorSpace;
           if (overview) camera.lookAt(0, 1, 0);
+          // the loading splash (index.html) fades once the first frames are drawn
+          requestAnimationFrame(() => requestAnimationFrame(() => window.dispatchEvent(new Event('hb7:ready'))));
         }}
         // (Right click on a building takes a battery back; the browser menu would cover the game.)
         onContextMenu={(e) => e.preventDefault()}
@@ -142,7 +157,9 @@ export function Stage({ view, onTap, onUndo }: { view: View; onTap: (k: Machine)
           <PerformanceMonitor onDecline={() => setTier((t) => LOWER[t])} flipflops={2} bounds={computer ? pcFpsBounds(tier) : undefined} />
         )}
         {/* Stars do not twinkle: no air. Replace with the Yale Bright Star catalogue when ready. */}
-        <Stars radius={2400} depth={50} count={2500} factor={4} fade={false} speed={0} />
+        {!skyIn && <Stars radius={2400} depth={50} count={2500} factor={4} fade={false} speed={0} />}
+        {features.hfSky && <HfSky big={computer} onReady={setSkyIn} />}
+        {features.hfSky && features.light && <HfSun azDeg={sunAzimuth(view)} />}
         <Earth view={view} />
         <Storm level={view.level} />
         {features.light ? <Light sunAzDeg={sunAzimuth(view)} shadowSize={q.shadow} /> : <ambientLight intensity={0.6} />}
@@ -162,6 +179,11 @@ export function Stage({ view, onTap, onUndo }: { view: View; onTap: (k: Machine)
             {/* After Bloom (which reads the scene's HDR values), merged into the same pass: no extra draw call. */}
             <ToneMapping mode={TONE.post} />
             {q.vignette ? <Vignette eskil={false} offset={0.2} darkness={0.75} /> : <></>}
+            {/* A camera's look: a touch more contrast (deeper shadows, brighter sunlit dust), the faintest colour fringe
+                at the edges and fine sensor grain over the black sky. */}
+            {hfPost ? <BrightnessContrast brightness={-0.02} contrast={0.12} /> : <></>}
+            {hfPost ? <ChromaticAberration offset={fringe} radialModulation modulationOffset={0.35} /> : <></>}
+            {hfPost ? <Noise premultiply blendFunction={BlendFunction.SCREEN} opacity={0.045} /> : <></>}
           </EffectComposer>
         )}
         {(import.meta.env.DEV || params.has('shot')) && <Probe />}
