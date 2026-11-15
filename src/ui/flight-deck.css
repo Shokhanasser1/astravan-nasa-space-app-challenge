@@ -98,13 +98,30 @@
   --frame-hi: var(--tone);
 }
 /* an idle task asks for attention: the frame brightens and dims (outer rings would be clipped away) */
+/* (compositor-only: the glow is a static inset shadow on a pseudo-element and only its opacity animates, so the page
+   is not repainted over the canvas every frame) */
 @keyframes hud-call {
-  0%, 100% { box-shadow: inset 0 0 18px rgba(94, 224, 255, 0.08); }
-  50% { box-shadow: inset 0 0 26px rgba(94, 224, 255, 0.45); }
+  0%, 100% { opacity: 0.18; }
+  50% { opacity: 1; }
 }
 .task-idle {
   --frame: var(--accent);
+  isolation: isolate;
+}
+.task-idle::before,
+.abtn.glow::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow: inset 0 0 26px rgba(94, 224, 255, 0.45);
+  opacity: 0.18;
   animation: hud-call 1.4s ease-in-out infinite;
+}
+.abtn.glow::before {
+  animation-duration: 1.6s;
 }
 
 /* ---------- buttons: slanted bars ---------- */
@@ -200,14 +217,18 @@
 }
 /* the "go" bar breathes: one slow swell of its inner light every 2.8 s (far below 3 flashes a second) */
 @keyframes bar-breathe {
-  0%, 100% { box-shadow: inset 0 -3px 0 rgba(3, 32, 54, 0.25), inset 0 0 14px rgba(255, 255, 255, 0.2); }
-  50% { box-shadow: inset 0 -3px 0 rgba(3, 32, 54, 0.25), inset 0 0 30px rgba(255, 255, 255, 0.55); }
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; }
 }
-.abtn.primary:not(:disabled):not(:active) {
+.abtn.primary:not(:disabled):not(:active)::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  box-shadow: inset 0 0 30px rgba(255, 255, 255, 0.55);
+  opacity: 0.3;
   animation: bar-breathe 2.8s ease-in-out infinite;
-}
-.abtn.glow {
-  animation: hud-call 1.6s ease-in-out infinite;
 }
 .abtn.big {
   min-height: 56px;
@@ -417,9 +438,9 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .abtn.primary:not(:disabled):not(:active),
-  .abtn.glow,
-  .task-idle {
+  .abtn.primary:not(:disabled):not(:active)::before,
+  .abtn.glow::before,
+  .task-idle::before {
     animation: none;
   }
   .abtn:hover:not(:disabled)::after {
@@ -481,4 +502,16 @@
 .hud-center > .abtn.big {
   min-height: 50px;
   font-size: 0.95rem;
+}
+
+/* Phones and tablets (touch): no backdrop blur. It re-blurs the WebGL canvas behind every panel on every frame; the
+   panels are already ~90 % opaque, so a dark base colour under their gradients reads the same without it. */
+@media (pointer: coarse) {
+  .glass,
+  .holo,
+  .entry-card.pass {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    background-color: rgba(7, 16, 40, 0.5);
+  }
 }

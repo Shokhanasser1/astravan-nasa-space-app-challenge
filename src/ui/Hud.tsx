@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore, type Dispatch, type ReactNode } from 'react';
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore, type Dispatch, type ReactNode } from 'react';
 import { ArrowRight, Check, ClipboardList, MessageSquareWarning, Music, VolumeX } from 'lucide-react';
 import { atHub, board as selectBoard, truth as selectTruth, type Action, type Model, type View } from '../state/game';
 import { armState, armVersion, subscribeArm } from '../arm/state';
@@ -8,9 +8,6 @@ import { Btn, makeTr } from './play/kit';
 import { DayBadge } from './play/Visor';
 import { Briefing, CapcomHolo, PhysicsHolo, SunToday } from './play/Holo';
 import { HandControl, handsOn } from './play/HandControl';
-import { ArmScanner } from './play/ArmScanner';
-import { NightTablet, PlanTablet } from './play/Tablet';
-import { TruthScreen } from './play/TruthScreen';
 import { JumpButton, RideButton, WalkStick } from './play/WalkStick';
 import { CornerButtons, HelpPanel, Kbd, MapPanel, makeApply, touchUi, useGameKeys } from './play/Controls';
 import { ResourceBar } from './play/ResourceBar';
@@ -20,7 +17,6 @@ import { NightFact } from './play/NightFact';
 import { ContextButton, ContextPrompt, Inventory, contextOf } from './play/Hands';
 import { Decision, pendingDecision } from './play/Decision';
 import { TaskLine, useTask } from './play/Task';
-import { Quiz } from './play/Quiz';
 import { debriefQuiz, nightQuiz } from '../quiz/quiz';
 import { freeWalk } from '../walk/enabled';
 import { releaseAll, walkInput } from '../walk/input';
@@ -30,6 +26,16 @@ import { useAim, useRide } from '../controls/bus';
 import { setTitle } from '../scene/title';
 import { runMs } from '../scene/runClock';
 import { DayRun } from './play/DayRun';
+import { NightTablet, PlanTablet } from './play/Tablet';
+import { Quiz } from './play/Quiz';
+import { lazyScreen, whenIdle } from './lazy';
+
+// Two screens a child meets once, late or by choice, load as their own chunks (imports start on idle after the first
+// frames, see the effect in Hud): the truth screen and the camera arm scanner. The night tablet, plan list, night fact
+// and quiz stay in the main chunk: a lazy screen suspends for a tick on its first show even when cached, and the quiz
+// then appeared a moment after the night — the e2e week clicked Next under it (15 Nov). They save only ~5 kB gzip.
+const ArmScanner = lazyScreen(() => import('./play/ArmScanner').then((m) => ({ default: m.ArmScanner })));
+const TruthScreen = lazyScreen(() => import('./play/TruthScreen').then((m) => ({ default: m.TruthScreen })));
 
 /**
  * Lane D. DOM layer above the Canvas (15 Nov, "make it a game"): the base's gauges always on top, the task line
@@ -84,6 +90,14 @@ function TopBar({ lang, setLang, sound, setSound, tr }: Pick<Props, 'lang' | 'se
 
 export function Hud({ model, view, dispatch, lang, setLang, sound, setSound, onStart, onContinue, entry }: Props) {
   const tr = useMemo(() => makeTr(lang), [lang]);
+  useEffect(
+    () =>
+      whenIdle(() => {
+        TruthScreen.preload();
+        if (armScan) ArmScanner.preload();
+      }),
+    [],
+  );
   const board = useMemo(() => selectBoard(model), [model]);
   const truth = useMemo(() => selectTruth(model), [model]);
   const { phase, screen } = model;
@@ -257,7 +271,9 @@ export function Hud({ model, view, dispatch, lang, setLang, sound, setSound, onS
           <div
             className={`pointer-events-none absolute top-full mt-2 ${handsOn ? 'right-0' : 'left-0 right-0 sm:[@media(min-height:501px)]:right-auto'}`}
           >
-            <ArmScanner tr={tr} />
+            <Suspense fallback={null}>
+              <ArmScanner tr={tr} />
+            </Suspense>
           </div>
         )}
       </div>
@@ -286,7 +302,9 @@ export function Hud({ model, view, dispatch, lang, setLang, sound, setSound, onS
       )}
 
       {screen === 'game' && phase === 'truth' && truth && (
-        <TruthScreen truth={truth} dispatch={dispatch} tr={tr} onNext={quizPending ? nextOrQuiz : undefined} ship={view.res?.ship} />
+        <Suspense fallback={null}>
+          <TruthScreen truth={truth} dispatch={dispatch} tr={tr} onNext={quizPending ? nextOrQuiz : undefined} ship={view.res?.ship} />
+        </Suspense>
       )}
 
       {quizOpen && quizPending && (

@@ -322,8 +322,8 @@ body,
   -webkit-backdrop-filter: var(--blur);
 }
 @keyframes holo-in {
-  from { opacity: 0; transform: translateY(6px) scale(0.98); filter: blur(2px); }
-  to { opacity: 1; transform: none; filter: none; }
+  from { opacity: 0; transform: translateY(6px) scale(0.98); }
+  to { opacity: 1; transform: none; }
 }
 .holo-in { animation: holo-in 0.35s ease-out; }
 @keyframes holo-pulse {
@@ -402,23 +402,9 @@ body,
 .abtn.choice.quiz-dim {
   opacity: 0.55;
 }
-@keyframes glow-ring {
-  0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 55%, transparent); }
-  50% { box-shadow: 0 0 0 8px transparent; }
-}
-.abtn.glow {
-  animation: glow-ring 1.6s ease-in-out infinite;
-}
-@keyframes task-idle {
-  0%, 100% { box-shadow: var(--shadow), 0 0 0 0 color-mix(in srgb, var(--accent) 60%, transparent); }
-  50% { box-shadow: var(--shadow), 0 0 0 6px transparent; }
-}
+/* (the attention pulse of .abtn.glow and .task-idle is in flight-deck.css: it animates only the opacity of a pseudo-element) */
 .task-idle {
   border-color: color-mix(in srgb, var(--accent) 80%, transparent);
-  animation: task-idle 1.4s ease-in-out infinite;
-}
-@media (prefers-reduced-motion: reduce) {
-  .abtn.glow, .task-idle { animation: none; }
 }
 /* Laptops and tablets: the carried batteries sit in the bottom-left corner, out of the centre column. */
 @media (min-width: 1024px) {
