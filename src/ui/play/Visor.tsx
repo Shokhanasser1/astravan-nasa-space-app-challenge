@@ -11,13 +11,18 @@ export function DayBadge({ view, board, tr }: { view: View; board: Board | null;
   const known = board ? board.info.known : true;
   const level = board?.info.level ?? view.level;
   return (
-    <div className="glass pointer-events-none flex min-w-0 shrink flex-col items-center gap-1 rounded-[18px] px-2 py-1.5 text-center" data-testid="day-badge">
-      <span className="flex items-center justify-center gap-1.5 whitespace-nowrap text-sm font-semibold uppercase leading-tight tracking-wide text-[#f3f6ff]">
+    <div className="glass hud-day pointer-events-none" data-testid="day-badge">
+      <span className="hud-day-text">
         <CalendarDays size={16} aria-hidden="true" className="text-measured" />
         {tr('ui.hud.dayOf', { day: view.day, total: 7 })}
       </span>
+      <span className="hud-day-pips" aria-hidden="true">
+        {Array.from({ length: 7 }, (_, i) => (
+          <span key={i} className={i + 1 < view.day ? 'hud-pip hud-pip-done' : i + 1 === view.day ? 'hud-pip hud-pip-now' : 'hud-pip'} />
+        ))}
+      </span>
       <span
-        className={`rounded-full px-2 py-0.5 text-xs font-bold leading-tight ${known ? (level > 0 ? 'bg-alert text-[#2a1b00]' : 'bg-white/15') : 'bg-alert text-[#2a1b00]'}`}
+        className={`hud-level ${known ? (level > 0 ? 'hud-level-alert' : '') : 'hud-level-alert'}`}
         data-level={known ? level : '?'}
       >
         {known ? `${level} · ${tr(`ui.level.${level}`)}` : `? · ${tr('ui.level.unknown')}`}

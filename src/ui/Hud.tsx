@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type Dispatch } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type Dispatch, type ReactNode } from 'react';
 import { ArrowRight, Check, ClipboardList, MessageSquareWarning, Music, VolumeX } from 'lucide-react';
 import { atHub, board as selectBoard, truth as selectTruth, type Action, type Model, type View } from '../state/game';
 import type { Lang } from '../i18n/t';
@@ -7,6 +7,7 @@ import { Btn, makeTr } from './play/kit';
 import { DayBadge } from './play/Visor';
 import { Briefing, CapcomHolo, PhysicsHolo, SunToday } from './play/Holo';
 import { HandControl, handsOn } from './play/HandControl';
+import { ArmScanner } from './play/ArmScanner';
 import { NightTablet, PlanTablet } from './play/Tablet';
 import { TruthScreen } from './play/TruthScreen';
 import { JumpButton, WalkStick } from './play/WalkStick';
@@ -20,6 +21,7 @@ import { releaseAll, walkInput } from '../walk/input';
 import { features } from '../config/features';
 import { canTravel, resolve, type Ctx, type Overlay } from '../controls/act';
 import { useAim } from '../controls/bus';
+import { setTitle } from '../scene/title';
 
 /**
  * Lane D. DOM layer above the Canvas (15 Nov, "make it a game"): the base's gauges always on top, the task line
@@ -29,6 +31,8 @@ import { useAim } from '../controls/bus';
  * Where things sit on a phone (portrait, landscape) and a tablet is CSS in src/index.css (`.hud-*`).
  */
 const LANGS: Lang[] = ['en', 'uz', 'ru'];
+/** The robot arm's hand scanner (it needs the walking astronaut). */
+const armScan = features.robotArm && features.character;
 const RUN_MS = 4000; // the day runs (≤ 6 s, skippable)
 const LAUNCH_MS = 4000;
 
@@ -42,6 +46,8 @@ interface Props {
   setSound: (s: boolean) => void;
   onStart: () => void;
   onContinue?: () => void;
+  /** The reception desk (features.entry): shown instead of the briefing and start buttons outside the game. */
+  entry?: ReactNode;
 }
 
 function TopBar({ lang, setLang, sound, setSound, tr }: Pick<Props, 'lang' | 'setLang' | 'sound' | 'setSound'> & { tr: (k: string) => string }) {
@@ -68,12 +74,15 @@ function TopBar({ lang, setLang, sound, setSound, tr }: Pick<Props, 'lang' | 'se
   );
 }
 
-export function Hud({ model, view, dispatch, lang, setLang, sound, setSound, onStart, onContinue }: Props) {
+export function Hud({ model, view, dispatch, lang, setLang, sound, setSound, onStart, onContinue, entry }: Props) {
   const tr = useMemo(() => makeTr(lang), [lang]);
   const board = useMemo(() => selectBoard(model), [model]);
   const truth = useMemo(() => selectTruth(model), [model]);
   const { phase, screen } = model;
   const aim = useAim();
+  // The reception desk shows the base through a slow title camera (src/scene/title.ts).
+  const titleShot = Boolean(entry) && screen !== 'game';
+  useEffect(() => setTitle(titleShot), [titleShot]);
   const day = model.game?.day;
   const planning = phase === 'plan' && board !== null;
 
@@ -170,7 +179,7 @@ export function Hud({ model, view, dispatch, lang, setLang, sound, setSound, onS
       data-tablet={showList ? 'open' : 'closed'}
       onPointerDown={() => audio.unlock()}
     >
-      <div className="flex shrink-0 flex-col gap-2">
+      <div className="relative z-20 flex shrink-0 flex-col gap-2">
         {/* Portrait: buttons and the day on one row, the gauges below. Landscape phone: all on one row (CSS). */}
         <div className="hud-top flex flex-wrap items-start justify-between gap-2">
           {features.controls ? <CornerButtons map={canTravel({ screen, phase })} open={(ui) => apply({ ui })} tr={tr} /> : null}
@@ -194,7 +203,9 @@ export function Hud({ model, view, dispatch, lang, setLang, sound, setSound, onS
         </div>
       )}
 
-      {screen !== 'game' && !overlay && (
+      {screen !== 'game' && !overlay && entry}
+
+      {screen !== 'game' && !overlay && !entry && (
         <div className="pointer-events-auto flex flex-col items-center gap-4 self-center">
           <Briefing tr={tr} lang={lang} sound={sound} />
           <Btn data-testid="start-mission" className="primary big" onClick={onStart}>
@@ -220,6 +231,13 @@ export function Hud({ model, view, dispatch, lang, setLang, sound, setSound, onS
       {handsOn && !overlay && (
         <div className="pointer-events-none absolute left-4 top-1/2">
           <HandControl tr={tr} />
+        </div>
+      )}
+      {/* (the robot arm's scanner: its button shows only near the arm; the panel opens beside it, mid-left, clear of
+          the radio card and the big button at the bottom) */}
+      {armScan && playing && !overlay && (
+        <div className={`pointer-events-none absolute top-1/2 -translate-y-1/2 ${handsOn ? 'right-4' : 'left-4'}`}>
+          <ArmScanner tr={tr} />
         </div>
       )}
 

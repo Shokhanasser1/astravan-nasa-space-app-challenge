@@ -29,6 +29,13 @@ export const BATTERY_R = 1.7;
 export const PARKED_ROVER = { x: 14.5, z: 12.0, yaw: -2.3, r: 2.4 } as const;
 
 /**
+ * The robot arm (Curiosity's, src/scene/RobotArm.tsx) on the east edge of the flat pad, between the dish and the
+ * parked rover, reaching north along the edge: out of every walk between standing points and every standing point's
+ * view of its building. r = its pedestal's hitbox; near = how close the astronaut must be for the scanner's button.
+ */
+export const ROBOT_ARM = { x: 12.8, z: 0.5, yaw: 0, r: 0.7, near: 8 } as const;
+
+/**
  * Footprint radius of each tappable building (cable ends, target rings, hitboxes), from the ASTRA models at
  * ASTRA_SCALE: habitat shell 5.23 m × 0.6; greenhouse 4.9 × 3.3 m deck × 0.9; lab 3.6 × 2.4 m skid × 0.85 (+ its
  * side racks); lander descent stage (its thin legs reach ~4 m and can be walked between); scout rover.
