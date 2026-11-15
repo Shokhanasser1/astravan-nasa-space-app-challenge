@@ -63,6 +63,9 @@ const armOn = (): boolean => armState.on;
 const seatM = new THREE.Matrix4();
 const seatS = new THREE.Vector3();
 
+/** D3: the follow camera is too near the head to draw the astronaut (set by the rig every frame, src/scene/Rig.tsx). */
+export const nearCam = { hide: false };
+
 export function Astronaut({ body, visible, hands = 0, view }: { body: Body; visible: boolean; hands?: number; view?: View }) {
   const gltf = useGLTF(URL);
   const scene = useThree((s) => s.scene);
@@ -228,7 +231,7 @@ export function Astronaut({ body, visible, hands = 0, view }: { body: Body; visi
     // camera); on the arrival it rides inside unseen until it hops out
     const seated =
       rover.crew && rover.driver === 'player' && rover.object !== null && rover.seatLocal !== null && !!(anim.actions as Record<string, unknown>).SeatedSteer;
-    model.visible = visible && (!rover.crew || seated);
+    model.visible = visible && !nearCam.hide && (!rover.crew || seated);
     // inside a building's room the astronaut is drawn at the room's scale (src/walk/rooms.ts)
     const k = seated ? 1 : body.scale;
     model.scale.setScalar(k);
@@ -260,7 +263,7 @@ export function Astronaut({ body, visible, hands = 0, view }: { body: Body; visi
     armState.player.x = body.x;
     armState.player.z = body.z;
     if (remote && remote.pose(dt, armState.on && visible)) invalidate();
-    if (battery) battery.visible = visible && !armOn() && anim.holdingBattery();
+    if (battery) battery.visible = visible && !nearCam.hide && !armOn() && anim.holdingBattery();
     if (anim.gesturing()) settle.current = 0.4;
     if (settle.current > 0) {
       settle.current -= dt;

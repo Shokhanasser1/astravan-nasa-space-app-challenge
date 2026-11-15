@@ -4,8 +4,19 @@ and the NASA Image and Video Library, each fact listed with its API request and 
 blender/interiors/<building>/SOURCES.md. No NASA imagery, logos or insignia are in the models.
 Not endorsed by NASA.
 
-hdu_habitat.glb (15 Nov 2026, `?hdu`): the furnished interior of the HDU habitat (eight sections after NASA's HDU papers
-on NTRS: GeoLab glovebox with three pass-through chambers, lettuce racks, telerobotics, medical, galley, workshop,
-hygiene, the entry with suits; the X-Hab crew loft with four pods; a centre ladder), modelled by Blender Python written
-with Claude Code (AI-made, team-directed) in oy-karvonsaroyi-3d/hb7/hdu_base/build_game_habitat.py (SOURCES.md there).
-The toilet is Moonwards-Assets' Toilet.blend (MIT, Copyright (c) 2019 Moonwards, github.com/spenxeram/Moonwards-Assets).
+hdu_habitat.glb, hdu_lab.glb, hdu_greenhouse.glb (15 Nov 2026, `?hdu`): the furnished walk-in interiors of the three
+HDU modules of the base core (public/models/nasa-outpost/hdu_complex.glb), real size, each in its module's frame
+(centre, door at +z): eight sections round an open middle after NASA's HDU papers on NTRS (habitat: GeoLab glovebox,
+telerobotics, medical, galley, workshop, hygiene, the entry with suits; lab: workbenches and screens; greenhouse:
+lettuce racks, four lettuce sets by garden level), the X-Hab loft with a centre ladder, outer and inner doors with
+`DoorOpen`, `DoorOpenOuter`, `DoorOpenInner` clips. Modelled by Blender Python written with Claude Code (AI-made,
+team-directed) in the team's oy-karvonsaroyi-3d/hb7/hdu_base/build_game_complex.py (SOURCES.md there); no NASA
+imagery, logos or insignia in them. Web-converted with gltf-transform as in `npm run glb` (meshopt, WebP textures
+<= 1024) plus --join false --flatten false --palette false (the contract's node and material names kept).
+Moonwards-Assets' Toilet.blend (MIT, Copyright (c) 2019 Moonwards, github.com/spenxeram/Moonwards-Assets) is credited in
+the same SOURCES.md for the habitat's hygiene section (the first `?hdu` habitat interior used it; this build's script
+models the hygiene section in plain boxes).
+hdu_{habitat,lab,greenhouse}.glb rebuilt 15 Nov 2026 (prompt B, batch 1): the inner door leaf removed from the picture
+(its node <id>_door_inner stays as an empty with the DoorOpen/DoorOpenInner clips); same script and sources as above.
+Batch 1 wave 2 (15 Nov 2026): the ladder rails run to y 4.25 with rungs every 0.30 m up to 4.0325 (above the loft deck
+too), centred on z 0; the door sill is as wide as the jambs and closes the pin-hole at the jamb foot. Same script.

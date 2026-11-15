@@ -34,9 +34,10 @@ export const features = {
   // The crew rover is drivable on computers without ?drive (Shoxjahon aka, 15 Nov ~08:35: PC first): E at its
   // hatch climbs in, W/S/A/D drive, E again climbs out (src/scene/arrival.ts). Phones keep ?drive. Off → ?drive only.
   drive: true,
-  // The main habitat as NASA's Habitat Demonstration Unit at 1.5x (15 Nov, Samandar; src/scene/HduHabitat.tsx):
-  // a white cylinder and loft dome with a furnished walk-in interior (eight sections, crew loft, ladder) in place of
-  // ASTRA's habitat. Off until the team looks at it: `?hdu` shows it for one visit. Cut → ASTRA's habitat.
+  // The base core as NASA's Habitat Demonstration Unit complex (15 Nov, Samandar, variant A; src/scene/HduComplex.tsx,
+  // layout.ts HDU_PLAN): three walk-in modules at real size (habitat, greenhouse, lab: eight sections, a loft, a ladder
+  // each) joined by tunnels, the rest of the base re-laid in front of it; the outpost is off while it is on. Off until
+  // the team looks at it: `?hdu` shows it for one visit. Cut → ASTRA's habitat, greenhouse and lab.
   hduHabitat: false,
   // The HDU outpost 50 m north (src/scene/outpostSite.ts, Outpost.tsx; 15 Nov, Samandar's proposal): three NASA Habitat
   // Demonstration Unit modules joined by tunnels, somewhere to drive to; exterior and hitboxes only. On computers

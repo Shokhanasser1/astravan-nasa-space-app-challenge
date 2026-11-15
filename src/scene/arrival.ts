@@ -72,8 +72,8 @@ export const arrival = {
 };
 
 /** The arrival camera: standing on the ground beside the parking spot (left and a little ahead of the rover). */
-export function arrivalCameraSpot(out = { x: 0, z: 0 }) {
-  const { x, z, yaw } = PARKED_ROVER;
+export function arrivalCameraSpot(out = { x: 0, z: 0 }, rover: { x: number; z: number; yaw: number } = PARKED_ROVER) {
+  const { x, z, yaw } = rover;
   out.x = x + Math.cos(yaw) * 7.5 + Math.sin(yaw) * 3.0;
   out.z = z - Math.sin(yaw) * 7.5 + Math.cos(yaw) * 3.0;
   return out;

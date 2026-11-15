@@ -1,10 +1,10 @@
-import { Component, Suspense, useMemo, type ReactNode } from 'react';
+import { Component, Suspense, useEffect, useMemo, type ReactNode } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 import { camState } from './anim';
 import { buildingOf, roomState } from '../walk/rooms';
-import { inHabitatRoom } from './astra/shellFit';
+import { inHabitatRoom, inHduModule } from './astra/shellFit';
 import { bake } from './astra/bake';
 import { ASTRA_SCALE, HDU_HABITAT } from './layout';
 
@@ -14,6 +14,11 @@ import { ASTRA_SCALE, HDU_HABITAT } from './layout';
  * frame at native metres, so it sits in the same group transform as its ASTRA shell (AstraBase.tsx: rotation-y and
  * ASTRA_SCALE) and fits inside it. Drawn only when it can be seen, to keep phones in budget: the habitat's from its
  * inside point, the others while the camera is near (through glass and windows).
+ *
+ * The HDU complex (`?hdu`, layout.ts HDU_HABITAT): the habitat, greenhouse and lab are its three modules, each with its
+ * own walk-in interior (public/models/interiors/hdu_<id>.glb, module frame, game metres; src/scene/HduComplex.tsx puts
+ * it at its module's centre). Each is drawn like ASTRA's habitat: whole while the camera is in that module, otherwise
+ * only its outer door leaf within 20 m.
  */
 export type InteriorId = 'habitat' | 'greenhouse' | 'lab' | 'lander';
 
@@ -36,7 +41,19 @@ const at = new THREE.Vector3();
 /**
  * Each building's door (its `DoorOpen` clip, the habitat's `DoorOpenOuter`, scrubbed): `want` 1 opens it, 0 closes
  * it; `open` follows in DOOR_S seconds. The Rig opens one when the astronaut goes in or out (E at it).
+ * The HDU modules play `DoorOpen`: their outer door (swings out) and inner door (swings in) stand 9 cm apart in one
+ * wall with no airlock between, so both open together (`DoorOpenOuter` alone would leave the inner door shut in the
+ * way of the walk-in, `DoorOpenInner` alone the outer one).
  */
+/**
+ * Is a building's whole interior drawn, not only its door? Inside it (`inside`: its room, the camera within it, the
+ * ASTRA first-person habitat), and with the HDU complex (#10) also while its door is open at all or opening: the
+ * door shows the room behind it, never an empty shell. Pure.
+ */
+export function interiorFull(hdu: boolean, door: { readonly open: number; readonly want: number }, inside: boolean): boolean {
+  return inside || (hdu && (door.open > 0 || door.want > 0));
+}
+
 export const interiorDoors: Record<InteriorId, { open: number; want: number }> = {
   habitat: { open: 0, want: 0 },
   greenhouse: { open: 0, want: 0 },
@@ -57,22 +74,27 @@ export const HIDDEN_PARTS: readonly string[] = ['habitat_ground_int_bag', 'habit
 /**
  * Few draw calls for a furnished interior (perf, 15 Nov): every part that no clip animates merges by finish, like
  * ASTRA's buildings (astra/bake.ts) — the greenhouse went from 26 draw calls to a handful. Doors (any node a clip
- * moves) stay whole, their own pieces merged. Baked under the model's root node, so the habitat's "only the hatch from
- * outside" (its root's children) still works.
+ * moves) and the HDU greenhouse's lettuce sets (`*_plants_<n>`, shown by the garden level) stay whole, their own pieces
+ * merged. Baked under the model's root node, so "only the hatch from outside" (the root's children) still works.
  */
+const PLANTS = /_plants_(\d+)$/;
+
 export function bakeInterior(o: THREE.Object3D, clips: THREE.AnimationClip[]): void {
   const moving = new Set(clips.flatMap((c) => c.tracks.map((t) => THREE.PropertyBinding.parseTrackName(t.name).nodeName)));
   const keep: THREE.Object3D[] = [];
   o.traverse((n) => {
-    if (n.name && moving.has(n.name)) keep.push(n);
+    if (n.name && (moving.has(n.name) || PLANTS.test(n.name))) keep.push(n);
   });
   bake(o.children[0] ?? o, { keep, live: [] });
   for (const k of keep) bake(k, { keep: keep.filter((x) => x !== k), live: [] });
 }
 
-function Model({ id }: { id: InteriorId }) {
-  // (the HDU habitat, `?hdu`, has its own interior: layout.ts HDU_HABITAT)
-  const { scene, animations } = useGLTF(`${base}${id === 'habitat' && HDU_HABITAT ? 'hdu_habitat' : id}.glb`, false, true);
+/** The HDU complex's modules (`?hdu`): the habitat, the greenhouse and the lab have their own interiors there. */
+const isHdu = (id: InteriorId) => HDU_HABITAT && id !== 'lander';
+
+function Model({ id, plant }: { id: InteriorId; plant?: number }) {
+  const hdu = isHdu(id);
+  const { scene, animations } = useGLTF(`${base}${hdu ? `hdu_${id}` : id}.glb`, false, true);
   const camera = useThree((s) => s.camera);
   const invalidate = useThree((s) => s.invalidate);
   const obj = useMemo(() => {
@@ -90,7 +112,7 @@ function Model({ id }: { id: InteriorId }) {
   }, [scene, animations]);
   // its door: the clip on the door pivot, and the pivot itself (the habitat's hatch also shows from outside)
   const door = useMemo(() => {
-    const clip = (id === 'habitat' && animations.find((c) => c.name === 'DoorOpenOuter')) || animations.find((c) => c.name === 'DoorOpen');
+    const clip = (!hdu && id === 'habitat' && animations.find((c) => c.name === 'DoorOpenOuter')) || animations.find((c) => c.name === 'DoorOpen');
     const root = obj.children[0] ?? obj;
     const leaf = obj.getObjectByName(`${id}_door`);
     if (!clip || !leaf) return null;
@@ -99,7 +121,21 @@ function Model({ id }: { id: InteriorId }) {
     action.play();
     action.paused = true;
     return { mixer, action, clip, root, leaf };
-  }, [id, obj, animations]);
+  }, [id, hdu, obj, animations]);
+  // the HDU greenhouse's lettuce shows the garden level (view.plant 0–4): greenhouse_plants_1…k, like Crops.tsx
+  const plants = useMemo(() => {
+    const out: [number, THREE.Object3D][] = [];
+    obj.traverse((o) => {
+      const m = PLANTS.exec(o.name);
+      if (m) out.push([Number(m[1]), o]);
+    });
+    return out;
+  }, [obj]);
+  useEffect(() => {
+    if (plant === undefined) return;
+    for (const [k, o] of plants) o.visible = k <= plant;
+    invalidate();
+  }, [plants, plant, invalidate]);
   useFrame((_, delta) => {
     const d = interiorDoors[id];
     const was = d.open;
@@ -112,12 +148,20 @@ function Model({ id }: { id: InteriorId }) {
     const inRoom = roomState.id !== null && buildingOf(roomState.id) === id;
     obj.getWorldPosition(at);
     const dist = at.distanceTo(camera.position);
-    if (id === 'habitat') {
+    if (id === 'habitat' || hdu) {
       // inside (the first-person point and anywhere it walks in the room, both decks, or walking in its room with
       // the astronaut): the whole room; outside, near: only the hatch. (camState.inside alone is the old 0.34-scale
       // 1.6 m circle below 3 m: at 0.6 the first-person walk left it by the galley and on the upper deck, and the
-      // room vanished round the camera, showing ASTRA's shell and shield from inside.)
-      const full = camState.inside || inRoom || inHabitatRoom(camera.position.x - at.x, camera.position.y - at.y, camera.position.z - at.z, ASTRA_SCALE.habitat);
+      // room vanished round the camera, showing ASTRA's shell and shield from inside.) HDU: the same for each module,
+      // with the camera inside that module's lining and below its dome.
+      const p = camera.position;
+      const full = interiorFull(
+        hdu,
+        d,
+        (id === 'habitat' && camState.inside) ||
+          inRoom ||
+          (hdu ? inHduModule(p.x, p.y, p.z) === id : inHabitatRoom(p.x - at.x, p.y - at.y, p.z - at.z, ASTRA_SCALE.habitat)),
+      );
       obj.visible = full || dist < 20;
       if (door) for (const c of door.root.children) c.visible = full || c === door.leaf;
       return;
@@ -127,12 +171,15 @@ function Model({ id }: { id: InteriorId }) {
   return <primitive object={obj} />;
 }
 
-/** The interior of one building; put it in the same transform as the ASTRA shell. Missing or failing: not shown. */
-export function Interior({ id }: { id: InteriorId }) {
+/**
+ * The interior of one building; put it in the same transform as the ASTRA shell (HDU: at its module's centre, turned
+ * with the complex). `plant` (0–4, the HDU greenhouse): how many of its lettuce sets grow. Missing or failing: not shown.
+ */
+export function Interior({ id, plant }: { id: InteriorId; plant?: number }) {
   return (
     <Quiet>
       <Suspense fallback={null}>
-        <Model id={id} />
+        <Model id={id} plant={plant} />
       </Suspense>
     </Quiet>
   );

@@ -152,6 +152,24 @@ describe('resolve', () => {
     expect(resolve({ kind: 'use' }, { ...ctx(plan1, { ride: 'board' }), phase: 'launch' })).toBeNull();
   });
 
+  it('D8: at a door with the machine in reach, E with a battery in hand aimed at it puts it in; otherwise the door', () => {
+    const morning = until((m) => m.phase === 'morning');
+    // a battery in hand, aiming at the machine → PUT (not the door)
+    expect(resolve({ kind: 'use' }, ctx(plan1, { ride: 'enter', aim: 'ls', hands: 1 }))).toEqual({ action: { type: 'PUT', k: 'ls' } });
+    expect(resolve({ kind: 'use' }, ctx(plan1, { ride: 'enter', aim: 'ws', hands: 2 }))).toEqual({ action: { type: 'PUT', k: 'ws' } });
+    // no battery, too few, aiming at nothing or at the hub, or not planning → the door
+    expect(resolve({ kind: 'use' }, ctx(plan1, { ride: 'enter', aim: 'ls', hands: 0 }))).toEqual({ ride: 'enter' });
+    expect(resolve({ kind: 'use' }, ctx(plan1, { ride: 'enter', aim: 'ws', hands: 1 }))).toEqual({ ride: 'enter' });
+    expect(resolve({ kind: 'use' }, ctx(plan1, { ride: 'enter', hands: 1 }))).toEqual({ ride: 'enter' });
+    expect(resolve({ kind: 'use' }, ctx(plan1, { ride: 'enter', aim: 'hub', hands: 1 }))).toEqual({ ride: 'enter' });
+    expect(resolve({ kind: 'use' }, ctx(morning, { ride: 'enter', aim: 'ls', hands: 1 }))).toEqual({ ride: 'enter' });
+    // going out stays the door (inside, the module is always "aimed at")
+    expect(resolve({ kind: 'use' }, ctx(plan1, { ride: 'leave', aim: 'ls', hands: 1 }))).toEqual({ ride: 'leave' });
+    // no door in reach: exactly as before (the rover first, then the aim)
+    expect(resolve({ kind: 'use' }, ctx(plan1, { ride: 'board', aim: 'ls', hands: 1 }))).toEqual({ ride: 'board' });
+    expect(resolve({ kind: 'use' }, ctx(plan1, { aim: 'ls', hands: 1 }))).toEqual({ action: { type: 'PUT', k: 'ls' } });
+  });
+
   it('E through the reducer adds exactly what a tap on the building adds', () => {
     const carrying = reducer(plan1, { type: 'TAKE' });
     const e = resolve({ kind: 'use' }, ctx(carrying, { aim: 'ls', hands: carrying.hands }));

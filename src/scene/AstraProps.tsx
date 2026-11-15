@@ -2,7 +2,7 @@ import { useEffect, useMemo } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import type { View } from '../state/game';
-import { BATTERY_BANK, LAYOUT } from './layout';
+import { BATTERY_BANK, HDU_HABITAT, HDU_TURN, LAYOUT, wingTurn } from './layout';
 import { GLOW } from './parts/materials';
 import { ICE_CRATER, groundHeight } from './ground';
 import { sunAzimuth, sunDirection } from './Light';
@@ -54,7 +54,7 @@ const module = astraModule;
 const sun = new THREE.Vector3();
 
 /** The two arrays stand at the ends of the old solar wing (its hitbox in walk/world.ts); one leans since the landing. */
-const WING_TURN = 0.5;
+const WING_TURN = wingTurn(HDU_HABITAT);
 const ARRAYS: [number, number][] = [-1, 1].map((k) => [
   LAYOUT.wing[0] + k * Math.sin(WING_TURN) * 2.65,
   LAYOUT.wing[1] + k * Math.cos(WING_TURN) * 2.65,
@@ -108,7 +108,7 @@ export function BatteryBank({ view }: { view: View }) {
   const b = view.batteries;
   const share = b && b.total > 0 ? b.left / b.total : 1;
   v.bars?.forEach((m, i) => (m.emissiveIntensity = share > i / 5 + 0.02 ? 1.8 : 0.08));
-  return <primitive object={v.group} position={[BATTERY_BANK[0], 0, BATTERY_BANK[1]]} rotation-y={0.8} scale={ASTRA_SCALE.battery} />;
+  return <primitive object={v.group} position={[BATTERY_BANK[0], 0, BATTERY_BANK[1]]} rotation-y={0.8 + (HDU_HABITAT ? HDU_TURN : 0)} scale={ASTRA_SCALE.battery} />;
 }
 
 /** Ice drill on the rim of the ice crater (the Ice card's place), its auger turning. */

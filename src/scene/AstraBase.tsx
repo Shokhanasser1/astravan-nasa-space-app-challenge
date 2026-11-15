@@ -13,7 +13,7 @@ import { bake, mergeWorld } from './astra/bake';
 import { mergePlants, type Plants } from './astra/plants';
 import { cutLabHatch, cutLanderHatch, habitatInside, hideParts, tenSidedCabin } from './astra/shellFit';
 import { Interior } from './Interiors';
-import { ASTRA_SCALE, LAYOUT, PAD } from './layout';
+import { ASTRA_SCALE, HDU_HABITAT, LAYOUT, PAD } from './layout';
 
 /**
  * The base in ASTRA's look (15 Nov, Shoxjahon aka: the best of ASTRA + the best of ours). ASTRA's procedural models
@@ -31,8 +31,10 @@ export { ASTRA_SCALE };
 // phone too, or a whole week of play crawls.
 setLod(initialTier() === 'pc' && !softwareGl() ? 1 : 0.5);
 
-/** `?lite` keeps the old shapes (comparison, or a very weak phone). */
-export const astraLook = typeof location === 'undefined' || !new URLSearchParams(location.search).has('lite');
+/** `?lite` keeps the old shapes (comparison, or a very weak phone). With the HDU complex (`?hdu`) the base is always
+ * drawn in the ASTRA look: the NASA modules never stand among grey shapes, and their doors work (Rig.tsx). */
+export const astraLook =
+  typeof location === 'undefined' || !new URLSearchParams(location.search).has('lite') || HDU_HABITAT;
 
 export function astraModule(build: (v: ModuleView) => void, prep?: (g: THREE.Group, v: ModuleView) => void): ModuleView {
   const g = new THREE.Group();

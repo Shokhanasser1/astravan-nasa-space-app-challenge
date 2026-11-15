@@ -11,13 +11,15 @@ import { features } from '../config/features';
 import { groundHeight } from './ground';
 import { initialTier } from './quality';
 import { softwareGl } from './rich';
+import { HDU_HABITAT } from './layout';
 import type { Solid } from '../walk/collide';
 
 const q = typeof location !== 'undefined' ? new URLSearchParams(location.search) : new URLSearchParams();
 /** On computers with a graphics card (like RASSOR: on a phone its 20k triangles and ~10 draw calls would eat the
- * budget); `?outpost` shows it on any device. */
+ * budget); `?outpost` shows it on any device. Never with the HDU base (`?hdu`): the same complex is the base then. */
 export const OUTPOST_ON =
-  q.has('outpost') || (features.outpost && typeof window !== 'undefined' && initialTier() === 'pc' && !softwareGl());
+  !HDU_HABITAT &&
+  (q.has('outpost') || (features.outpost && typeof window !== 'undefined' && initialTier() === 'pc' && !softwareGl()));
 
 /** Where it stands: 50 m out, where the ground under every module is nearly level (≤ 0.17 m across each; a probe over
  * radii 45–85 m and 12 headings, clear of the hill and the ice crater), the modules along the game's z. */

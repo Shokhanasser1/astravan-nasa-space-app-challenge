@@ -1,21 +1,21 @@
 import { describe, expect, it } from 'vitest';
 import { CLIMB_V, climbDuration, climbPhase, climbPose, type ClimbPose, type LadderClimb } from './ladder';
-import { ROOMS, type RoomId } from './rooms';
+import { ROOMS, getRoom, type RoomId } from './rooms';
 
 const pose = (): ClimbPose => ({ x: 0, y: 0, z: 0, facing: 0, vx: 0, vy: 0, vz: 0, stage: 'on' });
 
 /** The climb the Rig builds when E is pressed in room `id` at its ladder's E spot (here: its foot). */
-function climbFrom(id: RoomId, from = ROOMS[id].ladder!.foot): LadderClimb {
-  const R = ROOMS[id];
+function climbFrom(id: RoomId, from = getRoom(id).ladder!.foot): LadderClimb {
+  const R = getRoom(id);
   const L = R.ladder!;
-  const T = ROOMS[L.to];
+  const T = getRoom(L.to);
   return { from, y0: R.floorY, foot: L.foot, rungs: L.rungs, to: L.arrive, y1: T.floorY };
 }
 
 describe('the habitat ladder climb', () => {
   for (const id of ['habitat', 'habitat_up'] as RoomId[]) {
     it(`${id}: starts where the body stood, ends exactly at the room handover's spot`, () => {
-      const R = ROOMS[id];
+      const R = getRoom(id);
       const start = { x: R.ladder!.foot.x + 0.2, z: R.ladder!.foot.z - 0.1, facing: 1 };
       const c = climbFrom(id, start);
       const T = climbDuration(c);
@@ -27,7 +27,7 @@ describe('the habitat ladder climb', () => {
       expect(end.stage).toBe('done');
       expect(end.x).toBeCloseTo(R.ladder!.arrive.x, 6);
       expect(end.z).toBeCloseTo(R.ladder!.arrive.z, 6);
-      expect(end.y).toBeCloseTo(ROOMS[R.ladder!.to].floorY, 6);
+      expect(end.y).toBeCloseTo(getRoom(R.ladder!.to).floorY, 6);
       expect(Math.cos(end.facing - R.ladder!.arrive.facing)).toBeCloseTo(1, 6);
       // just before the end it is already (nearly) there: no jump at the handover
       const before = climbPose(c, T - 1 / 60, pose());
@@ -49,7 +49,7 @@ describe('the habitat ladder climb', () => {
 
   for (const id of ['habitat', 'habitat_up'] as RoomId[]) {
     it(`${id}: height changes monotonically, only on the rungs, at the ladder's foot spot`, () => {
-      const R = ROOMS[id];
+      const R = getRoom(id);
       const c = climbFrom(id, { x: R.ladder!.foot.x - 0.3, z: R.ladder!.foot.z + 0.2, facing: 0 });
       const up = c.y1 > c.y0;
       const T = climbDuration(c);

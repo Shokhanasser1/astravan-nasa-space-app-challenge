@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { HDU, HDU_HABITAT } from '../layout';
+import { HDU, HDU_MODULES, moduleToGame, type HduModule } from '../layout';
 
 /**
  * Where ASTRA's shells meet our furnished interiors (src/scene/Interiors.tsx; blender/interiors/<b>/HANDOFF.md).
@@ -161,12 +161,28 @@ export function tenSidedCabin(l: THREE.Object3D): boolean {
  * The habitat's furnished room, in its model frame: inside the lining (r 4.92 m), up to the upper deck's ceiling
  * (5.95 m). Interiors.tsx draws the whole room while the camera is in here (first person walks the whole room now:
  * at ASTRA_SCALE.habitat 0.6 it is 2.95 m across in the game, no longer the 1.6 m of the old 0.34 scale).
+ * (ASTRA's habitat only: the HDU complex, `?hdu`, asks inHduModule below.)
  */
 export const HAB_LINING = 4.92;
 export const HAB_CEILING = 5.95;
 /** Is a camera at (dx, dy, dz) from the habitat's foot (game metres) inside its room, at scale k? */
 export function inHabitatRoom(dx: number, dy: number, dz: number, k: number): boolean {
-  // (the HDU habitat, `?hdu`: its lining 2.925 m and dome top 8.62 m, game metres at k 1)
-  if (HDU_HABITAT) return Math.hypot(dx, dz) < HDU.lining * k && dy < HDU.top * k;
   return Math.hypot(dx, dz) < HAB_LINING * k && dy < HAB_CEILING * k;
+}
+
+/** Each HDU module's centre in the game (layout.ts HDU_COMPLEX: the complex's place and turn). */
+const HDU_CENTRES = HDU_MODULES.map((id) => [id, ...moduleToGame(id, 0, 0)] as const);
+
+/**
+ * The HDU complex (`?hdu`): which module's room a point (game metres) is in — inside its lining (r HDU.lining) and
+ * below its dome top — or null. Interiors.tsx draws a module's whole interior while the camera is in it; the walk may
+ * ask it too. Pure geometry: it answers for the complex's place whether or not the flag is on.
+ */
+export function inHduModule(x: number, y: number, z: number): HduModule | null {
+  if (y >= HDU.top) return null;
+  for (let i = 0; i < HDU_CENTRES.length; i++) {
+    const c = HDU_CENTRES[i]; // (an index loop: Interiors.tsx asks every frame, so no iterators)
+    if (Math.hypot(x - c[1], z - c[2]) < HDU.lining) return c[0];
+  }
+  return null;
 }
