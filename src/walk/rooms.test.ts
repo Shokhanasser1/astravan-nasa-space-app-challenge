@@ -4,7 +4,8 @@
 import { describe, expect, it } from 'vitest';
 import { fits, walkStep } from './collide';
 import { OUTSIDE } from './world';
-import { ROOMS, ROOM_BODY, ROOM_IDS, doorAt, getRoom } from './rooms';
+import { DOOR_REACH, ROOMS, ROOM_BODY, ROOM_IDS, doorAt, exitAt, getRoom } from './rooms';
+import { BODY, clearance } from './collide';
 import { ASTRA_SCALE } from '../scene/layout';
 
 describe('building rooms', () => {
@@ -16,7 +17,7 @@ describe('building rooms', () => {
       expect(fits(R.out.x, R.out.z, OUTSIDE)).toBe(true);
       expect(fits(R.spawn.x, R.spawn.z, R.area, body)).toBe(true);
       if (!R.noDoor) {
-        expect(doorAt(R.out)).toBe(id);
+        expect(doorAt(R.doorstep)).toBe(id);
         expect(R.exit(R.spawn.x, R.spawn.z)).toBe(true);
       }
       if (R.ladder) {
@@ -71,4 +72,36 @@ describe('building rooms', () => {
       expect(Math.hypot(goal.x - at.x, goal.z - at.z), `to model (${mx}, ${mz})`).toBeLessThan(0.02);
     }
   });
+
+  // 15 Nov playtest: "it goes in without touching the door". E at a door needs the astronaut on its doorstep,
+  // touching the building, and facing the door; inside, "go out" needs it to look towards the door.
+  for (const id of ROOM_IDS) {
+    const R = getRoom(id);
+    if (R.noDoor) continue;
+    const st = R.doorstep;
+    it(`${id}: the doorstep is free ground, touching the building at its door`, () => {
+      expect(fits(st.x, st.z, OUTSIDE)).toBe(true);
+      const hit = OUTSIDE.solids.find((s) => s.name === { habitat: 'habitat', greenhouse: 'garden', lab: 'workshop', lander: 'lander' }[id as 'habitat'])!;
+      expect(clearance(hit, st.x, st.z, BODY)).toBeGreaterThanOrEqual(0);
+      // (the lander's hatch is 3 m up its ladder: its doorstep is the ladder's foot, not against the hull)
+      if (R.doorway) expect(clearance(hit, st.x, st.z, BODY)).toBeLessThan(0.15);
+    });
+    it(`${id}: E goes in only at the door, facing it`, () => {
+      expect(doorAt(st, st.facing)).toBe(id);
+      expect(doorAt(st, st.facing + 0.9)).toBe(id); // a little to the side still counts
+      expect(doorAt(st, st.facing + Math.PI)).toBeNull(); // back to the door
+      expect(doorAt(st, st.facing + Math.PI / 2)).toBeNull(); // walking past it
+      // a step and a half back from the doorstep: not at the door any more
+      const back = { x: st.x - Math.sin(st.facing) * (DOOR_REACH + 0.5), z: st.z - Math.cos(st.facing) * (DOOR_REACH + 0.5) };
+      expect(doorAt(back, st.facing)).toBeNull();
+      // the old reach: 1.3 m round the spot outside, any facing — now refused there
+      expect(doorAt({ x: R.out.x + 1.2 * Math.cos(st.facing), z: R.out.z - 1.2 * Math.sin(st.facing) }, st.facing + Math.PI)).toBeNull();
+    });
+    it(`${id}: inside, "go out" only looking towards the door`, () => {
+      const p = { x: R.spawn.x, z: R.spawn.z };
+      const toDoor = Math.atan2(R.inDoor.x - p.x, R.inDoor.z - p.z);
+      expect(exitAt(R, p, toDoor)).toBe(true);
+      expect(exitAt(R, p, toDoor + Math.PI)).toBe(false);
+    });
+  }
 });

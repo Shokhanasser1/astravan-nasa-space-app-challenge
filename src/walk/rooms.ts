@@ -24,7 +24,7 @@ import {
   type BasePlan,
   type HduModule,
 } from '../scene/layout';
-import type { Area, Solid, XZ } from './collide';
+import { BODY, type Area, type Solid, type XZ } from './collide';
 import ROOM_BOXES from './rooms.json';
 import ROOM_BOXES_HDU from './rooms_hdu.json';
 
@@ -71,6 +71,13 @@ interface Spec {
   };
   /** The ladder's rungs plane (model z; default the ASTRA habitat's 0.212). */
   rungsZ?: number;
+  /**
+   * The doorway (model x, z): the opening the astronaut walks through. None: out of reach on foot (the lander's hatch
+   * is 3 m up its ladder): it climbs in from the doorstep.
+   */
+  door?: [number, number];
+  /** The doorstep (model x, z): right in front of the door, touching the building's hitbox outside. */
+  step: [number, number];
 }
 
 /** A model's front (+z) faces the middle of the base (AstraBase.tsx faceCentre). */
@@ -88,18 +95,21 @@ const RUNGS_Z = 0.212;
 const BODY_BEHIND = 0.42;
 
 /** ASTRA's rooms on a plan (the ASTRA plan for the ASTRA base; the HDU base keeps only its lander). */
-const astraSpecs = ({ LAYOUT, DOOR_AZ }: BasePlan): Record<CoreRoomId, Spec> => ({
+/** Model z (or x) of a doorstep: the outside hitbox's radius (game m) + the body + a little, in the model's units. */
+const stepAt = (hitR: number, k: number) => (hitR + BODY + 0.08) / k;
+const astraSpecs = ({ LAYOUT, DOOR_AZ, DOOR_R, RADIUS }: BasePlan): Record<CoreRoomId, Spec> => ({
   // ground floor (deck 0.5, ceiling 3.1); the door is the airlock at +z; jumps allowed (2.6 m of headroom)
   habitat: {
     at: LAYOUT.habitat, turn: DOOR_AZ, k: ASTRA_SCALE.habitat, floor: 0.5, headroom: 2.6, bounds: 4.85,
     spawn: [0, 2.45, Math.PI], out: [0, 8.0, 0], exit: (x, z) => z > 2.25 && Math.abs(x) < 0.7, jump: true,
+    door: [0, (DOOR_R - 0.1) / ASTRA_SCALE.habitat], step: [0, stepAt(RADIUS.habitat + 0.4, ASTRA_SCALE.habitat)],
     // the ladder in the storm shelter, up through the deck opening into the command room
     ladder: { to: 'habitat_up', at: [0, 0.4], reach: 0.9, arrive: [1.15, 0.45, 0] },
   },
   // upper floor (deck 3.35, ceiling 5.95): command room, crew quarters, medical corner, stowage
   habitat_up: {
     at: LAYOUT.habitat, turn: DOOR_AZ, k: ASTRA_SCALE.habitat, floor: 3.35, headroom: 2.6, bounds: 4.85,
-    spawn: [1.15, 0.45, 0], out: [0, 8.0, 0], exit: () => false, jump: true, noDoor: true,
+    spawn: [1.15, 0.45, 0], out: [0, 8.0, 0], exit: () => false, jump: true, noDoor: true, step: [0, 8.0],
     ladder: { to: 'habitat', at: [0, 0.62], reach: 1.6, arrive: [0, 0.75, 0] },
   },
   // the walkway between the two grow racks; the door at the east end (+x), closed behind
@@ -107,17 +117,19 @@ const astraSpecs = ({ LAYOUT, DOOR_AZ }: BasePlan): Record<CoreRoomId, Spec> => 
     at: LAYOUT.garden, turn: faceCentre(LAYOUT.garden), k: ASTRA_SCALE.greenhouse, floor: 0.232, headroom: 1.46, bounds: 2.3,
     extra: [['door', 2.25, 0, 0.03, 0.5, 0]],
     spawn: [1.7, 0, -Math.PI / 2], out: [4.2, 0, Math.PI / 2], exit: (x) => x > 1.45, jump: false,
+    door: [2.3, 0], step: [stepAt(RADIUS.garden + 0.1, ASTRA_SCALE.greenhouse), 0],
   },
   // the aisle between the benches; the round hatch at the west end (−x)
   lab: {
     at: LAYOUT.workshop, turn: faceCentre(LAYOUT.workshop), k: ASTRA_SCALE.lab, floor: 0.6, headroom: 1.6, bounds: 1.75,
     spawn: [-1.3, 0, Math.PI / 2], out: [-3.4, 0, -Math.PI / 2], exit: (x) => x < -0.95, jump: false,
+    door: [-1.85, 0], step: [-stepAt(RADIUS.workshop + 0.1, ASTRA_SCALE.lab), 0],
   },
   // the ascent cabin (floor 3.0 m up, by the ladder); the forward hatch at +z, closed behind
   lander: {
     at: LAYOUT.lander, turn: faceCentre(LAYOUT.lander), k: ASTRA_SCALE.lander, floor: 3.0, headroom: 1.78, bounds: 1.25,
     extra: [['hatch', 0, 1.2, 0.38, 0.03, 0]],
-    spawn: [0, 0.55, Math.PI], out: [0, 4.9, 0], exit: (_x, z) => z > 0.5, jump: false,
+    spawn: [0, 0.55, Math.PI], out: [0, 4.9, 0], exit: (_x, z) => z > 0.5, jump: false, step: [0, 4.9],
   },
 });
 
@@ -156,13 +168,14 @@ function hduSpecs(plan: BasePlan): Partial<Record<RoomId, Spec>> {
     out[m] = {
       at, turn: HDU_COMPLEX.turn, k: 1, floor: HDU.floor, headroom: HDU_HEADROOM, bounds: HDU_BOUNDS,
       spawn: [0, 1.4, Math.PI], out: HDU_OUT, exit: (x, z) => z > 1.3 && Math.abs(x) < 0.45, jump: true,
+      door: [0, HDU.front - 0.05], step: [0, 3.95],
       rungsZ: 0, ladder: { to: up, at: [0, 0.42], reach: 0.6, arrive: HDU_LOFT_ARRIVE },
     };
     // the loft: no door of its own; E at the open side of the well climbs back down
     out[up] = {
       at, turn: HDU_COMPLEX.turn, k: 1, floor: HDU.deck, headroom: HDU_HEADROOM, bounds: HDU_BOUNDS,
       // (no jumping on the lofts, D9: like ASTRA's low rooms; a jump by the rail opening would clear the rail)
-      spawn: HDU_LOFT_ARRIVE, out: HDU_OUT, exit: () => false, jump: false, noDoor: true,
+      spawn: HDU_LOFT_ARRIVE, out: HDU_OUT, exit: () => false, jump: false, noDoor: true, step: [0, 3.95],
       // (the step onto the ladder goes through the rail's opening: to (0, 0.85) first, then in to the foot spot, so
       // the body keeps clear of the rail's front posts at (±0.3685, 0.4605); finding #15)
       rungsZ: 0, ladder: { to: m, at: [0, 0.85], reach: 0.7, arrive: HDU_GROUND_ARRIVE, via: [0, 0.85] },
@@ -185,6 +198,13 @@ export interface Room {
   /** True where E inside goes out (game x, z). */
   exit: (x: number, z: number) => boolean;
   noDoor: boolean;
+  /**
+   * Outside: the doorstep (touching the building at its door, facing it) and the doorway walked through (null: climbs
+   * in from the doorstep). Inside: `inDoor`, where "go out" looks towards. Game metres.
+   */
+  doorstep: { x: number; z: number; facing: number };
+  doorway: { x: number; z: number; facing: number } | null;
+  inDoor: { x: number; z: number };
   /**
    * The ladder: where it leads, whether (x, z) is close enough to climb, where you arrive; where the body stands to
    * climb (`foot`, facing the rungs) and the rungs' plane in front of it (`rungs`, the Climb clip's origin).
@@ -225,8 +245,15 @@ function build(id: RoomId, p: Spec, roomBoxes: Box[]): Room {
     const [x, z] = toGame(m[0], m[1]);
     return { x, z, facing: m[2] + p.turn };
   };
+  const st = at([p.step[0], p.step[1], 0]);
+  const way = p.door ? toGame(p.door[0], p.door[1]) : null;
+  // facing the door from the doorstep: towards the doorway, or (no doorway) the building's middle
+  const intoDoor = Math.atan2((way ? way[0] : p.at[0]) - st.x, (way ? way[1] : p.at[1]) - st.z);
   return {
     id,
+    doorstep: { x: st.x, z: st.z, facing: intoDoor },
+    doorway: way ? { x: way[0], z: way[1], facing: intoDoor } : null,
+    inDoor: way ? { x: way[0], z: way[1] } : { x: st.x, z: st.z },
     s: p.k * fit,
     area: { solids: boxes.map(bar), bounds: { name: id, x: p.at[0], z: p.at[1], r: p.bounds * p.k } },
     floorY: p.floor * p.k,
@@ -307,19 +334,50 @@ export const buildingOf = (id: RoomId): BuildingId => BUILDING[id];
 /** The room the astronaut walks in now (null: outside). Written by the Rig, read by Interiors and Astronaut. */
 export const roomState = { id: null as RoomId | null };
 
-/** The body's radius indoors (native m): a person's shoulders, so the rooms' doorways and the ladder's rail let it by. */
-export const ROOM_BODY = 0.25;
+/**
+ * The body's radius indoors (native m): the suit's shoulders, so the rooms' doorways and the ladder's rail let it by
+ * (0.28 is the most they allow: 0.30 no longer passes the habitat's ladder well). The arms, which hang wider, turn in
+ * by the walls (src/character/armTuck.ts). Was 0.25 (15 Nov playtest: the hands went into the walls).
+ */
+export const ROOM_BODY = 0.28;
 
-/** E reaches a door from this far (m, in the game) from its `out` spot. */
-export const DOOR_REACH = 1.3;
+/** E reaches a door from this far (m, in the game) from its doorstep: one step — the astronaut is at the door. */
+export const DOOR_REACH = 0.9;
+/** …and only facing it: the door within this angle of where the astronaut looks (rad, 75°). */
+export const DOOR_FACE = (75 * Math.PI) / 180;
+/** Inside, "go out" asks the astronaut to look roughly towards the door (rad, 100°): not while walking away from it. */
+export const EXIT_FACE = (100 * Math.PI) / 180;
 
-/** The room whose door the astronaut stands at, outside (null: none); of the game's rooms, or of `rooms` (tests). */
-export function doorAt(p: XZ, rooms: readonly Room[] = ROOM_LIST): RoomId | null {
+/** Angle between a facing (0 = +z) and the direction from p to a target. */
+export function offFacing(p: XZ, facing: number, tx: number, tz: number): number {
+  const dx = tx - p.x, dz = tz - p.z;
+  if (Math.hypot(dx, dz) < 1e-6) return 0;
+  const d = Math.atan2(dx, dz) - facing;
+  return Math.abs(Math.atan2(Math.sin(d), Math.cos(d)));
+}
+
+/**
+ * The room whose door the astronaut stands at, outside (null: none): on its doorstep (within DOOR_REACH) and, given
+ * a facing, facing the door. (15 Nov playtest: "it goes in without touching the door" — E used to reach 1.3 m round
+ * a spot 1.2 m out from the door, whichever way the astronaut faced.) Of the game's rooms, or of `rooms` (tests).
+ */
+export function doorAt(p: XZ, facing?: number | readonly Room[], rooms: readonly Room[] = ROOM_LIST): RoomId | null {
+  if (Array.isArray(facing)) return doorAt(p, undefined, facing);
+  const f = facing as number | undefined;
   for (const r of rooms) {
     if (r.noDoor) continue;
-    if (Math.hypot(p.x - r.out.x, p.z - r.out.z) < DOOR_REACH) return r.id;
+    const st = r.doorstep;
+    if (Math.hypot(p.x - st.x, p.z - st.z) > DOOR_REACH) continue;
+    if (f === undefined) return r.id;
+    const t = r.doorway ?? r.area.bounds;
+    if (offFacing(p, f, t.x, t.z) <= DOOR_FACE) return r.id;
   }
   return null;
+}
+
+/** Inside: E goes out here — in the room's door zone and looking towards the door. */
+export function exitAt(R: Room, p: XZ, facing: number): boolean {
+  return R.exit(p.x, p.z) && offFacing(p, facing, R.inDoor.x, R.inDoor.z) <= EXIT_FACE;
 }
 
 /** The HDU complex's module centres along its length (game x, z), for inHduComplex. */

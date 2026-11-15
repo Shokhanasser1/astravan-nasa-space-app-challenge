@@ -17,6 +17,7 @@ import { armState } from '../arm/state';
 import { rover } from './arrival';
 import { climbState } from '../walk/ladder';
 import { WristTablet } from './suit/wristTablet';
+import { ArmTuck, tuckState } from '../character/armTuck';
 
 /** Seconds of standing still before the astronaut checks the suit tablet and its hologram rises. */
 const SUIT_LOOK_S = 1.5;
@@ -101,6 +102,7 @@ export function Astronaut({ body, visible, hands = 0, view }: { body: Body; visi
     if (battery) battery.visible = false; // shown only while it is in the glove (Insert)
     return m;
   }, [gltf]);
+  const tuck = useMemo(() => new ArmTuck(model), [model]);
   const battery = useMemo(() => model.getObjectByName('Battery') ?? null, [model]);
   const anim = useMemo(
     () => new AnimController(model, Object.fromEntries(gltf.animations.map((c) => [c.name, c]))),
@@ -244,12 +246,15 @@ export function Astronaut({ body, visible, hands = 0, view }: { body: Body; visi
       model.rotation.set(0, body.facing, 0);
     }
     const speed = seated ? 0 : Math.hypot(body.vx, body.vz) / k; // (the clips are planted at full-size speeds)
+    tuck.restore(); // (the clips pose the arms afresh; src/character/armTuck.ts)
     anim.update(dt, {
       onGround: body.onGround, windup: body.windup, vy: body.vy / k, v0: body.v0 / k || 1.2,
       speed, carrying: h.hands > 0 || h.pour > 0, pouring: h.pour > 0, running: body.running, k: 1, seated, steer: rover.steerInput,
       climb: climbState.on ? climbState.phase : null, climbV: climbState.vy / k, // on the habitat's ladder (full size)
     });
     if (climbState.on) state.invalidate();
+    // by a wall (in a room, through a door, beside a building) the arms turn in so the hands stay out of it
+    if (tuck.apply(model, seated || climbState.on ? 0 : tuckState.want, dt, tuckState.maxSide)) state.invalidate();
     cargo.mesh.count = model.visible && !seated ? Math.min(CARRY_MAX, h.hands) : 0;
     if (cargo.mesh.count > 0) {
       cargo.group.position.set(

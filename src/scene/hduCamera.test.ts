@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { clearance, fits } from '../walk/collide';
 import { makeRooms, ROOM_BODY } from '../walk/rooms';
 import { makeOutside } from '../walk/world';
-import { astronautShown, HIDE_NEAR, isHduRoom, roomCamDist } from './Rig';
+import { astronautShown, EYES_IN_ROOMS, HIDE_NEAR, isHduRoom, roomCamDist } from './Rig';
 import { groundHeight } from './ground';
 import { complexToGame, HDU, HDU_COMPLEX, HDU_MODULES, moduleToGame } from './layout';
 import { HDU_TITLE, titleAngles, titlePose } from './title';
@@ -89,12 +89,12 @@ describe('HDU room camera (#27, #34, D3)', () => {
     expect(HIDE_NEAR).toBeGreaterThan(0);
   });
 
-  it('ASTRA rooms keep their 1.7 m', () => {
+  it('ASTRA rooms: through the eyes too (EYES_IN_ROOMS), or their 1.7 m follow camera when it is off', () => {
     const astra = makeRooms(false).habitat;
     expect(isHduRoom(astra, false)).toBe(false);
     const { x, z } = astra.spawn;
     const d = roomCamDist(astra, x, z, 0, 0, false, false); // (no look direction: the camera sits on the head, never blocked)
-    expect(d).toBeCloseTo(1.7 * astra.s, 6);
+    expect(d).toBeCloseTo(EYES_IN_ROOMS ? 0 : 1.7 * astra.s, 6);
   });
 });
 
