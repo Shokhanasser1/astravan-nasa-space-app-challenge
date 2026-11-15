@@ -4,10 +4,9 @@ import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js
 /**
  * The greenhouse's plants follow the garden level (View.plant 0–4, a game rule): 4 all lush, 3 most, 2 half and
  * paler, 1 a few yellow-brown ones, 0 empty troughs. ASTRA builds each plant in its own group (life.ts, `HB7:`);
- * here they become ONE vertex-coloured mesh (one draw call for all of them), each vertex carrying its plant's rank:
- * the vertex shader folds away the plants past the level's count, and the fragment shader turns the rest paler or
- * yellow-brown. A level
- * change is two numbers, never a rebuild.
+ * here they become ONE vertex-coloured mesh (one draw call for all of them), laid out plant by plant in the order
+ * they go: a level shows the first plants only (a draw range, so a missing plant costs nothing), and the fragment
+ * shader turns them paler or yellow-brown. A level change is three numbers, never a rebuild.
  */
 
 /** How many of the 18 plants stand at each garden level (game level → scene look). */
@@ -20,7 +19,7 @@ const WILT: { to: string; k: number }[] = [
   { to: '#a9c27a', k: 0.15 },
   { to: '#a9c27a', k: 0 },
 ];
-/** Plant i (ASTRA's order: two troughs of nine) goes at rank RANK[i]: the last to go are spread over both troughs. */
+/** The plants (ASTRA's order: two troughs of nine) in the order they stay: the last to go are spread over both troughs. */
 const ORDER = [0, 13, 4, 9, 16, 2, 11, 6, 15, 8, 17, 1, 10, 5, 14, 3, 12, 7];
 
 export type Plants = { mesh: THREE.Mesh; setLevel: (level: number) => void };
@@ -28,15 +27,15 @@ export type Plants = { mesh: THREE.Mesh; setLevel: (level: number) => void };
 export function mergePlants(group: THREE.Group): Plants {
   const plants = [...group.children];
   const n = plants.length;
-  const rank = new Array<number>(n).fill(n - 1);
-  ORDER.forEach((p, r) => p < n && (rank[p] = r));
+  const order = [...ORDER.filter((i) => i < n), ...plants.map((_, i) => i).filter((i) => !ORDER.includes(i))];
   group.updateMatrixWorld(true);
   const toGroup = new THREE.Matrix4().copy(group.matrixWorld).invert();
   const m4 = new THREE.Matrix4();
   const geos: THREE.BufferGeometry[] = [];
-  plants.forEach((plant, i) => {
-    const k = (rank[i] + 0.5) / n;
-    plant.traverse((o) => {
+  const ends: number[] = []; // vertices drawn when the first k + 1 plants show
+  let total = 0;
+  for (const i of order) {
+    plants[i].traverse((o) => {
       const mesh = o as THREE.Mesh;
       if (!mesh.isMesh || Array.isArray(mesh.material)) return;
       const src = mesh.geometry;
@@ -50,31 +49,25 @@ export function mergePlants(group: THREE.Group): Plants {
       const col = new Float32Array(count * 3);
       for (let v = 0; v < count; v++) col.set([c.r, c.g, c.b], v * 3);
       g.setAttribute('color', new THREE.BufferAttribute(col, 3));
-      g.setAttribute('plantK', new THREE.BufferAttribute(new Float32Array(count).fill(k), 1));
       g.applyMatrix4(m4.multiplyMatrices(toGroup, mesh.matrixWorld));
       geos.push(g);
+      total += count;
     });
-  });
+    ends.push(total);
+  }
   for (const p of plants) p.removeFromParent();
   const merged = mergeGeometries(geos, false) ?? new THREE.BufferGeometry();
   geos.forEach((g) => g.dispose());
 
-  const show = { value: 1 };
   const wiltTo = { value: new THREE.Color() };
   const wilt = { value: 0 };
   const mat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.62, metalness: 0, side: THREE.DoubleSide });
   mat.onBeforeCompile = (sh) => {
-    sh.uniforms.uShow = show;
     sh.uniforms.uWiltTo = wiltTo;
     sh.uniforms.uWilt = wilt;
     sh.fragmentShader = `uniform vec3 uWiltTo;\nuniform float uWilt;\n${sh.fragmentShader}`.replace(
       '#include <color_fragment>',
       '#include <color_fragment>\ndiffuseColor.rgb = mix(diffuseColor.rgb, uWiltTo, uWilt);',
-    );
-    sh.vertexShader = `attribute float plantK;\nuniform float uShow;\n${sh.vertexShader}`.replace(
-      '#include <begin_vertex>',
-      // a plant past the count folds into one point: its triangles have no area and are not drawn
-      '#include <begin_vertex>\nif (plantK > uShow) transformed = vec3(0.0);',
     );
   };
   mat.customProgramCacheKey = () => 'hb7-plants';
@@ -89,10 +82,11 @@ export function mergePlants(group: THREE.Group): Plants {
     mesh,
     setLevel(level: number) {
       const l = Math.max(0, Math.min(4, Math.round(level)));
-      show.value = COUNT[l] / n;
+      const k = Math.min(COUNT[l], ends.length);
+      merged.setDrawRange(0, k > 0 ? ends[k - 1] : 0);
+      mesh.visible = k > 0;
       wiltTo.value.set(WILT[l].to);
       wilt.value = WILT[l].k;
-      mesh.visible = COUNT[l] > 0;
     },
   };
 }

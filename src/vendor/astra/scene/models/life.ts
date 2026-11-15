@@ -4,7 +4,7 @@
 import * as THREE from "three";
 import type { Planet } from "../../sim/types";
 import { addDetail, DETAIL } from "../surface";
-import { bolts, box, contactShadow, cyl, foil, geo, glass, grille, keep, lathe, light, metal, mesh, paint, pipe, rbox, rng, rubber, shared, strut, torus } from "../kit";
+import { bolts, box, contactShadow, cyl, foil, geo, glass, grille, keep, lathe, light, metal, mesh, paint, pipe, rbox, rng, rubber, sg, shared, strut, torus } from "../kit";
 import { C, cabinet, hazard, label, skid, sphereTank, statusLamp, type ModuleView } from "./common";
 
 /** A stack of electrolysis cells between two end plates, held by tie rods; axis along x. */
@@ -138,7 +138,7 @@ export function buildRecycler(view: ModuleView) {
 /** One leaf: an ellipse, cupped across and curved along its length; its stem is at the origin and it points along +x. */
 function leafGeometry(len: number, width: number, curl: number) {
   return geo(`leaf${len},${width},${curl}`, () => {
-    const g = new THREE.PlaneGeometry(len, width, 6, 3);
+    const g = new THREE.PlaneGeometry(len, width, sg(6, 3), sg(3, 2)); // HB7: detail level (phones: 12 triangles a leaf)
     const p = g.attributes.position;
     for (let i = 0; i < p.count; i++) {
       const u = p.getX(i) / len + 0.5,
@@ -191,7 +191,7 @@ function vine(g: THREE.Object3D, x: number, y: number, z: number, h: number, r: 
   }
   for (let k = 0; k < 3; k++) {
     const t = 0.25 + r() * 0.5;
-    const tomato = mesh(geo("tomato", () => new THREE.SphereGeometry(0.045, 12, 8).scale(1, 0.85, 1)), fruit, g, x + (r() - 0.5) * 0.14, y + t * h, z + (r() - 0.5) * 0.14);
+    const tomato = mesh(geo("tomato", () => new THREE.SphereGeometry(0.045, sg(12, 6), sg(8, 4)).scale(1, 0.85, 1) /* HB7: detail level */), fruit, g, x + (r() - 0.5) * 0.14, y + t * h, z + (r() - 0.5) * 0.14);
     tomato.scale.setScalar(0.8 + r() * 0.4);
   }
 }

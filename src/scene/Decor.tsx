@@ -4,6 +4,8 @@ import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 import { DOOR_AZ, DOOR_R, LAYOUT, PARKED_ROVER as SEV } from './layout';
 import { ICE_CRATER, groundHeight } from './ground';
+import { initialTier } from './quality';
+import { softwareGl } from './rich';
 
 /**
  * NASA models around the base that are not machines of the week (public/models/nasa-decor, Samandar's catalog,
@@ -64,11 +66,15 @@ function One(props: { file: string; at: [number, number, number]; yaw: number; s
   );
 }
 
+// RASSOR (12.6k triangles, ~60 m out by the ASTRA ice drill) on computers with a graphics card only: on a phone it
+// is a few pixels that cost a tenth of the triangle budget (< 100k).
+const farDecor = typeof window !== 'undefined' && initialTier() === 'pc' && !softwareGl();
+
 export function Decor() {
   return (
     <group>
       <One file="sev.glb" at={[SEV.x, groundHeight(SEV.x, SEV.z), SEV.z]} yaw={SEV.yaw} />
-      <One file="rassor.glb" at={[RASSOR.x, groundHeight(RASSOR.x, RASSOR.z), RASSOR.z]} yaw={RASSOR.yaw} />
+      {farDecor && <One file="rassor.glb" at={[RASSOR.x, groundHeight(RASSOR.x, RASSOR.z), RASSOR.z]} yaw={RASSOR.yaw} />}
       {BAGS.map(([x, y, z, yaw], i) => (
         <One key={i} file="crew-lock-bag.glb" at={[x, groundHeight(x, z) + y, z]} yaw={yaw} shadow={false} />
       ))}
