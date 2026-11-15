@@ -88,7 +88,7 @@ export function BaseScene({ view }: { view: View; onTap?: (k: Machine) => void; 
       {!HDU_HABITAT && <Garden on={a.gh > 0} plant={view.plant} tap={TAP.gh} />}
       {!HDU_HABITAT && <Workshop on={a.ws > 0} tap={TAP.ws} />}
       <Scout on={a.sc > 0} tap={TAP.sc} />
-      <Lander on={a.launch > 0} phase={view.phase} tap={TAP.launch} />
+      <Lander on={a.launch > 0} phase={view.phase} tap={TAP.launch} grounded={features.homeStory && view.phase === 'truth' && view.launched === false} />
       {rich ? <SolarArrays view={view} /> : <SolarWing />}
       {rich && <BatteryBank view={view} />}
       {rich && <IceDrill />}

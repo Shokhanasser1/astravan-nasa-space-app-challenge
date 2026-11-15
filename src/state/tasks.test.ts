@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { initialModel, reducer, type Action, type Machine, type Model } from './game';
-import { dayStar, dayTasks, firstOpen, type Task } from './tasks';
+import { initialModel, reducer, selfCharge, type Action, type Machine, type Model } from './game';
+import { dayStar, dayTasks, firstOpen, settled, type Task } from './tasks';
 import { PLAN_A, week as realWeek } from '../engine/golden';
 import { CARD_CHOICES } from '../engine/rules';
 import type { Week } from '../engine/week';
@@ -13,7 +13,8 @@ function dayActions(alloc: (typeof PLAN_A)[number]['alloc'], card?: string): Act
   const taps: Action[] = [{ type: 'CHOOSE', shelter: alloc.shelter }];
   if (card) taps.push({ type: 'CHOOSE', card });
   const add = (k: Machine, n: number) => Array.from({ length: n }, () => ({ type: 'SET', k }) as Action);
-  taps.push(...add('ls', alloc.ls), ...add('gh', alloc.gh), ...add('ws', alloc.build / 2), ...add('sc', alloc.sc));
+  // (the ship first, like the engine's own order; with selfCharge it is already full and the taps change nothing)
+  taps.push(...add('launch', alloc.launch / 4), ...add('ls', alloc.ls), ...add('gh', alloc.gh), ...add('ws', alloc.build / 2), ...add('sc', alloc.sc));
   return taps;
 }
 
@@ -33,9 +34,11 @@ const DAYS = [
 
 /**
  * Done at the start of each day's plan, before a single battery is placed (empty plan). Day 5's "save 2 batteries"
- * is a promise kept until too many are placed (live from the plan's preview), so it starts ticked.
+ * is a promise kept until too many are placed (live from the plan's preview), so it starts ticked. Day 7: the ship is
+ * charged only when it charges itself (the old game); home story: the child carries the four batteries (game.ts
+ * selfCharge). The robot arm ticks only once its scanner was on.
  */
-const EMPTY_DONE: string[][] = [['reach'], [], [], ['call'], ['save'], [], ['launch', 'arm']];
+const EMPTY_DONE: string[][] = [['reach'], [], [], ['call'], ['save'], [], selfCharge ? ['launch'] : []];
 
 /** Plays PLAN_A and hands each day's model at: morning, plan opened (empty), plan filled, night. */
 function playPlanA(visit: (day: number, at: { morning: Model; empty: Model; planned: Model; night: Model }) => void) {
@@ -77,10 +80,10 @@ describe("today's 5", () => {
 
   it("ticks every task from Plan A's plan, and Sleep once the day is confirmed: a star every day", () => {
     playPlanA((day, { planned, night }) => {
-      const open = dayTasks(planned).filter((t) => !t.done).map((t) => t.id);
+      const open = dayTasks(planned).filter((t) => !settled(t)).map((t) => t.id);
       expect(open, `day ${day} planned`).toEqual([day === 7 ? 'ladder' : 'sleep']);
       expect(dayStar(planned)).toBe(false);
-      expect(dayTasks(night).every((t) => t.done), `day ${day} after confirm`).toBe(true);
+      expect(dayTasks(night).every(settled), `day ${day} after confirm`).toBe(true);
       expect(dayStar(night), `day ${day} star`).toBe(true);
     });
   });
@@ -121,9 +124,54 @@ describe("today's 5", () => {
       expect(flags(noShip).launch).toBe(false);
       const after = reducer(noShip, { type: 'CONFIRM' });
       expect(after.game?.launched).toBe(false);
-      expect(flags(after)).toMatchObject({ launch: false, ladder: false, arm: true });
+      expect(flags(after)).toMatchObject({ launch: false, ladder: false, arm: false });
       expect(dayStar(after)).toBe(false);
     });
+  });
+
+  it("day 7 is the document's launch list: Air Maker, last rover runs, charge the ship, robot arm, climb the ladder", () => {
+    playPlanA((day, { empty, planned, night }) => {
+      if (day !== 7) return;
+      const list = dayTasks(empty);
+      expect(list.map((t) => [t.id, t.target ?? null, !!t.optional])).toEqual([
+        ['air', 'ls', false],
+        ['roverLast', 'sc', false],
+        ['launch', 'launch', false],
+        ['arm', null, true],
+        ['ladder', null, false],
+      ]);
+      // the robot arm: ticked once its scanner was on today; the star never waits for it
+      expect(flags(planned).arm).toBe(false);
+      expect(dayTasks(planned, { arm: true }).find((t) => t.id === 'arm')?.done).toBe(true);
+      expect(dayStar(night)).toBe(true);
+      expect(dayStar(night, { arm: true })).toBe(true);
+      // the ladder: only once the ship has flown
+      expect(flags(planned).ladder).toBe(false);
+      expect(flags(night).ladder).toBe(true);
+      expect(night.phase).toBe('launch');
+    });
+  });
+
+  it('home story: Day 7 starts with an empty ship, and four carried batteries charge it', () => {
+    playPlanA((day, { empty }) => {
+      if (day !== 7 || selfCharge) return;
+      expect(empty.alloc.launch).toBe(0);
+      expect(flags(empty).launch).toBe(false);
+      expect(firstOpen(dayTasks(empty))?.id).toBe('air');
+      const charged = run(empty, [{ type: 'TAKE' }, { type: 'TAKE' }, { type: 'TAKE' }, { type: 'TAKE' }, { type: 'PUT', k: 'launch' }]);
+      expect(charged.alloc.launch).toBe(4);
+      expect(flags(charged).launch).toBe(true);
+    });
+  });
+
+  it('an optional task never holds the beacon', () => {
+    const tasks: Task[] = [
+      { id: 'air', done: true },
+      { id: 'arm', done: false, optional: true },
+      { id: 'ladder', done: false },
+    ];
+    expect(firstOpen(tasks)?.id).toBe('ladder');
+    expect(firstOpen(tasks.slice(0, 2))).toBeNull();
   });
 
   it('on another week every day still has five different tasks that can be done', () => {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { board, initialModel, reducer, toView, truth, type Action, type Machine, type Model } from './game';
+import { board, initialModel, reducer, selfCharge, toView, truth, type Action, type Machine, type Model } from './game';
 import { PLAN_A, week as realWeek } from '../engine/golden';
 import { SKY, type Week } from '../engine/week';
 
@@ -11,7 +11,8 @@ function dayActions(alloc: (typeof PLAN_A)[number]['alloc'], card?: string): Act
   const taps: Action[] = [{ type: 'CHOOSE', shelter: alloc.shelter }];
   if (card) taps.push({ type: 'CHOOSE', card });
   const add = (k: Machine, n: number) => Array.from({ length: n }, () => ({ type: 'SET', k }) as Action);
-  taps.push(...add('ls', alloc.ls), ...add('gh', alloc.gh), ...add('ws', alloc.build / 2), ...add('sc', alloc.sc));
+  // (the ship first, like the engine's own order; with selfCharge it is already full and the taps change nothing)
+  taps.push(...add('launch', alloc.launch / 4), ...add('ls', alloc.ls), ...add('gh', alloc.gh), ...add('ws', alloc.build / 2), ...add('sc', alloc.sc));
   return taps;
 }
 
@@ -116,12 +117,29 @@ describe('reducer flow', () => {
     expect(m.alloc).toMatchObject({ sc: 0, shelter: 'full' });
   });
 
-  it('day 7 opens with four batteries on Launch; the view follows the real sky', () => {
+  it('day 7 opens with four batteries on Launch only when the ship charges itself; the view follows the real sky', () => {
     let m = start();
     for (const d of PLAN_A.slice(0, 6)) m = run(m, [{ type: 'NEXT' }, ...dayActions(d.alloc, d.card), { type: 'CONFIRM' }, { type: 'NEXT' }, { type: 'NEXT' }]);
     m = reducer(m, { type: 'NEXT' });
+    expect(m.alloc.launch).toBe(selfCharge ? 4 : 0);
+    expect(toView(m, SKY)).toMatchObject({ day: 7, sunAzDeg: 232, wall: 3, launched: false });
+  });
+
+  it('home story: the ship is charged by carrying four batteries to it, and the view says when it flew', () => {
+    let m = start();
+    for (const d of PLAN_A.slice(0, 6)) m = run(m, [{ type: 'NEXT' }, ...dayActions(d.alloc, d.card), { type: 'CONFIRM' }, { type: 'NEXT' }, { type: 'NEXT' }]);
+    m = reducer(m, { type: 'NEXT' });
+    if (selfCharge) return; // (flag off: the old board, covered above)
+    expect(m.preview?.warning).toBe('engine.warn.noLaunch');
+    m = run(m, [{ type: 'TAKE' }, { type: 'TAKE' }, { type: 'TAKE' }]);
+    expect(reducer(m, { type: 'PUT', k: 'launch' })).toBe(m); // the ship takes all four at once
+    m = run(m, [{ type: 'TAKE' }, { type: 'PUT', k: 'launch' }]);
     expect(m.alloc.launch).toBe(4);
-    expect(toView(m, SKY)).toMatchObject({ day: 7, sunAzDeg: 232, wall: 3 });
+    expect(m.hands).toBe(0);
+    expect(m.preview?.warning).not.toBe('engine.warn.noLaunch');
+    m = run(m, [{ type: 'CONFIRM' }, { type: 'NEXT' }]);
+    expect(m.phase).toBe('launch');
+    expect(toView(m)).toMatchObject({ phase: 'launch', launched: true });
   });
 
   it('plays seven days to the truth screen pressing only the main button', () => {
@@ -136,7 +154,9 @@ describe('reducer flow', () => {
       m = reducer(m, m.phase === 'plan' ? { type: 'CONFIRM' } : { type: 'NEXT' });
     }
     expect(m.phase).toBe('truth');
-    expect(truth(m)?.result.late).toBe(false); // day 7 opened with Launch filled
+    // day 7 opened with Launch filled (the old game); home story: nobody carried the batteries → Late Ride Home
+    expect(truth(m)?.result.late).toBe(!selfCharge);
+    expect(toView(m).launched).toBe(selfCharge);
   });
 
   it('a saved model resumes where it stopped', () => {

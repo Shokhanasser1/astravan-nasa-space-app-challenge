@@ -2,6 +2,9 @@ import { Suspense, useCallback, useEffect, useMemo, useRef, useState, useSyncExt
 import { ArrowRight, Check, ClipboardList, MessageSquareWarning, Music, VolumeX } from 'lucide-react';
 import { atHub, board as selectBoard, truth as selectTruth, type Action, type Model, type View } from '../state/game';
 import { armState, armVersion, subscribeArm } from '../arm/state';
+import { launchWarning, pressLaunch } from '../state/launch';
+import { BOARD_S, boarding } from '../scene/boarding';
+import { BoardingCountdown, LaunchWarningNote } from './play/Boarding';
 import type { Lang } from '../i18n/t';
 import { audio } from '../audio/audio';
 import { Btn, makeTr } from './play/kit';
@@ -177,28 +180,47 @@ export function Hud({ model, view, dispatch, lang, setLang, sound, setSound, onS
     else dispatch({ type: 'NEXT' });
   }, [quizPending, dispatch]);
 
+  // Day 7, home story (src/state/launch.ts): the first press on "Launch!" shows the warning on the button (no power,
+  // or the ship below 100 %), the second goes on — the child decides.
+  const launchW = features.homeStory ? launchWarning(model) : null;
+  const [warned, setWarned] = useState<string | null>(null);
+  useEffect(() => setWarned(null), [phase, day]);
+  const confirmDay = useCallback(() => {
+    const p = pressLaunch(warned, launchW);
+    if (p.go) dispatch({ type: 'CONFIRM' });
+    else setWarned(p.show);
+  }, [warned, launchW, dispatch]);
+  const shownWarning = launchW && pressLaunch(warned, launchW).go ? launchW : null;
+  // the robot arm's scanner switched on today (Day 7's optional task): remembered per mission day
+  const armDays = useRef(new Set<string>());
+  const armKey = `${model.week?.id}:${model.seed}:${day}`;
+  if (armState.on && model.game) armDays.current.add(armKey);
+
   // (while the quiz window is open the game's keys are off: it takes 1–3 and Enter for itself)
   const keyCtx: Ctx = { screen, phase, board, aim, overlay: quizOpen ? 'help' : overlay, hands: view.hands, ride };
   const keyApply = useCallback(
     (e: Parameters<typeof apply>[0]) => {
       if (quizOpen) return;
       if ('action' in e && e.action.type === 'NEXT' && quizPending) return setQuizOpen(true);
+      if ('action' in e && e.action.type === 'CONFIRM') return confirmDay();
       apply(e);
     },
-    [apply, quizOpen, quizPending],
+    [apply, quizOpen, quizPending, confirmDay],
   );
   useGameKeys(keyCtx, features.controls ? keyApply : () => {});
   /** The touch action button presses E or Q: the same `resolve` as the keys and the scene taps. */
   const press = (kind: 'use' | 'undo') => {
     const effect = resolve({ kind }, { ...keyCtx, ride: null }); // (E at the rover is the keyboard's and the 🚙 button's)
-    if (effect) apply(effect);
+    if (effect && 'action' in effect && effect.action.type === 'CONFIRM') confirmDay();
+    else if (effect) apply(effect);
   };
 
   // The day runs by itself and the lander lifts off by itself; the main button skips.
   useEffect(() => {
     if (screen !== 'game' || (phase !== 'run' && phase !== 'launch')) return;
     // (a day whose measured hours change runs 6 s, a calm one 4 s: src/scene/runClock.ts runMs)
-    const id = setTimeout(() => dispatch({ type: 'NEXT' }), phase === 'run' ? runMs(view.hourly) : LAUNCH_MS);
+    // (home story: the astronaut boards first, then the liftoff: src/scene/boarding.ts)
+    const id = setTimeout(() => dispatch({ type: 'NEXT' }), phase === 'run' ? runMs(view.hourly) : LAUNCH_MS + (boarding ? BOARD_S * 1000 : 0));
     return () => clearTimeout(id);
   }, [phase, screen, model.game?.day, dispatch, view.hourly]);
 
@@ -218,10 +240,13 @@ export function Hud({ model, view, dispatch, lang, setLang, sound, setSound, onS
 
   const confirmBlocked = phase === 'plan' && board?.preview?.warning === 'engine.warn.chooseCard';
   // (home story: the day runs → "Sleep"; the night card → "Wake up"; the plan's button reads "Start the day")
-  const nextLabel = features.homeStory && phase === 'run' ? 'ui.hud.sleep' : features.homeStory && phase === 'night' ? 'ui.hud.wakeUp' : 'ui.hud.next';
+  // (Day 7: "Launch!", and while the last day runs the next step is climbing aboard)
+  const launchDay = features.homeStory && (day ?? 0) >= 7;
+  const runLabel = launchDay && model.game?.launched ? 'ui.launch.climb' : 'ui.hud.sleep';
+  const nextLabel = features.homeStory && phase === 'run' ? runLabel : features.homeStory && phase === 'night' ? 'ui.hud.wakeUp' : 'ui.hud.next';
   const primary =
     phase === 'plan'
-      ? { label: tr('ui.board.confirmDay'), action: { type: 'CONFIRM' } as const }
+      ? { label: tr(launchDay ? 'ui.launch.button' : 'ui.board.confirmDay'), action: { type: 'CONFIRM' } as const }
       : { label: tr(nextLabel), action: { type: 'NEXT' } as const };
   const glow = task?.step === 'next' || task?.step === 'confirm' || task?.step === 'rest';
 
@@ -249,7 +274,7 @@ export function Hud({ model, view, dispatch, lang, setLang, sound, setSound, onS
         </div>
         {/* (home story: from Day 2, or once the Day 1 tutorial is done, the plan shows Today's 5 instead of one line) */}
         {playing && !overlay && features.homeStory && phase === 'plan' && !task?.step ? (
-          <DayTasks model={model} tr={tr} />
+          <DayTasks model={model} tr={tr} seen={{ arm: armDays.current.has(armKey) }} />
         ) : (
           playing &&
           !overlay &&
@@ -359,6 +384,7 @@ export function Hud({ model, view, dispatch, lang, setLang, sound, setSound, onS
             <CapcomHolo textKey={task?.radio ?? null} tr={tr} lang={lang} sound={sound} collapsible />
           )}
           {phase === 'run' && <DayRun view={view} ms={runMs(view.hourly)} sound={sound} tr={tr} />}
+          {boarding && phase === 'launch' && <BoardingCountdown tr={tr} />}
           {phase === 'night' && <NightTablet model={model} before={planRes.current} after={view.res} tr={tr} />}
           {features.homeStory && phase === 'night' && <NightFact model={model} tr={tr} lang={lang} />}
           {showList && !dialog && <PlanTablet board={board} model={model} dispatch={act} tr={tr} onFold={() => setListOpen(false)} />}
@@ -383,11 +409,12 @@ export function Hud({ model, view, dispatch, lang, setLang, sound, setSound, onS
               </div>
             </div>
           )}
+          {planning && shownWarning && <LaunchWarningNote warning={shownWarning} tr={tr} />}
           <Btn
             data-testid={phase === 'plan' ? 'confirm-day' : 'next'}
             className={`primary big pointer-events-auto w-full ${glow ? 'glow' : ''}`}
             disabled={confirmBlocked}
-            onClick={() => (primary.action.type === 'NEXT' ? nextOrQuiz() : dispatch(primary.action))}
+            onClick={() => (primary.action.type === 'NEXT' ? nextOrQuiz() : confirmDay())}
           >
             {primary.label}
             {phase === 'plan' ? <Check size={20} aria-hidden="true" /> : <ArrowRight size={20} aria-hidden="true" />}

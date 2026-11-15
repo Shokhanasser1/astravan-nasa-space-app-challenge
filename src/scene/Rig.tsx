@@ -30,6 +30,7 @@ import { titleAngles, titlePose, useTitle } from './title';
 import { applyRover, arrival, arrivalCameraSpot, DOOR, DRIVABLE, DRIVE, hatchAt, HOP, HOP_OUT, rover, roverAt, sideKey, stepDoors } from './arrival';
 import { placeOnGround, stepRover } from './roverDrive';
 import { GRAVITY } from '../character/physics.js';
+import { BOARD_PATH, boardClimbPhase, boardPose, boardState, boarding } from './boarding';
 
 /**
  * First-person rig (final version, Dizayn 2.0). Eye 1.7 m; six standing points + inside; one-finger drag looks
@@ -171,6 +172,8 @@ const FLOAT_S = reduced ? 1.4 : 1.0;
 const DRAG_RAD_PER_PX = 0.0045;
 
 const lander: Vec3 = [LAYOUT.lander[0], 3, LAYOUT.lander[1]];
+/** Day 7 boarding (home story): what the boarding shot looks at (the astronaut's chest; no allocation per frame). */
+const boardLook: Vec3 = [0, 0, 0];
 
 /** What E (or the ✋ button, or a tap) acts on: the power hub and the machines, at their footprint (src/controls/aim.ts). */
 const AIM: AimTarget[] = [
@@ -458,6 +461,11 @@ export function Rig({ view }: { view: View }) {
       if (!reduced || tc.t < 0.5) invalidate();
       return;
     }
+    // Day 7 (home story, src/scene/boarding.ts): the astronaut boards the base ship, then the liftoff from the hill
+    if (boarding && character) {
+      if (launching) return boardFrame(dt);
+      if (boardState.t0 >= 0) endBoarding();
+    }
     if (doorTrip.t >= 0) {
       doorTrip.t += dt;
       if (doorTrip.to && doorTrip.t >= DOOR_GO) {
@@ -593,6 +601,77 @@ export function Rig({ view }: { view: View }) {
     }
     if (s.t < 1 || Math.abs(dy) > 1e-3 || Math.abs(dp) > 1e-3 || launching || walking) invalidate();
   });
+
+  /**
+   * Day 7 boarding (home story): out of any room, the rover or a trip at once, the astronaut appears a few steps from
+   * the base ship's ladder (a cut: a walk from where it stood could pass through walls), walks to it, climbs, steps
+   * along the porch through the hatch and is on board, hidden. The camera: a side shot of the ladder, then (on board)
+   * the hill, watching the liftoff (src/scene/parts/Lander.tsx waits for it: LIFTOFF_DELAY_S).
+   */
+  function boardFrame(dt: number) {
+    const now = performance.now() / 1000;
+    if (boardState.t0 < 0) {
+      boardState.t0 = now;
+      if (roomState.id) setRoom(null, getRoom(roomState.id).out);
+      if (seat.stage !== 'walk') leaveRover();
+      if (doorTrip.t >= 0) habitatDoor.want = 0;
+      if (roomTrip.room) interiorDoors[buildingOf(roomTrip.room)].want = 0;
+      doorTrip.t = roomTrip.t = climb.t = -1;
+      doorTrip.to = null;
+      roomTrip.room = climb.to = null;
+      walker?.stop();
+    }
+    const P = boardPose(BOARD_PATH, now - boardState.t0, boardState.pose);
+    const aboard = P.stage === 'aboard';
+    body.x = P.x;
+    body.z = P.z;
+    body.y = P.stage === 'walk' ? ground(P.x, P.z) : P.y;
+    body.facing = P.facing;
+    body.vx = P.vx;
+    body.vz = P.vz;
+    body.vy = 0;
+    body.onGround = true;
+    body.windup = -1;
+    climbState.on = P.stage === 'climb';
+    climbState.vy = P.vy;
+    climbState.phase = boardClimbPhase(P.h);
+    interiorDoors.lander.want = P.stage === 'porch' || P.stage === 'in' ? 1 : 0; // the hatch opens for it
+    nearCam.hide = aboard;
+    let look: Vec3;
+    if (aboard) {
+      camera.position.set(...POINTS.hill.pos);
+      lander[1] = 3 + launchState.h;
+      look = lander;
+    } else {
+      const C = BOARD_PATH.camera;
+      camera.position.set(C.x, ground(C.x, C.z) + C.h, C.z);
+      boardLook[0] = body.x;
+      boardLook[1] = body.y + 1.2;
+      boardLook[2] = body.z;
+      look = boardLook;
+    }
+    [s.yaw, s.pitch] = anglesTo(camera.position, look);
+    s.yawT = s.yaw;
+    s.pitchT = s.pitch;
+    camera.rotation.set(s.pitch, s.yaw, 0, 'YXZ'); // no roll: horizon always level
+    camState.inside = false;
+    if (features.controls) setAim(null);
+    setRide(null);
+    c.shadowT -= dt;
+    if (c.shadowT <= 0) {
+      c.shadowT = SHADOW_EVERY;
+      gl.shadowMap.needsUpdate = true; // the astronaut's shadow moves with it
+    }
+    invalidate();
+  }
+
+  /** The launch is over (the truth screen, a new game): the ladder clip and the hatch back to rest. */
+  function endBoarding() {
+    boardState.t0 = -1;
+    climbState.on = false;
+    climbState.vy = 0;
+    interiorDoors.lander.want = 0;
+  }
 
   /** In a room (or out of it, null) at a spot: the body at the room's scale, the camera straight behind it. */
   function setRoom(id: RoomId | null, at: { x: number; z: number; facing: number }) {
@@ -1060,7 +1139,9 @@ export function Rig({ view }: { view: View }) {
     [goInside],
   );
 
-  const astronaut = character ? <Astronaut body={body} visible={point !== 'inside'} hands={view.hands ?? 0} view={view} /> : null;
+  // (home story: once the ship has flown the astronaut is on board, not on the Moon)
+  const aboard = boarding && view.launched === true && view.phase === 'truth';
+  const astronaut = character ? <Astronaut body={body} visible={point !== 'inside' && !aboard} hands={view.hands ?? 0} view={view} /> : null;
 
   return hideMarkers ? (
     astronaut
