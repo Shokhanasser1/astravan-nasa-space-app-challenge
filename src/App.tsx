@@ -235,7 +235,7 @@ export function App() {
 
   return (
     <>
-      <Stage view={view} onTap={onTap} onUndo={features.controls ? onUndo : undefined} />
+      <Stage view={view} onTap={onTap} onUndo={features.controls ? onUndo : undefined} paused={intro} />
       <Hud
         model={model}
         view={view}

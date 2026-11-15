@@ -22,13 +22,34 @@ export const TIERS: Record<Tier, TierSpec> = {
   // 1.5 and 2 keep the picture sharp and smooth at about half the pixels)
   pc: { dpr: [1, 1.5], msaa: 2, shadow: 2048, bloom: true, vignette: true, ao: false, stormScale: 1 },
   // A slow computer: the phone's effects, but the picture stays sharp (DPR 1.5 on a Retina screen) and smooth (MSAA).
-  pcLow: { dpr: [1, 1.5], msaa: 4, shadow: 1024, bloom: true, vignette: false, ao: false, stormScale: 1 },
+  // (MSAA 2 like pc, was 4: stepping down for low FPS made each frame heavier — 15 Nov, 2560×1600 laptop at ~40 fps)
+  pcLow: { dpr: [1, 1.5], msaa: 2, shadow: 1024, bloom: true, vignette: false, ao: false, stormScale: 1 },
   phone: { dpr: [1, 1.5], msaa: 0, shadow: 1024, bloom: true, vignette: false, ao: false, stormScale: 1 },
   phoneLow: { dpr: [1, 1], msaa: 0, shadow: 1024, bloom: false, vignette: false, ao: false, stormScale: 1 },
   min: { dpr: [1, 1], msaa: 0, shadow: 0, bloom: false, vignette: false, ao: false, stormScale: 0.5 },
 };
 
-export const LOWER: Record<Tier, Tier> = { pc: 'pcLow', pcLow: 'phoneLow', phone: 'phoneLow', phoneLow: 'min', min: 'min' };
+/**
+ * Most pixels the 3D canvas draws: about Full HD. Measured 15 Nov on a 2560×1600 laptop at 150 % (RTX 5060, live
+ * /test/ link, frame rate unlocked): a 2560×1425 canvas (3.6 Mpx) ran at 35–41 fps, a 1707×950 one at 145–151 fps.
+ * Larger screens draw the 3D at this size and the browser scales it up; the HTML interface stays at full sharpness.
+ */
+export const MAX_CANVAS_PX = 1920 * 1080;
+
+/** The 3D canvas never draws more than this many frames a second (frameCap.ts); 0 = the screen's own rate. */
+export const MAX_FPS = 60;
+
+/**
+ * Device pixel ratio for the canvas: the tier's range (as R3F would clamp devicePixelRatio), then lowered so a
+ * cssW × cssH canvas stays within maxPx (never below 0.5). Rounded down to 0.01.
+ */
+export function canvasDpr(range: [number, number], deviceDpr: number, cssW: number, cssH: number, maxPx = MAX_CANVAS_PX) {
+  const wanted = Math.min(Math.max(deviceDpr, range[0]), range[1]);
+  const fit = Math.sqrt(maxPx / Math.max(1, cssW * cssH));
+  return Math.floor(Math.max(0.5, Math.min(wanted, fit)) * 100) / 100;
+}
+
+export const LOWER: Record<Tier, Tier> ={ pc: 'pcLow', pcLow: 'phoneLow', phone: 'phoneLow', phoneLow: 'min', min: 'min' };
 
 /**
  * FPS bounds for drei's PerformanceMonitor on a computer: under 40 fps steps pc → pcLow (still sharp); leaving DPR 1.5
