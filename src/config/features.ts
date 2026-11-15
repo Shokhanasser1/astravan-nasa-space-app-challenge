@@ -51,6 +51,21 @@ export const features = {
   // on Day 7. New words, 4 gauges + hearts, Today's 5, a fact a night, the finale, judge links. The engine is unchanged.
   // Off → today's game. Turned on only when the whole story is green.
   homeStory: true,
+  // AI graphics pack (branch aminjon/hf-graphics, 15 Nov; Higgsfield-made pictures and models, docs/AI-USE.md):
+  // each part loads after the first frame and falls back to the old look if its file is missing or fails.
+  // hfSky: the Milky Way all-sky picture instead of drei's point stars (public/hf/sky/).
+  hfSky: true,
+  // hfGround: photo-real regolith in two layers (2.7 m grains and pebbles, 14 m craterlets and stones) instead of the
+  // code-made noise (public/hf/ground/).
+  hfGround: true,
+  // hfRocks: AI-made 3D boulders (PBR) instead of the faceted code-made blocks; computers only (triangles).
+  hfRocks: true,
+  // hfPost: a touch more contrast, fine film grain and a faint lens fringe on the computer tier only. (N8AO was tried:
+  // +100 KB gzip in the first download for every phone and little to see under the hard Sun, so it is left out.)
+  hfPost: true,
+  // hfArt: AI key art on the finale (the ship lifting off home, all endings but the late one) and the no-WebGL still.
+  // (The loading splash in index.html is plain HTML and not behind a flag: delete its block to remove it.)
+  hfArt: true,
   // Pitch answer 5 (Sunday plan): "no account, no names, no date stored, nothing goes to a server".
   // Keep false unless the whole team changes that answer. True = anonymous results go to our PocketBase.
   sendResults: false,

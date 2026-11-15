@@ -333,6 +333,10 @@ export function regolithMaterial({ detail = null, detailNormal = null, surge = 0
   const uniforms = {
     uDetail: { value: detail },
     uDetailN: { value: detailNormal },
+    // the second, coarser layer (one tile ≈ 14 m); the same texture unless a macro texture is swapped in
+    // (features.hfGround: craterlets, ejecta and stones, src/scene/hfAssets.ts)
+    uMacro: { value: detail },
+    uMacroN: { value: detailNormal },
     uSunView: { value: new THREE.Vector3(0, 1, 0) },
     uSurge: { value: surge },
   };
@@ -360,6 +364,8 @@ vNW = normalize(mat3(modelMatrix) * normal);`);
       .replace('#include <common>', `#include <common>
 uniform sampler2D uDetail;
 uniform sampler2D uDetailN;
+uniform sampler2D uMacro;
+uniform sampler2D uMacroN;
 uniform vec3 uSunView;
 uniform float uSurge;
 varying float vSunVis;
@@ -368,11 +374,11 @@ varying vec2 vWXZ;
 varying vec3 vNW;`)
       .replace('#include <map_fragment>', useDetail ? `
 vec3 dA = texture2D(uDetail, vWXZ * 0.37).rgb;
-vec3 dB = texture2D(uDetail, vWXZ * 0.071 + 0.31).rgb;
+vec3 dB = texture2D(uMacro, vWXZ * 0.071 + 0.31).rgb;
 diffuseColor.rgb *= mix((dA * 0.62 + dB * 0.38) * 2.0, vec3(1.0), 0.45 * vPad);   // the graded pad is smoother` : '')
       .replace('#include <normal_fragment_maps>', useDetail ? `
 vec2 sA = texture2D(uDetailN, vWXZ * 0.37).rg * 2.0 - 1.0;
-vec2 sB = texture2D(uDetailN, vWXZ * 0.071 + 0.31).rg * 2.0 - 1.0;
+vec2 sB = texture2D(uMacroN, vWXZ * 0.071 + 0.31).rg * 2.0 - 1.0;
 vec2 sl = (sA * 0.5 + sB * 0.18) * (1.0 - 0.6 * vPad);
 vec3 nW = normalize(vNW + vec3(sl.x, 0.0, sl.y));
 normal = normalize((viewMatrix * vec4(nW, 0.0)).xyz);` : '')

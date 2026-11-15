@@ -1,0 +1,4 @@
+AI-made graphics pack (15 Nov 2026), generated on Higgsfield under the team's plan: sky panorama (FLUX 3 Image),
+regolith photo-texture (GPT Image 2.6), two boulders (Nano Banana Pro photo -> Tripo H3.1 image-to-3D), key art
+(Higgsfield Cinema Studio 2.5). Processing scripts and job ids: scripts/hf/README.md. Disclosed in CREDITS.md and
+docs/AI-USE.md. Full-screen pictures carry a visible "AI" mark. No NASA logos, flags or insignia; no people.

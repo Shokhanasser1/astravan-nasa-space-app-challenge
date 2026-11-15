@@ -9,6 +9,39 @@
     <title>HOME BY SEVEN</title>
   </head>
   <body>
+    <!-- Loading splash (features.hfSky pack, AI key art; docs/AI-USE.md): shown while the game's code and 3D load,
+         faded out by the first 3D frame (Stage.tsx 'hb7:ready') or after 9 s at most. Pure CSS, no script needed to show. -->
+    <style>
+      #hb7-splash { position: fixed; inset: 0; z-index: 60; background: #000 url(hf/art/splash-wide.webp) center / cover no-repeat;
+        transition: opacity .9s ease; display: flex; align-items: flex-end; justify-content: center; pointer-events: none; }
+      @media (orientation: portrait) { #hb7-splash { background-image: url(hf/art/splash-tall.webp); } }
+      #hb7-splash::before { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,.35) 0%, rgba(0,0,0,0) 35%, rgba(0,0,0,0) 60%, rgba(0,0,0,.75) 100%); }
+      #hb7-splash .t { position: relative; margin-bottom: 9vh; text-align: center; color: #fff; font: 600 13px/1.2 system-ui, sans-serif; letter-spacing: .5em; }
+      #hb7-splash .t b { display: block; font-size: clamp(44px, 9vw, 110px); letter-spacing: .08em; font-weight: 800;
+        background: linear-gradient(180deg, #fff, #8fe3ff); -webkit-background-clip: text; background-clip: text; color: transparent; }
+      #hb7-splash .bar { position: relative; width: 160px; height: 3px; margin: 18px auto 0; background: rgba(255,255,255,.15); overflow: hidden; border-radius: 2px; }
+      #hb7-splash .bar::after { content: ''; position: absolute; inset: 0; width: 40%; background: #8fe3ff; animation: hb7load 1.2s ease-in-out infinite; }
+      @keyframes hb7load { from { transform: translateX(-100%); } to { transform: translateX(250%); } }
+      #hb7-splash .ai { position: absolute; right: 12px; bottom: 10px; font: 600 10px system-ui, sans-serif; color: rgba(255,255,255,.6);
+        border: 1px solid rgba(255,255,255,.35); border-radius: 4px; padding: 1px 5px; letter-spacing: .1em; }
+      #hb7-splash.out { opacity: 0; }
+    </style>
+    <div id="hb7-splash" aria-hidden="true">
+      <div class="t">HOME BY<b>SEVEN</b><div class="bar"></div></div>
+      <span class="ai">AI</span>
+    </div>
+    <script>
+      (function () {
+        var done = false;
+        function hide() {
+          if (done) return; done = true;
+          var el = document.getElementById('hb7-splash'); if (!el) return;
+          el.classList.add('out'); setTimeout(function () { el.remove(); }, 1000);
+        }
+        window.addEventListener('hb7:ready', function () { setTimeout(hide, 350); });
+        setTimeout(hide, 9000);
+      })();
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

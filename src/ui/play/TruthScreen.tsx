@@ -71,6 +71,18 @@ export function TruthScreen({
       className="mx-auto flex min-h-0 max-h-full w-full max-w-lg touch-pan-y flex-col gap-3 overflow-y-auto overscroll-contain"
       data-testid="truth"
     >
+      {/* AI key art (features.hfArt): the ship lifting off home, for every ending that flies home. Hidden if the file fails. */}
+      {features.homeStory && features.hfArt && r.titleKey.split('.').pop() !== 'lateRideHome' && (
+        <div className="relative -mx-1 shrink-0 overflow-hidden rounded-[16px]" data-testid="truth-hero">
+          <img
+            src={`${import.meta.env.BASE_URL}hf/art/launch.webp`}
+            alt=""
+            className="block aspect-[16/7] w-full object-cover"
+            onError={(e) => ((e.currentTarget.parentElement as HTMLElement).style.display = 'none')}
+          />
+          <span className="absolute right-2 bottom-1 rounded border border-white/40 px-1 text-[10px] font-semibold tracking-widest text-white/70">AI</span>
+        </div>
+      )}
       <h1 className="title-grad text-center text-2xl font-bold">{tr('ui.truth.real')}</h1>
       <p className="text-center text-lg tabular-nums" data-testid="truth-dates">
         {first} — {last}
