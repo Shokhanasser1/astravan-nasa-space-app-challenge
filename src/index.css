@@ -1653,3 +1653,70 @@ svg.entry-day-home {
     min-height: 48px;
   }
 }
+
+/*
+ * Phones (15 Nov ~15:45, Samandar: "on the phone the notifications cover the screen"): every visor hologram and
+ * notification card is smaller and capped, so the Moon and the astronaut stay in view; the cards that are extra on a
+ * small screen step aside (the Sun-of-the-day card) or fold to their essentials (the jump physics card, the robot
+ * arm's panel). Computers are unchanged: only small widths or short (landscape phone) heights match.
+ */
+@media (max-width: 600px), (max-height: 500px) {
+  .holo {
+    font-size: 0.8rem;
+    line-height: 1.25;
+  }
+  /* mission control's line: narrower, at most three lines of text */
+  [data-testid='radio'] {
+    max-width: min(88vw, 24rem) !important;
+    gap: 0.5rem !important;
+    padding: 0.3rem 0.55rem !important;
+  }
+  [data-testid='radio'] p {
+    font-size: 0.8rem !important;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  /* the real Sun photo of the day: on a phone it is the truth screen's, not a card over the scene */
+  [data-testid='sun-today'] {
+    display: none !important;
+  }
+  /* the jump's physics card: a small corner card with the two heights only */
+  [data-testid='physics-holo'] {
+    width: 10.5rem !important;
+    font-size: 0.68rem !important;
+    padding: 0.3rem 0.5rem !important;
+    gap: 0.1rem !important;
+  }
+  [data-testid='physics-holo'] > :nth-child(n + 4) {
+    display: none !important;
+  }
+  /* the robot arm's scanner panel: the live picture smaller, the how-to list off (the keys line stays) */
+  [data-testid='arm-scan-panel'] {
+    width: 140px !important;
+    font-size: 0.66rem !important;
+    gap: 0.25rem !important;
+  }
+  [data-testid='arm-scan-panel'] canvas {
+    width: 70% !important;
+  }
+  [data-testid='arm-scan-panel'] ul {
+    display: none !important;
+  }
+  /* the task line, the day's tasks, the night card: inside the screen, scrolling if long */
+  [data-testid='task'],
+  [data-testid='day-tasks'],
+  [data-testid='night-fact'],
+  [data-testid='prompt'],
+  [data-testid='warning'] {
+    max-width: 88vw;
+    font-size: 0.8rem;
+  }
+  [data-testid='day-tasks'],
+  [data-testid='res-info'],
+  [data-testid='home-info'] {
+    max-height: 42vh;
+    overflow-y: auto;
+  }
+}
