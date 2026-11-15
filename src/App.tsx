@@ -87,6 +87,12 @@ export function App() {
   const view = useMemo(() => ({ ...toView(model, SKY), ...viewOverride }), [model]);
 
   useEffect(() => audio.setMuted(!sound), [sound]);
+  // Dosimeter clicks (concept 3.0 §03): the day's measured dose ratio (LRO CRaTER, view.ratio) as Geiger clicks
+  // while the crew is on the Moon — a quiet day ticks slowly, a storm day rattles. Silent with the sound off, on the
+  // start and end screens, at the launch and on the truth screen.
+  const onMoon = model.screen === 'game' && view.phase !== 'launch' && view.phase !== 'truth';
+  const doseRatio = sound && onMoon ? (view.ratio ?? 0) : 0;
+  useEffect(() => audio.setDose(doseRatio), [doseRatio]);
   useEffect(() => {
     if (features.sendResults) void flush();
   }, []);

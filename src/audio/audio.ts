@@ -10,6 +10,8 @@ class AudioEngine {
   master: GainNode | null = null;
   dosimeter: Dosimeter | null = null;
   private buffers = new Map<string, AudioBuffer>();
+  /** The dose ratio the dosimeter should click at; kept until the first tap creates the AudioContext. */
+  private doseRatio = 0;
 
   /** Call from a pointerdown/click handler. Safe to call many times. */
   unlock() {
@@ -19,8 +21,26 @@ class AudioEngine {
       this.master = this.ctx.createGain();
       this.master.connect(this.ctx.destination);
       this.dosimeter = new Dosimeter(this.ctx, this.master);
+      this.dosimeter.setRatio(this.doseRatio);
+      // A hidden tab goes quiet (breath, clicks, voices) and picks up where it was when it comes back.
+      document.addEventListener('visibilitychange', () => {
+        if (!this.ctx) return;
+        if (document.hidden) {
+          this.dosimeter?.stop();
+          void this.ctx.suspend();
+        } else {
+          void this.ctx.resume();
+          this.dosimeter?.setRatio(this.doseRatio);
+        }
+      });
     }
-    if (this.ctx.state === 'suspended') void this.ctx.resume();
+    if (this.ctx.state === 'suspended' && !document.hidden) void this.ctx.resume();
+  }
+
+  /** Dosimeter clicks at this dose ratio (today / normal, measured); 0 = silent. Safe before the first tap. */
+  setDose(ratio: number) {
+    this.doseRatio = ratio;
+    if (!document.hidden) this.dosimeter?.setRatio(ratio);
   }
 
   setMuted(muted: boolean) {
