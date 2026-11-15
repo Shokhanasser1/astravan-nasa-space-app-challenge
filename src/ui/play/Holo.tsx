@@ -83,24 +83,31 @@ export function CapcomHolo({
     return () => window.clearTimeout(id);
   }, [collapsible, folded, speaking, arriving, textKey, opened]);
   const text = textKey ? tr(textKey) : '';
-  const say = () => {
-    if (!text || lang === 'uz' || !('speechSynthesis' in window)) return;
+  // A recorded voice when there is one for this line as it reads now (Gemini TTS, src/audio/voice.ts), else the
+  // device's voice for English and Russian; Uzbek only when recorded.
+  const say = async () => {
+    if (!text || !textKey) return;
+    const key = textKey;
+    const recorded = await audio.hasVoice(key, text, lang);
+    if (!recorded && (lang === 'uz' || !('speechSynthesis' in window))) return;
     audio.unlock();
     audio.quindar('start');
     setSpeaking(true);
-    window.setTimeout(() => {
+    await new Promise((r) => window.setTimeout(r, 280));
+    const played = recorded && (await audio.say(key, text, lang));
+    if (!played && lang !== 'uz' && 'speechSynthesis' in window) {
       audio.speak(text, lang);
-      const done = () => {
-        if (window.speechSynthesis.speaking) return void window.setTimeout(done, 300);
-        audio.quindar('end');
-        setSpeaking(false);
-      };
-      window.setTimeout(done, 600);
-    }, 280);
+      await new Promise<void>((resolve) => {
+        const done = () => (window.speechSynthesis.speaking ? window.setTimeout(done, 300) : resolve());
+        window.setTimeout(done, 600);
+      });
+    }
+    audio.quindar('end');
+    setSpeaking(false);
   };
   useEffect(() => {
     // (A new line is read once, when it has arrived from Earth; the button reads it again.)
-    if (sound && textKey && !arriving) say();
+    if (sound && textKey && !arriving) void say();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [textKey, arriving]);
   if (!textKey) return null;
@@ -141,7 +148,7 @@ export function CapcomHolo({
         )}
       </div>
       {lang !== 'uz' && (
-        <button type="button" className="abtn ml-auto !rounded-full !p-0" aria-label={tr('ui.capcom.speak')} onClick={say}>
+        <button type="button" className="abtn ml-auto !rounded-full !p-0" aria-label={tr('ui.capcom.speak')} onClick={() => void say()}>
           <Volume2 size={20} aria-hidden="true" />
         </button>
       )}

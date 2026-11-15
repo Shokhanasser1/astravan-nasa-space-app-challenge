@@ -73,8 +73,11 @@ Following the Space Apps 2026 Project Submission Guide, SI use is acknowledged i
 - **3D models:** the furnished building interiors (`public/models/interiors`) and the astronaut's compact backpack
   were built in Blender by SI-written scripts (AI-made models, marked in `CREDITS.md`); so was the lunar lander v2 in
   `blender/lander_v2/` (not in the game). The NASA models themselves are NASA's.
-- **Audio:** English and Russian narration uses the device's text-to-speech (`speechSynthesis`); Uzbek lines are
-  shown as text (no recorded voice yet). Sounds (dosimeter, Quindar tones) are generated in code.
+- **Audio:** the radio lines are spoken by **AI-generated voices** (Google Gemini TTS, adult synthetic voices,
+  `public/audio/voice/`); a line without a matching file falls back to the device's text-to-speech; Uzbek lines
+  without a file are shown as text. Sounds (dosimeter, Quindar tones, suit breath, habitat hum, event chimes)
+  are generated in code. The background music (`public/audio/music/`) is **AI-generated** (ElevenLabs Music
+  v2.5 via Higgsfield) and says so in each file's metadata.
 - **Images and video:** any SI-generated image or video carries a visible "AI" mark and contains no NASA logos,
   flags or mission identifiers, and no likeness of anyone under 18.
 

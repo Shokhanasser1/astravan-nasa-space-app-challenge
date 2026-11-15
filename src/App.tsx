@@ -5,7 +5,9 @@ import { FIRST_WEEK, initialModel, reducer, toView, truth, type Machine, type Mo
 import { SKY, WEEKS, pickWeek } from './engine/week';
 import type { Lang } from './i18n/t';
 import { audio } from './audio/audio';
-import { doseFor } from './scene/runClock';
+import { ambienceFor } from './audio/ambience';
+import { musicFor } from './audio/music';
+import { doseFor, levelOf, useRunHour } from './scene/runClock';
 import { load, save } from './lib/storage';
 import { features } from './config/features';
 import { flush } from './net/api';
@@ -98,6 +100,13 @@ export function App() {
   useEffect(() => {
     if (view.phase !== 'run') audio.setDose(doseRatio);
   }, [doseRatio, view.phase]);
+  // Breath in the suit outside, the habitat's hum inside (src/audio/ambience.ts); the day's level sets the breath.
+  const amb = ambienceFor(model.screen, view.phase);
+  useEffect(() => audio.setAmbience(amb, view.level), [amb, view.level]);
+  // Music (src/audio/music.ts): calm, storm (alert and storm days, stormy hours of the running day), finale.
+  const runHour = useRunHour();
+  const mood = musicFor(model.screen, view.phase, view.level, view.alert, runHour ? levelOf(runHour.ratio) : null);
+  useEffect(() => audio.setMusic(mood), [mood]);
   useEffect(() => {
     if (features.sendResults) void flush();
   }, []);

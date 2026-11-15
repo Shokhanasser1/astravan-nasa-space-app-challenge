@@ -1,0 +1,4 @@
+calm.mp3, storm.mp3, finale.mp3 — background music of HOME BY SEVEN (three 60 s instrumental loops).
+AI-GENERATED: ElevenLabs Music v2.5 through Higgsfield, 15 Nov 2026, from prompts written by Claude Code for the team
+(prompts in docs/AI-USE.md). Loudness-matched and faded with ffmpeg. Each file's metadata says "AI-generated".
+Generated for Team Astrakarvan under the Higgsfield plan's terms. Not endorsed by NASA.

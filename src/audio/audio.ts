@@ -1,14 +1,22 @@
+import { Ambience, type AmbienceMode } from './ambience';
 import { Dosimeter } from './dosimeter';
+import { Music, type Mood } from './music';
+import { hasVoice, playVoice, stopVoice } from './voice';
 
 /**
  * One AudioContext for the whole game, created on the first tap (browsers block audio before it).
- * Generated sounds (dosimeter, Quindar tones) cost zero bytes. Recorded files: breath loop, Uzbek voice lines.
+ * Generated sounds (dosimeter, Quindar tones, suit breath, habitat hum, event chimes: ambience.ts) cost zero bytes.
  * Every sound has a visual twin; the game is playable with sound off.
  */
 class AudioEngine {
   ctx: AudioContext | null = null;
   master: GainNode | null = null;
   dosimeter: Dosimeter | null = null;
+  ambience: Ambience | null = null;
+  music: Music | null = null;
+  private mood: Mood = 'off';
+  /** The ambience wanted, kept until the first tap creates the AudioContext. */
+  private amb: { mode: AmbienceMode; level: number } = { mode: 'off', level: 0 };
   private buffers = new Map<string, AudioBuffer>();
   /** The dose ratio the dosimeter should click at; kept until the first tap creates the AudioContext. */
   private doseRatio = 0;
@@ -23,15 +31,23 @@ class AudioEngine {
       this.master.connect(this.ctx.destination);
       this.dosimeter = new Dosimeter(this.ctx, this.master);
       this.dosimeter.setRatio(this.doseRatio);
+      this.ambience = new Ambience(this.ctx, this.master);
+      this.ambience.setMode(this.amb.mode, this.amb.level);
+      this.music = new Music(this.ctx, this.master, import.meta.env.BASE_URL);
+      this.music.setMood(this.mood);
       // A hidden tab goes quiet (breath, clicks, voices) and picks up where it was when it comes back.
       document.addEventListener('visibilitychange', () => {
         if (!this.ctx) return;
         if (document.hidden) {
           this.dosimeter?.stop();
+          this.ambience?.stopAll();
+          this.music?.stopAll();
           void this.ctx.suspend();
         } else {
           void this.ctx.resume();
           this.dosimeter?.setRatio(this.doseRatio);
+          this.ambience?.resume();
+          this.music?.resume();
         }
       });
     }
@@ -42,6 +58,30 @@ class AudioEngine {
   setDose(ratio: number) {
     this.doseRatio = ratio;
     if (!document.hidden) this.dosimeter?.setRatio(ratio);
+  }
+
+  /** Breath outside, hum inside, nothing off the Moon (ambience.ts); level = the radiation level heard now. */
+  setAmbience(mode: AmbienceMode, level = 0) {
+    this.amb = { mode, level };
+    if (!document.hidden) this.ambience?.setMode(mode, level);
+  }
+
+  /** The hour's radiation level while the day runs: the breath quickens with it. */
+  setAmbienceLevel(level: number) {
+    this.amb.level = level;
+    this.ambience?.setLevel(level);
+  }
+
+  /** Background music for the moment (music.ts); loads after the first tap. */
+  setMusic(mood: Mood) {
+    this.mood = mood;
+    if (!document.hidden) this.music?.setMood(mood);
+  }
+
+  /** A soft chime for a real event of the day (DONKI): a flare peak or the particles' arrival. */
+  chime(kind: 'flare' | 'particles') {
+    if (this.muted || document.hidden) return;
+    this.ambience?.chime(kind);
   }
 
   setMuted(muted: boolean) {
@@ -140,6 +180,21 @@ class AudioEngine {
   }
 
   /** English and Russian lines: the browser reads them. Uzbek lines are recorded by the team. */
+  /** True when a recorded voice (Gemini TTS, src/audio/voice.ts) speaks this line as it reads now. */
+  hasVoice(key: string, text: string, lang: string): Promise<boolean> {
+    return hasVoice(import.meta.env.BASE_URL, lang, key, text);
+  }
+
+  /** Play the recorded voice of a line through the radio band; resolves false when there is none. */
+  async say(key: string, text: string, lang: string): Promise<boolean> {
+    if (!this.ctx || !this.master || this.muted) return false;
+    return playVoice(this.ctx, this.master, import.meta.env.BASE_URL, lang, key, text);
+  }
+
+  stopVoice() {
+    stopVoice();
+  }
+
   speak(text: string, lang: 'en' | 'ru') {
     if (!('speechSynthesis' in window)) return;
     const u = new SpeechSynthesisUtterance(text);

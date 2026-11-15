@@ -35,6 +35,10 @@ export function DayRun({ view, ms, sound, tr }: { view: View; ms: number; sound:
         setHour(whole);
         setRunHour({ hour: whole, ratio: r });
         audio.setDose(sound ? r : 0);
+        audio.setAmbienceLevel(levelOf(r));
+        // the day's real events, at their hours (DONKI): a strong flare (M5 and up, X) and the particles' arrival
+        for (const f of view.flares ?? []) if (/^(X|M[5-9])/.test(f.cls) && Math.floor(utcHour(f.peak_utc)) === whole) audio.chime('flare');
+        for (const p of view.particles ?? []) if (Math.floor(utcHour(p.first_seen_utc)) === whole) audio.chime('particles');
       }
       raf = requestAnimationFrame(tick);
     };
@@ -45,7 +49,7 @@ export function DayRun({ view, ms, sound, tr }: { view: View; ms: number; sound:
       // the evening's dose for the night card (the app sets it again on the next phase)
       audio.setDose(sound ? doseFor('night', view.hourly, dayRatio) : 0);
     };
-  }, [ms, sound, view.hourly, dayRatio]);
+  }, [ms, sound, view.hourly, view.flares, view.particles, dayRatio]);
 
   const now = ratioAt(view.hourly, hour, dayRatio);
   const flares = (view.flares ?? []).filter((f) => /^[MX]/.test(f.cls));
