@@ -2,7 +2,12 @@ import { describe, expect, it } from 'vitest';
 import { LAYOUT, RADIUS } from '../scene/layout';
 import { MARKERS, POINTS } from '../scene/points';
 import { BODY, clearance, fits, walkStep } from './collide';
-import { EDGE, INSIDE, OUTSIDE, ROOM } from './world';
+import { EDGE, INSIDE, OUTSIDE, ROOM, ROVER_AREA } from './world';
+import { NEAR_R } from '../look/terrain.js';
+import { ICE_CRATER } from '../scene/ground';
+import { footGround, wheelGround } from './rocks';
+import { STEP, createBody, stepBody } from '../character/body';
+import { ROVER, stepRover, type Rover } from '../scene/roverDrive';
 
 describe("the base's hitboxes", () => {
   it('has one for every solid thing in the layout', () => {
@@ -35,6 +40,8 @@ describe("the base's hitboxes", () => {
       for (let k = 0; k < 12; k++) {
         const a = (k / 12) * Math.PI * 2;
         let p = { x: cx + Math.cos(a) * 7, z: cz + Math.sin(a) * 7 };
+        // (a rock on the far edge: nobody comes at it from beyond the edge, where the bounds would pin you into it)
+        if (Math.hypot(p.x, p.z) > EDGE - BODY) continue;
         let least = Infinity;
         for (let i = 0; i < 600; i++) {
           p = walkStep(p, (-Math.cos(a) * 2) / 60, (-Math.sin(a) * 2) / 60, OUTSIDE);
@@ -68,12 +75,53 @@ describe("the base's hitboxes", () => {
 
   it('keeps you on the playable ground outside, and on the floor inside the habitat', () => {
     let p = { x: 0, z: 30 };
-    for (let i = 0; i < 60 * 40; i++) p = walkStep(p, 0.01, 2 / 60, OUTSIDE);
+    for (let i = 0; i < 60 * 60; i++) p = walkStep(p, 0.01, 2 / 60, OUTSIDE);
     expect(Math.hypot(p.x, p.z)).toBeLessThanOrEqual(EDGE - BODY + 1e-9);
+    expect(Math.hypot(p.x, p.z)).toBeGreaterThan(EDGE - BODY - 0.5); // (it got there)
     let q: { x: number; z: number } = { x: LAYOUT.habitat[0], z: LAYOUT.habitat[1] };
     for (let i = 0; i < 600; i++) q = walkStep(q, 2 / 60, 0.5 / 60, INSIDE);
     expect(Math.hypot(q.x - LAYOUT.habitat[0], q.z - LAYOUT.habitat[1])).toBeLessThanOrEqual(ROOM - BODY + 1e-9);
     // (The rig calls that "inside" while the eye is within 1.6 m of the habitat's middle.)
     expect(ROOM - BODY).toBeLessThan(1.6);
+  });
+});
+
+describe('the play area (120 m, the team on 15 Nov: "4× bigger with the car")', () => {
+  it('is the same 120 m for the astronaut and the rover, on the detailed ground', () => {
+    expect(EDGE).toBe(120);
+    expect(ROVER_AREA.bounds).toBe(OUTSIDE.bounds); // (it can get out wherever the rover can go)
+    expect(EDGE + 5).toBeLessThan(NEAR_R);
+    // the whole ice crater (26 m round its middle) is inside it now
+    expect(Math.hypot(ICE_CRATER.x, ICE_CRATER.z) + 26).toBeLessThan(EDGE - ROVER.r);
+  });
+
+  it('the astronaut walks down into the ice crater (5 m deep) and up out of it, on the ground all the way', () => {
+    const d = Math.hypot(ICE_CRATER.x, ICE_CRATER.z);
+    const ux = ICE_CRATER.x / d, uz = ICE_CRATER.z / d; // from the base towards the crater
+    const b = createBody(ICE_CRATER.x - ux * 30, ICE_CRATER.z - uz * 30, footGround);
+    let low = Infinity, lift = 0;
+    for (let t = 0; t < 70; t += STEP) {
+      const s = t < 35 ? 1 : -1; // in, then back out
+      stepBody(b, { x: ux * s, z: uz * s, run: true, jump: false }, OUTSIDE, footGround);
+      low = Math.min(low, b.y);
+      lift = Math.max(lift, b.y - footGround(b.x, b.z));
+    }
+    expect(low).toBeLessThan(footGround(ICE_CRATER.x - ux * 30, ICE_CRATER.z - uz * 30) - 3); // it went down in
+    expect(lift).toBeLessThan(0.3); // (never flung off the slope)
+    expect(Math.hypot(b.x - ICE_CRATER.x, b.z - ICE_CRATER.z)).toBeGreaterThan(26); // and came back out
+  });
+
+  it('the rover drives across the ice crater, on its wheels, tilting but never flipping', () => {
+    const d = Math.hypot(ICE_CRATER.x, ICE_CRATER.z);
+    const px = -ICE_CRATER.z / d, pz = ICE_CRATER.x / d; // across, square to the way from the base
+    const yaw = Math.atan2(px, pz);
+    const r: Rover = { x: ICE_CRATER.x - px * 32, z: ICE_CRATER.z - pz * 32, yaw, speed: 0, y: 0, pitch: 0, roll: 0 };
+    let tilt = 0;
+    for (let i = 0; i < 60 * 30; i++) {
+      stepRover(r, { throttle: 1, steer: 0, brake: false }, ROVER_AREA, wheelGround, 1 / 60);
+      tilt = Math.max(tilt, Math.abs(r.pitch), Math.abs(r.roll));
+    }
+    expect((r.x - ICE_CRATER.x) * px + (r.z - ICE_CRATER.z) * pz).toBeGreaterThan(26); // over the far rim
+    expect(tilt).toBeLessThan(0.6);
   });
 });

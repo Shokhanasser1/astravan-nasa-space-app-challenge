@@ -30,6 +30,14 @@ const SIDE = { L: 'Left', R: 'Right' };
 export const GESTURES = ['Insert', 'Wrist', 'LookAround'];
 /** Seconds into Insert while the battery is in the glove (clip meta grab_frame / release_frame at 30 fps). */
 export const INSERT_HOLD = { from: 12 / 30, to: 44 / 30 };
+/**
+ * Climb (Blender: game3d/characters/anim/clips/climb.py, 42 frames): hands and boots on a vertical ladder with
+ * 0.30 m rungs, in place, looping; one cycle rises two rungs (meta rise_per_cycle 0.6 m), i.e. CLIMB_RISE m per
+ * second of clip. The game moves the body up the habitat's ladder (src/walk/ladder.ts) and scrubs the clip by the
+ * height (s.climb = phase 0…1, src/walk/ladder.ts climbPhase), so it runs backward going down and the boots meet
+ * the rungs. An older astronaut.glb without it treads in place with Walk at s.climbV / CLIMB_RISE.
+ */
+export const CLIMB_RISE = 0.6 / 1.4;
 /** Idle this long (s, random in the range) → one LookAround. */
 export const FIDGET_S = [14, 24];
 
@@ -43,7 +51,7 @@ export class AnimController {
     this.mixer = new THREE.AnimationMixer(model);
     /** @type {Record<string, THREE.AnimationAction>} */
     this.actions = {};
-    for (const name of ['Idle', 'Walk', 'Run', 'Jump', 'Carry', 'Pour', 'JumpStart', 'JumpAir', 'JumpLand', ...GESTURES, 'Seated', 'SeatedSteer']) {
+    for (const name of ['Idle', 'Walk', 'Run', 'Jump', 'Carry', 'Pour', 'JumpStart', 'JumpAir', 'JumpLand', ...GESTURES, 'Seated', 'SeatedSteer', 'Climb']) {
       if (clips[name]) this.actions[name] = this.mixer.clipAction(clips[name]);
     }
     if (clips.Pour) {
@@ -220,7 +228,11 @@ export class AnimController {
     if (name === 'Idle') this.idleSince = this.now();
   }
 
-  /** s: { onGround, windup, vy, v0, speed, carrying, pouring, running, k, seated?, steer? (−1 left … 1 right) } */
+  /**
+   * s: { onGround, windup, vy, v0, speed, carrying, pouring, running, k, seated?, steer? (−1 left … 1 right),
+   * climb? (on a ladder: the Climb clip's phase 0…1; null or undefined: not climbing), climbV? (its vertical
+   * speed, full-size m/s, negative down) }
+   */
   update(dt, s) {
     this.k = s.k || 1;
     this.last = s;
@@ -244,6 +256,23 @@ export class AnimController {
       const d = A.SeatedSteer.getClip().duration;
       A.SeatedSteer.paused = true;
       A.SeatedSteer.time = Math.min(d - 0.001, Math.max(0, ((s.steer || 0) + 1) / 2) * d);
+      this.wasAir = false;
+      this.airTime = 0;
+      return;
+    }
+    if (s.climb !== undefined && s.climb !== null) {
+      // on the habitat's ladder: Climb at the rise speed (backward going down); no Climb clip: Walk in place
+      this.gest = null;
+      this.queued = null;
+      if (A.Climb) {
+        this.play('Climb', 0.2);
+        const d = A.Climb.getClip().duration;
+        A.Climb.paused = true;
+        A.Climb.time = THREE.MathUtils.clamp(s.climb, 0, 1) * (d - 0.001);
+      } else {
+        this.play('Walk', 0.2);
+        A.Walk.timeScale = THREE.MathUtils.clamp(Math.abs(s.climbV || 0) / CLIMB_RISE, 0, 1.2);
+      }
       this.wasAir = false;
       this.airTime = 0;
       return;

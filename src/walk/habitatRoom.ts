@@ -8,6 +8,7 @@
 import { ASTRA_SCALE, DOOR_AZ, LAYOUT } from '../scene/layout';
 import type { Area, Solid } from './collide';
 import boxes from './habitatRoom.json';
+import { shown } from './rooms';
 
 /** The habitat's ASTRA scale (layout.ts ASTRA_SCALE.habitat): the room, the walker's body and pace. */
 export const ROOM_K: number = ASTRA_SCALE.habitat;
@@ -37,6 +38,6 @@ function bar([name, x, z, hx, hz, yaw]: (string | number)[]): Solid {
 
 /** The habitat's ground floor, in game metres. */
 export const HAB_ROOM: Area = {
-  solids: (boxes as (string | number)[][]).map(bar),
+  solids: (boxes as (string | number)[][]).filter(shown).map(bar),
   bounds: { name: 'lining', x: LAYOUT.habitat[0], z: LAYOUT.habitat[1], r: LINING * ROOM_K },
 };

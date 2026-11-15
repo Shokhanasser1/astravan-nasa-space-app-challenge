@@ -11,6 +11,7 @@ import { buildLander, buildPad } from '../vendor/astra/scene/models/site';
 import { buildLab } from '../vendor/astra/scene/models/works';
 import { bake, mergeWorld } from './astra/bake';
 import { mergePlants, type Plants } from './astra/plants';
+import { cutLabHatch, cutLanderHatch, habitatInside, hideParts, tenSidedCabin } from './astra/shellFit';
 import { Interior } from './Interiors';
 import { ASTRA_SCALE, LAYOUT, PAD } from './layout';
 
@@ -117,23 +118,7 @@ function useSpin(v: ModuleView, on: boolean, rate: number) {
   });
 }
 
-const hex = (m: THREE.Material | THREE.Material[]) => (Array.isArray(m) ? '' : ((m as THREE.MeshStandardMaterial).color?.getHexString() ?? ''));
-const box = new THREE.Box3();
 const mid = new THREE.Vector3();
-
-/**
- * Hide ASTRA's own inside parts where our interior GLB (Interiors.tsx) takes their place: every mesh (model frame,
- * native metres, before bake) for which `drop(its bounding box, its colour)` is true. Hidden meshes are not baked.
- */
-function hideParts(g: THREE.Group, drop: (b: THREE.Box3, colour: string, m: THREE.Mesh) => boolean) {
-  g.updateMatrixWorld(true);
-  g.traverse((o) => {
-    const m = o as THREE.Mesh;
-    if (!m.isMesh || !m.visible) return;
-    box.setFromObject(m);
-    if (!box.isEmpty() && drop(box, hex(m.material), m)) m.visible = false;
-  });
-}
 
 /**
  * Greenhouse (interiors/greenhouse/HANDOFF.md): its troughs, LED bars and door panel; not its glass or ribs, and not
@@ -153,14 +138,6 @@ function greenhouseInside(g: THREE.Group, v: ModuleView) {
     const inA = mid.x > -2.2 && mid.x < 2.05 && mid.y > 0.24 && mid.y < 1.7 && Math.abs(mid.z) < 0.95;
     const inB = mid.x > 2.17 && mid.x < 2.4 && mid.y > 0.21 && mid.y < 1.54 && Math.abs(mid.z) < 0.46;
     return inA || inB;
-  });
-}
-
-/** Habitat: its decks and core inside the lining (ours replace them; the shell, windows and shield stay). */
-function habitatInside(g: THREE.Group) {
-  hideParts(g, (b) => {
-    const r = Math.max(Math.hypot(b.min.x, b.min.z), Math.hypot(b.max.x, b.min.z), Math.hypot(b.min.x, b.max.z), Math.hypot(b.max.x, b.max.z));
-    return r < 4.85 && b.min.y > 0.3 && b.max.y < 6.2;
   });
 }
 
@@ -207,9 +184,9 @@ export function AstraGreenhouse({ on, turn, plant }: { on: boolean; turn: number
   );
 }
 
-/** Workshop: ASTRA's lab module. */
+/** Workshop: ASTRA's lab module (its decorative west hatch cut away: our interior's real hatch opens there). */
 export function AstraLab({ on, turn }: { on: boolean; turn: number }) {
-  const v = useMemo(() => astraModule(buildLab), []);
+  const v = useMemo(() => astraModule(buildLab, (g) => void cutLabHatch(g)), []);
   v.group.name = 'astra_lab';
   setPower(v, on);
   useSpin(v, on, 0.4);
@@ -228,7 +205,9 @@ export function AstraLander({ turn }: { turn: number }) {
   const g = useMemo(() => {
     const l = buildLander('moon');
     l.name = 'astra_lander';
+    tenSidedCabin(l); // phones too: our cabin fits ASTRA's 10-sided one, not the 6-sided phone build (shellFit.ts)
     finalize(l);
+    cutLanderHatch(l); // ASTRA's decorative hatch off the cabin: our interior's real hatch opens there
     bake(l, { keep: [], live: l.userData.beacon ? [l.userData.beacon as THREE.Material] : [] });
     return l;
   }, []);
