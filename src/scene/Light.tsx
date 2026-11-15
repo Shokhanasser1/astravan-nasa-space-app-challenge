@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useRef } from 'react';
-import { useThree } from '@react-three/fiber';
+import { useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 import type { View } from '../state/game';
+import { armState } from '../arm/state';
 
 /**
  * Moon light, "cinematic realism" (15 Nov): one hard Sun is the key light and the sky is black, so shadows go dark.
@@ -28,6 +29,16 @@ const SHADOW_NEAR = 1;
 const SHADOW_FAR = 900;
 /** Shadow bias, metres along the Sun's ray (see the shadow effect below). */
 const SHADOW_BIAS_M = 0.03;
+/**
+ * The shadow camera covers ~±35 m round its centre. Farther than FOLLOW_R m from the base centre (the crash site is
+ * 55 m out, the rover drives farther) the astronaut cast no shadow at all (the lead, 15 Nov ~22:20: "where is the
+ * shadow?"): there the centre follows the astronaut, snapped to a SNAP m grid so the map is redrawn only when it moves
+ * a step (no shimmer). Within FOLLOW_R it stays on the base, as before.
+ */
+const FOLLOW_R = 20;
+const SNAP = 6;
+export const shadowCentre = (x: number, z: number): [number, number] =>
+  Math.hypot(x, z) <= FOLLOW_R ? [0, 0] : [Math.round(x / SNAP) * SNAP, Math.round(z / SNAP) * SNAP];
 
 export const SUN_EL_DEG = Number.isFinite(elParam) && elParam > 0 && elParam < 60 ? elParam : 12;
 
@@ -63,6 +74,8 @@ function SoftEnvironment({ intensity }: { intensity: number }) {
 export function Light({ sunAzDeg = 268, shadowSize }: { sunAzDeg?: number; shadowSize: number }) {
   const sun = useRef<THREE.DirectionalLight>(null);
   const gl = useThree((s) => s.gl);
+  /** Where the shadow camera is centred now (x, z); NaN = place it on the next frame. */
+  const centre = useRef<[number, number]>([NaN, NaN]);
 
   const position = useMemo(() => sunDirection(sunAzDeg, new THREE.Vector3()).multiplyScalar(SUN_DIST), [sunAzDeg]);
 
@@ -87,8 +100,24 @@ export function Light({ sunAzDeg = 268, shadowSize }: { sunAzDeg?: number; shado
     const long = Math.min(150, 12 + 40 / Math.tan(THREE.MathUtils.degToRad(SUN_EL_DEG)) / 8);
     Object.assign(light.shadow.camera, { left: -long, right: long, top: 40, bottom: -40, near: SHADOW_NEAR, far: SHADOW_FAR });
     light.shadow.camera.updateProjectionMatrix();
+    centre.current[0] = NaN; // (placed by the frame loop below)
     gl.shadowMap.needsUpdate = true;
   }, [position, shadowSize, gl]);
+
+  // The shadow camera's centre: the base, or the astronaut when it is far out (shadowCentre).
+  useFrame((state) => {
+    const light = sun.current;
+    if (!light || shadowSize === 0) return;
+    const [cx, cz] = shadowCentre(armState.player.x, armState.player.z);
+    if (cx === centre.current[0] && cz === centre.current[1]) return;
+    centre.current[0] = cx;
+    centre.current[1] = cz;
+    light.position.set(cx + position.x, position.y, cz + position.z);
+    light.target.position.set(cx, 0, cz);
+    light.target.updateMatrixWorld();
+    gl.shadowMap.needsUpdate = true;
+    state.invalidate();
+  });
 
   return (
     <>

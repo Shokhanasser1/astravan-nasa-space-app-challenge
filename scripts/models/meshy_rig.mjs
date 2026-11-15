@@ -130,6 +130,35 @@ for (const S of ['Left', 'Right']) {
 // the battery is carried in front of the belly (the clips reach there): the old rig's offset, scaled
 const k = H / 1.85;
 put('BagSocket', new THREE.Vector3(0, J.Spine2.pos[1] - 0.18 * k, 0.37 * k));
+
+// A broader suit (the lead, 15 Nov ~22:25: "the torso wider and more natural, the shoulders a little wider"):
+// P={"chestX":1.18,"chestZ":1.15} widens and deepens the torso round the spine, the more a vertex follows the chest
+// (TORSO: share of the effect per joint, so the waist widens less and the hips hardly), and moves each arm (its joints
+// and the vertices that follow them) out with its shoulder. 1 = Meshy's body as made.
+const PW = JSON.parse(process.env.P ?? '{}');
+const CH = { x: PW.chestX ?? 1, z: PW.chestZ ?? 1 };
+const TORSO = { Hips: 0.25, Spine: 0.6, Spine1: 0.85, Spine2: 1, LeftShoulder: 1, RightShoulder: 1, Neck: 0.5 };
+const ARM = { Left: ['LeftArm', 'LeftForeArm', 'LeftHand'], Right: ['RightArm', 'RightForeArm', 'RightHand'] };
+const czT = J.Spine2.pos[2]; // the chest's middle in z
+const armShift = {};
+for (const side of ['Left', 'Right']) {
+  const a = J[`${side}Arm`].pos;
+  armShift[side] = [(CH.x - 1) * a[0], 0, (CH.z - 1) * (a[2] - czT)];
+  for (const g of ARM[side]) J[g].pos = J[g].pos.map((c, i) => +(c + armShift[side][i]).toFixed(4));
+  const s = J[`${side}Shoulder`].pos;
+  J[`${side}Shoulder`].pos = [+(s[0] * CH.x).toFixed(4), s[1], +(czT + (s[2] - czT) * CH.z).toFixed(4)];
+}
+/** A bind-pose vertex (fitted space) moved by the broader suit, from its game-joint weights [[name, w], …]. */
+function widen(v, jw) {
+  if (CH.x === 1 && CH.z === 1) return v;
+  let wt = 0, ax = 0, az = 0;
+  for (const [g, w] of jw) {
+    wt += w * (TORSO[g] ?? 0);
+    for (const side of ['Left', 'Right']) if (ARM[side].includes(g)) { ax += w * armShift[side][0]; az += w * armShift[side][2]; }
+  }
+  return v.set(v.x + (CH.x - 1) * wt * v.x + ax, v.y, v.z + (CH.z - 1) * wt * (v.z - czT) + az);
+}
+if (CH.x !== 1 || CH.z !== 1) console.log(`broader suit: chest x${CH.x} z${CH.z}, arms out by ${armShift.Left[0].toFixed(3)} m`);
 for (const g of Object.keys(PARENTS)) if (!J[g]) throw new Error(`no place for joint ${g}`);
 writeFileSync(jointsOut, JSON.stringify(J, null, 1));
 
@@ -154,7 +183,7 @@ for (const { prim, pos, nor, jw: jws } of parts) {
   const P = new Float32Array(n * 3), N = new Float32Array(n * 3), JJ = new Uint8Array(n * 4), WW = new Float32Array(n * 4);
   const v = new THREE.Vector3();
   for (let i = 0; i < n; i++) {
-    v.copy(pos[i]).applyMatrix4(T).toArray(P, i * 3);
+    widen(v.copy(pos[i]).applyMatrix4(T), jws[i]).toArray(P, i * 3);
     v.copy(nor[i]).applyMatrix3(R3).normalize().toArray(N, i * 3);
     const sum = jws[i].reduce((a, [, w]) => a + w, 0) || 1;
     jws[i].forEach(([g, w], c) => {
