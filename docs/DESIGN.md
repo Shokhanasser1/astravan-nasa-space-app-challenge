@@ -56,6 +56,17 @@ or an icon (never colour alone); text contrast ≥ 4.5 : 1 on the glass.
 | Crew mark (night disc, letter, orbit ring) | `src/ui/entry/art.tsx` `CrewMark` |
 | Glass card over the 3D scene with a scrim | `src/ui/entry/Reception.tsx`, `.entry-*` |
 
+## Flight Deck skin (15 Nov, Shoxjahon aka's request: "like a top game, something kids have not seen")
+
+`src/ui/flight-deck.css`, loaded after `index.css` (one layer, one cut to remove). Every control is flight
+hardware seen through the visor: `.abtn` = backlit panel key (hard lower edge, travels down 3–4 px when pressed, a
+light sweep on hover, a lit legend line on top); `.primary` = illuminated key that breathes slowly (2.8 s);
+`.choice` = slab key with a status strip on the left; `.machine-btn` = knurled knob; `.entry-chip` = latching
+switch with a status LED; `.kbd` = keycap; colour patches are stitched; `.glass` = visor glass with two lit edge
+marks and faint scan lines; the pass has a tear line before its stub. Every key press ticks (`audio.key()`, silent
+when sound is off). New controls get these looks for free by using `Btn`, `Panel`, `Kbd`; do not restyle them
+one by one.
+
 ## Screen layout
 
 - The centre of the screen is the 3D base; the interface sits at the edges (top bar, one column at the bottom on a
