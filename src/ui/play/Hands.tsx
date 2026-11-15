@@ -131,7 +131,7 @@ export function ContextButton({ ctx, press, tr, children }: { ctx: Context | nul
   const kind = ctx?.act ? 'use' : ctx?.back ? 'undo' : null;
   const label = ctx ? tr(ctx.act ? ctx.label : ctx.back?.type === 'DROP' ? 'ui.act.drop' : 'ui.act.back') : tr('ui.controls.use');
   return (
-    <div className="hud-side hud-pad flex flex-row-reverse items-end gap-3" data-testid="action-pad">
+    <div className="hud-side hud-pad flex flex-col items-center gap-3" data-testid="action-pad">
       <button
         type="button"
         data-testid="pad-use"
