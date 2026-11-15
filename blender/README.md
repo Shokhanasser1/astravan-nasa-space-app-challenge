@@ -12,6 +12,8 @@
 | `game3d/assets/` | **35 ta o'yinga tayyor GLB** (jami 8.9 MB): metr, Y yuqoriga, origin pastki markazda, old tomoni +Z, Draco + WebP ≤1024, har birida `COL_<id>` collider. `_build/` — qayta yasash skriptlari |
 | `game3d/manifest.json`, `game3d/ASSETS_README.md` | Har model: fayl, poligon, o'lcham (m), massa (kg, NASA manbasi bilan), gravitatsiya (Yer 9.81 / Oy 1.62 / Mars 3.71), Three.js'da yuklash |
 | `game3d/characters/` | Skeletli astronavt (`astronaut.glb`) + qurish/tekshirish skriptlari |
+| `lander_v2/` | **Yangi Oy kemasi** (15.11): konsept rasmlar bo'yicha protsedural model, kabinasi, harakatlanuvchi qismlari, 5-qadam surati, animatsion ketma-ketlik. AI yasagan model (kod orqali). `.blend` va to'liq renderlar — Release [`lander-v2-2026-11-15`](https://github.com/Shokhanasser1/astravan-nasa-space-app-challenge/releases/tag/lander-v2-2026-11-15). Batafsil: `lander_v2/README.md` |
+| `game3d/characters/anim/` | O'yin kliplarining manbasi (Oy fizikasi, oyoq IK); `clips_lander/` — kema kliplari (narvon, eshik, tugmalar; o'yinga kirmaydi) |
 | `game3d/demo/` | Three.js sinov demosi (yurish, sakrash, Oy gravitatsiyasi) — ish davom etmoqda |
 | `game3d/sky/` | 6 ta 360° osmon (WebP 2048×1024): `yer_dusk`, `xks_orbit`, `oy_sky`, `mars_day`, `mars_sunset`, `koinot_space` + `sky.json` (quyosh yo'nalishi) |
 | `renders/final_gpu/<bekat>/` | 19 ta fon, 1920×1080 WebP (GPU, 256 sample): yer 3, xks 2, oy 4, mars 4, koinot 6 |
