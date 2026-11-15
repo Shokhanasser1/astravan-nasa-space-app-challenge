@@ -32,9 +32,9 @@ export const features = {
   // hatch climbs in, W/S/A/D drive, E again climbs out (src/scene/arrival.ts). Phones keep ?drive. Off → ?drive only.
   drive: true,
   // The HDU outpost 50 m north (src/scene/outpostSite.ts, Outpost.tsx; 15 Nov, Samandar's proposal): three NASA Habitat
-  // Demonstration Unit modules joined by tunnels, somewhere to drive to; exterior and hitboxes only. Off until the
-  // lead looks at it: `?outpost` shows it for one visit. Cut → nothing there.
-  outpost: false,
+  // Demonstration Unit modules joined by tunnels, somewhere to drive to; exterior and hitboxes only. On computers
+  // with a graphics card (Samandar asked ~10:35 to make it live); phones only with `?outpost`. Cut → nothing there.
+  outpost: true,
   // Mission quiz (src/quiz/, src/ui/play/Quiz.tsx; 15 Nov): a radio check on nights 2, 4, 6 and a three-question
   // debrief after the truth screen that opens the next mission. Questions only about days already played, numbers
   // from the real week. Cut → the night's Next and the truth screen's Play again work as before.
