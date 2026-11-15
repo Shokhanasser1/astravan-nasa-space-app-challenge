@@ -170,6 +170,13 @@ describe('resolve', () => {
     expect(resolve({ kind: 'use' }, ctx(plan1, { aim: 'ls', hands: 1 }))).toEqual({ action: { type: 'PUT', k: 'ls' } });
   });
 
+  it('home story: once the day has run, E at the habitat door is Sleep (NEXT, like the button); never while planning', () => {
+    const ran = until((m) => m.phase === 'run');
+    expect(resolve({ kind: 'use' }, ctx(ran, { ride: 'sleep' }))).toEqual({ action: { type: 'NEXT' } });
+    expect(resolve({ kind: 'use' }, ctx(ran, { ride: 'sleep', overlay: 'map' }))).toBeNull(); // the map keeps its keys
+    expect(resolve({ kind: 'use' }, ctx(plan1, { ride: 'sleep' }))).toEqual({ ride: 'sleep' }); // (the rig never offers it there)
+  });
+
   it('E through the reducer adds exactly what a tap on the building adds', () => {
     const carrying = reducer(plan1, { type: 'TAKE' });
     const e = resolve({ kind: 'use' }, ctx(carrying, { aim: 'ls', hands: carrying.hands }));

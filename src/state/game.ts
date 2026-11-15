@@ -10,6 +10,7 @@ import {
 } from '../engine/rules';
 import type { SkyDay, Week, WeekDay } from '../engine/week';
 import { features } from '../config/features';
+import { indoorsToday } from './homeDay';
 
 // ---- the contract with the scene (developer guide §02) ----
 export type Phase = 'morning' | 'plan' | 'run' | 'night' | 'launch' | 'truth';
@@ -46,6 +47,9 @@ export type View = {
   // 15 Nov home story, Day 7 boarding: the ship flew (the engine's State.launched). The astronaut is on board from the
   // launch on; when it did not fly (Late Ride Home) the base ship stays on the ground in the truth screen.
   launched?: boolean;
+  // 15 Nov home story (src/state/homeDay.ts): the crew stays in the habitat today — "Stay inside all day" on a storm
+  // day, or the backup-tank day (the engine's shelter full); planning and running that day only.
+  indoors?: boolean;
 };
 
 /**
@@ -332,6 +336,7 @@ export function toView(m: Model, sky?: Record<string, SkyDay[]>): View {
     hands: m.phase === 'plan' ? (m.hands ?? 0) : 0,
     res: g && m.week ? resources(m, g, m.week) : undefined,
     launched: g?.launched ?? false,
+    indoors: indoorsToday(m.phase, m.alloc.shelter),
   };
 }
 

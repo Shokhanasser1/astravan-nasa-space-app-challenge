@@ -58,6 +58,8 @@ export function resolve(cmd: Command, c: Ctx): Effect | null {
   switch (cmd.kind) {
     // Batteries are carried (15 Nov): take at the hub, put into the machine in front, take back with undo.
     case 'use':
+      // (home story: once the day has run, E at the habitat door is Sleep, the same NEXT as the button)
+      if (c.ride === 'sleep' && c.phase === 'run') return { action: { type: 'NEXT' } };
       // (15 Nov, Samandar: D8 — at a door with a machine's battery rack beside it (the HDU modules, ASTRA's habitat),
       // E with enough batteries in hand while aiming at that machine puts them in; otherwise E is for the door. Away
       // from a door nothing changes: at the rover's hatch, or driving it, E is for the rover, and the touch action

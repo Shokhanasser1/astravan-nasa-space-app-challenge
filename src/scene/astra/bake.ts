@@ -75,9 +75,32 @@ function isPlain(m: THREE.Material): boolean {
   return true;
 }
 
-/** Non-indexed copy with exactly position + normal + (uv, or the paint's colour per vertex). */
+/**
+ * A plain Float32 copy of an attribute. The interior GLBs are meshopt-compressed with quantised attributes
+ * (KHR_mesh_quantization: normalised Int16 positions, Int8 normals, often interleaved, the node's scale undoing it):
+ * a matrix applied to those writes back into the [-1, 1] range and squashed every baked room to a 2 m box under the
+ * floor (15 Nov: the habitat's room was gone, so the night view showed the shell's window frames from inside).
+ */
+function floats(a: THREE.BufferAttribute | THREE.InterleavedBufferAttribute): THREE.BufferAttribute {
+  if (!(a as THREE.InterleavedBufferAttribute).isInterleavedBufferAttribute && !a.normalized && a.array instanceof Float32Array) return a as THREE.BufferAttribute;
+  const k = a.itemSize;
+  const out = new Float32Array(a.count * k);
+  for (let i = 0; i < a.count; i++) {
+    out[i * k] = a.getX(i);
+    if (k > 1) out[i * k + 1] = a.getY(i);
+    if (k > 2) out[i * k + 2] = a.getZ(i);
+    if (k > 3) out[i * k + 3] = a.getW(i);
+  }
+  return new THREE.BufferAttribute(out, k);
+}
+
+/** Non-indexed copy with exactly position + normal + (uv, or the paint's colour per vertex), all Float32. */
 function clean(src: THREE.BufferGeometry, color: THREE.Color | null): THREE.BufferGeometry {
   const g = src.index ? src.toNonIndexed() : src.clone();
+  for (const name of ['position', 'normal', 'uv']) {
+    const a = g.getAttribute(name);
+    if (a) g.setAttribute(name, floats(a));
+  }
   if (!g.getAttribute('normal')) g.computeVertexNormals();
   const n = g.getAttribute('position').count;
   for (const name of Object.keys(g.attributes)) if (name !== 'position' && name !== 'normal' && name !== 'uv') g.deleteAttribute(name);

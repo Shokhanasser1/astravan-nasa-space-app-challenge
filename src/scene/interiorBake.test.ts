@@ -46,6 +46,30 @@ describe('bakeInterior', () => {
     expect(merged.geometry.getAttribute('color')).toBeTruthy();
   });
 
+  it("keeps a quantised GLB's real size (meshopt: normalised Int16 positions, the node's scale undoes it)", () => {
+    // a 4 m wide, 3 m tall room wall stored as int16 / 32767 with the node scaled ×4 (KHR_mesh_quantization)
+    const q = new THREE.BufferGeometry();
+    const pos = new Int16Array([-16384, 0, 0, 16384, 0, 0, 16384, 24575, 0]); // (−0.5, 0) (0.5, 0) (0.5, 0.75)
+    q.setAttribute('position', new THREE.BufferAttribute(pos, 3, true));
+    q.setAttribute('normal', new THREE.BufferAttribute(new Int8Array([0, 0, 127, 0, 0, 127, 0, 0, 127]), 3, true));
+    const wall = new THREE.Mesh(q, new THREE.MeshStandardMaterial({ color: '#cccccc' }));
+    wall.scale.setScalar(4);
+    wall.position.set(0, 0, -2);
+    const { scene, root, clip } = interior();
+    root.add(wall);
+    bakeInterior(scene, [clip]);
+    const box = new THREE.Box3();
+    for (const c of root.children) {
+      const m = c as THREE.Mesh;
+      if (!m.isMesh || c.name === 'greenhouse_door') continue;
+      m.geometry.computeBoundingBox();
+      box.union(m.geometry.boundingBox!);
+    }
+    expect(box.min.x).toBeCloseTo(-2, 2);
+    expect(box.max.y).toBeCloseTo(3, 2);
+    expect(box.min.z).toBeCloseTo(-2, 2); // (the wall stands at z −2)
+  });
+
   it('a door clip still moves the door after baking', () => {
     const { scene, door, clip } = interior();
     bakeInterior(scene, [clip]);

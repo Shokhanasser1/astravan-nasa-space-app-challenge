@@ -24,6 +24,7 @@ import { Batteries } from './Batteries';
 import { Beacon } from './Beacon';
 import { AstraMerge, AstraPads, astraLook, faceCentre } from './AstraBase';
 import { HduComplex } from './HduComplex';
+import { ShipParts } from './ShipParts';
 
 /**
  * ASTRA's hexagonal pads under the outer buildings (width in metres, about the building's footprint). The HDU complex
@@ -89,6 +90,8 @@ export function BaseScene({ view }: { view: View; onTap?: (k: Machine) => void; 
       {!HDU_HABITAT && <Workshop on={a.ws > 0} tap={TAP.ws} />}
       <Scout on={a.sc > 0} tap={TAP.sc} />
       <Lander on={a.launch > 0} phase={view.phase} tap={TAP.launch} grounded={features.homeStory && view.phase === 'truth' && view.launched === false} />
+      {/* home story: the parts brought for the ship pile up beside it, one bag per sixth of Ship % */}
+      {features.homeStory && <ShipParts ship={view.res?.ship ?? 0} />}
       {rich ? <SolarArrays view={view} /> : <SolarWing />}
       {rich && <BatteryBank view={view} />}
       {rich && <IceDrill />}

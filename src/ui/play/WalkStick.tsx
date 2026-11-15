@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
 import { invalidate } from '@react-three/fiber';
-import { Car, ChevronsDown, ChevronsUp, DoorOpen } from 'lucide-react';
+import { Car, ChevronsDown, ChevronsUp, DoorOpen, Moon } from 'lucide-react';
 import { walkInput } from '../../walk/input';
 import { askRide, type Ride } from '../../controls/bus';
 import { Kbd, touchUi } from './Controls';
@@ -37,9 +37,10 @@ export function JumpButton() {
  * `?drive` (local preview): beside the crew rover's hatch, climb in and drive; while driving, stop and climb out. E on
  * a keyboard (the badge shows it), a tap on a touch screen. Shown only when it would do something.
  */
-const RIDE_LABEL: Record<Ride, string> = { board: 'Drive the rover', exit: 'Stop and get out', enter: 'Go inside', leave: 'Go outside', up: 'Climb up', down: 'Climb down' };
+const RIDE_LABEL: Record<Ride, string> = { board: 'Drive the rover', exit: 'Stop and get out', enter: 'Go inside', leave: 'Go outside', up: 'Climb up', down: 'Climb down', sleep: 'Sleep' };
 
-export function RideButton({ ride }: { ride: Ride | null }) {
+/** `onSleep` (home story): at the habitat door once the day has run, the button is Sleep — the HUD's NEXT, not the rig's. */
+export function RideButton({ ride, onSleep }: { ride: Ride | null; onSleep?: () => void }) {
   if (!ride) return null;
   return (
     <button
@@ -49,12 +50,15 @@ export function RideButton({ ride }: { ride: Ride | null }) {
       className="hud-side pointer-events-auto fixed left-1/2 top-[22%] z-[5] grid h-16 w-16 -translate-x-1/2 touch-none select-none place-items-center rounded-full border-2 border-[#4fd2ff]/80 bg-[#4fd2ff]/15 text-white/90"
       onPointerDown={(e) => {
         e.preventDefault();
-        askRide();
+        if (ride === 'sleep') onSleep?.();
+        else askRide();
         invalidate();
       }}
     >
       {ride === 'board' ? (
         <Car size={30} aria-hidden="true" />
+      ) : ride === 'sleep' ? (
+        <Moon size={30} aria-hidden="true" />
       ) : ride === 'up' ? (
         <ChevronsUp size={30} aria-hidden="true" />
       ) : ride === 'down' ? (

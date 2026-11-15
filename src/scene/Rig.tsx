@@ -4,7 +4,8 @@ import * as THREE from 'three';
 import type { View } from '../state/game';
 import { camState, gesture, launchState } from './anim';
 import { DOOR_AZ, DOOR_R, HDU, HDU_COMPLEX, HDU_HABITAT, HDU_MODULES, LAYOUT, moduleToGame, RADIUS, type HduModule } from './layout';
-import { EYE, FOCUS, POINTS, phasePoint, type PointId, type Vec3 } from './points';
+import { EYE, FOCUS, POINTS, homePoint, phasePoint, type PointId, type Vec3 } from './points';
+import { bedtime } from '../state/homeDay';
 import { GLOW } from './parts/materials';
 import { TAP_PX, tapOnly } from './parts/tap';
 import { groundHeight } from './ground';
@@ -308,7 +309,9 @@ export function Rig({ view }: { view: View }) {
   const gl = useThree((s) => s.gl);
   const invalidate = useThree((s) => s.invalidate);
   const aspect = useThree((s) => s.size.width / Math.max(1, s.size.height));
-  const [point, setPoint] = useState<PointId>(() => phasePoint(view.phase) ?? 'hub');
+  const [point, setPoint] = useState<PointId>(
+    () => (features.homeStory ? homePoint(view.phase, view.day, Boolean(view.indoors), character) : phasePoint(view.phase)) ?? 'hub',
+  );
   const pointNow = useRef(point);
   pointNow.current = point;
   // Free walk: `hop` asks for a float even to the point you last stood at (you may have walked away from it).
@@ -339,23 +342,40 @@ export function Rig({ view }: { view: View }) {
   // Phase → default point (run and unknown phases: stay). With the astronaut (third person) it stays where the
   // player walked it: only a phase that needs another camera moves it (inside, the launch ladder, orbit) — a float
   // across the base on every Next looked like a teleport.
+  // Home story (points.ts homePoint): wake inside from Day 2, out at the airlock for the plan, inside all day when the
+  // crew stays in (view.indoors); in or out of the habitat goes through its hatch (it opens, then the float).
+  const story = features.homeStory;
+  const indoors = story && Boolean(view.indoors);
+  // home story: the day has run; the astronaut walks to the habitat door to sleep (E there = Sleep)
+  const bed = story && character && bedtime(view.phase, view.day);
+  const indoorsNow = useRef(indoors);
+  indoorsNow.current = indoors;
   useEffect(() => {
-    const p = phasePoint(view.phase);
+    const p = story ? homePoint(view.phase, view.day, indoors, character) : phasePoint(view.phase);
     const now = pointNow.current;
     const stay = character && now !== 'inside' && now !== 'orbit' && p !== 'inside' && p !== 'ladder' && p !== 'orbit';
     if (p && !stay) {
-      setPoint(p);
-      if (walker || character) setHop((h) => h + 1);
+      if (story && p !== now && (p === 'inside' || now === 'inside') && p !== 'orbit' && p !== 'hill') {
+        doorTrip.to = p;
+        doorTrip.t = 0;
+        habitatDoor.want = 1;
+        invalidate();
+      } else {
+        if (story) doorTrip.to = null; // (a trip still waiting for the hatch goes nowhere now)
+        setPoint(p);
+        if (walker || character) setHop((h) => h + 1);
+      }
     }
     // Walking has a job only while planning (carry batteries hub → machines; 15 Nov): the other phases move the
-    // astronaut by themselves (morning airlock, night inside, launch, truth).
-    walkInput.phaseOk = view.phase === 'plan';
-  }, [view.phase, walker]);
+    // astronaut by themselves (morning airlock, night inside, launch, truth). Home story: also at bedtime.
+    walkInput.phaseOk = view.phase === 'plan' || bed;
+  }, [view.phase, view.day, indoors, bed, walker, story, invalidate]);
 
   // The base map (M or 🗺) floats to a standing point, exactly like tapping its glowing marker.
   useEffect(
     () =>
       onTravel((p) => {
+        if (indoorsNow.current && p !== 'inside') return; // (inside all day: the base is run from the Plan list)
         setPoint(p);
         setHop((h) => h + 1);
       }),
@@ -684,7 +704,7 @@ export function Rig({ view }: { view: View }) {
       let r: Ride | null = null;
       if (point === 'inside' && astraLook && s.t >= 1 && doorTrip.t < 0 && climb.t < 0 && walkInput.phaseOk) {
         const floor = ROOMS[fp.floor ? 'habitat_up' : 'habitat'];
-        if (!fp.floor && byAirlock(s.to)) r = 'leave';
+        if (!fp.floor && byAirlock(s.to)) r = bed ? 'sleep' : indoors ? null : 'leave';
         else if (floor.ladder?.near(s.to.x, s.to.z)) r = fp.floor ? 'down' : 'up';
       }
       setRide(r);
@@ -1173,10 +1193,10 @@ export function Rig({ view }: { view: View }) {
     nearDoor.id = astraLook && onFoot && !room ? doorAt(body) : null;
     if (!ride && onFoot && doorTrip.t < 0 && roomTrip.t < 0) {
       if (room && climb.t < 0) {
-        if (room.exit(body.x, body.z)) ride = 'leave';
+        if (room.exit(body.x, body.z)) ride = bed && buildingOf(room.id) === 'habitat' ? 'sleep' : 'leave';
         else if (room.ladder?.near(body.x, body.z)) ride = getRoom(room.ladder.to).floorY > room.floorY ? 'up' : 'down';
       }
-      else if (nearDoor.id) ride = 'enter';
+      else if (nearDoor.id) ride = bed && buildingOf(nearDoor.id) === 'habitat' ? 'sleep' : 'enter';
     }
     setRide(ride);
     // the Sun's shadow map is drawn once a day; while the astronaut moves, redraw it ~30 times a second, and once

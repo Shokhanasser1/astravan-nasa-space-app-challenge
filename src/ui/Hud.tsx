@@ -28,6 +28,7 @@ import { canTravel, resolve, type Ctx, type Overlay } from '../controls/act';
 import { useAim, useRide } from '../controls/bus';
 import { setTitle } from '../scene/title';
 import { runMs } from '../scene/runClock';
+import { bedtime } from '../state/homeDay';
 import { DayRun } from './play/DayRun';
 import { NightTablet, PlanTablet } from './play/Tablet';
 import { Quiz } from './play/Quiz';
@@ -110,6 +111,11 @@ export function Hud({ model, view, dispatch, lang, setLang, sound, setSound, onS
   const ride = useRide();
   const day = model.game?.day;
   const planning = phase === 'plan' && board !== null;
+  // Home story (src/state/homeDay.ts): once a day has run it waits for Sleep — the button, or E at the habitat door
+  // with the walking astronaut; inside all day ("Stay inside all day", the backup-tank day) the base is run from the
+  // Plan list.
+  const bed = features.homeStory && features.character && screen === 'game' && bedtime(phase, view.day);
+  const indoors = features.homeStory && planning && Boolean(view.indoors);
 
   // Windows: the map or the controls list; the plan list (never opens by itself); the day's decision; Houston.
   const [overlay, setOverlay] = useState<Overlay>(null);
@@ -217,12 +223,22 @@ export function Hud({ model, view, dispatch, lang, setLang, sound, setSound, onS
 
   // The day runs by itself and the lander lifts off by itself; the main button skips.
   useEffect(() => {
-    if (screen !== 'game' || (phase !== 'run' && phase !== 'launch')) return;
+    if (screen !== 'game' || (phase !== 'run' && phase !== 'launch') || bed) return;
     // (a day whose measured hours change runs 6 s, a calm one 4 s: src/scene/runClock.ts runMs)
     // (home story: the astronaut boards first, then the liftoff: src/scene/boarding.ts)
     const id = setTimeout(() => dispatch({ type: 'NEXT' }), phase === 'run' ? runMs(view.hourly) : LAUNCH_MS + (boarding ? BOARD_S * 1000 : 0));
     return () => clearTimeout(id);
-  }, [phase, screen, model.game?.day, dispatch, view.hourly]);
+  }, [phase, screen, model.game?.day, dispatch, view.hourly, bed]);
+
+  // Inside all day: the Plan list opens by itself (the only way to place batteries from in there), and batteries
+  // still in the hands go back to the hub.
+  useEffect(() => {
+    if (!indoors) return;
+    setListOpen(true);
+    if ((model.hands ?? 0) > 0) dispatch({ type: 'DROP' });
+    // (only when the crew goes in, not on every change of the hands)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [indoors, dispatch]);
 
   const dialog = planning && decisionOpen;
   // Free walk: only while the game itself is on screen and no window is open (its keys would walk away under it).
@@ -248,12 +264,14 @@ export function Hud({ model, view, dispatch, lang, setLang, sound, setSound, onS
     phase === 'plan'
       ? { label: tr(launchDay ? 'ui.launch.button' : 'ui.board.confirmDay'), action: { type: 'CONFIRM' } as const }
       : { label: tr(nextLabel), action: { type: 'NEXT' } as const };
-  const glow = task?.step === 'next' || task?.step === 'confirm' || task?.step === 'rest';
+  const glow = task?.step === 'next' || task?.step === 'confirm' || task?.step === 'rest' || bed;
 
   const playing = screen === 'game' && phase !== 'truth';
   const showList = planning && listOpen;
   const hasDecision = !!board && (board.cardOptions.length > 0 || board.shelterOptions.length > 0);
   const sides = planning && overlay === null && !dialog;
+  // (bedtime: the stick and the door's Sleep button, to walk the astronaut to the habitat door)
+  const bedWalk = bed && overlay === null && !quizOpen;
   // the robot arm's scanner takes the upper-left corner while the astronaut stands near the arm
   useSyncExternalStore(subscribeArm, armVersion);
   const armCorner = armScan && (armState.near || armState.on);
@@ -356,14 +374,14 @@ export function Hud({ model, view, dispatch, lang, setLang, sound, setSound, onS
           <HandControl tr={tr} />
         </div>
       )}
-      {freeWalk && sides && <WalkStick />}
+      {freeWalk && (sides || bedWalk) && <WalkStick />}
       {features.controls && touchUi && sides && (
         <ContextButton ctx={ctx} press={press} tr={tr}>
           {freeWalk && features.character && <JumpButton />}
         </ContextButton>
       )}
 
-      {sides && <RideButton ride={ride} />}
+      {(sides || bedWalk) && <RideButton ride={ride} onSleep={() => dispatch({ type: 'NEXT' })} />}
 
       {dialog && board && (
         <Decision
@@ -384,9 +402,19 @@ export function Hud({ model, view, dispatch, lang, setLang, sound, setSound, onS
             <CapcomHolo textKey={task?.radio ?? null} tr={tr} lang={lang} sound={sound} collapsible />
           )}
           {phase === 'run' && <DayRun view={view} ms={runMs(view.hourly)} sound={sound} tr={tr} />}
+          {bed && (
+            <p className="holo pointer-events-none self-start rounded-[16px] px-3 py-1.5 text-sm font-semibold" data-testid="sleep-hint">
+              {tr('ui.sleep.hint')}
+            </p>
+          )}
           {boarding && phase === 'launch' && <BoardingCountdown tr={tr} />}
           {phase === 'night' && <NightTablet model={model} before={planRes.current} after={view.res} tr={tr} />}
           {features.homeStory && phase === 'night' && <NightFact model={model} tr={tr} lang={lang} />}
+          {indoors && showList && !dialog && !board.info.forced && (
+            <p className="holo pointer-events-none self-start rounded-[16px] px-3 py-1.5 text-sm font-semibold" data-testid="inside-hint">
+              {tr('ui.inside.plan')}
+            </p>
+          )}
           {showList && !dialog && <PlanTablet board={board} model={model} dispatch={act} tr={tr} onFold={() => setListOpen(false)} />}
           {planning && ctx && !dialog && !showList && <ContextPrompt ctx={ctx} tr={tr} />}
           {planning && (

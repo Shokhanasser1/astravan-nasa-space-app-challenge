@@ -195,7 +195,8 @@ describe("today's 5", () => {
       if (day === 3) expect(tasks.some((t) => t.id === 'shelter' || t.id === 'inside')).toBe(true);
       else expect(tasks.some((t) => t.id === 'shelter' || t.id === 'inside')).toBe(false);
       if (answerable) m = reducer(m, { type: 'CHOOSE', card: `${card}:${CARD_CHOICES[card!][0]}` });
-      m = run(m, [{ type: 'CONFIRM' }, { type: 'NEXT' }]);
+      // (air for the crew every day: a reserve at 0 makes the next day a backup-tank day, which has one task, rest)
+      m = run(m, [{ type: 'SET', k: 'ls' }, { type: 'SET', k: 'ls' }, { type: 'CONFIRM' }, { type: 'NEXT' }]);
       if (m.phase === 'night') m = reducer(m, { type: 'NEXT' });
     }
   });

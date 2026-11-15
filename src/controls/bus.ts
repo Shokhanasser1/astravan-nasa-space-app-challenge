@@ -48,8 +48,9 @@ export function onTravel(f: (p: PointId) => void): () => void {
   };
 }
 
-/** E's action now: climb into the rover, stop it and get out, go into a building at its door, go out, climb a ladder up or down. */
-export type Ride = 'board' | 'exit' | 'enter' | 'leave' | 'up' | 'down';
+/** E's action now: climb into the rover, stop it and get out, go into a building at its door, go out, climb a ladder up or down;
+ * home story: go to sleep at the habitat door once the day has run (src/state/homeDay.ts bedtime). */
+export type Ride = 'board' | 'exit' | 'enter' | 'leave' | 'up' | 'down' | 'sleep';
 let ride: Ride | null = null;
 const rideSubs = new Set<() => void>();
 const rideAsks = new Set<() => void>();
