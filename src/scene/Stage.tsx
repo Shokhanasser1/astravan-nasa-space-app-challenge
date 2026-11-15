@@ -1,4 +1,4 @@
-import { Component, Suspense, lazy, useState, type ReactNode } from 'react';
+import { Component, Suspense, lazy, useEffect, useState, type ReactNode } from 'react';
 import { Canvas, useThree, useFrame } from '@react-three/fiber';
 import { PerformanceMonitor, Preload, Stars, useGLTF } from '@react-three/drei';
 import { Bloom, EffectComposer, ToneMapping, Vignette } from '@react-three/postprocessing';
@@ -7,6 +7,7 @@ import * as THREE from 'three';
 import type { Machine, View } from '../state/game';
 import { features } from '../config/features';
 import { LOWER, TIERS, hasWebGL, pcFpsBounds, startTier, type Tier } from './quality';
+import { walkInput } from '../walk/input';
 import { Light, sunAzimuth } from './Light';
 import { Earth } from './Earth';
 import { BaseScene } from './BaseScene';
@@ -78,6 +79,20 @@ export function Stage({ view, onTap, onUndo }: { view: View; onTap: (k: Machine)
   const q = TIERS[tier];
   // A calm scene is not redrawn (saves battery); storms, the day passing and launch animate.
   const animating = view.phase === 'run' || view.phase === 'launch' || view.level > 0 || view.alert;
+  // A computer is also measured while the astronaut walks (frames come back to back then): a slow laptop that only
+  // ever walks on quiet days now steps down too (15 Nov perf audit).
+  const [walking, setWalking] = useState(false);
+  useEffect(() => {
+    const check = () => queueMicrotask(() => setWalking(walkInput.keys.size > 0));
+    window.addEventListener('keydown', check);
+    window.addEventListener('keyup', check);
+    window.addEventListener('blur', check);
+    return () => {
+      window.removeEventListener('keydown', check);
+      window.removeEventListener('keyup', check);
+      window.removeEventListener('blur', check);
+    };
+  }, []);
 
   if (!webgl) return <Fallback />;
 
@@ -108,7 +123,7 @@ export function Stage({ view, onTap, onUndo }: { view: View; onTap: (k: Machine)
         {/* FPS is only real while frames are drawn back to back. In demand mode (calm scenes) the gaps between redraws
             read as 1–10 fps and stepped a fast laptop down to DPR 1 with no anti-aliasing ("144p"), so a computer is
             measured only while the scene animates, with computer bounds (pcFpsBounds). Phones: as before. */}
-        {(!computer || animating) && (
+        {(!computer || animating || walking) && (
           <PerformanceMonitor onDecline={() => setTier((t) => LOWER[t])} flipflops={2} bounds={computer ? pcFpsBounds(tier) : undefined} />
         )}
         {/* Stars do not twinkle: no air. Replace with the Yale Bright Star catalogue when ready. */}

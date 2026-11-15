@@ -18,7 +18,9 @@ export interface TierSpec {
 }
 
 export const TIERS: Record<Tier, TierSpec> = {
-  pc: { dpr: [1, 2], msaa: 4, shadow: 2048, bloom: true, vignette: true, ao: false, stormScale: 1 },
+  // (15 Nov perf audit: DPR 2 with MSAA 4 through the post stack was the biggest cost on an iGPU / Retina laptop;
+  // 1.5 and 2 keep the picture sharp and smooth at about half the pixels)
+  pc: { dpr: [1, 1.5], msaa: 2, shadow: 2048, bloom: true, vignette: true, ao: false, stormScale: 1 },
   // A slow computer: the phone's effects, but the picture stays sharp (DPR 1.5 on a Retina screen) and smooth (MSAA).
   pcLow: { dpr: [1, 1.5], msaa: 4, shadow: 1024, bloom: true, vignette: false, ao: false, stormScale: 1 },
   phone: { dpr: [1, 1.5], msaa: 0, shadow: 1024, bloom: true, vignette: false, ao: false, stormScale: 1 },

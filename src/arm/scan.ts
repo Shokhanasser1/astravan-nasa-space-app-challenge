@@ -57,15 +57,22 @@ export async function startScan(onFrame: (f: ScanFrame) => void, onStatus: (s: S
   let alive = true;
   let raf = 0;
   let last = 0;
+  // Both models run on the main thread, so every check is a pause for the game (15 Nov: "the hand hologram is slow").
+  // Only a new camera picture is checked, and the pose (shoulder → elbow, slow to change) every other check; the
+  // hand, which steers the arm, every check.
+  let lastVideoTime = -1;
+  let checks = 0;
+  let poseNow: Pt[] | null = null;
   const loop = (t: number) => {
     if (!alive) return;
     raf = requestAnimationFrame(loop);
-    if (t - last < EVERY_MS || video.readyState < 2) return;
+    if (t - last < EVERY_MS || video.readyState < 2 || video.currentTime === lastVideoTime) return;
     last = t;
-    const p = pose.detectForVideo(video, t);
+    lastVideoTime = video.currentTime;
+    if (checks++ % 2 === 0) poseNow = (pose.detectForVideo(video, t).landmarks?.[0] as Pt[] | undefined) ?? null;
     const h = hands.detectForVideo(video, t);
     onFrame({
-      pose: (p.landmarks?.[0] as Pt[] | undefined) ?? null,
+      pose: poseNow,
       hand: (h.landmarks?.[0] as Pt[] | undefined) ?? null,
       aspect: video.videoWidth && video.videoHeight ? video.videoWidth / video.videoHeight : 4 / 3,
       video,

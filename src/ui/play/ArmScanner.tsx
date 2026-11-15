@@ -42,6 +42,7 @@ export function ArmScanner({ tr }: { tr: Tr }) {
   const [read, setRead] = useState<Readout | null>(null);
   const stop = useRef<(() => void) | null>(null);
   const last = useRef<{ hand: Pt[] | null; elbow: Pt | null; video: HTMLVideoElement } | null>(null);
+  const readSig = useRef(''); // the last readout shown (only a change re-renders the panel)
   const canvas = useRef<HTMLCanvasElement>(null);
   const small = useRef<HTMLCanvasElement | null>(null);
   const shown = state !== 'off';
@@ -53,6 +54,7 @@ export function ArmScanner({ tr }: { tr: Tr }) {
     setArmOn(false);
     setState('off');
     setRead(null);
+    readSig.current = '';
     invalidate();
   };
 
@@ -66,13 +68,19 @@ export function ArmScanner({ tr }: { tr: Tr }) {
     };
     last.current = { hand: f.hand, elbow: t.elbow, video: f.video };
     const s = armState.shown;
-    setRead({
+    const next: Readout = {
       lift: Math.round(s.lift),
       bend: Math.round(s.bend),
       wrist: Math.round(s.wrist),
       gripping: s.open <= 0.5,
       note: !f.hand ? 'ui.arm.noHand' : !t.elbow ? 'ui.arm.noElbow' : armState.held ? 'ui.arm.ground' : '',
-    });
+    };
+    // (the panel re-renders only when a shown number or the note changes, not on every check)
+    const sig = JSON.stringify(next);
+    if (sig !== readSig.current) {
+      readSig.current = sig;
+      setRead(next);
+    }
     invalidate();
   };
 
@@ -112,16 +120,24 @@ export function ArmScanner({ tr }: { tr: Tr }) {
   });
   useEffect(() => () => off(), []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // the panel's picture, every animation frame while the panel is open
+  // the panel's picture while the panel is open: drawn again only for a new camera picture or a new scan
+  // (before 15 Nov it was redrawn at the screen's rate, twice the camera's, with two video copies each time)
   useEffect(() => {
     if (!shown) return;
     let raf = 0;
     const c = tokens();
+    let drawnScan: unknown = null;
+    let drawnTime = -1;
     const draw = () => {
       raf = requestAnimationFrame(draw);
       const cv = canvas.current;
       const ctx = cv?.getContext('2d');
       if (!cv || !ctx) return;
+      const now = last.current;
+      const time = now?.video?.currentTime ?? -1;
+      if (now && now === drawnScan && time === drawnTime) return;
+      drawnScan = now;
+      drawnTime = time;
       const W = cv.width;
       const H = cv.height;
       ctx.setTransform(1, 0, 0, 1, 0, 0);

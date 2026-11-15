@@ -167,6 +167,9 @@ function anglesTo(from: THREE.Vector3, look: Vec3): [number, number] {
   return [yaw, Math.max(-MAX_PITCH, Math.min(MAX_PITCH, pitch))];
 }
 
+/** While something moves, the shadow map is redrawn this often, s (15 Nov perf audit: 10 Hz redrew every caster). */
+const SHADOW_EVERY = 0.2;
+
 export function Rig({ view }: { view: View }) {
   const camera = useThree((s) => s.camera) as THREE.PerspectiveCamera;
   const gl = useThree((s) => s.gl);
@@ -788,7 +791,7 @@ export function Rig({ view }: { view: View }) {
         if (features.controls) setAim(null);
         c.shadowT -= dt;
         if (c.shadowT <= 0) {
-          c.shadowT = 0.1;
+          c.shadowT = SHADOW_EVERY;
           gl.shadowMap.needsUpdate = true; // the rover's shadow moves with it
         }
         invalidate();
@@ -955,10 +958,10 @@ export function Rig({ view }: { view: View }) {
       else if (nearDoor.id) ride = 'enter';
     }
     setRide(ride);
-    // the Sun's shadow map is drawn once a day; while the astronaut moves, redraw it ten times a second
+    // the Sun's shadow map is drawn once a day; while the astronaut moves, redraw it five times a second
     c.shadowT -= dt;
     if (active && c.shadowT <= 0) {
-      c.shadowT = 0.1;
+      c.shadowT = SHADOW_EVERY;
       gl.shadowMap.needsUpdate = true;
     }
     c.quiet = active ? 0.6 : Math.max(0, c.quiet - dt);
