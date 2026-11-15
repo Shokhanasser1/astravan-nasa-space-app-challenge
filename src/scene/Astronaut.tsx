@@ -11,6 +11,8 @@ import { features } from '../config/features';
 import type { Machine, View } from '../state/game';
 import { groundHeight } from './ground';
 import { LAYOUT } from './layout';
+import { Remote } from '../arm/remote';
+import { armState } from '../arm/state';
 
 /** The suited astronaut: NASA EMU model, rigged and animated by Samandar (blender/game3d/characters/), 6k triangles. */
 const URL = `${import.meta.env.BASE_URL}models/astronaut/astronaut.glb`;
@@ -26,8 +28,8 @@ const SITE: Record<Machine, readonly [number, number]> = {
 const MACHINES = Object.keys(SITE) as Machine[];
 const TURN_NEAR = 14; // m: farther than this, the battery goes in where the astronaut stands (a tap from afar)
 const wrap = (a: number) => Math.atan2(Math.sin(a), Math.cos(a));
-/** The robot arm's remote owns the right arm while its scanner is on (main: src/arm/); no gestures then. */
-const armOn = (): boolean => false;
+/** The robot arm's remote owns the right arm while its scanner is on (src/arm/remote.ts): no gestures then. */
+const armOn = (): boolean => armState.on;
 
 /**
  * Draws the body the rig moves (src/character/body.ts): position, facing, and the clip for what it does — Idle,
@@ -76,6 +78,9 @@ export function Astronaut({ body, visible, view }: { body: Body; visible: boolea
   );
   const fx = useMemo(() => new GroundFx(scene, gl), [scene, gl]);
   useEffect(() => () => fx.dispose(), [fx]);
+  // the robot arm's remote in the right hand while its scanner is on (src/arm/remote.ts)
+  const remote = useMemo(() => (features.robotArm ? new Remote(scene, model) : null), [scene, model]);
+  useEffect(() => () => remote?.dispose(), [remote]);
   useEffect(
     () => () => {
       anim.mixer.stopAllAction();
@@ -153,6 +158,9 @@ export function Astronaut({ body, visible, view }: { body: Body; visible: boolea
       onGround: body.onGround, windup: body.windup, vy: body.vy, v0: body.v0 || 1.2,
       speed, carrying: false, pouring: false, running: body.running, k: 1,
     });
+    armState.player.x = body.x;
+    armState.player.z = body.z;
+    if (remote && remote.pose(dt, armState.on && visible)) invalidate();
     if (battery) battery.visible = visible && !armOn() && anim.holdingBattery();
     if (anim.gesturing()) settle.current = 0.4;
     if (settle.current > 0) {

@@ -21,6 +21,7 @@ import { onTravel, setAim } from '../controls/bus';
 import { STEP, createBody, stepBody } from '../character/body';
 import { telemetry } from '../character/telemetry';
 import { Astronaut } from './Astronaut';
+import { titleAngles, titlePose, useTitle } from './title';
 
 /**
  * First-person rig (final version, Dizayn 2.0). Eye 1.7 m; six standing points + inside; one-finger drag looks
@@ -217,8 +218,23 @@ export function Rig({ view }: { view: View }) {
   // Third person: outside, on the ground (not inside the habitat, not the truth pull-back from orbit).
   const third = character && point !== 'inside' && point !== 'orbit';
 
+  // Title camera (src/scene/title.ts): while the reception desk is on screen, a slow film-like arc over the base.
+  const title = useTitle();
+  const tc = useRef({ t: 0, at: { x: 0, y: 0, z: 0 } }).current;
+
   useFrame((_, delta) => {
     const dt = Math.min(delta, 0.05);
+    if (title) {
+      tc.t += dt;
+      titlePose(tc.t, reduced, tc.at);
+      camera.position.set(tc.at.x, tc.at.y, tc.at.z);
+      const { yaw, pitch } = titleAngles(tc.at, aspect);
+      camera.rotation.set(pitch, yaw, 0, 'YXZ'); // no roll: horizon always level
+      camState.inside = false;
+      if (features.controls) setAim(null);
+      if (!reduced || tc.t < 0.5) invalidate();
+      return;
+    }
     if (third) {
       followAstronaut(dt);
       return;
@@ -372,7 +388,7 @@ export function Rig({ view }: { view: View }) {
   const shown = MARKERS.filter((p) => roaming || p !== point);
   const floor = (p: PointId) => POINTS[p].pos[1] - EYE;
   const door: Vec3 = [LAYOUT.habitat[0] + Math.sin(DOOR_AZ) * 1.73, 1.1, LAYOUT.habitat[1] + Math.cos(DOOR_AZ) * 1.73];
-  const hideMarkers = launching || view.phase === 'truth';
+  const hideMarkers = launching || view.phase === 'truth' || title;
 
   const astronaut = character ? <Astronaut body={body} visible={point !== 'inside'} view={view} /> : null;
 

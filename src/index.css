@@ -1,7 +1,12 @@
 @import 'tailwindcss';
 @import '@fontsource-variable/lexend';
 
-/* Design tokens: the interface follows ASTRA's visual language (navy glass, Lexend, orange primary, cyan focus). */
+/*
+ * Design tokens (15 Nov, Asilbek: "cold colours, it is a space game; minimal; kids must want to play").
+ * One cold family on deep navy: ice cyan is "go", periwinkle, mint and violet tell things apart, cool white text.
+ * The only warm colour is the warning amber (storms, alerts), so a warning is never mistaken for decoration.
+ * Shapes and type stay ASTRA's (navy glass, Lexend, Lucide). Rules for the team: docs/DESIGN.md.
+ */
 @theme {
   --color-space: #050816;
   --color-regolith: #8a8a8a;
@@ -11,10 +16,10 @@
   --color-measured: #5ee0ff;
   --color-computed: #c48bff;
   --color-rule: #c2cbec;
-  --color-story: #ffd59e;
+  --color-story: #a9c4ff;
   --color-navy: #0a1028;
-  --color-accent: #ff8a3d;
-  --color-good: #3ee39a;
+  --color-accent: #4fd2ff;
+  --color-good: #5fe0c0;
   --font-sans: 'Lexend Variable', 'Lexend', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
 }
 
@@ -25,15 +30,21 @@
   --glass: linear-gradient(180deg, rgba(22, 32, 68, 0.88), rgba(12, 18, 42, 0.88));
   --line: rgba(150, 175, 255, 0.16);
   --line-strong: rgba(170, 195, 255, 0.3);
-  --text-2: #c2cbec;
-  --text-3: #8b96c0;
-  --accent: #ff8a3d;
-  --accent-hi: #ffa463;
-  --accent-ink: #2a1100;
+  --text-2: #b9c6ea;
+  --text-3: #8391bd;
+  --accent: #4fd2ff;
+  --accent-hi: #a6eeff;
+  --accent-ink: #032036;
+  --accent-edge: #1a6f99;
+  --ice: #dff7ff;
+  --mint: #5fe0c0;
+  --peri: #8fb3ff;
+  --violet: #b49bff;
+  --text-1: #eef3ff;
   --cyan: #5ee0ff;
-  --c-power: #ffc94a;
+  --c-power: #8fb3ff;
   --c-o2: #5ee0ff;
-  --c-dose: #c48bff;
+  --c-dose: #b49bff;
   --shadow: 0 18px 44px rgba(0, 0, 0, 0.45);
   --blur: blur(16px) saturate(140%);
   color-scheme: dark;
@@ -45,7 +56,7 @@ body {
   font-feature-settings: 'tnum' 1;
 }
 :focus-visible {
-  outline: 3px solid var(--cyan);
+  outline: 3px solid var(--ice);
   outline-offset: 2px;
 }
 
@@ -88,14 +99,14 @@ body {
   background: linear-gradient(180deg, var(--accent-hi), var(--accent));
   border-color: transparent;
   color: var(--accent-ink);
-  box-shadow: 0 4px 0 #b9541a, 0 10px 24px rgba(255, 138, 61, 0.28);
+  box-shadow: 0 4px 0 var(--accent-edge), 0 10px 24px rgba(79, 210, 255, 0.28);
 }
 .abtn.primary:hover:not(:disabled),
 .abtn.on:hover:not(:disabled) {
-  background: linear-gradient(180deg, #ffb57c, #ff9550);
+  background: linear-gradient(180deg, #c4f4ff, #6ddaff);
 }
 .abtn.primary:active:not(:disabled) {
-  box-shadow: 0 2px 0 #b9541a, 0 6px 14px rgba(255, 138, 61, 0.25);
+  box-shadow: 0 2px 0 var(--accent-edge), 0 6px 14px rgba(79, 210, 255, 0.25);
 }
 .abtn.big {
   min-height: 56px;
@@ -126,12 +137,12 @@ body {
 }
 .abtn.primary .kbd,
 .abtn.on .kbd {
-  background: rgba(42, 17, 0, 0.18);
-  border-color: rgba(42, 17, 0, 0.35);
+  background: rgba(3, 32, 54, 0.14);
+  border-color: rgba(3, 32, 54, 0.32);
   color: var(--accent-ink);
 }
 .title-grad {
-  background: linear-gradient(90deg, #ffa463, #ff5470);
+  background: linear-gradient(90deg, #a6eeff, #8fb3ff);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -322,4 +333,1061 @@ body,
 .holo-pulse { animation: holo-pulse 1.4s ease-in-out infinite; }
 @media (prefers-reduced-motion: reduce) {
   .holo-in, .holo-pulse { animation: none; }
+}
+
+/*
+ * Entry (docs/specs/2026-11-15-entry.md): minimal, for 7–12-year-olds. One centred column, few words, big round
+ * avatars, one orange "go" per screen. Same tokens as the rest of the interface (navy glass, Lexend, orange, cyan).
+ * Spacing on an 8 px scale; every target ≥ 48 px (avatars 72–96 px).
+ */
+.entry-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+/* desk */
+.entry-h2 {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+  text-align: center;
+}
+.entry-who {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+}
+.entry-avatars {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem 1.25rem;
+}
+.entry-avatar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  width: 5rem;
+  border-radius: 18px;
+  padding: 0.25rem 0;
+  color: #f3f6ff;
+  transition: transform 0.15s ease;
+}
+.entry-avatar:hover .entry-avatar-face {
+  transform: translateY(-2px);
+  box-shadow: 0 0 0 4px rgba(94, 224, 255, 0.25), 0 10px 24px rgba(0, 0, 0, 0.4);
+}
+.entry-avatar:active .entry-avatar-face {
+  transform: scale(0.96);
+}
+.entry-avatar-face {
+  --patch: var(--accent);
+  display: grid;
+  place-items: center;
+  width: 4.5rem;
+  height: 4.5rem;
+  border-radius: 999px;
+  font-size: 1.9rem;
+  font-weight: 800;
+  color: #fff;
+  background: radial-gradient(circle at 32% 28%, color-mix(in srgb, var(--patch) 85%, #fff), var(--patch) 55%, color-mix(in srgb, var(--patch) 55%, #050816));
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.14), 0 8px 20px rgba(0, 0, 0, 0.35);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.entry-avatar-big {
+  width: 6rem;
+  height: 6rem;
+  font-size: 2.6rem;
+}
+.entry-avatar-new {
+  background: rgba(79, 210, 255, 0.1);
+  border: 2px dashed rgba(79, 210, 255, 0.7);
+  box-shadow: none;
+  color: var(--accent-hi);
+  text-shadow: none;
+}
+.entry-avatar-name {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+.entry-hint {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--text-3);
+  text-align: center;
+}
+.entry-or {
+  height: 1px;
+  background: var(--line);
+}
+.entry-guest {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.entry-guest-btn {
+  width: 100%;
+}
+.entry-keep {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  border-radius: 18px;
+  padding: 0.6rem 0.6rem 0.6rem 1rem;
+  background: rgba(143, 179, 255, 0.1);
+  border: 1px solid rgba(143, 179, 255, 0.4);
+}
+
+/* badge maker and lobby */
+.entry-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+.entry-bar-label {
+  flex: 1;
+  font-size: 0.9rem;
+  color: var(--text-2);
+}
+.entry-icon-btn {
+  width: 48px;
+  min-width: 48px;
+  padding: 0;
+  border-radius: 999px;
+}
+.entry-preview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+.entry-preview-name {
+  font-size: 1.5rem;
+  font-weight: 800;
+}
+.entry-rank {
+  --patch: var(--accent);
+  padding: 0.2rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: color-mix(in srgb, var(--patch) 70%, #fff);
+  background: color-mix(in srgb, var(--patch) 16%, transparent);
+  border: 1px solid color-mix(in srgb, var(--patch) 45%, transparent);
+}
+.entry-dots {
+  display: flex;
+  gap: 6px;
+}
+.entry-dot {
+  width: 22px;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+}
+.entry-dot-on {
+  background: var(--accent);
+}
+.entry-field {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+}
+.entry-signs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.5rem;
+  width: 100%;
+}
+.entry-chip {
+  min-height: 48px;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: rgba(150, 175, 255, 0.07);
+  color: #f3f6ff;
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: background 0.15s, border-color 0.15s;
+}
+.entry-chip:hover {
+  background: rgba(150, 175, 255, 0.14);
+}
+.entry-chip-on {
+  background: rgba(79, 210, 255, 0.18);
+  border-color: var(--accent);
+  color: #fff;
+}
+.entry-swatches {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+}
+.entry-swatch {
+  --patch: var(--accent);
+  display: grid;
+  place-items: center;
+  width: 3.25rem;
+  height: 3.25rem;
+  border-radius: 999px;
+  color: #fff;
+  background: radial-gradient(circle at 32% 28%, color-mix(in srgb, var(--patch) 80%, #fff), var(--patch) 60%);
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.entry-swatch-on {
+  transform: scale(1.08);
+  box-shadow: 0 0 0 3px #fff, 0 0 0 7px rgba(94, 224, 255, 0.35);
+}
+.entry-privacy {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+}
+.entry-medals {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.entry-medal-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.entry-medal {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.55rem 0.75rem;
+  border-radius: 14px;
+  background: rgba(150, 175, 255, 0.06);
+  border: 1px solid var(--line);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+.entry-medal-n {
+  font-size: 0.75rem;
+  color: var(--text-3);
+}
+.entry-remove {
+  align-self: center;
+  min-height: 40px;
+  padding: 0 0.75rem;
+  font-size: 0.8rem;
+  color: var(--text-3);
+}
+.entry-remove:hover {
+  color: #ff8f8f;
+}
+
+/* ---- stage: the 3D base is the background; the title and the menu sit at its edge ---- */
+.entry-wrap {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  justify-items: center;
+  padding: max(4.75rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right)) max(1rem, env(safe-area-inset-bottom))
+    max(1rem, env(safe-area-inset-left));
+}
+/* legibility scrim: dark where the words are, clear where the base is */
+.entry-scrim {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(5, 8, 22, 0.78) 0%, rgba(5, 8, 22, 0.25) 26%, transparent 40%),
+    linear-gradient(0deg, rgba(5, 8, 22, 0.92) 0%, rgba(5, 8, 22, 0.55) 30%, transparent 55%);
+}
+.entry-lockup {
+  position: relative;
+  grid-row: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  text-align: center;
+  animation: entry-rise 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+/* the menu card: a bottom sheet on tall screens */
+.entry-card {
+  position: relative;
+  grid-row: 3;
+  width: 100%;
+  max-width: 26rem;
+  max-height: min(70dvh, 40rem);
+  overflow-y: auto;
+  border-radius: 28px;
+  padding: 1.25rem 1.25rem 1.1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 1.1rem;
+  animation: entry-rise 0.7s 0.12s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+@keyframes entry-rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .entry-lockup,
+  .entry-card {
+    animation: none;
+  }
+}
+
+/* the title lockup */
+.entry-logo {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 0.92;
+  filter: drop-shadow(0 6px 24px rgba(0, 0, 0, 0.55));
+}
+.entry-logo-top {
+  font-size: clamp(0.95rem, 4vw, 1.35rem);
+  font-weight: 700;
+  letter-spacing: 0.55em;
+  margin-right: -0.55em; /* letter-spacing adds space after the last letter */
+  text-transform: uppercase;
+  color: #fff;
+}
+.entry-logo-big {
+  font-size: clamp(3.4rem, 17vw, 6.25rem);
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  background: linear-gradient(180deg, #ffffff 0%, #a6eeff 38%, #6fd3ff 72%, #5a8cff 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 0 22px rgba(79, 210, 255, 0.35));
+}
+.entry-days {
+  display: flex;
+  gap: 8px;
+}
+.entry-day {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  border: 2px solid rgba(255, 255, 255, 0.55);
+}
+.entry-day-home {
+  border-color: var(--accent);
+  background: var(--accent);
+  box-shadow: 0 0 10px rgba(79, 210, 255, 0.8);
+}
+.entry-tagline {
+  margin: 0;
+  font-size: clamp(0.95rem, 3.6vw, 1.1rem);
+  font-weight: 500;
+  color: var(--text-2);
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.6);
+}
+/* away from the desk (badge maker, lobby) the title steps back to make room */
+.entry-wrap:not(.entry-at-desk) .entry-days,
+.entry-wrap:not(.entry-at-desk) .entry-tagline {
+  display: none;
+}
+.entry-wrap:not(.entry-at-desk) .entry-logo-big {
+  font-size: clamp(2.4rem, 11vw, 3.75rem);
+}
+.entry-wrap:not(.entry-at-desk) .entry-card {
+  max-height: calc(100dvh - 11.5rem);
+}
+
+/* wide screens (laptops, tablets held sideways): title and menu in a column on the left, the base on the right */
+@media (min-width: 760px) and (min-aspect-ratio: 5/4) {
+  .entry-wrap {
+    grid-template-columns: minmax(20rem, 27rem) 1fr;
+    grid-template-rows: 1fr auto auto 1fr;
+    justify-items: stretch;
+    column-gap: 2rem;
+    row-gap: 1.25rem;
+    padding-left: max(4vw, env(safe-area-inset-left));
+  }
+  .entry-scrim {
+    background:
+      linear-gradient(90deg, rgba(5, 8, 22, 0.9) 0%, rgba(5, 8, 22, 0.65) 30%, rgba(5, 8, 22, 0.12) 52%, transparent 62%),
+      linear-gradient(0deg, rgba(5, 8, 22, 0.45) 0%, transparent 25%);
+  }
+  .entry-lockup {
+    grid-column: 1;
+    grid-row: 2;
+    align-items: flex-start;
+    text-align: left;
+  }
+  .entry-logo {
+    align-items: flex-start;
+  }
+  .entry-logo-top {
+    margin-right: 0;
+    padding-left: 0.2em;
+  }
+  .entry-card {
+    grid-column: 1;
+    grid-row: 3;
+    max-width: none;
+    max-height: calc(100dvh - 15rem);
+  }
+  /* badge maker and lobby: the title steps aside, the card gets the whole column */
+  .entry-wrap:not(.entry-at-desk) .entry-lockup {
+    display: none;
+  }
+  .entry-wrap:not(.entry-at-desk) .entry-card {
+    grid-row: 2 / span 2;
+    max-height: calc(100dvh - 6.5rem);
+  }
+  .entry-wrap:not(.entry-at-desk) .entry-stack {
+    gap: 1rem;
+  }
+  .entry-wrap:not(.entry-at-desk) .entry-avatar-big {
+    width: 5rem;
+    height: 5rem;
+    font-size: 2.2rem;
+  }
+}
+
+/* short screens (phones held sideways): a smaller title, the menu card still in full size */
+@media (max-height: 540px) {
+  .entry-wrap {
+    padding-top: max(4rem, env(safe-area-inset-top));
+    row-gap: 0.6rem;
+  }
+  .entry-logo-big {
+    font-size: 2.6rem;
+  }
+  .entry-logo-top {
+    font-size: 0.8rem;
+  }
+  .entry-tagline,
+  .entry-days {
+    display: none;
+  }
+  .entry-card {
+    max-height: calc(100dvh - 9rem);
+    padding: 0.9rem 1.1rem;
+    gap: 0.75rem;
+  }
+  .entry-or,
+  .entry-who .entry-hint {
+    display: none;
+  }
+  .entry-avatar-face:not(.entry-avatar-new) {
+    width: 3.5rem;
+    height: 3.5rem;
+    font-size: 1.5rem;
+  }
+  .entry-avatar-new {
+    width: 3.5rem;
+    height: 3.5rem;
+  }
+  .entry-avatar-big {
+    width: 4.25rem;
+    height: 4.25rem;
+    font-size: 1.9rem;
+  }
+}
+@media (max-height: 540px) and (min-aspect-ratio: 5/4) {
+  .entry-card {
+    max-height: calc(100dvh - 8.5rem);
+  }
+}
+
+/*
+ * Mission HUD, minimal (15 Nov, Asilbek): start from nothing and keep only what the child needs now; group what
+ * belongs together (one stat strip, not three boxes); one place for each thing in every phase; icons first, words
+ * short; targets ≥ 44–48 px. Same tokens as the rest (navy glass, Lexend, orange go, cyan focus).
+ */
+
+/* day badge: one compact pill — "Day 1 of 7", seven day marks, the radiation level */
+.hud-day {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  border-radius: 999px;
+  padding: 0.4rem 0.5rem 0.4rem 0.9rem;
+}
+.hud-day-text {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: #f3f6ff;
+}
+.hud-day-pips {
+  display: flex;
+  gap: 4px;
+}
+.hud-pip {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  border: 1.5px solid rgba(255, 255, 255, 0.4);
+}
+.hud-pip-done {
+  border-color: transparent;
+  background: rgba(255, 255, 255, 0.55);
+}
+.hud-pip-now {
+  border-color: var(--accent);
+  background: var(--accent);
+  box-shadow: 0 0 8px rgba(79, 210, 255, 0.8);
+}
+.hud-level {
+  border-radius: 999px;
+  padding: 0.2rem 0.65rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  white-space: nowrap;
+  background: rgba(255, 255, 255, 0.12);
+  color: #f3f6ff;
+}
+.hud-level-alert {
+  background: var(--color-alert);
+  color: #2a1b00;
+}
+.hud-day [data-label] {
+  margin-left: 0;
+}
+@media (max-width: 520px) {
+  /* a phone: two short lines in a small card, so the top bar never pushes the sound button off the screen */
+  .hud-day {
+    flex-direction: column;
+    gap: 0.25rem;
+    border-radius: 16px;
+    padding: 0.4rem 0.7rem;
+  }
+  .hud-day-text {
+    font-size: 0.72rem;
+  }
+  .hud-day-text svg {
+    display: none;
+  }
+  .hud-level {
+    font-size: 0.72rem;
+    padding: 0.1rem 0.55rem;
+  }
+}
+
+/* stats: one strip, three columns, the number big, the label and its data mark small */
+.hud-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border-radius: 20px;
+  padding: 0.5rem 0.25rem;
+  text-align: center;
+}
+.hud-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.1rem;
+  padding: 0 0.4rem;
+  min-width: 0;
+}
+.hud-stat + .hud-stat {
+  border-left: 1px solid var(--line);
+}
+.hud-stat-label {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-2);
+}
+.hud-stat-value {
+  font-size: 1.3rem;
+  font-weight: 800;
+  line-height: 1.15;
+  color: #fff;
+}
+/* the measured / computed / rule mark stays (word + colour), but as a quiet tag, not a second badge */
+.hud-stat [data-label] {
+  margin-left: 0;
+  border: 0;
+  padding: 0;
+  font-size: 0.58rem;
+  letter-spacing: 0.08em;
+  opacity: 0.85;
+}
+
+/* wrist tablet: one calm panel; each machine a row with its icon, name, effect and a round stepper */
+.hud-tablet {
+  border-radius: 22px;
+  gap: 0.6rem !important;
+}
+.machine-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.machine-row {
+  --tone: var(--cyan);
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.45rem 0.5rem 0.45rem 0.55rem;
+  border-radius: 16px;
+  background: rgba(150, 175, 255, 0.05);
+  border: 1px solid transparent;
+  transition: background 0.15s, border-color 0.15s;
+}
+.machine-on {
+  background: color-mix(in srgb, var(--tone) 9%, transparent);
+  border-color: color-mix(in srgb, var(--tone) 35%, transparent);
+}
+.machine-icon {
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 12px;
+  color: var(--tone);
+  background: color-mix(in srgb, var(--tone) 14%, rgba(5, 8, 22, 0.6));
+}
+.machine-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.2;
+}
+.machine-name {
+  font-size: 0.95rem;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.machine-effect {
+  font-size: 0.8rem;
+}
+.machine-stepper {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.2rem;
+  border-radius: 999px;
+  background: rgba(5, 8, 22, 0.45);
+  border: 1px solid var(--line);
+}
+.machine-btn {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  color: #f3f6ff;
+  background: rgba(150, 175, 255, 0.12);
+  transition: transform 0.12s, background 0.15s;
+}
+.machine-btn:hover:not(:disabled) {
+  background: rgba(150, 175, 255, 0.22);
+}
+.machine-btn:active:not(:disabled) {
+  transform: scale(0.94);
+}
+.machine-btn:disabled {
+  opacity: 0.3;
+}
+.machine-btn-add:not(:disabled) {
+  background: linear-gradient(180deg, var(--accent-hi), var(--accent));
+  color: var(--accent-ink);
+}
+.machine-count {
+  min-width: 1.6rem;
+  text-align: center;
+  font-size: 1.15rem;
+  font-weight: 800;
+}
+@media (max-width: 380px) {
+  .machine-row {
+    gap: 0.5rem;
+  }
+  .machine-icon {
+    width: 2.1rem;
+    height: 2.1rem;
+  }
+  .machine-btn {
+    width: 40px;
+    height: 40px;
+  }
+}
+
+/* one column, one width; the wrist tablet gives way first so the big button always stays on screen */
+.hud-center {
+  min-height: 0;
+}
+.hud-center [data-testid='radio'] {
+  width: 100%;
+  max-width: none;
+}
+.hud-center .hud-tablet {
+  min-height: 7rem;
+  flex-shrink: 1;
+}
+
+/*
+ * Entry desk, minimal (15 Nov ~07:30; cold palette ~08:00): one quiet card, no ornament. Cool white text, ice cyan
+ * "go", night blue — so the title, the crew marks and the "go" belong together. Only two
+ * things move: the golden "home" star glows, a crew mark lifts and its orbit turns under the finger.
+ */
+.entry-wrap {
+  /* (names kept from the first warm draft; values are the cold family) */
+  --cream: var(--text-1);
+  --gold: #7fe3ff;
+  --gold-2: var(--accent);
+  --gold-3: var(--accent-edge);
+}
+
+/* title: cream "HOME BY", gold "SEVEN", seven stars (six days, one golden: home) */
+.entry-logo-top {
+  color: var(--cream);
+}
+.entry-logo-big {
+  background: linear-gradient(180deg, #ffffff 0%, #c9f3ff 38%, var(--gold-2) 72%, #5a8cff 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  filter: drop-shadow(0 2px 0 rgba(10, 40, 90, 0.5)) drop-shadow(0 0 22px rgba(127, 227, 255, 0.22));
+}
+.entry-days {
+  align-items: center;
+  gap: 9px;
+}
+svg.entry-day {
+  width: auto;
+  height: auto;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  color: rgba(238, 243, 255, 0.6);
+}
+svg.entry-day-home {
+  color: var(--gold);
+  filter: drop-shadow(0 0 6px rgba(127, 227, 255, 0.8));
+  animation: star-glow 3s ease-in-out infinite;
+}
+@keyframes star-glow {
+  50% {
+    transform: scale(1.15);
+  }
+}
+.entry-tagline {
+  color: rgba(238, 243, 255, 0.78);
+}
+
+/* the card */
+.entry-card.pass {
+  max-height: none;
+  overflow: visible;
+  padding: 0;
+  gap: 0;
+  border-radius: 24px;
+  background: rgba(14, 21, 51, 0.82);
+  border: 1px solid rgba(238, 243, 255, 0.1);
+  box-shadow: 0 20px 44px rgba(0, 0, 0, 0.42);
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+}
+.pass-main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.4rem 1.25rem 1.25rem;
+}
+.pass-stub {
+  padding: 0.5rem;
+  border-top: 1px solid rgba(238, 243, 255, 0.08);
+}
+.pass-title {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--cream);
+}
+
+/* the crew: crew marks (night disc, letter and orbit in the patch colour) */
+.crew {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem 1.25rem;
+}
+.crew-seat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  width: 5.5rem;
+  padding: 0.25rem 0;
+  border-radius: 18px;
+  color: var(--cream);
+}
+.crew-mark {
+  filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.35));
+}
+.crew-mark .crew-orbit {
+  transform-origin: 50px 50px;
+  transition: stroke-opacity 0.25s, transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.crew-seat .crew-mark {
+  transition: transform 0.25s cubic-bezier(0.2, 1.3, 0.4, 1);
+}
+.crew-seat:hover .crew-mark,
+.crew-seat:focus-visible .crew-mark {
+  transform: translateY(-3px);
+}
+.crew-seat:hover .crew-orbit,
+.crew-seat:focus-visible .crew-orbit {
+  stroke-opacity: 1;
+  transform: rotate(40deg);
+}
+.crew-seat:active .crew-mark {
+  transform: scale(0.96);
+}
+.crew-name {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+.crew-seat-new .crew-name {
+  color: var(--gold);
+}
+
+/* play as guest: one quiet row with the gold "go" */
+.pass-guest {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  width: 100%;
+  min-height: 60px;
+  padding: 0.5rem 0.75rem;
+  border-radius: 18px;
+  text-align: left;
+  color: var(--cream);
+  transition: background 0.2s;
+}
+.pass-guest:hover,
+.pass-guest:focus-visible {
+  background: rgba(238, 243, 255, 0.06);
+}
+.pass-guest:active .pass-guest-icon {
+  transform: scale(0.94);
+}
+.pass-guest-icon {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  color: #032036;
+  background: linear-gradient(180deg, #c4f4ff, var(--gold-2));
+  transition: transform 0.12s;
+}
+.pass-guest-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.25;
+}
+.pass-guest-label {
+  font-size: 1.02rem;
+  font-weight: 700;
+}
+.pass-guest-hint {
+  font-size: 0.78rem;
+  color: rgba(238, 243, 255, 0.55);
+}
+.entry-keep {
+  width: 100%;
+  background: rgba(127, 227, 255, 0.1);
+  border-color: rgba(127, 227, 255, 0.35);
+}
+@media (prefers-reduced-motion: reduce) {
+  svg.entry-day-home {
+    animation: none;
+  }
+}
+
+/* short screens */
+@media (max-height: 540px) {
+  .pass-main {
+    padding: 0.9rem 1rem 0.8rem;
+    gap: 0.6rem;
+  }
+  .crew-seat .crew-mark {
+    width: 56px;
+    height: 56px;
+  }
+  .pass-guest {
+    min-height: 52px;
+  }
+}
+/* phones held sideways: the title on the left, the card beside it */
+@media (max-height: 540px) and (min-aspect-ratio: 5/4) {
+  .entry-wrap.entry-at-desk {
+    grid-template-columns: auto minmax(17rem, 21rem);
+    grid-template-rows: 1fr;
+    align-items: center;
+    justify-content: start;
+    column-gap: 2rem;
+    padding-top: max(3.75rem, env(safe-area-inset-top));
+  }
+  .entry-wrap.entry-at-desk .entry-lockup {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  .entry-wrap.entry-at-desk .entry-card.pass {
+    grid-column: 2;
+    grid-row: 1;
+  }
+  .entry-wrap.entry-at-desk .entry-logo-big {
+    font-size: 3.2rem;
+  }
+  .entry-wrap.entry-at-desk .entry-days {
+    display: flex;
+  }
+}
+
+/* the jump button (touch): straight above the walk stick, same edge, never on top of it */
+.hud-jump {
+  position: fixed;
+  z-index: 5;
+  left: calc(var(--hud-edge) + (var(--stick) - 4rem) / 2);
+  top: calc(40% - 4rem - 0.9rem);
+}
+@media (orientation: landscape) and (max-height: 540px) {
+  .hud-jump {
+    top: auto;
+    bottom: calc(max(1.25rem, env(safe-area-inset-bottom)) + var(--stick) + 0.75rem);
+  }
+}
+@media (min-width: 744px) and (min-height: 600px) {
+  .hud-jump {
+    left: calc(max(1.5rem, env(safe-area-inset-left)) + (var(--stick) - 4rem) / 2);
+    top: calc(48% - 4rem - 1rem);
+  }
+}
+
+/* the Sun photo of the day: on a portrait phone the open wrist tablet needs that space; it comes back when folded */
+@media (max-width: 520px) and (orientation: portrait) {
+  [data-tablet='open'] .hud-sun {
+    display: none;
+  }
+}
+
+/* truth screen: the real week as seven bars (log scale); storm days in the warning amber, quiet days periwinkle */
+.truth-chart {
+  display: flex;
+  align-items: stretch;
+  gap: 6px;
+  height: 9rem;
+  /* the reveal panel scrolls: without this the chart was squeezed to nothing (the "missing bars") */
+  flex-shrink: 0;
+  padding: 0.25rem 0.1rem 0;
+}
+.truth-col {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.truth-val {
+  font-size: 0.66rem;
+  font-weight: 600;
+  color: var(--text-2);
+  white-space: nowrap;
+}
+.truth-track {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  align-items: flex-end;
+  border-radius: 8px;
+  background: rgba(150, 175, 255, 0.06);
+}
+.truth-bar {
+  width: 100%;
+  min-height: 4px;
+  border-radius: 8px 8px 4px 4px;
+  background: linear-gradient(180deg, var(--peri), rgba(143, 179, 255, 0.35));
+}
+.truth-bar-storm {
+  background: linear-gradient(180deg, #ffd978, var(--color-alert));
+  box-shadow: 0 0 14px rgba(255, 194, 61, 0.35);
+}
+.truth-day {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-1);
+}
+
+/* phones held sideways (≈ 360–430 px tall): the same column, compact, so the big button always fits */
+@media (orientation: landscape) and (max-height: 540px) {
+  .hud-center {
+    gap: 6px !important;
+  }
+  .hud-center [data-testid='radio'] {
+    padding: 0.3rem 0.6rem;
+  }
+  .hud-center [data-testid='radio'] .eyebrow {
+    display: none;
+  }
+  .hud-center [data-testid='radio'] p {
+    font-size: 0.8rem;
+    line-height: 1.25;
+  }
+  .hud-center [data-testid='radio'] svg {
+    width: 1.75rem;
+    height: 1.75rem;
+  }
+  .hud-center .hud-tablet {
+    min-height: 4.5rem;
+    padding: 0.5rem;
+  }
+  .hud-stats {
+    padding: 0.25rem 0.2rem;
+  }
+  .hud-stat-label {
+    font-size: 0.62rem;
+    gap: 0.2rem;
+  }
+  .hud-stat-value {
+    font-size: 1rem;
+  }
+  .hud-center .abtn.big {
+    min-height: 44px;
+  }
 }

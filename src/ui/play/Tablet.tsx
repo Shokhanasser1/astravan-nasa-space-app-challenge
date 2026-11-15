@@ -1,5 +1,5 @@
-import { type Dispatch } from "react";
-import { ChevronDown, Tablet as TabletIcon } from "lucide-react";
+import { type CSSProperties, type Dispatch } from "react";
+import { ChevronDown, Minus, Plus, Rocket, Sprout, Tablet as TabletIcon, Telescope, Wind, Wrench, type LucideIcon } from "lucide-react";
 import type { LogLine, Machine as EngineMachine } from "../../engine/rules";
 import type { Action, Board, Machine, Model } from "../../state/game";
 import { Btn, Delta, Panel, type Tr } from "./kit";
@@ -10,12 +10,12 @@ import { features } from "../../config/features";
  * Wrist tablet (lane D placeholder): the day card with its prices, the shelter choice, the energy board and the
  * night log. Every price comes from `board.*.preview` (engine), shown before the button is pressed.
  */
-const ROWS: { k: Machine; e: EngineMachine }[] = [
-  { k: "ls", e: "ls" },
-  { k: "gh", e: "gh" },
-  { k: "ws", e: "build" },
-  { k: "sc", e: "sc" },
-  { k: "launch", e: "launch" },
+const ROWS: { k: Machine; e: EngineMachine; Icon: LucideIcon; tone: string }[] = [
+  { k: "ls", e: "ls", Icon: Wind, tone: "var(--c-o2)" },
+  { k: "gh", e: "gh", Icon: Sprout, tone: "var(--color-good)" },
+  { k: "ws", e: "build", Icon: Wrench, tone: "var(--c-power)" },
+  { k: "sc", e: "sc", Icon: Telescope, tone: "var(--c-dose)" },
+  { k: "launch", e: "launch", Icon: Rocket, tone: "var(--accent)" },
 ];
 
 function CardChoice({
@@ -142,41 +142,42 @@ function Machines({
 }) {
   const forced = board.info.forced;
   return (
-    <div className="flex flex-col gap-1" data-testid="machines">
+    <div className="machine-list" data-testid="machines">
       {ROWS.filter((r) => r.k !== "launch" || board.limits.max.launch > 0).map(
-        ({ k, e }) => {
+        ({ k, e, Icon, tone }) => {
           const count = board.alloc[e];
           const max = board.limits.max[e];
           return (
-            <div
-              key={k}
-              className="grid grid-cols-[minmax(0,1fr)_auto_1.75rem_auto_4rem] items-center gap-2"
-              data-machine={k}
-            >
-              <span className="text-sm leading-tight break-words">
-                {tr(`ui.machine.${k}`)}
+            <div key={k} className={`machine-row ${count > 0 ? "machine-on" : ""}`} data-machine={k} style={{ "--tone": tone } as CSSProperties}>
+              <span className="machine-icon" aria-hidden="true">
+                <Icon size={20} />
               </span>
-              <Btn
-                data-testid={`machine-${k}-remove`}
-                aria-label={`${tr(`ui.machine.${k}`)} −`}
-                disabled={forced || count === 0}
-                onClick={() => dispatch({ type: "SET", k, delta: -1 })}
-              >
-                −
-              </Btn>
-              <span className="text-center text-lg font-bold tabular-nums">
-                {count}
+              <span className="machine-text">
+                <span className="machine-name">{tr(`ui.machine.${k}`)}</span>
+                <span className="machine-effect">{effect(k, board, model)}</span>
               </span>
-              <Btn
-                data-testid={`machine-${k}-add`}
-                aria-label={`${tr(`ui.machine.${k}`)} +`}
-                disabled={forced || max === 0 || count >= max}
-                onClick={() => dispatch({ type: "SET", k })}
-              >
-                +
-              </Btn>
-              <span className="text-right text-sm">
-                {effect(k, board, model)}
+              <span className="machine-stepper">
+                <button
+                  type="button"
+                  className="machine-btn"
+                  data-testid={`machine-${k}-remove`}
+                  aria-label={`${tr(`ui.machine.${k}`)} −`}
+                  disabled={forced || count === 0}
+                  onClick={() => dispatch({ type: "SET", k, delta: -1 })}
+                >
+                  <Minus size={18} strokeWidth={2.5} aria-hidden="true" />
+                </button>
+                <span className="machine-count tabular-nums">{count}</span>
+                <button
+                  type="button"
+                  className="machine-btn machine-btn-add"
+                  data-testid={`machine-${k}-add`}
+                  aria-label={`${tr(`ui.machine.${k}`)} +`}
+                  disabled={forced || max === 0 || count >= max}
+                  onClick={() => dispatch({ type: "SET", k })}
+                >
+                  <Plus size={18} strokeWidth={2.5} aria-hidden="true" />
+                </button>
               </span>
             </div>
           );

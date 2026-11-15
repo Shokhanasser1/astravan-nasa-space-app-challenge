@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type Dispatch } from 'react';
+import { useEffect, useMemo, useState, type Dispatch, type ReactNode } from 'react';
 import { ArrowRight, Check, Music, Tablet as TabletIcon, VolumeX } from 'lucide-react';
 import { board as selectBoard, truth as selectTruth, type Action, type Model, type View } from '../state/game';
 import type { Lang } from '../i18n/t';
@@ -7,6 +7,7 @@ import { Btn, makeTr } from './play/kit';
 import { DayBadge, Gauges, radioKey } from './play/Visor';
 import { Briefing, CapcomHolo, PhysicsHolo, SunToday } from './play/Holo';
 import { HandControl, handsOn } from './play/HandControl';
+import { ArmScanner } from './play/ArmScanner';
 import { NightTablet, PlanTablet } from './play/Tablet';
 import { TruthScreen } from './play/TruthScreen';
 import { JumpButton, WalkStick } from './play/WalkStick';
@@ -16,6 +17,7 @@ import { releaseAll, walkInput } from '../walk/input';
 import { features } from '../config/features';
 import { canTravel, type Overlay } from '../controls/act';
 import { useAim } from '../controls/bus';
+import { setTitle } from '../scene/title';
 
 /**
  * Lane D (Asilbek). DOM layer above the Canvas. This is the PLAYABLE G2 wiring (14 Nov): every control dispatches
@@ -28,6 +30,8 @@ import { useAim } from '../controls/bus';
  * (portrait, landscape) and a tablet is CSS in src/index.css (`.hud-*`).
  */
 const LANGS: Lang[] = ['en', 'uz', 'ru'];
+/** The robot arm's hand scanner (it needs the walking astronaut). */
+const armScan = features.robotArm && features.character;
 const RUN_MS = 4000; // the day runs (≤ 6 s, skippable)
 const LAUNCH_MS = 4000;
 
@@ -41,6 +45,8 @@ interface Props {
   setSound: (s: boolean) => void;
   onStart: () => void;
   onContinue?: () => void;
+  /** The reception desk (features.entry): shown instead of the briefing and start buttons outside the game. */
+  entry?: ReactNode;
 }
 
 function TopBar({ lang, setLang, sound, setSound, tr }: Pick<Props, 'lang' | 'setLang' | 'sound' | 'setSound'> & { tr: (k: string) => string }) {
@@ -67,12 +73,15 @@ function TopBar({ lang, setLang, sound, setSound, tr }: Pick<Props, 'lang' | 'se
   );
 }
 
-export function Hud({ model, view, dispatch, lang, setLang, sound, setSound, onStart, onContinue }: Props) {
+export function Hud({ model, view, dispatch, lang, setLang, sound, setSound, onStart, onContinue, entry }: Props) {
   const tr = useMemo(() => makeTr(lang), [lang]);
   const board = useMemo(() => selectBoard(model), [model]);
   const truth = useMemo(() => selectTruth(model), [model]);
   const { phase, screen } = model;
   const aim = useAim();
+  // The reception desk shows the base through a slow title camera (src/scene/title.ts).
+  const titleShot = Boolean(entry) && screen !== 'game';
+  useEffect(() => setTitle(titleShot), [titleShot]);
 
   // Windows of the controls layer: the map or the controls list; the wrist tablet open or folded; Houston's hint.
   const [overlay, setOverlay] = useState<Overlay>(null);
@@ -134,7 +143,7 @@ export function Hud({ model, view, dispatch, lang, setLang, sound, setSound, onS
       data-tablet={showTablet ? 'open' : 'closed'}
       onPointerDown={() => audio.unlock()}
     >
-      <div className="flex shrink-0 items-start justify-between gap-2">
+      <div className="relative z-20 flex shrink-0 items-start justify-between gap-2">
         {features.controls ? <CornerButtons map={canTravel({ screen, phase })} open={(ui) => apply({ ui })} tr={tr} /> : null}
         {playing ? <DayBadge view={view} board={board} tr={tr} /> : <span />}
         <TopBar lang={lang} setLang={setLang} sound={sound} setSound={setSound} tr={tr} />
@@ -146,7 +155,9 @@ export function Hud({ model, view, dispatch, lang, setLang, sound, setSound, onS
         </div>
       )}
 
-      {screen !== 'game' && !overlay && (
+      {screen !== 'game' && !overlay && entry}
+
+      {screen !== 'game' && !overlay && !entry && (
         <div className="pointer-events-auto flex flex-col items-center gap-4 self-center">
           <Briefing tr={tr} lang={lang} sound={sound} />
           <Btn data-testid="start-mission" className="primary big" onClick={onStart}>
@@ -170,7 +181,7 @@ export function Hud({ model, view, dispatch, lang, setLang, sound, setSound, onS
       )}
       {/* (Its own corner: in the centre column it pushed Confirm off a laptop screen on the flare day.) */}
       {playing && !overlay && (phase === 'morning' || phase === 'plan') && (
-        <div className="pointer-events-none absolute left-4 top-36 flex flex-col">
+        <div className="hud-sun pointer-events-none absolute left-4 top-36 flex flex-col">
           <SunToday weekId={view.weekId} date={view.mediaDate} tr={tr} />
         </div>
       )}
@@ -178,6 +189,13 @@ export function Hud({ model, view, dispatch, lang, setLang, sound, setSound, onS
       {handsOn && !overlay && (
         <div className="pointer-events-none absolute left-4 top-1/2">
           <HandControl tr={tr} />
+        </div>
+      )}
+      {/* (the robot arm's scanner: its button shows only near the arm; the panel opens beside it, mid-left, clear of
+          the radio card and the big button at the bottom) */}
+      {armScan && playing && !overlay && (
+        <div className={`pointer-events-none absolute top-1/2 -translate-y-1/2 ${handsOn ? 'right-4' : 'left-4'}`}>
+          <ArmScanner tr={tr} />
         </div>
       )}
 

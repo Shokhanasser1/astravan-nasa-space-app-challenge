@@ -3,9 +3,10 @@
  * from the same layout the scene draws from (src/scene/layout.ts), a little bigger than what you see. Never the
  * render meshes. Scene-only numbers.
  */
-import { BATTERY_BANK, LAYOUT, PARKED_ROVER, RADIUS, type XZ as Pair } from '../scene/layout';
+import { BATTERY_BANK, LAYOUT, PARKED_ROVER, RADIUS, ROBOT_ARM, type XZ as Pair } from '../scene/layout';
 import type { Area, Solid } from './collide';
 import { rich } from '../scene/rich';
+import { features } from '../config/features';
 
 /** Every hitbox is its visual footprint plus this much (metres). */
 const MARGIN = 0.1;
@@ -43,6 +44,8 @@ export const OUTSIDE: Area = {
     { name: 'rover', x: PARKED_ROVER.x, z: PARKED_ROVER.z, r: PARKED_ROVER.r },
     // (the battery bank is drawn on computers only: src/scene/rich.ts)
     ...(rich ? [{ name: 'battery', x: BATTERY_BANK[0], z: BATTERY_BANK[1], r: 0.9 }] : []),
+    // (the robot arm's pedestal; the arm itself moves above head height or stops at the ground: src/arm/kin.ts)
+    ...(features.robotArm && features.character ? [disc('robot arm', [ROBOT_ARM.x, ROBOT_ARM.z], ROBOT_ARM.r)] : []),
   ],
   bounds: { name: 'edge', x: 0, z: 0, r: EDGE },
 };
