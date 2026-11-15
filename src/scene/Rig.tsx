@@ -293,8 +293,12 @@ function anglesTo(from: THREE.Vector3, look: Vec3): [number, number] {
   return [yaw, Math.max(-MAX_PITCH, Math.min(MAX_PITCH, pitch))];
 }
 
-/** While something moves, the shadow map is redrawn this often, s (15 Nov perf audit: 10 Hz redrew every caster). */
-const SHADOW_EVERY = 0.2;
+/**
+ * While something moves, the shadow map is redrawn this often, s. The perf audit (15 Nov) cut it to 5 Hz, but then
+ * the astronaut's shadow trailed up to 0.4 m behind the boots at a lope; ~30 Hz keeps it on the feet (≤ 7 cm).
+ * One more redraw always follows the last move, so a body that stops never keeps a stale shadow.
+ */
+const SHADOW_EVERY = 1 / 30;
 
 export function Rig({ view }: { view: View }) {
   const camera = useThree((s) => s.camera) as THREE.PerspectiveCamera;
@@ -309,7 +313,7 @@ export function Rig({ view }: { view: View }) {
   // (with the astronaut, the walker walks only inside the habitat, in first person: the astronaut walks outside)
   const walker = useMemo(() => (freeWalk ? createWalker() : null), []);
   const body = useMemo(() => createBody(POINTS.hub.pos[0], POINTS.hub.pos[2], ground), []);
-  const c = useRef({ acc: 0, quiet: 0, shadowT: 0, car: 0, ck: 0, boom: 0, boomDist: 0, takeoff: NaN, peak: 0, ax: { ahead: 0, side: 0, turn: 0 } as Axes, wish: { x: 0, z: 0 } as XZ }).current;
+  const c = useRef({ acc: 0, quiet: 0, shadowT: 0, shadowStale: false, car: 0, ck: 0, boom: 0, boomDist: 0, takeoff: NaN, peak: 0, ax: { ahead: 0, side: 0, turn: 0 } as Axes, wish: { x: 0, z: 0 } as XZ }).current;
   const s = useRef({
     from: new THREE.Vector3(),
     to: new THREE.Vector3(),
@@ -1096,10 +1100,15 @@ export function Rig({ view }: { view: View }) {
       else if (nearDoor.id) ride = 'enter';
     }
     setRide(ride);
-    // the Sun's shadow map is drawn once a day; while the astronaut moves, redraw it five times a second
+    // the Sun's shadow map is drawn once a day; while the astronaut moves, redraw it ~30 times a second, and once
+    // more when it has settled (the legs blend back to Idle while `quiet` runs down; else the last redraw, up to
+    // SHADOW_EVERY old, stays: a shadow beside the boots)
+    const moving = active || c.quiet > 0;
     c.shadowT -= dt;
-    if (active && c.shadowT <= 0) {
+    if (moving) c.shadowStale = true;
+    if (c.shadowStale && (!moving || c.shadowT <= 0)) {
       c.shadowT = SHADOW_EVERY;
+      c.shadowStale = moving;
       gl.shadowMap.needsUpdate = true;
     }
     c.quiet = active ? 0.6 : Math.max(0, c.quiet - dt);

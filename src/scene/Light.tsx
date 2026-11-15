@@ -22,6 +22,14 @@ const elParam = typeof location !== 'undefined' ? Number(new URLSearchParams(loc
  */
 const SUN_I = 4;
 
+/** The Sun stands SUN_DIST m from the base centre; its shadow camera's depth range, m. (A tighter range around
+ * SUN_DIST, 250–550 m, made the garden's arches vanish (15 Nov): keep 1–900 unless that is understood.) */
+const SUN_DIST = 400;
+const SHADOW_NEAR = 1;
+const SHADOW_FAR = 900;
+/** Shadow bias, metres along the Sun's ray (see the shadow effect below). */
+const SHADOW_BIAS_M = 0.03;
+
 export const SUN_EL_DEG = Number.isFinite(elParam) && elParam > 0 && elParam < 60 ? elParam : 12;
 
 /** Sun azimuth of the day: sky.json, or ~12° a day when the week has no entry (developer guide §03). */
@@ -57,7 +65,7 @@ export function Light({ sunAzDeg = 268, shadowSize }: { sunAzDeg?: number; shado
   const sun = useRef<THREE.DirectionalLight>(null);
   const gl = useThree((s) => s.gl);
 
-  const position = useMemo(() => sunDirection(sunAzDeg, new THREE.Vector3()).multiplyScalar(400), [sunAzDeg]);
+  const position = useMemo(() => sunDirection(sunAzDeg, new THREE.Vector3()).multiplyScalar(SUN_DIST), [sunAzDeg]);
 
   useEffect(() => {
     gl.shadowMap.enabled = shadowSize > 0;
@@ -71,11 +79,14 @@ export function Light({ sunAzDeg = 268, shadowSize }: { sunAzDeg?: number; shado
     light.shadow.mapSize.set(shadowSize, shadowSize);
     light.shadow.map?.dispose();
     light.shadow.map = null;
-    light.shadow.bias = -0.0005;
-    light.shadow.normalBias = 0.04;
+    // Bias in metres along the Sun's ray. It was −0.0005 of a 900 m depth range = 0.45 m: the boots' lowest ~10 cm
+    // cast nothing and the astronaut's shadow started half a metre from the feet (15 Nov). The ground casts no shadow
+    // (Terrain.tsx), so it cannot self-shadow; only the buildings and rocks need a little bias against acne.
+    light.shadow.bias = -SHADOW_BIAS_M / (SHADOW_FAR - SHADOW_NEAR);
+    light.shadow.normalBias = 0.02;
     // Shadow length = height / tan(elevation): ~38× at 1.5°, ~5× at 12°. The camera covers the base and its shadows.
     const long = Math.min(150, 12 + 40 / Math.tan(THREE.MathUtils.degToRad(SUN_EL_DEG)) / 8);
-    Object.assign(light.shadow.camera, { left: -long, right: long, top: 40, bottom: -40, near: 1, far: 900 });
+    Object.assign(light.shadow.camera, { left: -long, right: long, top: 40, bottom: -40, near: SHADOW_NEAR, far: SHADOW_FAR });
     light.shadow.camera.updateProjectionMatrix();
     gl.shadowMap.needsUpdate = true;
   }, [position, shadowSize, gl]);
