@@ -85,8 +85,20 @@ export function stepBody(b: Body, wish: Wish, area: Area, ground: Ground, g = GR
   at.x = b.x;
   at.z = b.z;
   walkStep(at, b.vx * dt, b.vz * dt, area, radius, next);
-  b.vx = (next.x - b.x) / dt;
-  b.vz = (next.z - b.z) / dt;
+  // What really happened is the new velocity, but a hitbox only takes speed away (stops it, slides it along): when
+  // the body was put inside one (the hop out of the rover lands inside its hitbox) the push out moves it, and must
+  // not become speed. (At 120 steps a second a 17 cm push was 20 m/s; Moon traction let it slide on for ~80 m.)
+  const vIn = Math.hypot(b.vx, b.vz);
+  let nvx = (next.x - b.x) / dt;
+  let nvz = (next.z - b.z) / dt;
+  const vOut = Math.hypot(nvx, nvz);
+  if (vOut > vIn) {
+    const s = vOut > 0 ? vIn / vOut : 0;
+    nvx *= s;
+    nvz *= s;
+  }
+  b.vx = nvx;
+  b.vz = nvz;
   b.x = next.x;
   b.z = next.z;
 

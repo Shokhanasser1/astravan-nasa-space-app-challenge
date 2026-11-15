@@ -8,6 +8,8 @@ import type { Area, Solid } from './collide';
 import { rich } from '../scene/rich';
 import { features } from '../config/features';
 import { STEP_FOOT, STEP_WHEEL, rockSolids } from './rocks';
+import { ICE_CRATER } from '../scene/ground';
+import { initialTier } from '../scene/quality';
 
 /** Every hitbox is its visual footprint plus this much (metres). */
 const MARGIN = 0.1;
@@ -28,8 +30,18 @@ const wing: Solid = {
 /** The crew rover's hitbox: it moves to wherever the player parks the rover (`?drive`, src/scene/Rig.tsx). */
 export const ROVER_DISC: Solid = { name: 'rover', x: PARKED_ROVER.x, z: PARKED_ROVER.z, r: PARKED_ROVER.r };
 
-/** How far from the middle of the base you can walk: past the hill (27 m out), short of the far craters. */
-export const EDGE = 60;
+/**
+ * How far from the middle of the base you can walk and drive (15 Nov, the team: "make the area with the car 4×
+ * bigger", 60 → 120 m): past the hill (27 m out) and all round the ice crater (90 m out, 26 m across), inside the
+ * detailed ground (src/look/terrain.js NEAR_R, 150 m). The astronaut can get out of the rover anywhere it can go.
+ */
+export const EDGE = 120;
+
+/** Things on the ice crater's rim, reachable since the edge moved out to 120 m (keep in step with where they are
+ * drawn: the ASTRA ice drill, src/scene/AstraProps.tsx DRILL; RASSOR, src/scene/Decor.tsx, on computers only). */
+const toCrater = Math.atan2(ICE_CRATER.x, ICE_CRATER.z);
+const ICE_DRILL: Pair = [ICE_CRATER.x - Math.sin(toCrater) * 24 + 4, ICE_CRATER.z - Math.cos(toCrater) * 24];
+const RASSOR: Pair = [ICE_CRATER.x - Math.sin(toCrater) * 27, ICE_CRATER.z - Math.cos(toCrater) * 27];
 /** Inside the habitat: the floor you can stand on (the interior room is 1.7 m in radius, inside the bigger shell;
  * lockers line its wall; the rig calls it "inside" within 1.6 m of the middle). */
 export const ROOM = 1.25;
@@ -53,6 +65,9 @@ export const OUTSIDE: Area = {
     ...(rich ? [{ name: 'battery', x: BATTERY_BANK[0], z: BATTERY_BANK[1], r: BATTERY_R }] : []),
     // (the robot arm's pedestal; the arm itself moves above head height or stops at the ground: src/arm/kin.ts)
     ...(features.robotArm && features.character ? [disc('robot arm', [ROBOT_ARM.x, ROBOT_ARM.z], ROBOT_ARM.r)] : []),
+    // (the drill's three outrigger feet reach 2.0 m from its mast; RASSOR is ~1.9 m long)
+    ...(rich ? [disc('ice drill', ICE_DRILL, 2.0)] : []),
+    ...(initialTier() === 'pc' ? [disc('rassor', RASSOR, 1.1)] : []),
     // the rocks too tall to step over (the lower ones are ground: src/walk/rocks.ts)
     ...rockSolids(STEP_FOOT, EDGE),
   ],
@@ -65,6 +80,12 @@ export const ROVER_AREA: Area = {
   solids: [...OUTSIDE.solids.filter((s) => s !== ROVER_DISC && s.name !== 'rock'), ...rockSolids(STEP_WHEEL, EDGE)],
   bounds: OUTSIDE.bounds,
 };
+
+/**
+ * Where the hop out of the rover may land: outside, everything but the rover's own hitbox. (The hop lands 2.58 m
+ * from the rover's middle, always inside its 2.4 m disc + the body: the push out of it is a few centimetres.)
+ */
+export const BESIDE_ROVER: Area = { solids: OUTSIDE.solids.filter((s) => s !== ROVER_DISC), bounds: OUTSIDE.bounds };
 
 /** Inside the habitat: nothing in the way, and its wall all round. */
 export const INSIDE: Area = { solids: [], bounds: { name: 'room', x: LAYOUT.habitat[0], z: LAYOUT.habitat[1], r: ROOM } };

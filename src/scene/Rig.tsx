@@ -15,9 +15,10 @@ import { createWalker, walkDebug } from '../walk/walker';
 import { HAB_ROOM, ROOM_K } from '../walk/habitatRoom';
 import { habitatDoor, interiorDoors } from './Interiors';
 import { ROOMS, ROOM_BODY, buildingOf, doorAt, roomState, type RoomId } from '../walk/rooms';
+import { climbDuration, climbPhase, climbPose, climbState, type ClimbPose, type LadderClimb } from '../walk/ladder';
 import { astraLook } from './AstraBase';
 import { clearance, fits, type Solid, type XZ } from '../walk/collide';
-import { INSIDE, OUTSIDE, ROVER_AREA, ROVER_DISC } from '../walk/world';
+import { BESIDE_ROVER, INSIDE, OUTSIDE, ROVER_AREA, ROVER_DISC } from '../walk/world';
 import { footGround, wheelGround } from '../walk/rocks';
 import { features } from '../config/features';
 import { pickAim, type AimTarget } from '../controls/aim';
@@ -72,11 +73,20 @@ const DOOR_GO = 0.7;
  */
 const roomTrip = { room: null as RoomId | null, dir: 0, t: -1 };
 /**
- * The habitat's ladder (E at its foot or at its top): a short climb, then on the other floor. With the astronaut it
- * moves between the two floor rooms; in first person (the inside point) the eye moves to the other deck (fp.floor).
+ * The habitat's ladder (E at its foot or at its top): step to the rungs, climb them (src/walk/ladder.ts, ~3.9 s),
+ * step off, then on the other floor. With the astronaut it moves between the two floor rooms (the Climb clip on the
+ * rungs); in first person (the inside point) the eye rises or sinks along the ladder to the other deck (fp.floor).
+ * Walk keys, jump and E are ignored meanwhile.
  */
-const climb = { to: null as RoomId | null, t: -1, fp: false, arrive: { x: 0, z: 0, facing: 0 } };
-const CLIMB_S = 0.6;
+const climb = {
+  to: null as RoomId | null,
+  t: -1,
+  fp: false,
+  arrive: { x: 0, z: 0, facing: 0 },
+  T: 0,
+  path: { from: { x: 0, z: 0, facing: 0 }, y0: 0, foot: { x: 0, z: 0, facing: 0 }, rungs: { x: 0, z: 0 }, to: { x: 0, z: 0, facing: 0 }, y1: 0 } as LadderClimb,
+  pose: { x: 0, y: 0, z: 0, facing: 0, vx: 0, vy: 0, vz: 0, stage: 'done' } as ClimbPose,
+};
 const fp = { floor: 0 };
 /** The room whose door the astronaut stands at now (outside), for E. */
 const nearDoor = { id: null as RoomId | null };
@@ -88,10 +98,13 @@ const stepWish = { x: 0, z: 0, run: false, jump: false };
 /** In a room the follow camera rides closer (native metres behind the head) and a little steeper. */
 const ROOM_CAM = 1.7;
 const ROOM_TILT = 0.25;
-/** The camera would be in a room's wall or furniture, or outside its walls. */
-function roomBlocked(a: { solids: readonly Solid[]; bounds: Solid }, x: number, z: number, m: number): boolean {
+/**
+ * The camera would be in a room's wall or furniture, or outside its walls. (On the ladder only its outer walls
+ * count: behind the climber lie the open deck well and its guard rail, then the core rooms' doorways.)
+ */
+function roomBlocked(a: { solids: readonly Solid[]; bounds: Solid }, x: number, z: number, m: number, furniture = true): boolean {
   if (Math.hypot(x - a.bounds.x, z - a.bounds.z) > a.bounds.r - m) return true;
-  for (const o of a.solids) if (clearance(o, x, z, m) < 0) return true;
+  if (furniture) for (const o of a.solids) if (clearance(o, x, z, m) < 0) return true;
   return false;
 }
 /** Standing by the airlock in the habitat's room: more than 2 m towards the door from its middle (model frame). */
@@ -228,6 +241,17 @@ export function Rig({ view }: { view: View }) {
           climb.to = L.to;
           climb.fp = !roomState.id;
           climb.arrive = L.arrive;
+          // the path: from where the body (or the eye) stands to the rungs, along them, off at the arrival spot
+          const P = climb.path;
+          P.from.x = climb.fp ? s.to.x : body.x;
+          P.from.z = climb.fp ? s.to.z : body.z;
+          P.from.facing = climb.fp ? s.yaw + Math.PI : body.facing;
+          P.y0 = ROOMS[from].floorY;
+          P.foot = L.foot;
+          P.rungs = climb.fp ? L.foot : L.rungs; // (the eye stays at the foot spot, not in the rungs)
+          P.to = L.arrive;
+          P.y1 = ROOMS[L.to].floorY;
+          climb.T = climbDuration(P);
           climb.t = 0;
         }
         setRide(null);
@@ -403,17 +427,53 @@ export function Rig({ view }: { view: View }) {
       }
       invalidate();
     }
+    if (climb.t >= 0 && climb.to && s.t < 1) {
+      // a new phase or the map floats you away (out of the building) mid-climb: the climb is over
+      climb.t = -1;
+      climb.to = null;
+      climbState.on = false;
+    }
     if (climb.t >= 0 && climb.to) {
-      climb.t += dt;
-      if (climb.t >= CLIMB_S) {
+      climb.t = Math.min(climb.t + dt, climb.T);
+      const P = climbPose(climb.path, climb.t, climb.pose);
+      const up = climb.path.y1 > climb.path.y0;
+      walkInput.jump = false; // (no jump queued up for the other floor)
+      climbState.on = !climb.fp && P.stage === 'climb';
+      climbState.vy = P.vy;
+      // the Climb clip scrubbed by the height above the lower deck (full size): boots and hands meet the rungs
+      climbState.phase = climbPhase((P.y - Math.min(climb.path.y0, climb.path.y1)) / ROOMS[climb.to].s);
+      // look where you go: at the rungs (a little up or down while on them), then the way you step off
+      s.yawT = s.yaw + wrap(P.facing + Math.PI - s.yaw);
+      if (climb.fp) {
+        s.to.set(P.x, P.y + 1.6 * ROOM_K, P.z); // the eye rises (or sinks) along the ladder
+        s.pitchT = P.stage === 'climb' ? (up ? 0.3 : -0.3) : 0;
+      } else {
+        body.x = P.x;
+        body.y = P.y;
+        body.z = P.z;
+        body.facing = P.facing;
+        body.vx = P.vx;
+        body.vz = P.vz;
+        body.vy = 0;
+        body.onGround = true;
+        body.windup = -1;
+      }
+      if (climb.t >= climb.T) {
         const R = ROOMS[climb.to];
         if (climb.fp) {
           fp.floor = climb.to === 'habitat_up' ? 1 : 0;
           s.to.set(climb.arrive.x, R.floorY + 1.6 * ROOM_K, climb.arrive.z);
-          s.yawT = s.yaw;
+          s.pitchT = 0;
         } else {
+          // the handover as before; the camera keeps its angle and swings round behind (no jump)
+          const yaw = s.yaw, pitch = s.pitch;
           setRoom(climb.to, climb.arrive);
+          s.yaw = yaw;
+          s.pitch = s.pitchT = pitch;
+          s.yawT = s.yaw + wrap(climb.arrive.facing + Math.PI - s.yaw);
         }
+        climbState.on = false;
+        climbState.vy = 0;
         climb.t = -1;
         climb.to = null;
       }
@@ -450,7 +510,7 @@ export function Rig({ view }: { view: View }) {
       camera.position.lerpVectors(s.from, s.to, ease(s.t));
     } else {
       // (Never during the launch or the truth sequence: there the camera is not standing on the ground.)
-      if (walker && walkInput.phaseOk && (!character || point === 'inside')) {
+      if (walker && walkInput.phaseOk && climb.t < 0 && (!character || point === 'inside')) {
         // Walk on from the point: the standing spot itself moves, and solid things stop it (src/walk/). Inside the
         // ASTRA habitat: its furnished ground floor, at the room's scale (src/walk/habitatRoom.ts).
         const inside = point === 'inside';
@@ -577,9 +637,11 @@ export function Rig({ view }: { view: View }) {
   }
 
   /** Whether the hop out of this side's hatch lands on free ground (not in a building beside the rover). */
+  // (not counting the rover's own hitbox: the hop always lands inside it, so with it neither side was ever clear and
+  // the astronaut always got out on the left, into whatever stood there)
   function landsClear(side: number): boolean {
     const h = hatchAt(rover, hatch, side);
-    return fits(h.x + h.nx * HOP_OUT, h.z + h.nz * HOP_OUT, OUTSIDE);
+    return fits(h.x + h.nx * HOP_OUT, h.z + h.nz * HOP_OUT, BESIDE_ROVER);
   }
 
   function boardRover() {
@@ -761,6 +823,11 @@ export function Rig({ view }: { view: View }) {
         body.facing = s.yawT + Math.PI;
       }
       active = true;
+    } else if (climb.t >= 0) {
+      // on the habitat's ladder: the climb above moved the body (src/walk/ladder.ts); the walk keys wait
+      c.acc = 0;
+      s.to.set(body.x, body.y + EYE, body.z);
+      active = true;
     } else if (walkInput.phaseOk) {
       axes(c.ax);
       heading(s.yaw, c.ax.ahead, c.ax.side, c.wish);
@@ -807,7 +874,13 @@ export function Rig({ view }: { view: View }) {
 
     // follow camera: behind and a little above the helmet (or the rover), pulled in front of anything solid, never
     // under the ground
-    const room = roomState.id ? ROOMS[roomState.id] : null;
+    // (on the ladder: the room the head is in, between the two floors' floor and ceiling)
+    const climbing = climb.t >= 0 && climb.to !== null && roomState.id !== null;
+    const room = climbing
+      ? ROOMS[(body.y - climb.path.y0) / (climb.path.y1 - climb.path.y0 || 1) > 0.5 ? climb.to! : roomState.id!]
+      : roomState.id
+        ? ROOMS[roomState.id]
+        : null;
     const tilt = room ? ROOM_TILT : CAM_TILT + (CAR_TILT - CAM_TILT) * kc;
     const pitch = Math.max(-MAX_PITCH - tilt, s.pitch - tilt);
     const fx = -Math.sin(s.yaw) * Math.cos(pitch);
@@ -822,7 +895,7 @@ export function Rig({ view }: { view: View }) {
       const k2 = room.s;
       dist = ROOM_CAM * k2;
       for (let d = 0.3 * k2; d <= ROOM_CAM * k2; d += 0.05 * k2) {
-        if (roomBlocked(room.area, hx - fx * d, hz - fz * d, 0.12 * k2)) {
+        if (roomBlocked(room.area, hx - fx * d, hz - fz * d, 0.12 * k2, !climbing)) {
           dist = Math.max(0.25 * k2, d - 0.08 * k2);
           break;
         }
@@ -843,7 +916,10 @@ export function Rig({ view }: { view: View }) {
       }
     }
     camera.position.set(hx - fx * dist, hy - fy * dist, hz - fz * dist);
-    if (room) camera.position.y = Math.min(Math.max(camera.position.y, room.floorY + 0.3 * room.s), room.ceilY - 0.1 * room.s);
+    if (climbing) {
+      const a = ROOMS[roomState.id!], b = ROOMS[climb.to!];
+      camera.position.y = Math.min(Math.max(camera.position.y, Math.min(a.floorY, b.floorY) + 0.3 * a.s), Math.max(a.ceilY, b.ceilY) - 0.1 * a.s);
+    } else if (room) camera.position.y = Math.min(Math.max(camera.position.y, room.floorY + 0.3 * room.s), room.ceilY - 0.1 * room.s);
     else camera.position.y = Math.max(camera.position.y, ground(camera.position.x, camera.position.z) + 0.3);
     camera.rotation.set(pitch, s.yaw, 0, 'YXZ'); // no roll: horizon always level
     camState.inside = false;

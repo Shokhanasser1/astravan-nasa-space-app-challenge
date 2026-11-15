@@ -28,7 +28,8 @@ describe('habitat room walk', () => {
   const start = { x: POINTS.inside.pos[0], z: POINTS.inside.pos[2] };
 
   it('has the ground floor hitboxes and the inside point stands clear', () => {
-    expect(HAB_ROOM.solids.length).toBeGreaterThan(50);
+    // (43 since the storm-shelter ring of bags left the game, src/walk/rooms.ts HIDDEN_BOX; its bench stays)
+    expect(HAB_ROOM.solids.length).toBeGreaterThan(40);
     expect(fits(start.x, start.z, HAB_ROOM, body)).toBe(true);
   });
 
