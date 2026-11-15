@@ -2,7 +2,8 @@ import { useEffect, useMemo } from 'react';
 import { useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import type { Resources } from '../../state/game';
-import { LAYOUT, RADIUS, TANKS } from '../layout';
+import { HDU, HDU_HABITAT, HDU_MODULE_X, LAYOUT, RADIUS, TANKS, complexToGame } from '../layout';
+import { TUNNEL_SKIN } from '../hduParts';
 import { bake } from '../astra/bake';
 import { ball, box, cyl, finalize, metal, paint, pipe, torus } from '../../vendor/astra/scene/kit';
 import { C, skid } from '../../vendor/astra/scene/models/common';
@@ -40,38 +41,48 @@ function buildTanks(): THREE.Group {
     box(g, 0.13, BAND_H + 0.06, 0.02, dark, x, BAND_Y + BAND_H / 2, FACE - 0.012);
   }
   // manifold along the tops, then down and along the ground to the habitat's wall
-  const toHab = habInTankFrame();
   pipe(g, [[XS[0], deck + 2.1, 0], [XS[2], deck + 2.1, 0]], 0.035, steel, 6);
-  pipe(
-    g,
-    [
-      [XS[2], deck + 2.1, 0],
-      [XS[2] + 0.35, deck + 2.1, 0],
-      [XS[2] + 0.35, 0.1, 0],
-      [toHab[0], 0.1, toHab[1]],
-      [toHab[0], 0.6, toHab[1]],
-    ],
-    0.04,
-    steel,
-    6,
-  );
+  pipe(g, [[XS[2], deck + 2.1, 0], [XS[2] + 0.35, deck + 2.1, 0], [XS[2] + 0.35, 0.1, 0], ...pipeEnd()], 0.04, steel, 6);
   finalize(g);
   bake(g, { keep: [], live: [] });
   g.name = 'astra_tanks'; // AstraMerge folds its paints into the base's merged mesh
   return g;
 }
 
-/** The point on the habitat's shell nearest the tanks, in the tanks' own frame (x, z). */
-function habInTankFrame(): [number, number] {
+/** An offset (game metres from the tanks) in the tanks' own frame. */
+function turnToTanks(wx: number, wz: number): [number, number] {
+  const c = Math.cos(TANKS.yaw);
+  const s = Math.sin(TANKS.yaw);
+  return [wx * c - wz * s, wx * s + wz * c];
+}
+const inTankFrame = (x: number, z: number) => turnToTanks(x - TANKS.x, z - TANKS.z);
+
+/**
+ * Where the pipe goes after it comes down from the manifold, in the tanks' frame. ASTRA: along the ground to the
+ * habitat's shell at the point nearest the tanks, up into it. HDU (`?hdu`): the tanks stand between the habitat and
+ * lab modules, and the habitat's shell faces them only behind its fins and sandbag bay, so the pipe runs to the
+ * pressurised tunnel to the lab instead (its front skin, between two of its gold rings) and into it at the axis.
+ */
+function pipeEnd(): [number, number, number][] {
+  if (HDU_HABITAT) {
+    const lx = HDU_MODULE_X.habitat + 4.8;
+    const at = inTankFrame(...complexToGame(lx, TUNNEL_SKIN + 0.06));
+    const into = inTankFrame(...complexToGame(lx, TUNNEL_SKIN - 0.05));
+    return [
+      [at[0], 0.1, at[1]],
+      [at[0], HDU.tunnelY, at[1]],
+      [into[0], HDU.tunnelY, into[1]],
+    ];
+  }
   const dx = LAYOUT.habitat[0] - TANKS.x;
   const dz = LAYOUT.habitat[1] - TANKS.z;
   const d = Math.hypot(dx, dz);
   const k = (d - (RADIUS.habitat + 0.15)) / d;
-  const wx = dx * k;
-  const wz = dz * k;
-  const c = Math.cos(TANKS.yaw);
-  const s = Math.sin(TANKS.yaw);
-  return [wx * c - wz * s, wx * s + wz * c];
+  const toHab = turnToTanks(dx * k, dz * k);
+  return [
+    [toHab[0], 0.1, toHab[1]],
+    [toHab[0], 0.6, toHab[1]],
+  ];
 }
 
 const OK = new THREE.Color('#5fd0ff').multiplyScalar(1.6);

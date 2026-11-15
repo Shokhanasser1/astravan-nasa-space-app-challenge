@@ -1,13 +1,17 @@
 import { useMemo } from 'react';
 import { Instance, Instances } from '@react-three/drei';
-import { LAYOUT, RADIUS, type XZ } from '../layout';
+import { LAYOUT, PLAN, RADIUS, type XZ } from '../layout';
+import { RACK_MODULE, rackSpot } from '../hduParts';
 import { GLOW, MAT } from './materials';
 import type { TapHandler } from './tap';
 import * as THREE from 'three';
-import { astraLook } from '../AstraBase';
+import { astraLook as astraShapes } from '../AstraBase';
 import { bake } from '../astra/bake';
 import { finalize } from '../../vendor/astra/scene/kit';
 import { C, cabinet } from '../../vendor/astra/scene/models/common';
+
+/** `?hdu&lite`: the HDU complex is a model, so the hub keeps ASTRA's cabinet with it (BaseScene.tsx `look`). */
+const astraLook = astraShapes || PLAN.hdu;
 
 /** ASTRA's equipment cabinet as the hub's body (door outline, hinges, handle), baked into a few meshes. */
 const cabinetBody = (() => {
@@ -41,13 +45,19 @@ export function Hub({ tap }: { tap?: TapHandler }) {
 
 type Alloc = { ls: number; gh: number; ws: number; sc: number; launch: number };
 
-const ENDS: { k: keyof Alloc; at: XZ; r: number }[] = [
+type End = { k: keyof Alloc; at: XZ; r: number };
+const ENDS: End[] = ([
   { k: 'ls', at: LAYOUT.habitat, r: RADIUS.habitat },
   { k: 'gh', at: LAYOUT.garden, r: RADIUS.garden },
   { k: 'ws', at: LAYOUT.workshop, r: RADIUS.workshop },
   { k: 'sc', at: LAYOUT.scout, r: RADIUS.scout },
   { k: 'launch', at: LAYOUT.lander, r: RADIUS.lander },
-];
+] as End[]).map((e): End => {
+  // HDU (D8): a module's cable runs from the hub to its battery rack (hduParts.ts RACK_AT), ending at the rack's back
+  if (!PLAN.hdu || !RACK_MODULE[e.k]) return e;
+  const s = rackSpot(PLAN, e.k);
+  return { k: e.k, at: [s.x, s.z], r: 0.1 };
+});
 
 /** Ground cables from the hub to each machine; a cable glows while its machine has batteries. */
 export function Cables({ alloc }: { alloc: Alloc }) {

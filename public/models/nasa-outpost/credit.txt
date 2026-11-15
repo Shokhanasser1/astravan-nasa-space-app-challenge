@@ -12,6 +12,29 @@ build_base.py, export_outpost.py, SOURCES.md); web-converted with gltf-transform
 --join false --flatten false: one node per module part and tunnel, so each sits on its own ground.
 The furnished interiors (NASA HDU papers on NTRS; Moonwards-Assets toilet, MIT) stay in the Blender file.
 
-hdu_habitat.glb (15 Nov 2026, `?hdu`): the main habitat as one HDU module at 1.5x its real size, from the same NASA
-"Habitat Demonstration Unit" part 1 (cylinder and loft dome; the side module and airlock bulb left off, a door cut at
-the front, logos and flags painted out). Script: oy-karvonsaroyi-3d/hb7/hdu_base/build_game_habitat.py.
+hdu_complex.glb (15 Nov 2026, `?hdu`): the base core as three NASA Habitat Demonstration Unit modules at real size
+(shell r 2.1 m, 5.8 m tall) joined by two pressurised tunnels, exterior only, in the complex frame (C greenhouse,
+A habitat, B lab along x; doors at +z). One node per module part (<M>_shell with the door cut, <M>_frame: fins,
+legs, porch, side module) and per tunnel (tunnel_C_A, tunnel_A_B).
+- Modules: the same NASA 3D Resources "Habitat Demonstration Unit" part 1 + part 2 as outpost.glb, scaled from inches
+  to metres; the NASA logo, the US flags and the X-Hab logo painted out of the texture; the airlock bulb left off
+  (its hatch is the door), part 2's fins cut at the shell wall, its front ramps, umbilical and power box removed,
+  lanes cut for the tunnels. NASA media guidelines; not endorsed by NASA.
+- Tunnels: team-made in Blender (AI-written Blender Python, Claude Code).
+Made by Samandar (team) with Claude Code in Blender (script: the team's oy-karvonsaroyi-3d/hb7/hdu_base/
+build_game_complex.py, SOURCES.md there); web-converted with gltf-transform as in `npm run glb` (meshopt, WebP
+textures <= 1024) plus --join false --flatten false. The game draws it in src/scene/HduComplex.tsx.
+(It replaces hdu_habitat.glb, the single HDU module at 1.5x of the first `?hdu` build, removed 15 Nov.)
+Rebuilt 15 Nov 2026 (prompt B, batch 1): every print on the shell texture painted out by rectangle (all "Segment A..H"
+and "AIRLOCK" lettering, the half project emblems, the icon column, the blotch of the first scrub; a small placard on
+the part 2 texture), filled from the panel colour either side; no tunnel hatch holes in the shells (the far ends are
+closed); the shell's bottom dish cut below the floor; a 1.1 m ramp from the sill to the ground in front of each door
+(part of <M>_frame, its own paint); loose bits on the ground in front of the doors removed; paints shipped matte
+(no transmission, metallic 0).
+Batch 1 wave 2 (15 Nov 2026): a junction collar (sleeve r 1.20) at each tunnel end, its inner edge on the shell, so no
+gap between the flat tunnel end and the round shell; the tunnel floor slab level with the module floors (0.45) and inside
+the tunnel skin; the ramps painted light grey (a flat texel of the part 2 texture). Same script and sources.
+15 Nov 2026 (outpost.glb): the two NASA HDU textures (HDU_01 shell, HDU_02 frame) replaced with the scrubbed copies
+from hdu_complex.glb (no emblem, no "Segment A-H"/"AIRLOCK" lettering, no blotch, no placard print); its NASA paints
+lambert2SG/lambert3SG made matte (KHR_materials_transmission removed, metallic 0). Geometry and node names unchanged.
+15 Nov 2026 (hdu_complex.glb): the loose white frame fragment on the ground front-left of each module door (19 faces) removed in build_game_complex.py; re-exported and optimised as before.

@@ -2,7 +2,7 @@ import { Component, Suspense, useEffect, useMemo, type ReactNode } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
-import { DOOR_AZ, DOOR_R, LAYOUT, PARKED_ROVER as SEV } from './layout';
+import { DOOR_AZ, DOOR_R, HDU_HABITAT, LAYOUT, PARKED_ROVER as SEV } from './layout';
 import { ICE_CRATER, groundHeight, groundSurface } from './ground';
 import { initialTier } from './quality';
 import { softwareGl } from './rich';
@@ -18,7 +18,7 @@ const tyreAt = new THREE.Vector3();
 /**
  * NASA models around the base that are not machines of the week (public/models/nasa-decor, Samandar's catalog,
  * real size in metres, their own NASA textures): the crew rover parked by the base, RASSOR digging at the rim of
- * the ice crater, cargo bags at the habitat door. Each loads on its own; one that fails is simply not shown.
+ * the ice crater, cargo bags at the habitat door (ASTRA's; none at the HDU complex). Each loads on its own; one that fails is simply not shown.
  * RASSOR digs (its `Dig` clip: drums turning, the front arm lowering); the crew rover is parked — its wheels and
  * bogies are separate parts with a `Drive` clip (1.0 m/s): with `?arrive` or `?drive` it goes where the shared
  * rover state says (src/scene/arrival.ts), wheels turning at its speed.
@@ -28,10 +28,12 @@ const base = `${import.meta.env.BASE_URL}models/nasa-decor/`;
 const toCrater = Math.atan2(ICE_CRATER.x, ICE_CRATER.z);
 // RASSOR's digging drum is its model's -Z end: turn it round (+ pi) so it digs towards the crater.
 const RASSOR = { x: ICE_CRATER.x - Math.sin(toCrater) * 27, z: ICE_CRATER.z - Math.cos(toCrater) * 27, yaw: toCrater + Math.PI };
-// (just outside the habitat's regolith shield, beside the door)
+// (just outside the habitat's regolith shield, beside the door. Not at the HDU habitat module, `?hdu`: there that spot
+// is the doorstep, between the door's fin and the sandbag bay, outside the module's hitbox where the walk would pass
+// through them, and the porch, fins and shield leave no free ground by the door: src/scene/hduParts.ts.)
 const doorX = LAYOUT.habitat[0] + Math.sin(DOOR_AZ) * (DOOR_R + 0.7);
 const doorZ = LAYOUT.habitat[1] + Math.cos(DOOR_AZ) * (DOOR_R + 0.7);
-const BAGS: [number, number, number, number][] = [
+const BAGS: [number, number, number, number][] = HDU_HABITAT ? [] : [
   [doorX + Math.cos(DOOR_AZ) * 1.0, 0, doorZ - Math.sin(DOOR_AZ) * 1.0, 0.3],
   [doorX + Math.cos(DOOR_AZ) * 1.5, 0, doorZ - Math.sin(DOOR_AZ) * 1.5, -0.2],
   [doorX + Math.cos(DOOR_AZ) * 1.25, 0.24, doorZ - Math.sin(DOOR_AZ) * 1.25, 1.2],

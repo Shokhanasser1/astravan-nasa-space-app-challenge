@@ -6,6 +6,8 @@ import { SKY, WEEKS, pickWeek } from './engine/week';
 import type { Lang } from './i18n/t';
 import { audio } from './audio/audio';
 import { ambienceFor } from './audio/ambience';
+import { HDU_HABITAT } from './scene/layout';
+import { roomState } from './walk/rooms';
 import { musicFor } from './audio/music';
 import { doseFor, levelOf, useRunHour } from './scene/runClock';
 import { load, save } from './lib/storage';
@@ -109,7 +111,14 @@ export function App() {
     if (view.phase !== 'run') audio.setDose(doseRatio);
   }, [doseRatio, view.phase]);
   // Breath in the suit outside, the habitat's hum inside (src/audio/ambience.ts); the day's level sets the breath.
-  const amb = ambienceFor(model.screen, view.phase);
+  // (`?hdu`: walking in any HDU module's room is inside too; the room is read twice a second, not per frame.)
+  const [inRoom, setInRoom] = useState(false);
+  useEffect(() => {
+    if (!HDU_HABITAT) return;
+    const t = setInterval(() => setInRoom(roomState.id !== null), 500);
+    return () => clearInterval(t);
+  }, []);
+  const amb = ambienceFor(model.screen, view.phase, inRoom);
   useEffect(() => audio.setAmbience(amb, view.level), [amb, view.level]);
   // Music (src/audio/music.ts): calm, storm (alert and storm days, stormy hours of the running day), finale.
   const runHour = useRunHour();

@@ -4,12 +4,12 @@
 import { describe, expect, it } from 'vitest';
 import { fits, walkStep } from './collide';
 import { OUTSIDE } from './world';
-import { ROOMS, ROOM_BODY, ROOM_IDS, doorAt } from './rooms';
+import { ROOMS, ROOM_BODY, ROOM_IDS, doorAt, getRoom } from './rooms';
 import { ASTRA_SCALE } from '../scene/layout';
 
 describe('building rooms', () => {
   for (const id of ROOM_IDS) {
-    const R = ROOMS[id];
+    const R = getRoom(id);
     const body = ROOM_BODY * R.s;
 
     it(`${id}: door outside, spawn inside, exit by the door (or the ladder)`, () => {
@@ -21,7 +21,7 @@ describe('building rooms', () => {
       }
       if (R.ladder) {
         // you arrive clear on the other floor, and right where its ladder takes you back
-        const T = ROOMS[R.ladder.to];
+        const T = getRoom(R.ladder.to);
         expect(fits(R.ladder.arrive.x, R.ladder.arrive.z, T.area, ROOM_BODY * T.s)).toBe(true);
         expect(T.ladder?.to).toBe(id);
         expect(T.ladder!.near(R.ladder.arrive.x, R.ladder.arrive.z)).toBe(true);
